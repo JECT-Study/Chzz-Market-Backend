@@ -18,7 +18,7 @@ import org.chzz.market.domain.user.entity.User;
 
 @Getter
 @Entity
-@Table
+@Table(name = "like_table")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Like extends BaseTimeEntity {
     @Id
