@@ -50,6 +50,7 @@ public class Product extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private Category category;
 
+    @Builder.Default
     @OneToMany(mappedBy = "product")
     private List<Like> likes = new ArrayList<>();
 
