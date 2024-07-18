@@ -42,7 +42,7 @@ public class Bid extends BaseTimeEntity {
 
     @Column(nullable = false)
     @ColumnDefault(value = "3")
-    private Long count;
+    private int count;
 
     public void adjustBidAmount(Long amount) {
         if (this.count <= 0)
