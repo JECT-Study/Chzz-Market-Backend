@@ -37,6 +37,9 @@ public class User extends BaseTimeEntity {
     @Column(name = "user_id")
     private Long id;
 
+    @Column(nullable = false)
+    private String providerId;
+
     @Column(length = 25, nullable = false)
     private String nickname;
 
@@ -67,9 +70,9 @@ public class User extends BaseTimeEntity {
 
     @Builder.Default
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    private List<BankAccount> bankAccounts=new ArrayList<>();
+    private List<BankAccount> bankAccounts = new ArrayList<>();
 
-    public enum UserRole{
+    public enum UserRole {
     }
 
     public enum ProviderType {
