@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Pattern;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -33,11 +34,11 @@ public class Auction extends BaseTimeEntity {
     private Product product;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id",nullable = true)//
+    @JoinColumn(name = "user_id",nullable = true)
     private User winner;
 
     @Column
-    //TODO 2024 07 18 13:38:51 : custom validation
+    @Pattern(regexp = "^[1-9][0-9]*000$")
     private Long minPrice;
 
     @Column(columnDefinition = "varchar(20)")
