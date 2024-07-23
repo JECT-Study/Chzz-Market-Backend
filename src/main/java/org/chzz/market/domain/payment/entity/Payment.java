@@ -53,6 +53,12 @@ public class Payment extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private Status status;
 
+    @Column(unique = true,nullable = false)
+    private String orderId;
+
+    @Column(nullable = false)
+    private String paymentKey;
+
     @PrePersist
     protected void onPrePersist() {
         if (this.status == null) {
