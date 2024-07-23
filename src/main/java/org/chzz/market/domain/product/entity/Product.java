@@ -39,7 +39,7 @@ public class Product extends BaseTimeEntity {
     private User user;
 
     @Column(nullable = false)
-    @Pattern(regexp = "^[가-힣a-zA-Z0-9]{2,}$",message = "invalid type of nickname")
+    @Pattern(regexp = "^[가-힣a-zA-Z0-9]{2,}$", message = "invalid type of nickname")
     private String name;
 
     @Column(length = 1000)
@@ -55,5 +55,6 @@ public class Product extends BaseTimeEntity {
     private List<Like> likes = new ArrayList<>();
 
     public enum Category {
+        ELECTRONIC, HOME_APPLIANCE, FASHION, INTERIOR, BOOK, SPORT, TOY, ETC
     }
 }

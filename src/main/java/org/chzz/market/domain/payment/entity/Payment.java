@@ -58,6 +58,7 @@ public class Payment extends BaseTimeEntity {
 
 
     public enum PaymentMethod {
+        CARD, CASH // Test 실행을 위해 임시 추가
     }
 
     @Getter

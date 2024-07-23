@@ -13,6 +13,8 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Pattern;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
@@ -22,6 +24,8 @@ import org.chzz.market.domain.user.entity.User;
 @Getter
 @Entity
 @Table
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Auction extends BaseTimeEntity {
     @Id
@@ -38,7 +42,7 @@ public class Auction extends BaseTimeEntity {
     private User winner;
 
     @Column
-    @Pattern(regexp = "^[1-9][0-9]*000$")
+//    @Pattern(regexp = "^[1-9][0-9]*000$") // TODO: @Pattern은 문자열에서만 적용가능 해서 임시 주석 처리 추후 수정 필요
     private Long minPrice;
 
     @Column(columnDefinition = "varchar(20)")
@@ -47,5 +51,6 @@ public class Auction extends BaseTimeEntity {
 
     public enum Status {
         //TODO 2024 07 18 14:07:49 : 경매 상태 구체화
+        PROCEEDING, COMPLETE, CANCEL
     }
 }
