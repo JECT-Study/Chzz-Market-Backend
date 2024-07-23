@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import org.chzz.market.domain.payment.entity.Payment.PaymentMethod;
+import org.chzz.market.domain.payment.entity.Status;
 import org.springframework.lang.Nullable;
 
 @Data
@@ -83,16 +84,6 @@ public class TossPaymentResponse {
                                        String holderName) {
     }
 
-    public enum Status {
-        READY,
-        IN_PROGRESS,
-        WAITING_FOR_DEPOSIT,
-        DONE,
-        CANCELED,
-        PARTIAL_CANCELED,
-        ABORTED,
-        EXPIRED
-    }
 
     @Getter
     @AllArgsConstructor
