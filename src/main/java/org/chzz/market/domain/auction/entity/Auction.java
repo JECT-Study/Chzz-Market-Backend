@@ -1,5 +1,6 @@
 package org.chzz.market.domain.auction.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -11,8 +12,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Pattern;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
@@ -22,14 +24,16 @@ import org.chzz.market.domain.user.entity.User;
 @Getter
 @Entity
 @Table
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 public class Auction extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "auction_id")
     private Long id;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     @JoinColumn(name = "product_id")
     private Product product;
 
@@ -38,7 +42,7 @@ public class Auction extends BaseTimeEntity {
     private User winner;
 
     @Column
-    @Pattern(regexp = "^[1-9][0-9]*000$")
+    //TODO 2024 07 24 00:10:13 :  custom validate
     private Long minPrice;
 
     @Column(columnDefinition = "varchar(20)")
@@ -47,5 +51,6 @@ public class Auction extends BaseTimeEntity {
 
     public enum Status {
         //TODO 2024 07 18 14:07:49 : 경매 상태 구체화
+        DEFAULT
     }
 }
