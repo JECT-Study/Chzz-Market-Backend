@@ -20,6 +20,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
+import org.chzz.market.domain.payment.dto.response.TossPaymentResponse;
 import org.chzz.market.domain.payment.error.PaymentErrorCode;
 import org.chzz.market.domain.payment.error.PaymentException;
 import org.chzz.market.domain.user.entity.User;
@@ -53,7 +54,7 @@ public class Payment extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    @Column(unique = true,nullable = false)
+    @Column(unique = true, nullable = false)
     private String orderId;
 
     @Column(nullable = false)
@@ -64,6 +65,28 @@ public class Payment extends BaseTimeEntity {
         if (this.status == null) {
             this.status = Status.READY;
         }
+    }
+
+    private Payment(User payer, Auction auction, Long amount, PaymentMethod method, Status status, String orderId,
+                    String paymentKey) {
+        this.payer = payer;
+        this.auction = auction;
+        this.amount = amount;
+        this.method = method;
+        this.status = status;
+        this.orderId = orderId;
+        this.paymentKey = paymentKey;
+    }
+
+    public static Payment of(TossPaymentResponse tossPaymentResponse, Auction auction) {
+        return new Payment(
+                auction.getProduct().getUser(),
+                auction,
+                tossPaymentResponse.getTotalAmount(),
+                tossPaymentResponse.getMethod(),
+                tossPaymentResponse.getStatus(),
+                tossPaymentResponse.getOrderId(),
+                tossPaymentResponse.getPaymentKey());
     }
 
     @AllArgsConstructor
@@ -93,15 +116,5 @@ public class Payment extends BaseTimeEntity {
             }
             throw new PaymentException(PaymentErrorCode.INVALID_METHOD);
         }
-    }
-
-    @Getter
-    @AllArgsConstructor
-    public enum Status {
-        READY("ready"),
-        CANCELED("canceled"),
-        APPROVED("approve"),
-        PAYED("payed");
-        private final String name;
     }
 }

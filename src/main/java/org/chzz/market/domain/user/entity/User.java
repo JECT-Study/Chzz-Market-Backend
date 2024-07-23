@@ -57,7 +57,7 @@ public class User extends BaseTimeEntity {
     private ProviderType providerType;
 
     @Builder.Default
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Product> products = new ArrayList<>();
 
     @Builder.Default
@@ -73,8 +73,11 @@ public class User extends BaseTimeEntity {
     private List<BankAccount> bankAccounts = new ArrayList<>();
 
     public enum UserRole {
+        USER_ROLE;
     }
 
     public enum ProviderType {
+        KAKAO,
+        NAVER;
     }
 }
