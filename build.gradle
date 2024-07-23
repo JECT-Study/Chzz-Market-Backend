@@ -49,6 +49,7 @@ dependencies {
     testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
 
+    implementation 'org.springframework.retry:spring-retry'
 }
 
 tasks.named('test') {
