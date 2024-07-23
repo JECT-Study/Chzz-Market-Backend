@@ -1,14 +1,14 @@
 package org.chzz.market.domain.auction.repository;
 
-import static org.chzz.market.domain.auction.entity.Auction.Status.*;
+import static org.chzz.market.domain.auction.entity.Auction.Status.PROCEEDING;
 import static org.chzz.market.domain.auction.entity.QAuction.auction;
-import static org.chzz.market.domain.bid.entity.QBid.bid;
-import static org.chzz.market.domain.image.entity.QImage.image;
-import static org.chzz.market.domain.product.entity.QProduct.product;
 import static org.chzz.market.domain.auction.entity.SortType.CHEAP;
 import static org.chzz.market.domain.auction.entity.SortType.EXPENSIVE;
 import static org.chzz.market.domain.auction.entity.SortType.NEWEST;
 import static org.chzz.market.domain.auction.entity.SortType.POPULARITY;
+import static org.chzz.market.domain.bid.entity.QBid.bid;
+import static org.chzz.market.domain.image.entity.QImage.image;
+import static org.chzz.market.domain.product.entity.QProduct.product;
 
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -21,9 +21,9 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.domain.auction.dto.AuctionResponse;
 import org.chzz.market.domain.auction.dto.QAuctionResponse;
+import org.chzz.market.domain.auction.entity.SortType;
 import org.chzz.market.domain.image.entity.QImage;
 import org.chzz.market.domain.product.entity.Product.Category;
-import org.chzz.market.domain.auction.entity.SortType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
@@ -37,7 +37,13 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                                                         Pageable pageable) {
         QImage imageSub = new QImage("imageSub");
 
-        List<AuctionResponse> content = jpaQueryFactory
+        JPAQuery<?> baseQuery = jpaQueryFactory.from(auction)
+                .join(auction.product, product)
+                .leftJoin(bid).on(bid.auction.id.eq(auction.id))
+                .where(auction.product.category.eq(category))
+                .where(auction.status.eq(PROCEEDING));
+
+        List<AuctionResponse> content = baseQuery
                 .select(new QAuctionResponse(
                         auction.id,
                         product.name,
@@ -47,25 +53,15 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                         bid.countDistinct(),
                         isParticipating(userId)
                 ))
-                .from(auction)
-                .join(auction.product, product)
                 .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId(imageSub))))
-                .leftJoin(bid).on(bid.auction.id.eq((auction.id)))
-                .where(auction.product.category.eq(category))
-                .where(auction.status.eq(PROCEEDING))
                 .groupBy(auction.id, product.name, image.cdnPath, auction.createdAt, auction.minPrice)
                 .orderBy(getOrderSpecifier(sortType))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        JPAQuery<Long> countQuery = jpaQueryFactory
-                .select(auction.id.count())
-                .from(auction)
-                .join(auction.product, product)
-                .leftJoin(bid).on(bid.auction.id.eq(auction.id))
-                .where(auction.product.category.eq(category))
-                .where(auction.status.eq(PROCEEDING));
+        JPAQuery<Long> countQuery = baseQuery
+                .select(auction.id.count());
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchCount);
     }
