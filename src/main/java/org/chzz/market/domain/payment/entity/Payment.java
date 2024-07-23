@@ -1,5 +1,7 @@
 package org.chzz.market.domain.payment.entity;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -18,6 +20,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
+import org.chzz.market.domain.payment.error.PaymentErrorCode;
+import org.chzz.market.domain.payment.error.PaymentException;
 import org.chzz.market.domain.user.entity.User;
 
 @Getter
@@ -56,8 +60,33 @@ public class Payment extends BaseTimeEntity {
         }
     }
 
-
+    @AllArgsConstructor
     public enum PaymentMethod {
+        CARD("카드"),
+        VIRTUAL_ACCOUNT("가상계좌"),
+        EASY_PAYMENT("간편결제"),
+        MOBILE("휴대폰"),
+        ACCOUNT_TRANSFER("계좌이체"),
+        CULTURE_GIFT_CARD("문화상품권"),
+        BOOK_CULTURE_GIFT_CARD("도서문화상품권"),
+        GAME_CULTURE_GIFT_CARD("게임문화상품권");
+
+        private final String description;
+
+        @JsonValue
+        public String getDescription() {
+            return this.description;
+        }
+
+        @JsonCreator
+        public static PaymentMethod fromDescription(String description) {
+            for (PaymentMethod method : PaymentMethod.values()) {
+                if (method.getDescription().equals(description)) {
+                    return method;
+                }
+            }
+            throw new PaymentException(PaymentErrorCode.INVALID_METHOD);
+        }
     }
 
     @Getter
