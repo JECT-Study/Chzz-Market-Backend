@@ -1,5 +1,7 @@
 package org.chzz.market.domain.payment.dto.request;
-public record ApprovalRequest(String paymentKey,
+
+public record ApprovalRequest(String orderId,
+                              String paymentKey,
                               Long amount,
-                              String orderId) {
+                              Long auctionId) {
 }
