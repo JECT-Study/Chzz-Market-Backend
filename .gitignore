@@ -9,3 +9,4 @@ gen
 
 build/
 .gradle/
+src/main/resources/application-local.yml
