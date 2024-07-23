@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.chzz.market.domain.auction.dto.AuctionResponse;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.product.entity.Product.Category;
-import org.chzz.market.domain.product.entity.SortType;
+import org.chzz.market.domain.auction.entity.SortType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;

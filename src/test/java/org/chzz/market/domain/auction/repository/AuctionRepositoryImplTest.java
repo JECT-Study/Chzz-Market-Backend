@@ -11,7 +11,7 @@ import org.chzz.market.domain.bid.entity.Bid;
 import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.product.entity.Product.Category;
-import org.chzz.market.domain.product.entity.SortType;
+import org.chzz.market.domain.auction.entity.SortType;
 import org.chzz.market.domain.user.entity.User;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

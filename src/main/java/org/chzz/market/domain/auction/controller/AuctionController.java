@@ -3,7 +3,7 @@ package org.chzz.market.domain.auction.controller;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.domain.auction.service.AuctionService;
 import org.chzz.market.domain.product.entity.Product.Category;
-import org.chzz.market.domain.product.entity.SortType;
+import org.chzz.market.domain.auction.entity.SortType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
