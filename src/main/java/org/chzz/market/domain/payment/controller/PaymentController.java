@@ -6,6 +6,7 @@ import org.chzz.market.domain.payment.dto.response.ApprovalResponse;
 import org.chzz.market.domain.payment.service.PaymentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,5 +22,10 @@ public class PaymentController {
     public ResponseEntity<?> approvePayment(@RequestBody ApprovalRequest request){
         ApprovalResponse approval = paymentService.approval(request);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(approval);
+    }
+
+    @GetMapping("/order-id")
+    public ResponseEntity<?> createOrderId(){
+        return ResponseEntity.status(HttpStatus.CREATED).body(paymentService.createOrderId());
     }
 }
