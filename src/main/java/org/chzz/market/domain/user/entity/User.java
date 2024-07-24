@@ -57,7 +57,7 @@ public class User extends BaseTimeEntity {
     private ProviderType providerType;
 
     @Builder.Default
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private List<Product> products = new ArrayList<>();
 
     @Builder.Default
@@ -73,7 +73,7 @@ public class User extends BaseTimeEntity {
     private List<BankAccount> bankAccounts = new ArrayList<>();
 
     public enum UserRole {
-        USER_ROLE;
+        USER_ROLE, ADMIN, USER, GUEST // Test 실행을 위해 임시 추가
     }
 
     public enum ProviderType {

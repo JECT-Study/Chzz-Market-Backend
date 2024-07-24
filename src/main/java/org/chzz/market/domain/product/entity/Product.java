@@ -55,6 +55,6 @@ public class Product extends BaseTimeEntity {
     private List<Like> likes = new ArrayList<>();
 
     public enum Category {
-        DEFAULT;
+        ELECTRONIC, HOME_APPLIANCE, FASHION, INTERIOR, BOOK, SPORT, TOY, ETC, DEFAULT;
     }
 }

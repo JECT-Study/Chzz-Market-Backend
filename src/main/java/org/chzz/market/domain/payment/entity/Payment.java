@@ -98,7 +98,8 @@ public class Payment extends BaseTimeEntity {
         ACCOUNT_TRANSFER("계좌이체"),
         CULTURE_GIFT_CARD("문화상품권"),
         BOOK_CULTURE_GIFT_CARD("도서문화상품권"),
-        GAME_CULTURE_GIFT_CARD("게임문화상품권");
+        GAME_CULTURE_GIFT_CARD("게임문화상품권"),
+        CASH("테스트용");
 
         private final String description;
 
