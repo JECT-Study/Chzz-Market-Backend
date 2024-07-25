@@ -48,13 +48,13 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                         auction.id,
                         product.name,
                         image.cdnPath,
-                        auction.createdAt,
+                        auction.endDateTime,
                         auction.minPrice,
                         bid.countDistinct(),
                         isParticipating(userId)
                 ))
                 .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId(imageSub))))
-                .groupBy(auction.id, product.name, image.cdnPath, auction.createdAt, auction.minPrice)
+                .groupBy(auction.id, product.name, image.cdnPath, auction.endDateTime, auction.minPrice)
                 .orderBy(getOrderSpecifier(sortType))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -101,8 +101,8 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                 POPULARITY, bid.countDistinct().desc(),
                 EXPENSIVE, auction.minPrice.desc(),
                 CHEAP, auction.minPrice.asc(),
-                NEWEST, auction.createdAt.desc()
+                NEWEST, auction.endDateTime.desc()
         );
-        return orderSpecifierMap.getOrDefault(sortType, auction.createdAt.desc());
+        return orderSpecifierMap.getOrDefault(sortType, auction.endDateTime.desc());
     }
 }

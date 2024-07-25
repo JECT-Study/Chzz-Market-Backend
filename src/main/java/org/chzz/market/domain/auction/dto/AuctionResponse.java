@@ -1,17 +1,19 @@
 package org.chzz.market.domain.auction.dto;
 
+import static org.chzz.market.domain.auction.constant.AuctionConstant.*;
+
 import com.querydsl.core.annotations.QueryProjection;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import lombok.Getter;
+import org.chzz.market.domain.auction.constant.AuctionConstant;
+import org.chzz.market.domain.auction.service.AuctionService;
 
 /**
  * 진행중인 경매 목록 조회 DTO
  */
 @Getter
 public class AuctionResponse {
-    private static final long AUCTION_DURATION_HOURS = 24;
-
     private Long id;
     private String name;
     private String cdnPath;
@@ -21,13 +23,13 @@ public class AuctionResponse {
     private Boolean isParticipating;
 
     @QueryProjection
-    public AuctionResponse(Long id, String name, String cdnPath, LocalDateTime createdAt, Long minPrice,
+    public AuctionResponse(Long id, String name, String cdnPath, LocalDateTime endDateTime, Long minPrice,
                            Long participantCount,
                            Boolean isParticipating) {
         this.id = id;
         this.name = name;
         this.cdnPath = cdnPath;
-        this.timeRemaining = calculateTimeRemaining(createdAt);
+        this.timeRemaining = calculateTimeRemaining(endDateTime);
         this.minPrice = minPrice;
         this.participantCount = participantCount;
         this.isParticipating = isParticipating;
@@ -36,10 +38,10 @@ public class AuctionResponse {
     /**
      * 경매 종료까지 남은 시간 계산
      *
-     * @param createdAt
+     * @param endDateTime
      * @return 초 단위로 남은 시간
      */
-    private Long calculateTimeRemaining(LocalDateTime createdAt) {
-        return ChronoUnit.SECONDS.between(LocalDateTime.now(), createdAt.plusHours(AUCTION_DURATION_HOURS));
+    private Long calculateTimeRemaining(LocalDateTime endDateTime) {
+        return ChronoUnit.SECONDS.between(LocalDateTime.now(), endDateTime);
     }
 }
