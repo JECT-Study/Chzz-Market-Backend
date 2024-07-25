@@ -1,13 +1,9 @@
 package org.chzz.market.domain.auction.dto;
 
-import static org.chzz.market.domain.auction.constant.AuctionConstant.*;
-
 import com.querydsl.core.annotations.QueryProjection;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import lombok.Getter;
-import org.chzz.market.domain.auction.constant.AuctionConstant;
-import org.chzz.market.domain.auction.service.AuctionService;
 
 /**
  * 진행중인 경매 목록 조회 DTO
