@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.chzz.market.common.DatabaseTest;
 import org.chzz.market.domain.auction.dto.AuctionResponse;
@@ -64,11 +65,11 @@ class AuctionRepositoryImplTest {
         productRepository.saveAll(List.of(product1, product2, product3));
 
         Auction auction1 = Auction.builder().product(product1).minPrice(1000L).status(Auction.Status.PROCEEDING)
-                .build();
+                .endDateTime(LocalDateTime.now().plusDays(1)).build();
         Auction auction2 = Auction.builder().product(product2).minPrice(2000L).status(Auction.Status.PROCEEDING)
-                .build();
+                .endDateTime(LocalDateTime.now().plusDays(1)).build();
         Auction auction3 = Auction.builder().product(product3).minPrice(3000L).status(Auction.Status.PROCEEDING)
-                .build();
+                .endDateTime(LocalDateTime.now().plusDays(1)).build();
         auctionRepository.saveAll(List.of(auction1, auction2, auction3));
 
         Image image1 = Image.builder().product(product1).cdnPath("path/to/image1_1.jpg").build();
