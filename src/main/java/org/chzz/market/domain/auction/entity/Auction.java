@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -37,12 +38,15 @@ public class Auction extends BaseTimeEntity {
     private Product product;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id",nullable = true)
+    @JoinColumn(name = "user_id", nullable = true)
     private User winner;
 
     @Column
 //    @Pattern(regexp = "^[1-9][0-9]*000$") // TODO: @Pattern은 문자열에서만 적용가능 해서 임시 주석 처리 추후 수정 필요
     private Long minPrice;
+
+    @Column
+    private LocalDateTime endDateTime;
 
     @Column(columnDefinition = "varchar(20)")
     @Enumerated(EnumType.STRING)
@@ -50,6 +54,6 @@ public class Auction extends BaseTimeEntity {
 
     public enum Status {
         //TODO 2024 07 18 14:07:49 : 경매 상태 구체화
-        PROCEEDING, COMPLETE, CANCEL, DEFAULT;
+        PRE_ORDER, PENDING, PROCEEDING, COMPLETE, CANCEL
     }
 }
