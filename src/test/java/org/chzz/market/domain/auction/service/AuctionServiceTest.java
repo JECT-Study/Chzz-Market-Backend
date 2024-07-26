@@ -38,7 +38,7 @@ class AuctionServiceTest {
         // given
         Long existingAuctionId = 1L;
         Long userId = 1L;
-        AuctionDetailsResponse auctionDetails = new AuctionDetailsResponse(1L, 2L, "닉네임2", "제품1", null, 0, 1000L,
+        AuctionDetailsResponse auctionDetails = new AuctionDetailsResponse(1L, 2L, "닉네임2", "제품1", null, 1000L,
                 LocalDateTime.now().plusDays(1), Auction.Status.PROCEEDING, false, 0L, false, 0L, 0);
 
         // when
