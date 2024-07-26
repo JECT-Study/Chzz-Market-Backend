@@ -39,7 +39,7 @@ public class Product extends BaseTimeEntity {
     private User user;
 
     @Column(nullable = false)
-    @Pattern(regexp = "^[가-힣a-zA-Z0-9]{2,}$",message = "invalid type of name")
+    @Pattern(regexp = "^[가-힣a-zA-Z0-9]{2,}$", message = "invalid type of name")
     private String name;
 
     @Column(length = 1000)
