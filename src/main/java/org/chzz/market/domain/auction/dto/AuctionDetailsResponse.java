@@ -14,7 +14,6 @@ public class AuctionDetailsResponse {
     private String sellerName;
     private String title;
     private String description;
-    private int likeCount;
     private Long minPrice;
     private LocalDateTime endDateTime;
     private Status status;
@@ -27,7 +26,7 @@ public class AuctionDetailsResponse {
 
     @QueryProjection
     public AuctionDetailsResponse(Long productId, Long sellerId, String sellerName, String title, String description,
-                                  int likeCount, Long minPrice, LocalDateTime endDateTime, Status status,
+                                  Long minPrice, LocalDateTime endDateTime, Status status,
                                   Boolean isSeller,
                                   Long participantCount, Boolean isParticipating, Long bidAmount,
                                   int remainingBidCount) {
@@ -36,7 +35,6 @@ public class AuctionDetailsResponse {
         this.sellerName = sellerName;
         this.title = title;
         this.description = description;
-        this.likeCount = likeCount;
         this.minPrice = minPrice;
         this.endDateTime = endDateTime;
         this.status = status;

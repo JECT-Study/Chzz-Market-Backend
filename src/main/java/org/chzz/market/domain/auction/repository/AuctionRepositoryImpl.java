@@ -93,7 +93,6 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                         user.nickname,
                         product.name,
                         product.description,
-                        product.likes.size(),
                         auction.minPrice,
                         auction.endDateTime,
                         auction.status,
