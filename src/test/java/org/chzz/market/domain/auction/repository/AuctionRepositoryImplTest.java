@@ -1,10 +1,7 @@
 package org.chzz.market.domain.auction.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.chzz.market.domain.auction.entity.Auction.builder;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -23,8 +20,7 @@ import org.chzz.market.domain.product.entity.Product.Category;
 import org.chzz.market.domain.product.repository.ProductRepository;
 import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.repository.UserRepository;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,17 +50,18 @@ class AuctionRepositoryImplTest {
     @Autowired
     UserRepository userRepository;
 
-    @PersistenceContext
-    private EntityManager entityManager;
+    private static User user1, user2, user3;
+    private static Product product1, product2, product3, product4;
+    private static Auction auction1, auction2, auction3, auction4;
+    private static Image image1, image2, image3, image4;
+    private static Bid bid1, bid2, bid3, bid4;
 
-    private User user1, user2, user3;
-    private Product product1, product2, product3, product4;
-    private Auction auction1, auction2, auction3, auction4;
-    private Image image1, image2, image3, image4;
-    private Bid bid1, bid2, bid3, bid4;
-
-    @BeforeEach
-    void setUp() {
+    @BeforeAll
+    static void setUpOnce(@Autowired UserRepository userRepository,
+                          @Autowired ProductRepository productRepository,
+                          @Autowired AuctionRepository auctionRepository,
+                          @Autowired ImageRepository imageRepository,
+                          @Autowired BidRepository bidRepository) {
         user1 = User.builder().providerId("1234").nickname("닉네임1").email("asd@naver.com").build();
         user2 = User.builder().providerId("12345").nickname("닉네임2").email("asd1@naver.com").build();
         user3 = User.builder().providerId("123456").nickname("닉네임3").email("asd12@naver.com").build();
@@ -76,13 +73,13 @@ class AuctionRepositoryImplTest {
         product4 = Product.builder().user(user2).name("제품4").category(Category.FASHION).build();
         productRepository.saveAll(List.of(product1, product2, product3, product4));
 
-        auction1 = builder().product(product1).minPrice(1000L).status(Status.PROCEEDING)
+        auction1 = Auction.builder().product(product1).minPrice(1000L).status(Status.PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusDays(1)).build();
-        auction2 = builder().product(product2).minPrice(2000L).status(Status.PROCEEDING)
+        auction2 = Auction.builder().product(product2).minPrice(2000L).status(Status.PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusDays(1)).build();
-        auction3 = builder().product(product3).minPrice(3000L).status(Status.PROCEEDING)
+        auction3 = Auction.builder().product(product3).minPrice(3000L).status(Status.PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusDays(1)).build();
-        auction4 = builder().product(product4).minPrice(3000L).status(Status.CANCEL)
+        auction4 = Auction.builder().product(product4).minPrice(3000L).status(Status.CANCEL)
                 .endDateTime(LocalDateTime.now().plusDays(1)).build();
         auctionRepository.saveAll(List.of(auction1, auction2, auction3, auction4));
 
@@ -99,15 +96,6 @@ class AuctionRepositoryImplTest {
         bidRepository.saveAll(List.of(bid1, bid2, bid3, bid4));
     }
 
-    @AfterEach
-    void tearDown() {
-        entityManager.createNativeQuery("ALTER TABLE Bid ALTER COLUMN bid_id RESTART WITH 1").executeUpdate();
-        entityManager.createNativeQuery("ALTER TABLE Auction ALTER COLUMN auction_id RESTART WITH 1").executeUpdate();
-        entityManager.createNativeQuery("ALTER TABLE Product ALTER COLUMN product_id RESTART WITH 1").executeUpdate();
-        entityManager.createNativeQuery("ALTER TABLE Image ALTER COLUMN image_id RESTART WITH 1").executeUpdate();
-        entityManager.createNativeQuery("ALTER TABLE Users ALTER COLUMN user_id RESTART WITH 1").executeUpdate();
-    }
-
     @Test
     @DisplayName("특정 카테고리 경매를 높은 가격순으로 조회")
     public void testFindAuctionsByCategoryExpensive() throws Exception {
@@ -118,6 +106,7 @@ class AuctionRepositoryImplTest {
         Page<AuctionResponse> result = auctionRepository.findAuctionsByCategory(
                 Category.FASHION, SortType.EXPENSIVE, 1L, pageable);
 
+        System.out.println("result.getContent() = " + result.getContent());
         //then
         assertThat(result).isNotNull();
         assertThat(result.getContent()).hasSize(2);
@@ -140,6 +129,8 @@ class AuctionRepositoryImplTest {
         //when
         Page<AuctionResponse> result = auctionRepository.findAuctionsByCategory(
                 Category.FASHION, SortType.POPULARITY, 2L, pageable);
+
+        System.out.println("result.getContent() = " + result.getContent());
 
         //then
         assertThat(result).isNotNull();
