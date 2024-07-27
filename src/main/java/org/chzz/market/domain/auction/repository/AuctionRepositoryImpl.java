@@ -106,8 +106,10 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                 .join(auction.product, product)
                 .join(product.user, user)
                 .leftJoin(bid).on(bid.auction.id.eq(auctionId).and(bid.bidder.id.eq(userId)))
-                .where(auction.id.eq(auctionId))
-                .where(auction.status.eq(PROCEEDING).or(auction.status.eq(COMPLETE)))
+                .where(
+                        auction.id.eq(auctionId)
+                                .and(auction.status.eq(PROCEEDING).or(auction.status.eq(COMPLETE)))
+                )
                 .fetchOne());
 
         auctionDetailsResponse.ifPresent(response -> response.addImageList(getImageList(response.getProductId())));
