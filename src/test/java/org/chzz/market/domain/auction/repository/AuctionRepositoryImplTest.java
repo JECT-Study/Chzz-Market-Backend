@@ -106,7 +106,6 @@ class AuctionRepositoryImplTest {
         Page<AuctionResponse> result = auctionRepository.findAuctionsByCategory(
                 Category.FASHION, SortType.EXPENSIVE, 1L, pageable);
 
-        System.out.println("result.getContent() = " + result.getContent());
         //then
         assertThat(result).isNotNull();
         assertThat(result.getContent()).hasSize(2);
@@ -129,8 +128,6 @@ class AuctionRepositoryImplTest {
         //when
         Page<AuctionResponse> result = auctionRepository.findAuctionsByCategory(
                 Category.FASHION, SortType.POPULARITY, 2L, pageable);
-
-        System.out.println("result.getContent() = " + result.getContent());
 
         //then
         assertThat(result).isNotNull();
