@@ -53,7 +53,6 @@ public class Auction extends BaseTimeEntity {
     private Status status;
 
     public enum Status {
-        //TODO 2024 07 18 14:07:49 : 경매 상태 구체화
-        PRE_ORDER, PENDING, PROCEEDING, COMPLETE, CANCEL
+        PROCEEDING, COMPLETE, CANCEL
     }
 }
