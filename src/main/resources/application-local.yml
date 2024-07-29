@@ -2,6 +2,15 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  datasource:
+    url: jdbc:mysql://chzzdb:3306/chzzdb?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: root
+    password: qal,1
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
 
 payment:
@@ -11,3 +20,9 @@ payment:
 logging:
   level:
     org.springframework.security: trace
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
