@@ -1,11 +1,13 @@
 package org.chzz.market.domain.auction.service;
 
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_ACCESSIBLE;
+import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_FOUND;
 
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.domain.auction.dto.AuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.AuctionResponse;
+import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.entity.SortType;
 import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
@@ -20,6 +22,11 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AuctionService {
     private final AuctionRepository auctionRepository;
+
+    public Auction getAuction(Long auctionId) {
+        return auctionRepository.findById(auctionId)
+                .orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
+    }
 
     public Page<AuctionResponse> getAuctionListByCategory(Category category, SortType sortType, Long userId,
                                                           Pageable pageable) {
