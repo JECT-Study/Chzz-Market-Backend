@@ -31,7 +31,7 @@ jobs:
 
       - name: ECR 로그인
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1ㅈ
+        uses: aws-actions/amazon-ecr-login@v1
 
       - name: S3에서 설정파일 복사
         run: |
