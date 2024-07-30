@@ -6,8 +6,8 @@ spring:
 
 payment:
   toss:
-    client-key: ${{secret.TEST_CLIENT_KEY}}
-    security-key: ${{secret.TEST_SECRET_KEY}}
+    client-key: ${TEST_CLIENT_KEY}
+    security-key: ${TEST_SECRET_KEY}
 logging:
   level:
     org.springframework.security: trace
