@@ -4,7 +4,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -18,7 +17,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
 import org.chzz.market.domain.product.entity.Product;
-import org.chzz.market.domain.user.entity.User;
 
 @Getter
 @Entity
@@ -36,9 +34,9 @@ public class Auction extends BaseTimeEntity {
     @JoinColumn(name = "product_id")
     private Product product;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id",nullable = true)
-    private User winner;
+
+    @Column
+    private Long winnerId;
 
     @Column
 //    @Pattern(regexp = "^[1-9][0-9]*000$") // TODO: @Pattern은 문자열에서만 적용가능 해서 임시 주석 처리 추후 수정 필요
