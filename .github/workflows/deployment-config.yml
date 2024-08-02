@@ -77,3 +77,4 @@ jobs:
           service: was
           cluster: chzz-cluster
           wait-for-service-stability: true
+          wait-for-service-stability-timeout: 600
