@@ -32,13 +32,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         logException(e, errorCode);
         return handleExceptionInternal(errorCode);
     }
-    
+
     @Nullable
     @Override
-    protected ResponseEntity<Object> handleMissingServletRequestParameter(final MissingServletRequestParameterException e,
-                                                                          final HttpHeaders headers,
-                                                                          final HttpStatusCode status,
-                                                                          final WebRequest request) {
+    protected ResponseEntity<Object> handleMissingServletRequestParameter(
+            final MissingServletRequestParameterException e,
+            final HttpHeaders headers,
+            final HttpStatusCode status,
+            final WebRequest request) {
         GlobalErrorCode errorCode = GlobalErrorCode.UNSUPPORTED_PARAMETER_NAME;
         logException(e, errorCode);
         return handleExceptionInternal(errorCode);
@@ -71,13 +72,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         logException(exception, INTERNAL_SERVER_ERROR, exception.getResponseBodyAsString());
         return handleExceptionInternal(INTERNAL_SERVER_ERROR);
     }
-    
+
     private ResponseEntity<Object> handleExceptionInternal(ErrorCode errorCode) {
         return ResponseEntity
                 .status(errorCode.getHttpStatus())
                 .body(ErrorResponse.from(errorCode));
     }
-    
+
     private void logException(final Exception e, final ErrorCode errorCode) {
         log.error(LOG_FORMAT,
                 e.getClass(),
