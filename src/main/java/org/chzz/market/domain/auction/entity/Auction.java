@@ -46,6 +46,13 @@ public class Auction extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private Status status;
 
+    @Column
+    private Long participantCount;
+
+    public void increaseParticipantCount(){
+        this.participantCount++;
+    }
+
     public enum Status {
         //TODO 2024 07 18 14:07:49 : 경매 상태 구체화
         PROCEEDING, COMPLETE, CANCEL, DEFAULT;

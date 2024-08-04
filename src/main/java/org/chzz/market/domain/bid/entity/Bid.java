@@ -8,6 +8,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PostPersist;
+import jakarta.persistence.PostUpdate;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -48,6 +50,11 @@ public class Bid extends BaseTimeEntity {
     @Column(nullable = false)
     @ColumnDefault(value = "3")
     private int count;
+
+    @PostPersist
+    public void increaseParticipantCount(){
+        auction.increaseParticipantCount();
+    }
 
     public void adjustBidAmount(Long amount) {
         if (this.count <= 0)
