@@ -1,4 +1,4 @@
-package org.chzz.market.common.confing;
+package org.chzz.market.common.config;
 
 import org.chzz.market.domain.notification.service.RedisSubscriber;
 import org.springframework.beans.factory.annotation.Value;
