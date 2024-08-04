@@ -16,7 +16,9 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(final HttpSecurity http) throws Exception {
         return http.authorizeHttpRequests(
                         authorizationManagerRequestMatcherRegistry -> authorizationManagerRequestMatcherRegistry
-                                .anyRequest().permitAll()
+                                .requestMatchers("api/v1/auctions/**").permitAll()
+                                .requestMatchers("api/v1/bids/**").permitAll()
+                                .anyRequest().authenticated()
                 )
                 .headers(header -> header.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable).disable())
                 .httpBasic(AbstractHttpConfigurer::disable)
