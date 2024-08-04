@@ -103,7 +103,7 @@ public class BidRepositoryCustomImpl implements BidRepositoryCustom {
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public enum BidOrder implements QuerydslOrder {
         AMOUNT("amount", bid.amount),
-        NEWEST("newest", timeRemaining().multiply(-1));
+        TIME_REMAINING("time remaining", timeRemaining().multiply(-1));
 
         private final String name;
         private final ComparableExpressionBase<?> comparableExpressionBase;
