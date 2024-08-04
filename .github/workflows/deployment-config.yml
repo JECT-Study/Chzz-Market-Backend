@@ -51,20 +51,15 @@ jobs:
       - name: gradle 빌드
         run: ./gradlew build
 
-      - name: 현재 디렉토리 확인
-        run: pwd
-
-      - name: 파일 리스트 확인
-        run: ls -la
-
 #      ECR 로그인 결과를 사용해 ECR 경로를 받아 Docker image를 전달
       - name: docker 빌드, 및 ECR 배포
         id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          DOCKERFILE_DIR: .
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $DOCKERFILE_DIR
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
