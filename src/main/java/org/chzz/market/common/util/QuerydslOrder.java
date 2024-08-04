@@ -6,6 +6,8 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.chzz.market.common.error.GlobalErrorCode;
+import org.chzz.market.common.error.GlobalException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Order;
 
@@ -27,9 +29,8 @@ public interface QuerydslOrder {
                     }
                 }
             }
-        } catch (Exception e) {
-            //TODO 2024 08 03 18:07:40 : custom error
-            e.printStackTrace();
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new GlobalException(GlobalErrorCode.INTERNAL_SERVER_ERROR);
         }
         return Optional.empty();
     }
