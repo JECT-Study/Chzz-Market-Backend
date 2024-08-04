@@ -55,6 +55,7 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+    systemProperty 'spring.profiles.active', 'test'
 }
 
 def querydslDir = "$buildDir/generated/querydsl"
