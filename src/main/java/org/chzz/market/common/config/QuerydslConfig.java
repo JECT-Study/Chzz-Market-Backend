@@ -1,4 +1,4 @@
-package org.chzz.market.common.confing;
+package org.chzz.market.common.config;
 
 import com.querydsl.jpa.JPQLTemplates;
 import com.querydsl.jpa.impl.JPAQueryFactory;

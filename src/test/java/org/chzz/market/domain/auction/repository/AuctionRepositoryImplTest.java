@@ -67,19 +67,19 @@ class AuctionRepositoryImplTest {
         user3 = User.builder().providerId("123456").nickname("닉네임3").email("asd12@naver.com").build();
         userRepository.saveAll(List.of(user1, user2, user3));
 
-        product1 = Product.builder().user(user1).name("제품1").category(Category.FASHION).build();
-        product2 = Product.builder().user(user1).name("제품2").category(Category.BOOK).build();
-        product3 = Product.builder().user(user2).name("제품3").category(Category.FASHION).build();
-        product4 = Product.builder().user(user2).name("제품4").category(Category.FASHION).build();
+        product1 = Product.builder().user(user1).name("제품1").category(Category.FASHION_AND_CLOTHING).build();
+        product2 = Product.builder().user(user1).name("제품2").category(Category.BOOKS_AND_MEDIA).build();
+        product3 = Product.builder().user(user2).name("제품3").category(Category.FASHION_AND_CLOTHING).build();
+        product4 = Product.builder().user(user2).name("제품4").category(Category.FASHION_AND_CLOTHING).build();
         productRepository.saveAll(List.of(product1, product2, product3, product4));
 
-        auction1 = Auction.builder().product(product1).minPrice(1000L).status(Status.PROCEEDING)
+        auction1 = Auction.builder().product(product1).minPrice(1000).status(Status.PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusDays(1)).build();
-        auction2 = Auction.builder().product(product2).minPrice(2000L).status(Status.PROCEEDING)
+        auction2 = Auction.builder().product(product2).minPrice(2000).status(Status.PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusDays(1)).build();
-        auction3 = Auction.builder().product(product3).minPrice(3000L).status(Status.PROCEEDING)
+        auction3 = Auction.builder().product(product3).minPrice(3000).status(Status.PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusDays(1)).build();
-        auction4 = Auction.builder().product(product4).minPrice(3000L).status(Status.CANCEL)
+        auction4 = Auction.builder().product(product4).minPrice(3000).status(Status.CANCELLED)
                 .endDateTime(LocalDateTime.now().plusDays(1)).build();
         auctionRepository.saveAll(List.of(auction1, auction2, auction3, auction4));
 
@@ -104,7 +104,7 @@ class AuctionRepositoryImplTest {
 
         //when
         Page<AuctionResponse> result = auctionRepository.findAuctionsByCategory(
-                Category.FASHION, SortType.EXPENSIVE, 1L, pageable);
+                Category.FASHION_AND_CLOTHING, SortType.EXPENSIVE, 1L, pageable);
 
         //then
         assertThat(result).isNotNull();
@@ -127,7 +127,7 @@ class AuctionRepositoryImplTest {
 
         //when
         Page<AuctionResponse> result = auctionRepository.findAuctionsByCategory(
-                Category.FASHION, SortType.POPULARITY, 2L, pageable);
+                Category.FASHION_AND_CLOTHING, SortType.POPULARITY, 2L, pageable);
 
         //then
         assertThat(result).isNotNull();
@@ -150,7 +150,7 @@ class AuctionRepositoryImplTest {
 
         //when
         Page<AuctionResponse> result = auctionRepository.findAuctionsByCategory(
-                Category.TOY, SortType.EXPENSIVE, 1L, pageable);
+                Category.TOYS_AND_HOBBIES, SortType.EXPENSIVE, 1L, pageable);
 
         //then
         assertThat(result).isNotNull();

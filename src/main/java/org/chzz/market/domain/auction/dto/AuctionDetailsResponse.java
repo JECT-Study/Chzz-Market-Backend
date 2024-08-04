@@ -3,6 +3,7 @@ package org.chzz.market.domain.auction.dto;
 import static org.chzz.market.domain.auction.entity.Auction.Status;
 
 import com.querydsl.core.annotations.QueryProjection;
+import jakarta.persistence.criteria.CriteriaBuilder.In;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Getter;
@@ -14,7 +15,7 @@ public class AuctionDetailsResponse {
     private String sellerName;
     private String title;
     private String description;
-    private Long minPrice;
+    private Integer minPrice;
     private LocalDateTime endDateTime;
     private Status status;
     private Boolean isSeller;
@@ -26,7 +27,7 @@ public class AuctionDetailsResponse {
 
     @QueryProjection
     public AuctionDetailsResponse(Long productId, Long sellerId, String sellerName, String title, String description,
-                                  Long minPrice, LocalDateTime endDateTime, Status status,
+                                  Integer minPrice, LocalDateTime endDateTime, Status status,
                                   Boolean isSeller,
                                   Long participantCount, Boolean isParticipating, Long bidAmount,
                                   int remainingBidCount) {
