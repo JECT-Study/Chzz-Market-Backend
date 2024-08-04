@@ -20,16 +20,8 @@ jobs:
       - name: check out
         uses: actions/checkout@v4
         with:
-          ref: release
+          fetch-depth: 0
 
-      - name: Clear GitHub Actions cache
-        uses: actions/cache@v2
-        with:
-          path: ~/.cache
-          key: ${{ runner.os }}-cache-${{ github.run_id }}
-          restore-keys: |
-            ${{ runner.os }}-cache-
-              
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
@@ -71,7 +63,7 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -f Dockerfile . -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
