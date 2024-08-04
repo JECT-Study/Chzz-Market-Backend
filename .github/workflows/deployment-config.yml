@@ -20,7 +20,7 @@ jobs:
       - name: check out
         uses: actions/checkout@v3
         with:
-          ref: deploy
+          ref: release
 
       - name: AWS credential 설정
         uses: aws-actions/configure-aws-credentials@v1
