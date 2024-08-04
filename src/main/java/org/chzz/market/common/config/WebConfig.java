@@ -1,4 +1,4 @@
-package org.chzz.market.common.confing;
+package org.chzz.market.common.config;
 
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.util.StringToEnumConverterFactory;

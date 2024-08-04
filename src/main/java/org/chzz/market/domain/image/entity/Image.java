@@ -17,8 +17,8 @@ import org.chzz.market.domain.base.entity.BaseTimeEntity;
 import org.chzz.market.domain.product.entity.Product;
 
 @Getter
-@Entity
 @Builder
+@Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class Image extends BaseTimeEntity {
