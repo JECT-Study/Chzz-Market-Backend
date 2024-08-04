@@ -8,7 +8,6 @@ import java.util.List;
 import org.chzz.market.common.DatabaseTest;
 import org.chzz.market.domain.auction.dto.AuctionResponse;
 import org.chzz.market.domain.auction.entity.Auction;
-import org.chzz.market.domain.auction.entity.SortType;
 import org.chzz.market.domain.bid.entity.Bid;
 import org.chzz.market.domain.bid.repository.BidRepository;
 import org.chzz.market.domain.image.entity.Image;
@@ -26,11 +25,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.transaction.annotation.Transactional;
 
 @DatabaseTest
-@EnableJpaAuditing
 @Transactional
 class AuctionRepositoryImplTest {
 
@@ -64,10 +63,13 @@ class AuctionRepositoryImplTest {
         productRepository.saveAll(List.of(product1, product2, product3));
 
         Auction auction1 = Auction.builder().product(product1).minPrice(1000L).status(Auction.Status.PROCEEDING)
+                .participantCount(1L)
                 .build();
         Auction auction2 = Auction.builder().product(product2).minPrice(2000L).status(Auction.Status.PROCEEDING)
+                .participantCount(1L)
                 .build();
         Auction auction3 = Auction.builder().product(product3).minPrice(3000L).status(Auction.Status.PROCEEDING)
+                .participantCount(1L)
                 .build();
         auctionRepository.saveAll(List.of(auction1, auction2, auction3));
 
@@ -97,11 +99,11 @@ class AuctionRepositoryImplTest {
     @DisplayName("특정 카테고리 경매를 높은 가격순으로 조회")
     public void testFindAuctionsByCategoryExpensive() throws Exception {
         //given
-        Pageable pageable = PageRequest.of(0, 10);
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("expensive"));
 
         //when
         Page<AuctionResponse> result = auctionRepository.findAuctionsByCategory(
-                Category.FASHION, SortType.EXPENSIVE, 1L, pageable);
+                Category.FASHION, 1L, pageable);
 
         //then
         assertThat(result).isNotNull();
@@ -120,11 +122,11 @@ class AuctionRepositoryImplTest {
     @DisplayName("특정 카테고리 경매를 인기순으로 조회")
     public void testFindAuctionsByCategoryPopularity() throws Exception {
         //given
-        Pageable pageable = PageRequest.of(0, 10);
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("popularity"));
 
         //when
         Page<AuctionResponse> result = auctionRepository.findAuctionsByCategory(
-                Category.FASHION, SortType.POPULARITY, 2L, pageable);
+                Category.FASHION, 2L, pageable);
 
         //then
         assertThat(result).isNotNull();
@@ -143,11 +145,11 @@ class AuctionRepositoryImplTest {
     @DisplayName("경매가 없는 경우 조회")
     public void testFindAuctionsByCategoryNoAuctions() throws Exception {
         //given
-        Pageable pageable = PageRequest.of(0, 10);
+        Pageable pageable = PageRequest.of(0, 10,Sort.by("expensive"));
 
         //when
         Page<AuctionResponse> result = auctionRepository.findAuctionsByCategory(
-                Category.TOY, SortType.EXPENSIVE, 1L, pageable);
+                Category.TOY,  1L, pageable);
 
         //then
         assertThat(result).isNotNull();
