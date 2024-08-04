@@ -56,7 +56,7 @@ jobs:
         id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          DOCKERFILE_DIR: .
+          DOCKERFILE_DIR: ${{ github.workspace }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $DOCKERFILE_DIR
@@ -83,4 +83,3 @@ jobs:
           service: was
           cluster: chzz-cluster
           wait-for-service-stability: true
-          wait-for-service-stability-timeout: 600
