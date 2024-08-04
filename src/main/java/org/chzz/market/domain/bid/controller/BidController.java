@@ -19,13 +19,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class BidController {
     private final BidService bidService;
 
-    private final UserRepository userRepository; // TODO: temporary
-
     @PostMapping
     public ResponseEntity<?> createBid(@RequestBody BidCreateRequest bidCreateRequest) {
 //                                       @AuthenticationPrincipal CustomUserDetails customUserDetails) // TODO: 추후에 인증된 사용자 정보로 수정 필요
-        User user = userRepository.findById(1L).get(); // TODO: temporary
-        bidService.createBid(bidCreateRequest, user);
+        bidService.createBid(bidCreateRequest, 1L);
         return ResponseEntity.status(CREATED).build();
     }
 }
