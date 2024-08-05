@@ -106,7 +106,10 @@ public class RedisSubscriber {
         Optional<SseEmitter> findEmitter = emitterRepository.findById(userId);
         findEmitter.ifPresent(emitter -> {
             try {
-                emitter.send(SseEmitter.event().name("notification").data(message));
+                emitter.send(SseEmitter.event()
+                        .id(userId + "_" + System.currentTimeMillis())
+                        .name("notification")
+                        .data(message));
             } catch (Exception e) {
                 log.error("Error sending sendRealTimeNotification");
             }

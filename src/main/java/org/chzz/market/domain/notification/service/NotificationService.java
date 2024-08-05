@@ -58,7 +58,10 @@ public class NotificationService {
     private void sendInitialConnectionEvent(Long userId, SseEmitter emitter) {
         try {
             log.info("User {} subscribed to notifications with initial connection", userId);
-            emitter.send(SseEmitter.event().name("init").data("Connection Established"));
+            emitter.send(SseEmitter.event()
+                    .id(userId + "_" + System.currentTimeMillis())
+                    .name("init")
+                    .data("Connection Established"));
         } catch (Exception e) {
             log.error("Error sending initial connection event to user {}", userId);
         }
