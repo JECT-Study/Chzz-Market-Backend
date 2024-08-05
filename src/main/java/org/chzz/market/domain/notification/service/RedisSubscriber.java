@@ -30,7 +30,7 @@ public class RedisSubscriber {
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
-    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final ExecutorService executor = Executors.newCachedThreadPool();
 
     /**
      * Redis에서 발행된 메시지를 수신하고 사용자에게 알림을 보냅니다.
