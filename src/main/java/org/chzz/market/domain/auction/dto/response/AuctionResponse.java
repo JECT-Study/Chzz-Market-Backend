@@ -1,4 +1,4 @@
-package org.chzz.market.domain.auction.dto;
+package org.chzz.market.domain.auction.dto.response;
 
 import com.querydsl.core.annotations.QueryProjection;
 import java.time.LocalDateTime;

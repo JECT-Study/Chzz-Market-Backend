@@ -5,8 +5,8 @@ import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.chzz.market.domain.auction.dto.AuctionDetailsResponse;
-import org.chzz.market.domain.auction.dto.AuctionResponse;
+import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
+import org.chzz.market.domain.auction.dto.response.AuctionResponse;
 import org.chzz.market.domain.auction.dto.request.AuctionCreateRequest;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.entity.SortType;
