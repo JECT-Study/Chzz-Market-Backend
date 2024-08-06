@@ -10,10 +10,6 @@ jobs:
     permissions:
       contents: read
 
-    env:
-      TEST_CLIENT_KEY: ${{ secrets.TEST_CLIENT_KEY }}
-      TEST_SECRET_KEY: ${{ secrets.TEST_SECRET_KEY }}
-
     steps:
     - uses: actions/checkout@v4
     - name: Setup JDK 17
