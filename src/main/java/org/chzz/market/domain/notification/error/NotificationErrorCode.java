@@ -1,6 +1,6 @@
 package org.chzz.market.domain.notification.error;
 
-import static org.springframework.http.HttpStatus.*;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,14 +14,4 @@ public enum NotificationErrorCode implements ErrorCode {
 
     private final HttpStatus httpStatus;
     private final String message;
-
-    @Override
-    public HttpStatus getHttpStatus() {
-        return null;
-    }
-
-    @Override
-    public String getMessage() {
-        return null;
-    }
 }
