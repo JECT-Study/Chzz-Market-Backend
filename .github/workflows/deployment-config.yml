@@ -83,4 +83,3 @@ jobs:
           service: chzz-service
           cluster: chzz-cluster
           wait-for-service-stability: true
-          wait-for-minutes: 5
