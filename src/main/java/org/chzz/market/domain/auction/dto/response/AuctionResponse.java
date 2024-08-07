@@ -1,8 +1,8 @@
 package org.chzz.market.domain.auction.dto.response;
 
 import com.querydsl.core.annotations.QueryProjection;
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import lombok.Getter;
 
 /**
@@ -38,6 +38,7 @@ public class AuctionResponse {
      * @return 초 단위로 남은 시간
      */
     private Long calculateTimeRemaining(LocalDateTime endDateTime) {
-        return ChronoUnit.SECONDS.between(LocalDateTime.now(), endDateTime);
+        long seconds = Duration.between(LocalDateTime.now(), endDateTime).getSeconds();
+        return seconds < 0 ? 0L : seconds;
     }
 }
