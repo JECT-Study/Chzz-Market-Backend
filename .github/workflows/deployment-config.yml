@@ -80,7 +80,7 @@ jobs:
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: was
+          service: chzz-service
           cluster: chzz-cluster
           wait-for-service-stability: true
           wait-for-minutes: 5
