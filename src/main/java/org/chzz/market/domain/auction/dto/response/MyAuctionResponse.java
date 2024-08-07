@@ -1,7 +1,8 @@
 package org.chzz.market.domain.auction.dto.response;
 
+import static org.chzz.market.common.util.TimeUtil.calculateSecondsUntilEnd;
+
 import com.querydsl.core.annotations.QueryProjection;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.ToString;
@@ -28,21 +29,10 @@ public class MyAuctionResponse {
         this.id = id;
         this.name = name;
         this.cdnPath = cdnPath;
-        this.timeRemaining = calculateTimeRemaining(endDateTime);
+        this.timeRemaining = calculateSecondsUntilEnd(endDateTime);
         this.minPrice = minPrice;
         this.participantCount = participantCount;
         this.status = status;
         this.createdAt = createdAt;
-    }
-
-    /**
-     * 경매 종료까지 남은 시간 계산
-     *
-     * @param endDateTime
-     * @return 초 단위로 남은 시간
-     */
-    private Long calculateTimeRemaining(LocalDateTime endDateTime) {
-        long seconds = Duration.between(LocalDateTime.now(), endDateTime).getSeconds();
-        return seconds < 0 ? 0L : seconds;
     }
 }
