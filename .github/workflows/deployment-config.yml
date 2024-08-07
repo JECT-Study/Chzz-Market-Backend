@@ -83,4 +83,4 @@ jobs:
           service: was
           cluster: chzz-cluster
           wait-for-service-stability: true
-          timeout-minutes: 10
+          wait-for-minutes: 5
