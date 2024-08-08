@@ -1,5 +1,6 @@
 package org.chzz.market.domain.notification.service;
 
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.domain.notification.repository.EmitterRepositoryImpl;
@@ -59,9 +60,9 @@ public class NotificationService {
         try {
             log.info("User {} subscribed to notifications with initial connection", userId);
             emitter.send(SseEmitter.event()
-                    .id(userId + "_" + System.currentTimeMillis())
+                    .id(userId + "_" + Instant.now().toEpochMilli())
                     .name("init")
-                    .data("Connection Established"));
+                    .data("Connection Estab경lished"));
         } catch (Exception e) {
             log.error("Error sending initial connection event to user {}", userId);
         }

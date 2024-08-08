@@ -1,6 +1,7 @@
 package org.chzz.market.domain.notification.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -107,7 +108,7 @@ public class RedisSubscriber {
         findEmitter.ifPresent(emitter -> {
             try {
                 emitter.send(SseEmitter.event()
-                        .id(userId + "_" + System.currentTimeMillis())
+                        .id(userId + "_" + Instant.now().toEpochMilli())
                         .name("notification")
                         .data(message));
             } catch (Exception e) {
