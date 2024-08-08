@@ -12,6 +12,7 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import lombok.AccessLevel;
@@ -41,9 +42,7 @@ public class BidRepositoryCustomImpl implements BidRepositoryCustom {
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        long count = getCount(firstImage, user);
-
-        return PageableExecutionUtils.getPage(content, pageable, () -> count);
+        return PageableExecutionUtils.getPage(content, pageable, getCount(user)::fetchOne);
     }
 
     private JPQLQuery<BiddingRecord> getBaseQuery(QImage firstImage, User user) {
@@ -75,28 +74,19 @@ public class BidRepositoryCustomImpl implements BidRepositoryCustom {
                         auction.createdAt);
     }
 
-    private long getCount(QImage firstImage, User user) {
+    private JPAQuery<Long> getCount(User user) {
         return jpaQueryFactory
                 .select(bid.count())
                 .from(bid)
                 .join(bid.auction, auction)
-                .on(bid.bidder.eq(user))
-                .leftJoin(auction.product, product)
-                .leftJoin(firstImage)
-                .on(firstImage.product.eq(product).and(firstImage.id.eq(
-                        JPAExpressions
-                                .select(image.id.min())
-                                .from(image)
-                                .where(image.product.eq(product))
-                )))
-                .fetchFirst();
+                .on(bid.bidder.eq(user));
     }
 
 
     private static NumberExpression<Integer> timeRemaining() {
         NumberExpression<Integer> created = auction.createdAt.second();
         NumberExpression<Integer> now = DateTimePath.currentDate().second();
-        return created.add(Expressions.asNumber(24*60*60)).subtract(now);
+        return created.add(Expressions.asNumber(24 * 60 * 60)).subtract(now);
     }
 
     @Getter
