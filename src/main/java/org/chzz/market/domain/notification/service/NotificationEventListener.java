@@ -1,13 +1,14 @@
 package org.chzz.market.domain.notification.service;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.domain.notification.dto.NotificationEvent;
 import org.chzz.market.domain.notification.repository.EmitterRepositoryImpl;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @Slf4j
@@ -16,7 +17,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 public class NotificationEventListener {
     private final EmitterRepositoryImpl emitterRepository;
 
-    @EventListener
+    @TransactionalEventListener
     public void handleNotificationEvent(NotificationEvent event) {
         log.info("Handling NotificationEvent - Message: {}, UserIds: {}", event.notificationMessage().getMessage(),
                 event.notificationMessage().getUserIds());
@@ -38,8 +39,8 @@ public class NotificationEventListener {
                         .id(userId + "_" + Instant.now().toEpochMilli())
                         .name("notification")
                         .data(message));
-            } catch (Exception e) {
-                log.error("Error sending sendRealTimeNotification");
+            } catch (IOException e) {
+                log.error("Error sending SSE event to user {}", userId);
             }
         });
     }
