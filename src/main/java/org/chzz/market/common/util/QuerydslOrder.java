@@ -38,7 +38,7 @@ public interface QuerydslOrder {
     ;
 
 
-    static List<OrderSpecifier<?>> getOrderSpecifiers(Pageable pageable, Class<? extends QuerydslOrder> clazz) {
+    static OrderSpecifier[] getOrderSpecifiers(Pageable pageable, Class<? extends QuerydslOrder> clazz) {
         List<OrderSpecifier<?>> orderSpecifiers = new ArrayList<>();
         if (!pageable.getSort().isEmpty()) {
             for (Order order : pageable.getSort()) {
@@ -54,6 +54,6 @@ public interface QuerydslOrder {
         } else {
             orderSpecifiers.add(OrderByNull.DEFAULT);
         }
-        return orderSpecifiers;
+        return orderSpecifiers.toArray(OrderSpecifier[]::new);
     }
 }

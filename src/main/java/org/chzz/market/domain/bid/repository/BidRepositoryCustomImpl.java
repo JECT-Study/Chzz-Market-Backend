@@ -5,7 +5,6 @@ import static org.chzz.market.domain.bid.entity.QBid.bid;
 import static org.chzz.market.domain.image.entity.QImage.image;
 import static org.chzz.market.domain.product.entity.QProduct.product;
 
-import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.ComparableExpressionBase;
 import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.Expressions;
@@ -37,7 +36,7 @@ public class BidRepositoryCustomImpl implements BidRepositoryCustom {
 
         JPQLQuery<BiddingRecord> baseQuery = getBaseQuery(firstImage, user);
         List<BiddingRecord> content = baseQuery
-                .orderBy(QuerydslOrder.getOrderSpecifiers(pageable, BidOrder.class).toArray(OrderSpecifier[]::new))
+                .orderBy(QuerydslOrder.getOrderSpecifiers(pageable, BidOrder.class))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
