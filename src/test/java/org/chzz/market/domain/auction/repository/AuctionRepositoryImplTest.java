@@ -174,6 +174,7 @@ class AuctionRepositoryImplTest {
         assertThat(result.get().getIsSeller()).isTrue();
         assertThat(result.get().getBidAmount()).isEqualTo(0);
         assertThat(result.get().getIsParticipating()).isFalse();
+        assertThat(result.get().getBidId()).isNull();
         assertThat(result.get().getImageList()).containsOnly(image1.getCdnPath(), image2.getCdnPath());
     }
 
@@ -194,6 +195,7 @@ class AuctionRepositoryImplTest {
         assertThat(result.get().getIsSeller()).isFalse();
         assertThat(result.get().getBidAmount()).isEqualTo(0);
         assertThat(result.get().getIsParticipating()).isFalse();
+        assertThat(result.get().getBidId()).isNull();
     }
 
     @Test
@@ -213,6 +215,7 @@ class AuctionRepositoryImplTest {
         assertThat(result.get().getIsSeller()).isFalse();
         assertThat(result.get().getBidAmount()).isEqualTo(6000L);
         assertThat(result.get().getIsParticipating()).isTrue();
+        assertThat(result.get().getBidId()).isEqualTo(bid4.getId());
     }
 
     @Test
