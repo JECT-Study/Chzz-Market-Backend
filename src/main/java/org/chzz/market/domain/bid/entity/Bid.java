@@ -4,6 +4,8 @@ import static org.chzz.market.domain.bid.error.BidErrorCode.BID_LIMIT_EXCEEDED;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -53,11 +55,25 @@ public class Bid extends BaseTimeEntity {
     @Builder.Default
     private int count = 3;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private BidStatus status = BidStatus.ACTIVE;
+
     public void adjustBidAmount(Long amount) {
         if (this.count <= 0) {
             throw new BidException(BID_LIMIT_EXCEEDED);
         }
-        this.amount = amount; // TODO: 기존 입찰 가격과의 비교
+        this.amount = amount;
         this.count--;
+    }
+
+    public void cancelBid() {
+        this.status = BidStatus.CANCELLED;
+    }
+
+    public enum BidStatus {
+        ACTIVE,
+        CANCELLED
     }
 }
