@@ -172,7 +172,7 @@ class BidRepositoryCustomImplTest {
     @DisplayName("입찰 기록은 남은 시간 기준으로 정렬 가능하다")
     void testFindBidHistoryOrderByTimeRemaining() {
         // given
-        Pageable pageable = PageRequest.of(0, 10, Sort.by("time_remaining"));
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("time remaining"));
         Page<BiddingRecord> usersBidHistory1 = bidRepository.findUsersBidHistory(bidder1, pageable);
         Page<BiddingRecord> usersBidHistory2 = bidRepository.findUsersBidHistory(bidder2, pageable);
         // when
