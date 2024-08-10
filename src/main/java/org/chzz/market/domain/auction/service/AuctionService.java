@@ -1,6 +1,7 @@
 package org.chzz.market.domain.auction.service;
 
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_ACCESSIBLE;
+import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_FOUND;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,8 +18,8 @@ import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.product.entity.Product.Category;
 import org.chzz.market.domain.product.repository.ProductRepository;
 import org.chzz.market.domain.user.entity.User;
-import org.chzz.market.domain.user.error.UserException;
 import org.chzz.market.domain.user.error.UserErrorCode;
+import org.chzz.market.domain.user.error.UserException;
 import org.chzz.market.domain.user.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,6 +71,11 @@ public class AuctionService {
         cdnPaths.forEach(path -> logger.info("Uploaded image path: {}", imageService.getFullImageUrl(path)));
 
         return auction.getId();
+    }
+
+    public Auction getAuction(Long auctionId) {
+        return auctionRepository.findById(auctionId)
+                .orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
     }
 
     public Page<AuctionResponse> getAuctionListByCategory(Category category, SortType sortType, Long userId,

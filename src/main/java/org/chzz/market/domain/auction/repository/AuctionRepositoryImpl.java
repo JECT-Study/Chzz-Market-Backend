@@ -1,6 +1,6 @@
 package org.chzz.market.domain.auction.repository;
 
-import static org.chzz.market.domain.auction.entity.Auction.Status.*;
+import static org.chzz.market.domain.auction.entity.Auction.Status.ENDED;
 import static org.chzz.market.domain.auction.entity.Auction.Status.PROCEEDING;
 import static org.chzz.market.domain.auction.entity.QAuction.auction;
 import static org.chzz.market.domain.auction.entity.SortType.CHEAP;
@@ -26,7 +26,6 @@ import org.chzz.market.domain.auction.dto.AuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.AuctionResponse;
 import org.chzz.market.domain.auction.dto.QAuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.QAuctionResponse;
-import org.chzz.market.domain.auction.entity.Auction.Status;
 import org.chzz.market.domain.auction.entity.SortType;
 import org.chzz.market.domain.image.entity.QImage;
 import org.chzz.market.domain.product.entity.Product.Category;
