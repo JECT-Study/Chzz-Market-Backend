@@ -72,7 +72,8 @@ public class BidRepositoryCustomImpl implements BidRepositoryCustom {
                         bid.amount,
                         auction.bids.size(),
                         firstImage.cdnPath,
-                        auction.createdAt);
+                        auction.createdAt,
+                        auction.id);
     }
 
     private JPAQuery<Long> getCount(User user) {
