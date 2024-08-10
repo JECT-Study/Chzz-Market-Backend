@@ -1,4 +1,4 @@
-package org.chzz.market.domain.product.dto.request;
+package org.chzz.market.domain.auction.dto;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -16,18 +16,15 @@ import static org.chzz.market.domain.product.entity.Product.*;
  */
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RegisterProductRequest {
-
-    // user_id : 추후 로그인 기능 도입 시 삭제
+public class RegisterRequest {
     @NotNull
     private Long userId;
 
     @NotBlank
     @Size(min = 2, message = "제목은 최소 2글자 이상이어야 합니다")
-    private String name;
+    private String productName;
 
     @NotNull
     @Size(max = 1000, message = "상품 설명은 최대 1000자까지 가능합니다")
@@ -44,4 +41,20 @@ public class RegisterProductRequest {
     @Size(min = 1, max = 5, message = "이미지는 1개 이상 5개 이하로 등록해야 합니다")
     private List<MultipartFile> images;
 
+//    public Product toProductEntity() {
+//        return Product.builder()
+//                .user(this.user)
+//                .name(this.productName)
+//                .description(this.description)
+//                .category(this.category)
+//                .build();
+//    }
+//
+//    public Auction toAuctionEntity(Product product, AuctionStatus status) {
+//        return Auction.builder()
+//                .product(product)
+//                .minPrice(this.minPrice)
+//                .status(status)
+//                .build();
+//    }
 }
