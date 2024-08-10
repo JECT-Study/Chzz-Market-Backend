@@ -122,7 +122,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
     @Getter
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public enum AuctionOrder implements QuerydslOrder {
-        POPULARITY("popularity",auction.participantCount.multiply(-1)),
+        POPULARITY("popularity",auction.bids.size().multiply(-1)),
         EXPENSIVE("expensive",auction.minPrice.multiply(-1)),
         CHEAP("cheap",auction.minPrice),
         NEWEST("newest",timeRemaining());

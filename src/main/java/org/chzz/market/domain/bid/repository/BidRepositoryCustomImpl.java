@@ -52,7 +52,7 @@ public class BidRepositoryCustomImpl implements BidRepositoryCustom {
                         product.name,
                         auction.minPrice,
                         bid.amount,
-                        auction.participantCount,
+                        auction.bids.size().longValue(),
                         firstImage.cdnPath,
                         timeRemaining().longValue()
                 ))
@@ -70,7 +70,7 @@ public class BidRepositoryCustomImpl implements BidRepositoryCustom {
                 .groupBy(product.name,
                         auction.minPrice,
                         bid.amount,
-                        auction.participantCount,
+                        auction.bids.size(),
                         firstImage.cdnPath,
                         auction.createdAt);
     }

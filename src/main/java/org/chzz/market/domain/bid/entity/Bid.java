@@ -8,7 +8,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PostPersist;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -17,8 +16,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
-import org.chzz.market.domain.bid.error.BidErrorCode;
-import org.chzz.market.domain.bid.error.BidException;
 import org.chzz.market.domain.user.entity.User;
 import org.hibernate.annotations.ColumnDefault;
 
@@ -52,15 +49,8 @@ public class Bid extends BaseTimeEntity {
     @ColumnDefault(value = "3")
     private int count;
 
-    @PostPersist
-    public void increaseParticipantCount(){
-        auction.increaseParticipantCount();
-    }
 
-    public void adjustBidAmount(Long amount) {
-        if (this.count <= 0)
-            throw new BidException(BidErrorCode.NOT_ENOUGH_COUNT);
-        this.amount = amount;
-        this.count--;
+    public void specifyAuction(Auction auction) {
+        this.auction=auction;
     }
 }
