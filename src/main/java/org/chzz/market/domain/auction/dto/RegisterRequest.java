@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.chzz.market.common.validation.annotation.ThousandMultiple;
+import org.chzz.market.domain.auction.entity.Auction.AuctionStatus;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -34,12 +36,16 @@ public class RegisterRequest {
     private Category category;
 
     @NotNull
+    @ThousandMultiple
     @Min(value = 1000, message = "시작 가격은 최소 1,000원 이상이어야 합니다")
     private Integer minPrice;
 
     @NotNull
     @Size(min = 1, max = 5, message = "이미지는 1개 이상 5개 이하로 등록해야 합니다")
     private List<MultipartFile> images;
+
+    @NotNull
+    private AuctionStatus status;
 
 //    public Product toProductEntity() {
 //        return Product.builder()
