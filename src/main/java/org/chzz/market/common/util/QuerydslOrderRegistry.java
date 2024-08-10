@@ -22,4 +22,8 @@ public class QuerydslOrderRegistry {
             throw new GlobalException(GlobalErrorCode.UNSUPPORTED_SORT_TYPE);
         }
     }
+
+    public boolean isValidOrderProperty(String property) {
+        return querydslOrderMap.containsKey(property);
+    }
 }

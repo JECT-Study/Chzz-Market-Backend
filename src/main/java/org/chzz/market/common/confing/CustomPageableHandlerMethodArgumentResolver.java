@@ -1,10 +1,9 @@
 package org.chzz.market.common.confing;
 
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.error.GlobalErrorCode;
 import org.chzz.market.common.error.GlobalException;
-import org.chzz.market.common.util.QuerydslOrder;
+import org.chzz.market.common.util.QuerydslOrderRegistry;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
@@ -17,7 +16,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 @Component
 @RequiredArgsConstructor
 public class CustomPageableHandlerMethodArgumentResolver extends PageableHandlerMethodArgumentResolver {
-    private final List<QuerydslOrder> querydslOrders;
+    private final QuerydslOrderRegistry querydslOrderRegistry;
 
     @Override
     public Pageable resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
@@ -26,8 +25,7 @@ public class CustomPageableHandlerMethodArgumentResolver extends PageableHandler
 
         pageable.getSort().stream().forEach(order -> {
             String property = order.getProperty();
-            boolean isValid = querydslOrders.stream()
-                    .anyMatch(querydslOrder -> querydslOrder.getName().equals(property));
+            boolean isValid = querydslOrderRegistry.isValidOrderProperty(property);
             if (!isValid) {
                 throw new GlobalException(GlobalErrorCode.UNSUPPORTED_SORT_TYPE);
             }
