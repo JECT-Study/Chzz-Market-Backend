@@ -1,10 +1,8 @@
 package org.chzz.market.domain.auction.service;
 
-import static org.chzz.market.domain.auction.error.AuctionErrorCode.*;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_ACCESSIBLE;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_FOUND;
 import org.chzz.market.domain.auction.dto.AuctionDetailsResponse;
-import org.chzz.market.domain.auction.dto.StartResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,20 +30,20 @@ public class AuctionService {
 
     private final AuctionRepository auctionRepository;
 
-    @Transactional
-    public StartResponse startAuction(Long auctionId) {
-        Auction auction = auctionRepository.findById(auctionId)
-                .orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
-
-        if (auction.getStatus() != Auction.AuctionStatus.PENDING) {
-            throw new AuctionException(INVALID_AUCTION_STATE);
-        }
-
-        auction.start();
-        auctionRepository.save(auction);
-
-        return new StartResponse(auction);
-    }
+//    @Transactional
+//    public StartResponse startAuction(Long auctionId) {
+//        Auction auction = auctionRepository.findById(auctionId)
+//                .orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
+//
+//        if (auction.getStatus() != Auction.AuctionStatus.PENDING) {
+//            throw new AuctionException(INVALID_AUCTION_STATE);
+//        }
+//
+//        auction.start();
+//        auctionRepository.save(auction);
+//
+//        return new StartResponse(auction);
+//    }
 
     public Auction getAuction(Long auctionId) {
         return auctionRepository.findById(auctionId)
