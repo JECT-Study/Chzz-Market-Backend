@@ -26,6 +26,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.util.QuerydslOrder;
+import org.chzz.market.common.util.QuerydslOrderProvider;
 import org.chzz.market.domain.auction.dto.AuctionResponse;
 import org.chzz.market.domain.auction.dto.QAuctionResponse;
 import org.chzz.market.domain.image.entity.QImage;
@@ -37,6 +38,7 @@ import org.springframework.data.support.PageableExecutionUtils;
 @RequiredArgsConstructor
 public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
     private final JPAQueryFactory jpaQueryFactory;
+    private final QuerydslOrderProvider querydslOrderProvider;
 
     @Override
     public Page<AuctionResponse> findAuctionsByCategory(Category category, Long userId,
@@ -61,7 +63,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                 ))
                 .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId(imageSub))))
                 .groupBy(auction.id, product.name, image.cdnPath, auction.createdAt, auction.minPrice)
-                .orderBy(QuerydslOrder.getOrderSpecifiers(pageable, AuctionOrder.class))
+                .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();

@@ -19,6 +19,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.util.QuerydslOrder;
+import org.chzz.market.common.util.QuerydslOrderProvider;
 import org.chzz.market.domain.bid.dto.query.BiddingRecord;
 import org.chzz.market.domain.bid.dto.query.QBiddingRecord;
 import org.chzz.market.domain.image.entity.QImage;
@@ -30,13 +31,14 @@ import org.springframework.data.support.PageableExecutionUtils;
 @RequiredArgsConstructor
 public class BidRepositoryCustomImpl implements BidRepositoryCustom {
     private final JPAQueryFactory jpaQueryFactory;
+    private final QuerydslOrderProvider querydslOrderProvider;
 
     public Page<BiddingRecord> findUsersBidHistory(User user, Pageable pageable) {
         QImage firstImage = new QImage("firstImage");
 
         JPQLQuery<BiddingRecord> baseQuery = getBaseQuery(firstImage, user);
         List<BiddingRecord> content = baseQuery
-                .orderBy(QuerydslOrder.getOrderSpecifiers(pageable, BidOrder.class))
+                .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
