@@ -101,7 +101,6 @@ class BidRepositoryCustomImplTest {
                 .build();
         Auction auction1 = Auction.builder()
                 .product(product1)
-                .participantCount(3L)
                 .minPrice(1000L)
                 .status(Status.DEFAULT)
                 .winnerId(2L)
@@ -109,7 +108,6 @@ class BidRepositoryCustomImplTest {
 
         Auction auction2 = Auction.builder()
                 .product(product2)
-                .participantCount(3L)
                 .minPrice(1000L)
                 .status(Status.DEFAULT)
                 .winnerId(2L)

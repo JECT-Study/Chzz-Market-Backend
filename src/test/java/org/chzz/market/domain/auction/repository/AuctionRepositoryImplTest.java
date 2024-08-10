@@ -63,13 +63,10 @@ class AuctionRepositoryImplTest {
         productRepository.saveAll(List.of(product1, product2, product3));
 
         Auction auction1 = Auction.builder().product(product1).minPrice(1000L).status(Auction.Status.PROCEEDING)
-                .participantCount(1L)
                 .build();
         Auction auction2 = Auction.builder().product(product2).minPrice(2000L).status(Auction.Status.PROCEEDING)
-                .participantCount(1L)
                 .build();
         Auction auction3 = Auction.builder().product(product3).minPrice(3000L).status(Auction.Status.PROCEEDING)
-                .participantCount(1L)
                 .build();
         auctionRepository.saveAll(List.of(auction1, auction2, auction3));
 
@@ -83,7 +80,13 @@ class AuctionRepositoryImplTest {
         Bid bid2 = Bid.builder().bidder(user2).auction(auction1).amount(3000L).count(1).build();
         Bid bid3 = Bid.builder().bidder(user1).auction(auction2).amount(4000L).count(2).build();
         Bid bid4 = Bid.builder().bidder(user2).auction(auction3).amount(5000L).count(4).build();
+
         bidRepository.saveAll(List.of(bid1, bid2, bid3, bid4));
+
+        auction1.registerBid(bid1);
+        auction1.registerBid(bid2);
+        auction2.registerBid(bid3);
+        auction3.registerBid(bid4);
     }
 
     @AfterEach
