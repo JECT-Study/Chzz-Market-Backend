@@ -40,7 +40,7 @@ public class ImageService {
     public List<String> uploadImages(List<MultipartFile> images) {
         List<String> uploadedUrls = images.stream()
                 .map(this::uploadImage)
-                .collect(Collectors.toList());
+                .toList();
 
         uploadedUrls.forEach(url -> logger.info("업로드 된 이미지 : {}", getFullImageUrl(url)));
 
@@ -59,14 +59,13 @@ public class ImageService {
      */
     @Transactional
     public void saveProductImageEntities(Product product, List<String> cdnPaths) {
-        cdnPaths.forEach(cdnPath -> {
-            Image imageEntity = Image.builder()
-                    .cdnPath(cdnPath)
-                    .product(product)
-                    .build();
-            imageRepository.save(imageEntity);
-            logger.info("상품에 저장된 이미지 Entity {}: {}", product.getId(), getFullImageUrl(cdnPath));
-        });
+        List<Image> images = cdnPaths.stream()
+                .map(cdnPath -> Image.builder()
+                        .cdnPath(cdnPath)
+                        .product(product)
+                        .build())
+                .toList();
+        imageRepository.saveAll(images);
     }
 
     /**
