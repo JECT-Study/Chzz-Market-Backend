@@ -12,17 +12,16 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+
+import lombok.*;
 import org.chzz.market.common.validation.annotation.ThousandMultiple;
-import org.chzz.market.domain.auction.error.AuctionErrorCode;
 import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
 import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.user.entity.User;
+
+import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.*;
+import static org.chzz.market.domain.auction.error.AuctionErrorCode.*;
 
 @Getter
 @Entity
@@ -57,7 +56,7 @@ public class Auction extends BaseTimeEntity {
 
     // 경매가 진행 중인지 확인
     public boolean isProceeding() {
-        return status == AuctionStatus.PROCEEDING;
+        return status == PROCEEDING;
     }
 
     // 경매가 종료되었는지 확인
@@ -81,11 +80,10 @@ public class Auction extends BaseTimeEntity {
         private final String description;
     }
 
-    // 대기 중 -> 진행 중 상태 변경
-    public void convertToProceeding() {
-        if (this.status != AuctionStatus.PENDING) {
-            throw new AuctionException(AuctionErrorCode.INVALID_AUCTION_STATE);
+    public void start() {
+        if (this.status != PENDING) {
+            throw new AuctionException(INVALID_AUCTION_STATE);
         }
-        this.status = AuctionStatus.PROCEEDING;
+        this.status = PROCEEDING;
     }
 }

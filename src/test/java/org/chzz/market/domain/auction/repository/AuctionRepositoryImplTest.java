@@ -68,10 +68,10 @@ class AuctionRepositoryImplTest {
         user3 = User.builder().providerId("123456").nickname("닉네임3").email("asd12@naver.com").build();
         userRepository.saveAll(List.of(user1, user2, user3));
 
-        product1 = builder().user(user1).name("제품1").category(Category.FASHION_AND_CLOTHING).minPrice(1000).status(ProductStatus.PRE_REGISTERED).build();
-        product2 = builder().user(user1).name("제품2").category(Category.BOOKS_AND_MEDIA).minPrice(1000).status(ProductStatus.PRE_REGISTERED).build();
-        product3 = builder().user(user2).name("제품3").category(Category.FASHION_AND_CLOTHING).minPrice(1000).status(ProductStatus.PRE_REGISTERED).build();
-        product4 = builder().user(user2).name("제품4").category(Category.FASHION_AND_CLOTHING).minPrice(1000).status(ProductStatus.PRE_REGISTERED).build();
+        product1 = builder().user(user1).name("제품1").category(Category.FASHION_AND_CLOTHING).build();
+        product2 = builder().user(user1).name("제품2").category(Category.BOOKS_AND_MEDIA).build();
+        product3 = builder().user(user2).name("제품3").category(Category.FASHION_AND_CLOTHING).build();
+        product4 = builder().user(user2).name("제품4").category(Category.FASHION_AND_CLOTHING).build();
         productRepository.saveAll(List.of(product1, product2, product3, product4));
 
         auction1 = Auction.builder().product(product1).minPrice(1000).status(AuctionStatus.PROCEEDING)

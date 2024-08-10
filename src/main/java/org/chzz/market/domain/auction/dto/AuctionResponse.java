@@ -4,6 +4,7 @@ import com.querydsl.core.annotations.QueryProjection;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import lombok.Getter;
+import org.chzz.market.domain.auction.entity.Auction;
 
 /**
  * 진행중인 경매 목록 조회 DTO
