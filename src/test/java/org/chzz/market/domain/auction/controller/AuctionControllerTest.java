@@ -2,9 +2,9 @@ package org.chzz.market.domain.auction.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.chzz.market.common.AWSConfig;
-import org.chzz.market.domain.auction.dto.RegisterRequest;
-import org.chzz.market.domain.auction.dto.RegisterResponse;
-import org.chzz.market.domain.auction.dto.StartResponse;
+import org.chzz.market.domain.auction.dto.RegisterAuctionRequest;
+import org.chzz.market.domain.auction.dto.RegisterAuctionResponse;
+import org.chzz.market.domain.auction.dto.StartAuctionResponse;
 import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.auction.service.AuctionService;
 import org.chzz.market.domain.user.error.UserErrorCode;
@@ -79,7 +79,7 @@ public class AuctionControllerTest {
         @WithMockUser(username = "tester", roles = "USER")
         @DisplayName("1. 유효한 요청으로 경매 상품 등록 성공 응답")
         void registerAuction_Success() throws Exception {
-            RegisterRequest validRequest = RegisterRequest.builder()
+            RegisterAuctionRequest validRequest = RegisterAuctionRequest.builder()
                     .userId(1L)
                     .productName("테스트 상품")
                     .description("테스트 설명")
@@ -88,8 +88,8 @@ public class AuctionControllerTest {
                     .status(PROCEEDING)
                     .build();
 
-            RegisterResponse response = new RegisterResponse(1L, 1L, PROCEEDING, "success");
-            when(auctionService.register(any(RegisterRequest.class))).thenReturn(response);
+            RegisterAuctionResponse response = new RegisterAuctionResponse(1L, 1L, PROCEEDING, "success");
+            when(auctionService.register(any(RegisterAuctionRequest.class))).thenReturn(response);
 
             mockMvc.perform(multipart("/api/v1/auctions/register")
                     .file(image1).file(image2).file(image3)
@@ -110,13 +110,13 @@ public class AuctionControllerTest {
                     .andExpect(jsonPath("$.message").value("success"))
                     .andExpect(status().isCreated());
 
-            verify(auctionService).register(any(RegisterRequest.class));
+            verify(auctionService).register(any(RegisterAuctionRequest.class));
         }
 
         @Test
         @DisplayName("2. 존재하지 않는 사용자로 경매 상품 등록 실패")
         void registerAuction_UserNotFound() throws Exception {
-            RegisterRequest inValidRequest = RegisterRequest.builder()
+            RegisterAuctionRequest inValidRequest = RegisterAuctionRequest.builder()
                     .userId(100L)
                     .productName("테스트 상품")
                     .description("테스트 설명")
@@ -125,7 +125,7 @@ public class AuctionControllerTest {
                     .status(PROCEEDING)
                     .build();
 
-            when(auctionService.register(any(RegisterRequest.class))).thenThrow(new UserException(UserErrorCode.USER_NOT_FOUND));
+            when(auctionService.register(any(RegisterAuctionRequest.class))).thenThrow(new UserException(UserErrorCode.USER_NOT_FOUND));
 
             mockMvc.perform(multipart("/api/v1/auctions/register")
                     .file(image1).file(image2).file(image3)
@@ -148,7 +148,7 @@ public class AuctionControllerTest {
         @WithMockUser(username = "tester", roles = "USER")
         @DisplayName("1. 유효한 요청으로 상품 사전 등록 성공 응답")
         void preRegisterAuction_Success() throws Exception {
-            RegisterRequest validRequest = RegisterRequest.builder()
+            RegisterAuctionRequest validRequest = RegisterAuctionRequest.builder()
                     .userId(1L)
                     .productName("테스트 상품")
                     .description("테스트 설명")
@@ -157,8 +157,8 @@ public class AuctionControllerTest {
                     .status(PENDING)
                     .build();
 
-            RegisterResponse response = new RegisterResponse(1L, 1L, PENDING, "success");
-            when(auctionService.register(any(RegisterRequest.class))).thenReturn(response);
+            RegisterAuctionResponse response = new RegisterAuctionResponse(1L, 1L, PENDING, "success");
+            when(auctionService.register(any(RegisterAuctionRequest.class))).thenReturn(response);
 
             mockMvc.perform(multipart("/api/v1/auctions/register")
                     .file(image1).file(image2).file(image3)
@@ -179,13 +179,13 @@ public class AuctionControllerTest {
                     .andExpect(jsonPath("$.message").value("success"))
                     .andExpect(status().isCreated());
 
-            verify(auctionService).register(any(RegisterRequest.class));
+            verify(auctionService).register(any(RegisterAuctionRequest.class));
         }
 
         @Test
         @DisplayName("2. 존재하지 않는 사용자로 상품 사전 등록 실패")
         void registerAuction_UserNotFound() throws Exception {
-            RegisterRequest inValidRequest = RegisterRequest.builder()
+            RegisterAuctionRequest inValidRequest = RegisterAuctionRequest.builder()
                     .userId(999L)
                     .productName("테스트 상품")
                     .description("테스트 설명")
@@ -194,7 +194,7 @@ public class AuctionControllerTest {
                     .status(PENDING)
                     .build();
 
-            when(auctionService.register(any(RegisterRequest.class))).thenThrow(new UserException(UserErrorCode.USER_NOT_FOUND));
+            when(auctionService.register(any(RegisterAuctionRequest.class))).thenThrow(new UserException(UserErrorCode.USER_NOT_FOUND));
 
             mockMvc.perform(multipart("/api/v1/auctions/register")
                             .file(image1).file(image2).file(image3)
@@ -220,7 +220,7 @@ public class AuctionControllerTest {
             Long auctionId = 1L;
             Long productId = 1L;
             LocalDateTime endTime = now().plusHours(24);
-            StartResponse response = StartResponse.of(auctionId, productId, PROCEEDING, endTime);
+            StartAuctionResponse response = StartAuctionResponse.of(auctionId, productId, PROCEEDING, endTime);
 
             when(auctionService.startAuction(eq(auctionId), any())).thenReturn(response);
 
@@ -272,7 +272,7 @@ public class AuctionControllerTest {
         LocalDateTime startTime = now();
         LocalDateTime endTime = now().plusHours(24);
 
-        StartResponse response = StartResponse.of(auctionId, productId, PROCEEDING, endTime);
+        StartAuctionResponse response = StartAuctionResponse.of(auctionId, productId, PROCEEDING, endTime);
         when(auctionService.startAuction(eq(auctionId), any())).thenReturn(response);
 
         MvcResult result = mockMvc.perform(post("/api/v1/auctions/{auctionId}/start", auctionId)
@@ -286,7 +286,7 @@ public class AuctionControllerTest {
                 .andReturn();
 
         String content = result.getResponse().getContentAsString();
-        StartResponse returnedResponse = objectMapper.readValue(content, StartResponse.class);
+        StartAuctionResponse returnedResponse = objectMapper.readValue(content, StartAuctionResponse.class);
 
         assertThat(returnedResponse.endTime()).isAfter(startTime);
         assertThat(ChronoUnit.HOURS.between(startTime, returnedResponse.endTime())).isEqualTo(24);

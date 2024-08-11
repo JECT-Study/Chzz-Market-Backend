@@ -13,9 +13,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.chzz.market.domain.auction.dto.AuctionDetailsResponse;
-import org.chzz.market.domain.auction.dto.RegisterRequest;
-import org.chzz.market.domain.auction.dto.RegisterResponse;
-import org.chzz.market.domain.auction.dto.StartResponse;
+import org.chzz.market.domain.auction.dto.RegisterAuctionRequest;
+import org.chzz.market.domain.auction.dto.RegisterAuctionResponse;
+import org.chzz.market.domain.auction.dto.StartAuctionResponse;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
@@ -61,7 +61,7 @@ class AuctionServiceTest {
     private AuctionTestFactory auctionTestFactory;
     private UserTestFactory userTestFactory;
 
-    private RegisterRequest validRequest, InvalidRequest;
+    private RegisterAuctionRequest validRequest, InvalidRequest;
 
     @BeforeEach
     void setUp() {
@@ -112,7 +112,7 @@ class AuctionServiceTest {
 
             List<MultipartFile> images = List.of(mockFile, mockFile2);
 
-            RegisterRequest validRequest = RegisterRequest.builder()
+            RegisterAuctionRequest validRequest = RegisterAuctionRequest.builder()
                     .userId(user.getId())
                     .productName("테스트 상품")
                     .description("테스트 상품 설명")
@@ -123,7 +123,7 @@ class AuctionServiceTest {
                     .build();
 
             // when
-            RegisterResponse response = auctionService.register(validRequest);
+            RegisterAuctionResponse response = auctionService.register(validRequest);
 
             // then
             assertNotNull(response);
@@ -159,7 +159,7 @@ class AuctionServiceTest {
 
             List<MultipartFile> images = List.of(mockFile, mockFile2);
 
-            RegisterRequest invalidRequest = RegisterRequest.builder()
+            RegisterAuctionRequest invalidRequest = RegisterAuctionRequest.builder()
                     .userId(999L)
                     .productName("테스트 상품")
                     .description("테스트 상품 설명")
@@ -222,7 +222,7 @@ class AuctionServiceTest {
 
             List<MultipartFile> images = List.of(mockFile, mockFile2);
 
-            RegisterRequest validRequest = RegisterRequest.builder()
+            RegisterAuctionRequest validRequest = RegisterAuctionRequest.builder()
                     .userId(user.getId())
                     .productName("테스트 상품")
                     .description("테스트 상품 설명")
@@ -233,7 +233,7 @@ class AuctionServiceTest {
                     .build();
 
             // when
-            RegisterResponse response = auctionService.register(validRequest);
+            RegisterAuctionResponse response = auctionService.register(validRequest);
 
             // then
             assertNotNull(response);
@@ -269,7 +269,7 @@ class AuctionServiceTest {
 
             List<MultipartFile> images = List.of(mockFile, mockFile2);
 
-            RegisterRequest invalidRequest = RegisterRequest.builder()
+            RegisterAuctionRequest invalidRequest = RegisterAuctionRequest.builder()
                     .userId(999L)
                     .productName("테스트 상품")
                     .description("테스트 상품 설명")
@@ -319,7 +319,7 @@ class AuctionServiceTest {
 
             List<MultipartFile> images = List.of(mockFile, mockFile2);
 
-            RegisterRequest validRequest = RegisterRequest.builder()
+            RegisterAuctionRequest validRequest = RegisterAuctionRequest.builder()
                     .userId(user.getId())
                     .productName("테스트 상품")
                     .description("테스트 상품 설명")
@@ -336,10 +336,9 @@ class AuctionServiceTest {
             ReflectionTestUtils.setField(pendingAuction, "status", PENDING);
 
             when(auctionRepository.findById(auctionId)).thenReturn(Optional.of(pendingAuction));
-            when(auctionRepository.save(any(Auction.class))).thenAnswer(invocation -> invocation.<Auction>getArgument(0));
 
             // when
-            StartResponse response = auctionService.startAuction(auctionId, userId);
+            StartAuctionResponse response = auctionService.startAuction(auctionId, userId);
 
             // Then
             assertNotNull(response);
@@ -350,7 +349,6 @@ class AuctionServiceTest {
             assertTrue(response.endTime().isAfter(startTime));
 
             verify(auctionRepository).findById(auctionId);
-            verify(auctionRepository).save(any(Auction.class));
         }
 
         @Test
@@ -394,7 +392,7 @@ class AuctionServiceTest {
 
             List<MultipartFile> images = List.of(mockFile, mockFile2);
 
-            RegisterRequest validRequest = RegisterRequest.builder()
+            RegisterAuctionRequest validRequest = RegisterAuctionRequest.builder()
                     .userId(user.getId())
                     .productName("테스트 상품")
                     .description("테스트 상품 설명")
@@ -441,7 +439,7 @@ class AuctionServiceTest {
 
             List<MultipartFile> images = List.of(mockFile, mockFile2);
 
-            RegisterRequest validRequest = RegisterRequest.builder()
+            RegisterAuctionRequest validRequest = RegisterAuctionRequest.builder()
                     .userId(user.getId())
                     .productName("테스트 상품")
                     .description("테스트 상품 설명")
@@ -468,7 +466,6 @@ class AuctionServiceTest {
         @DisplayName("5. 종료된 경매 상품 전환 시도 실패")
         void startAuction_Ended() {
             // Given
-            // given
             Long auctionId = 1L;
             Long userId = 1L;
             User user = UserTestFactory.createUser(1L, "seller", "test@naver.com");
@@ -488,7 +485,7 @@ class AuctionServiceTest {
 
             List<MultipartFile> images = List.of(mockFile, mockFile2);
 
-            RegisterRequest validRequest = RegisterRequest.builder()
+            RegisterAuctionRequest validRequest = RegisterAuctionRequest.builder()
                     .userId(user.getId())
                     .productName("테스트 상품")
                     .description("테스트 상품 설명")

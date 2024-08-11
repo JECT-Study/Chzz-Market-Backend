@@ -20,7 +20,7 @@ import static org.chzz.market.domain.product.entity.Product.*;
 @Setter
 @AllArgsConstructor
 @Builder
-public class RegisterRequest {
+public class RegisterAuctionRequest {
     @NotNull
     private Long userId;
 

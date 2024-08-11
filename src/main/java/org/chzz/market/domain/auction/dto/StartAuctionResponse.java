@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 /**
  * 경매 시작 (사전 등록 -> 경매 등록 전환) DTO
  */
-public record StartResponse (
+public record StartAuctionResponse(
         Long auctionId,
         Long productId,
         AuctionStatus status,
@@ -16,7 +16,7 @@ public record StartResponse (
 ) {
     private static final String DEFAULT_SUCCESS_MESSAGE = "경매가 성공적으로 시작되었습니다.";
 
-    public static StartResponse of(Long auctionId, Long productId, AuctionStatus status, LocalDateTime endTime) {
-        return new StartResponse(auctionId, productId, status, endTime, DEFAULT_SUCCESS_MESSAGE);
+    public static StartAuctionResponse of(Long auctionId, Long productId, AuctionStatus status, LocalDateTime endTime) {
+        return new StartAuctionResponse(auctionId, productId, status, endTime, DEFAULT_SUCCESS_MESSAGE);
     }
 }

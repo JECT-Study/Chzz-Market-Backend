@@ -1,7 +1,5 @@
 package org.chzz.market.util;
 
-import org.chzz.market.domain.auction.dto.RegisterRequest;
-import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.user.entity.User;
 import org.springframework.test.util.ReflectionTestUtils;
 
