@@ -52,7 +52,6 @@ class BidRepositoryCustomImplTest {
 
     private User bidder1;
     private User bidder2;
-    private User seller;
 
     @BeforeEach
     void setUp() {
@@ -72,7 +71,7 @@ class BidRepositoryCustomImplTest {
                 .providerId("098327")
                 .build();
 
-        seller = User.builder()
+        User seller = User.builder()
                 .nickname("seller")
                 .providerType(ProviderType.KAKAO)
                 .email("bbb11@gmail.com")
