@@ -54,8 +54,8 @@ public class AuctionController {
 
     // 경매 상품으로 전환
     @PostMapping("/{auctionId}/start")
-    public ResponseEntity<StartResponse> startAuction(@PathVariable Long auctionId) {
-        StartResponse response = auctionService.startAuction(auctionId);
+    public ResponseEntity<StartResponse> startAuction(@PathVariable Long auctionId, Long userId) {
+        StartResponse response = auctionService.startAuction(auctionId, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }
