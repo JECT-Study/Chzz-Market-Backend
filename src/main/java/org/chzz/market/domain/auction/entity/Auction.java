@@ -1,5 +1,7 @@
 package org.chzz.market.domain.auction.entity;
 
+import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_ENDED;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -18,6 +20,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.chzz.market.common.validation.annotation.ThousandMultiple;
+import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
 import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.user.entity.User;
@@ -53,14 +56,11 @@ public class Auction extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    // 경매가 진행 중인지 확인
-    public boolean isProceeding() {
-        return status == Status.PROCEEDING;
-    }
-
-    // 경매가 종료되었는지 확인
-    public boolean isEnded() {
-        return LocalDateTime.now().isAfter(endDateTime);
+    public void validateAuctionEndTime() {
+        // 경매가 진행중이 아닐 때
+        if (status != Status.PROCEEDING || LocalDateTime.now().isAfter(endDateTime)) {
+            throw new AuctionException(AUCTION_ENDED);
+        }
     }
 
     // 입찰 금액이 최소 금액 이상인지 확인
