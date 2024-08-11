@@ -42,9 +42,9 @@ public class AuctionController {
      * 상품 등록
      */
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<RegisterAuctionResponse> createAuction(@ModelAttribute @Valid RegisterAuctionRequest request) {
+    public ResponseEntity<RegisterAuctionResponse> registerAuction(@ModelAttribute @Valid RegisterAuctionRequest request) {
 
-        RegisterAuctionResponse response = auctionService.register(request);
+        RegisterAuctionResponse response = auctionService.registerAuction(request);
         logger.info("상품이 성공적으로 등록되었습니다. 상품 ID: {}", response.productId());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);

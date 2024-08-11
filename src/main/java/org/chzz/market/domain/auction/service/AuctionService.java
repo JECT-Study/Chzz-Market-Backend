@@ -48,7 +48,7 @@ public class AuctionService {
      * 상품 등록 (사전 등록 & 경매 등록)
      */
     @Transactional
-    public RegisterAuctionResponse register(RegisterAuctionRequest request) {
+    public RegisterAuctionResponse registerAuction(RegisterAuctionRequest request) {
         // 유저 유효성 검사
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> {
@@ -59,13 +59,13 @@ public class AuctionService {
         // 상품 테이블 등록
         // Product product = request.toProductEntity();
         Product product = createProduct(request, user);
-        productRepository.save(product);
+
         logger.info("상품이 상품 테이블에 저장되었습니다. 상품 ID : {}", product.getId());
 
         // 경매 테이블 등록
         // Auction auction = request.toAuctionEntity(product, initialStatus);
         Auction auction = createAuction(product, request, request.getStatus());
-        auctionRepository.save(auction);
+
         logger.info("상품이 경매 테이블에 저장되었습니다. 최종 경매 상태 : {}", auction.getStatus());
 
         // 이미지 처리
