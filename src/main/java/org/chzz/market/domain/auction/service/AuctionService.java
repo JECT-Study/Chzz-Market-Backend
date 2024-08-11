@@ -48,7 +48,7 @@ public class AuctionService {
      * 상품 등록 (사전 등록 & 경매 등록)
      */
     @Transactional
-    public RegisterResponse register(RegisterRequest request) {
+    public RegisterAuctionResponse register(RegisterAuctionRequest request) {
         // 유저 유효성 검사
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> {
@@ -74,7 +74,7 @@ public class AuctionService {
             imageService.saveProductImageEntities(product, imageUrls);
         }
 
-        return RegisterResponse.of(product.getId(), auction.getId(), auction.getStatus());
+        return RegisterAuctionResponse.of(product.getId(), auction.getId(), auction.getStatus());
     }
 
     /**
@@ -82,7 +82,7 @@ public class AuctionService {
      * TODO: 추후에 인증된 사용자 정보로 수정 필요
      */
     @Transactional
-    public StartResponse startAuction(Long auctionId, Long userId) {
+    public StartAuctionResponse startAuction(Long auctionId, Long userId) {
         logger.info("사전 등록 상품을 경매 등록 상품으로 전환하기 시작합니다. 경매 ID: {}", auctionId);
         // 상품 유효성 검사
         Auction auction = auctionRepository.findById(auctionId)
@@ -109,14 +109,16 @@ public class AuctionService {
         // 상품 경매 시작 처리 및 저장
         auction.start(endTime);
         logger.info("경매가 시작되었습니다. 현재 경매 상태 : {}", auction.getStatus());
-        Auction savedAuction = auctionRepository.save(auction);
+
+        // 변경 사항은 트랜잭션 커밋 시 자동으로 DB 반영!
+        // Auction savedAuction = auctionRepository.save(auction);
         logger.info("경매 상품이 저장되었습니다. 최종 경매 상태 : {}", auction.getStatus());
 
-        return StartResponse.of(
-                savedAuction.getId(),
-                savedAuction.getProduct().getId(),
-                savedAuction.getStatus(),
-                savedAuction.getEndDateTime()
+        return StartAuctionResponse.of(
+                auction.getId(),
+                auction.getProduct().getId(),
+                auction.getStatus(),
+                auction.getEndDateTime()
         );
     }
 
@@ -136,7 +138,7 @@ public class AuctionService {
     }
 
     // TODO: createProduct, createAuction 메서드 추후 로그인 기능 병합 이후 toEntity 로 수정
-    private Product createProduct(RegisterRequest request, User user) {
+    private Product createProduct(RegisterAuctionRequest request, User user) {
         return Product.builder()
                 .user(user)
                 .name(request.getProductName())
@@ -145,7 +147,7 @@ public class AuctionService {
                 .build();
     }
 
-    private Auction createAuction(Product product, RegisterRequest request, AuctionStatus status) {
+    private Auction createAuction(Product product, RegisterAuctionRequest request, AuctionStatus status) {
         return Auction.builder()
                 .product(product)
                 .minPrice(request.getMinPrice())
