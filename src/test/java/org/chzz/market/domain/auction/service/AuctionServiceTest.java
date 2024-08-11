@@ -57,9 +57,6 @@ class AuctionServiceTest {
     @InjectMocks
     private AuctionService auctionService;
 
-    @InjectMocks
-    private RegisterServiceImpl registerServiceImpl;
-
     private ProductTestFactory productTestFactory;
     private AuctionTestFactory auctionTestFactory;
     private UserTestFactory userTestFactory;
@@ -126,7 +123,7 @@ class AuctionServiceTest {
                     .build();
 
             // when
-            RegisterResponse response = registerServiceImpl.register(validRequest);
+            RegisterResponse response = auctionService.register(validRequest);
 
             // then
             assertNotNull(response);
@@ -174,7 +171,7 @@ class AuctionServiceTest {
 
             // When & Then
             assertThrows(UserException.class, () -> {
-                registerServiceImpl.register(invalidRequest);
+                auctionService.register(invalidRequest);
             });
 
             // verify
@@ -236,7 +233,7 @@ class AuctionServiceTest {
                     .build();
 
             // when
-            RegisterResponse response = registerServiceImpl.register(validRequest);
+            RegisterResponse response = auctionService.register(validRequest);
 
             // then
             assertNotNull(response);
@@ -284,7 +281,7 @@ class AuctionServiceTest {
 
             // When & Then
             assertThrows(UserException.class, () -> {
-                registerServiceImpl.register(invalidRequest);
+                auctionService.register(invalidRequest);
             });
 
             // verify

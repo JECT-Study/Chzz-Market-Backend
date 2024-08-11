@@ -7,7 +7,6 @@ import org.chzz.market.domain.auction.dto.RegisterResponse;
 import org.chzz.market.domain.auction.dto.StartResponse;
 import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.auction.service.AuctionService;
-import org.chzz.market.domain.auction.service.RegisterService;
 import org.chzz.market.domain.user.error.UserErrorCode;
 import org.chzz.market.domain.user.error.exception.UserException;
 import org.chzz.market.domain.user.repository.UserRepository;
@@ -54,9 +53,6 @@ public class AuctionControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private RegisterService registerService;
-
-    @MockBean
     private AuctionService auctionService;
 
     @Autowired
@@ -93,7 +89,7 @@ public class AuctionControllerTest {
                     .build();
 
             RegisterResponse response = new RegisterResponse(1L, 1L, PROCEEDING, "success");
-            when(registerService.register(any(RegisterRequest.class))).thenReturn(response);
+            when(auctionService.register(any(RegisterRequest.class))).thenReturn(response);
 
             mockMvc.perform(multipart("/api/v1/auctions/register")
                     .file(image1).file(image2).file(image3)
@@ -114,7 +110,7 @@ public class AuctionControllerTest {
                     .andExpect(jsonPath("$.message").value("success"))
                     .andExpect(status().isCreated());
 
-            verify(registerService).register(any(RegisterRequest.class));
+            verify(auctionService).register(any(RegisterRequest.class));
         }
 
         @Test
@@ -129,7 +125,7 @@ public class AuctionControllerTest {
                     .status(PROCEEDING)
                     .build();
 
-            when(registerService.register(any(RegisterRequest.class))).thenThrow(new UserException(UserErrorCode.USER_NOT_FOUND));
+            when(auctionService.register(any(RegisterRequest.class))).thenThrow(new UserException(UserErrorCode.USER_NOT_FOUND));
 
             mockMvc.perform(multipart("/api/v1/auctions/register")
                     .file(image1).file(image2).file(image3)
@@ -162,7 +158,7 @@ public class AuctionControllerTest {
                     .build();
 
             RegisterResponse response = new RegisterResponse(1L, 1L, PENDING, "success");
-            when(registerService.register(any(RegisterRequest.class))).thenReturn(response);
+            when(auctionService.register(any(RegisterRequest.class))).thenReturn(response);
 
             mockMvc.perform(multipart("/api/v1/auctions/register")
                     .file(image1).file(image2).file(image3)
@@ -183,7 +179,7 @@ public class AuctionControllerTest {
                     .andExpect(jsonPath("$.message").value("success"))
                     .andExpect(status().isCreated());
 
-            verify(registerService).register(any(RegisterRequest.class));
+            verify(auctionService).register(any(RegisterRequest.class));
         }
 
         @Test
@@ -198,7 +194,7 @@ public class AuctionControllerTest {
                     .status(PENDING)
                     .build();
 
-            when(registerService.register(any(RegisterRequest.class))).thenThrow(new UserException(UserErrorCode.USER_NOT_FOUND));
+            when(auctionService.register(any(RegisterRequest.class))).thenThrow(new UserException(UserErrorCode.USER_NOT_FOUND));
 
             mockMvc.perform(multipart("/api/v1/auctions/register")
                             .file(image1).file(image2).file(image3)
