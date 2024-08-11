@@ -1,4 +1,4 @@
-package org.chzz.market.common.confing;
+package org.chzz.market.common.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.retry.annotation.EnableRetry;

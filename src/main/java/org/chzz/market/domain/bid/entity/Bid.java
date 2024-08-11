@@ -1,5 +1,7 @@
 package org.chzz.market.domain.bid.entity;
 
+import static org.chzz.market.domain.bid.error.BidErrorCode.BID_LIMIT_EXCEEDED;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -16,6 +18,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
+import org.chzz.market.domain.bid.error.BidException;
 import org.chzz.market.domain.user.entity.User;
 import org.hibernate.annotations.ColumnDefault;
 
@@ -31,15 +34,15 @@ import org.hibernate.annotations.ColumnDefault;
 public class Bid extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="bid_id")
+    @Column(name = "bid_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id",nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User bidder;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "auction_id",nullable = false)
+    @JoinColumn(name = "auction_id", nullable = false)
     private Auction auction;
 
     @Column(nullable = false)
@@ -47,7 +50,8 @@ public class Bid extends BaseTimeEntity {
 
     @Column(nullable = false)
     @ColumnDefault(value = "3")
-    private int count;
+    @Builder.Default
+    private int count = 3;
 
 
     public void specifyAuction(Auction auction) {
