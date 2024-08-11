@@ -57,7 +57,7 @@ public class Bid extends BaseTimeEntity {
     private int count = 3;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(columnDefinition = "varchar(255)")
     @Builder.Default
     private BidStatus status = BidStatus.ACTIVE;
 
