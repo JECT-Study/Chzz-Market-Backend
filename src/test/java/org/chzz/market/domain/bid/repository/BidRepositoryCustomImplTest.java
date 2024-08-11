@@ -52,6 +52,7 @@ class BidRepositoryCustomImplTest {
 
     private User bidder1;
     private User bidder2;
+    private User seller;
 
     @BeforeEach
     void setUp() {
@@ -71,7 +72,7 @@ class BidRepositoryCustomImplTest {
                 .providerId("098327")
                 .build();
 
-        User seller = User.builder()
+        seller = User.builder()
                 .nickname("seller")
                 .providerType(ProviderType.KAKAO)
                 .email("bbb11@gmail.com")
@@ -79,14 +80,14 @@ class BidRepositoryCustomImplTest {
                 .providerId("2222")
                 .build();
         Product product1 = Product.builder()
-                .category(Category.DEFAULT)
+                .category(Category.OTHER)
                 .description("asd")
                 .name("asd")
                 .user(seller)
                 .build();
 
         Product product2 = Product.builder()
-                .category(Category.BOOK)
+                .category(Category.BOOKS_AND_MEDIA)
                 .description("asd")
                 .name("asd")
                 .user(seller)
@@ -101,15 +102,15 @@ class BidRepositoryCustomImplTest {
                 .build();
         Auction auction1 = Auction.builder()
                 .product(product1)
-                .minPrice(1000L)
-                .status(Status.DEFAULT)
+                .minPrice(1000)
+                .status(Status.PROCEEDING)
                 .winnerId(2L)
                 .build();
 
         Auction auction2 = Auction.builder()
                 .product(product2)
-                .minPrice(1000L)
-                .status(Status.DEFAULT)
+                .minPrice(1000)
+                .status(Status.PROCEEDING)
                 .winnerId(2L)
                 .build();
 

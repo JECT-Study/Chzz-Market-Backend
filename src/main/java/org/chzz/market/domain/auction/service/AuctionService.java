@@ -10,7 +10,7 @@ import org.chzz.market.domain.auction.dto.AuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.AuctionResponse;
 import org.chzz.market.domain.auction.dto.request.AuctionCreateRequest;
 import org.chzz.market.domain.auction.entity.Auction;
-import org.chzz.market.domain.auction.entity.SortType;
+
 import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.image.service.ImageService;

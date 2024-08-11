@@ -53,6 +53,13 @@ public class Bid extends BaseTimeEntity {
     @Builder.Default
     private int count = 3;
 
+    public void adjustBidAmount(Long amount) {
+        if (this.count <= 0) {
+            throw new BidException(BID_LIMIT_EXCEEDED);
+        }
+        this.amount = amount; // TODO: 기존 입찰 가격과의 비교
+        this.count--;
+    }
 
     public void specifyAuction(Auction auction) {
         this.auction=auction;

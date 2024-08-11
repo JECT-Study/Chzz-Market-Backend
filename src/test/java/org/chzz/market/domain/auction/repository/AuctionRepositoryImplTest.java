@@ -2,6 +2,8 @@ package org.chzz.market.domain.auction.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -9,6 +11,7 @@ import org.chzz.market.common.DatabaseTest;
 import org.chzz.market.domain.auction.dto.AuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.AuctionResponse;
 import org.chzz.market.domain.auction.entity.Auction;
+import org.chzz.market.domain.auction.entity.Auction.Status;
 import org.chzz.market.domain.bid.entity.Bid;
 import org.chzz.market.domain.bid.repository.BidRepository;
 import org.chzz.market.domain.image.entity.Image;
@@ -18,6 +21,7 @@ import org.chzz.market.domain.product.entity.Product.Category;
 import org.chzz.market.domain.product.repository.ProductRepository;
 import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.repository.UserRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,7 +30,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.transaction.annotation.Transactional;
 
 @DatabaseTest
@@ -47,6 +50,8 @@ class AuctionRepositoryImplTest {
 
     @Autowired
     UserRepository userRepository;
+    @PersistenceContext
+    EntityManager entityManager;
 
     private static User user1, user2, user3;
     private static Product product1, product2, product3, product4;
@@ -121,7 +126,7 @@ class AuctionRepositoryImplTest {
 
         //when
         Page<AuctionResponse> result = auctionRepository.findAuctionsByCategory(
-                Category.FASHION, 1L, pageable);
+                Category.FASHION_AND_CLOTHING, 1L, pageable);
 
         //then
         assertThat(result).isNotNull();

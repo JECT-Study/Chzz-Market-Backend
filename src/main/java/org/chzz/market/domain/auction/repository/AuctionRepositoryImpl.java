@@ -49,7 +49,6 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
      * 카테고리와 정렬 조건에 따라 경매 리스트를 조회합니다.
      *
      * @param category 카테고리
-     * @param sortType 정렬 조건
      * @param userId   사용자 ID
      * @param pageable 페이징 정보
      * @return 페이징된 경매 응답 리스트
@@ -69,11 +68,11 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                         product.name,
                         image.cdnPath,
                         timeRemaining().longValue(),
-                        auction.minPrice,
+                        auction.minPrice.longValue(),
                         bid.countDistinct(),
                         isParticipating(userId)
                 ))
-                .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId(imageSub))))
+                .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId())))
                 .groupBy(auction.id, product.name, image.cdnPath, auction.createdAt, auction.minPrice)
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
@@ -148,6 +147,31 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
         return JPAExpressions.selectFrom(bid)
                 .where(bid.auction.id.eq(auction.id).and(bid.bidder.id.eq(userId)))
                 .exists();
+    }
+
+    /**
+     * 경매 참여자 수를 조회합니다.
+     *
+     * @param auctionId 경매 ID
+     * @return 참여자 수
+     */
+    private JPQLQuery<Long> getBidCount(Long auctionId) {
+        return JPAExpressions.select(bid.count())
+                .from(bid)
+                .where(bid.auction.id.eq(auctionId));
+    }
+
+    /**
+     * 상품의 이미지 리스트를 조회합니다.
+     *
+     * @param productId 상품 ID
+     * @return 이미지 경로 리스트
+     */
+    private List<String> getImageList(Long productId) {
+        return jpaQueryFactory.select(image.cdnPath)
+                .from(image)
+                .where(image.product.id.eq(productId))
+                .fetch();
     }
 
     private static NumberExpression<Integer> timeRemaining() {

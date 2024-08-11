@@ -8,8 +8,8 @@ import lombok.Getter;
  */
 @Getter
 public class AuctionResponse extends BaseAuctionDTO {
-    private Long id;
-    private Boolean isParticipating;
+    private final Long id;
+    private final Boolean isParticipating;
 
     @QueryProjection
     public AuctionResponse(Long id, String name, String cdnPath, Long timeRemaining, Long minPrice,

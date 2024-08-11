@@ -50,7 +50,7 @@ public class BidRepositoryCustomImpl implements BidRepositoryCustom {
         return jpaQueryFactory
                 .select(new QBiddingRecord(
                         product.name,
-                        auction.minPrice,
+                        auction.minPrice.longValue(),
                         bid.amount,
                         auction.bids.size().longValue(),
                         firstImage.cdnPath,

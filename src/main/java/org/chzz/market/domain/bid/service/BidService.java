@@ -1,12 +1,5 @@
 package org.chzz.market.domain.bid.service;
 
-import lombok.RequiredArgsConstructor;
-import org.chzz.market.domain.bid.dto.query.BiddingRecord;
-import org.chzz.market.domain.bid.repository.BidRepository;
-import org.chzz.market.domain.user.entity.User;
-import org.chzz.market.domain.user.repository.UserRepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_ENDED;
 import static org.chzz.market.domain.bid.error.BidErrorCode.BID_BELOW_MIN_PRICE;
 import static org.chzz.market.domain.bid.error.BidErrorCode.BID_BY_OWNER;
@@ -17,11 +10,14 @@ import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.auction.service.AuctionService;
 import org.chzz.market.domain.bid.dto.BidCreateRequest;
+import org.chzz.market.domain.bid.dto.query.BiddingRecord;
 import org.chzz.market.domain.bid.error.BidException;
 import org.chzz.market.domain.bid.repository.BidRepository;
 import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.error.UserException;
 import org.chzz.market.domain.user.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,14 +25,14 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class BidService {
-    private final AuctionService auctionService;}
+    private final AuctionService auctionService;
     private final BidRepository bidRepository;
     private final UserRepository userRepository;//TODO 2024 08 04 14:54:26 : to be removed
 
 
     public Page<BiddingRecord> inquireBidHistory(Pageable pageable) {
-        User user=userRepository.findById(1L).orElseThrow();//TODO 2024 08 04 15:29:29 : to be removed
-        return bidRepository.findUsersBidHistory(user,pageable);
+        User user = userRepository.findById(1L).orElseThrow();//TODO 2024 08 04 15:29:29 : to be removed
+        return bidRepository.findUsersBidHistory(user, pageable);
     }
 
     @Transactional

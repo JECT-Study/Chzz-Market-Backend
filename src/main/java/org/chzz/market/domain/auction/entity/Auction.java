@@ -71,8 +71,6 @@ public class Auction extends BaseTimeEntity {
         return amount >= minPrice;
     }
 
-    @Getter
-    @AllArgsConstructor
     @OneToMany(mappedBy = "auction", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Bid> bids = new ArrayList<>();
 
@@ -95,7 +93,8 @@ public class Auction extends BaseTimeEntity {
     public void removeBid(Bid bid) {
         bids.remove(bid);
     }
-
+    @Getter
+    @AllArgsConstructor
     public enum Status {
         PENDING("대기 중"),
         PROCEEDING("진행 중"),
