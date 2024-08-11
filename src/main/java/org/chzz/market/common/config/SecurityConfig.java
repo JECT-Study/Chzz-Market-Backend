@@ -16,11 +16,10 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(final HttpSecurity http) throws Exception {
-        return http.authorizeHttpRequests(
-                        authorizationManagerRequestMatcherRegistry -> authorizationManagerRequestMatcherRegistry
+        return http.authorizeHttpRequests(authorize -> authorize
                                 .requestMatchers(ACTUATOR).permitAll()
-                                .requestMatchers("api/v1/products/*").permitAll()
-                                .requestMatchers("/api/v1/auctions").permitAll()
+                                .requestMatchers("/error").permitAll()
+                                .requestMatchers("/api/v1/auctions/**").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .headers(header -> header.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable).disable())
