@@ -80,10 +80,8 @@ public class Auction extends BaseTimeEntity {
         private final String description;
     }
 
-    public void start() {
-        if (this.status != PENDING) {
-            throw new AuctionException(INVALID_AUCTION_STATE);
-        }
+    public void start(LocalDateTime endDateTime) {
         this.status = PROCEEDING;
+        this.endDateTime = endDateTime;
     }
 }
