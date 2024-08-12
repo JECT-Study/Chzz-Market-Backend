@@ -15,13 +15,11 @@ import java.time.LocalDateTime;
 
 import lombok.*;
 import org.chzz.market.common.validation.annotation.ThousandMultiple;
-import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
 import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.user.entity.User;
 
 import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.*;
-import static org.chzz.market.domain.auction.error.AuctionErrorCode.*;
 
 @Getter
 @Entity
@@ -53,6 +51,15 @@ public class Auction extends BaseTimeEntity {
     @Column(columnDefinition = "varchar(20)")
     @Enumerated(EnumType.STRING)
     private AuctionStatus status;
+
+    public static Auction toEntity(Product product) {
+        return Auction.builder()
+                .product(product)
+                .minPrice(product.getMinPrice())
+                .status(PROCEEDING)
+                .endDateTime(LocalDateTime.now().plusHours(24))
+                .build();
+    }
 
     // 경매가 진행 중인지 확인
     public boolean isProceeding() {
