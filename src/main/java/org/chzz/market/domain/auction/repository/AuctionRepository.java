@@ -8,4 +8,5 @@ import java.util.Optional;
 
 public interface AuctionRepository extends JpaRepository<Auction, Long>, AuctionRepositoryCustom {
     Optional<Auction> findByProduct(Product product);
+    boolean existsByProductId(Long productId);
 }
