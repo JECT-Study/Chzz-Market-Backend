@@ -86,7 +86,7 @@ class BidRepositoryCustomImplTest {
                 .build();
 
         Product product2 = Product.builder()
-                .category(Category.BOOKS_AND_MEDIA)
+                .category(Category.OTHER)
                 .description("asd")
                 .name("asd")
                 .user(seller)

@@ -92,11 +92,6 @@ class AuctionRepositoryImplTest {
         image4 = Image.builder().product(product3).cdnPath("path/to/image3.jpg").build();
         imageRepository.saveAll(List.of(image1, image2, image3, image4));
 
-        Bid bid1 = Bid.builder().bidder(user1).auction(auction1).amount(2000L).count(3).build();
-        Bid bid2 = Bid.builder().bidder(user2).auction(auction1).amount(3000L).count(1).build();
-        Bid bid3 = Bid.builder().bidder(user1).auction(auction2).amount(4000L).count(2).build();
-        Bid bid4 = Bid.builder().bidder(user2).auction(auction3).amount(5000L).count(4).build();
-
         bid1 = Bid.builder().bidder(user2).auction(auction1).amount(2000L).build();
         bid2 = Bid.builder().bidder(user2).auction(auction2).amount(4000L).build();
         bid3 = Bid.builder().bidder(user1).auction(auction3).amount(5000L).build();
@@ -111,11 +106,11 @@ class AuctionRepositoryImplTest {
 
     @AfterEach
     void tearDown() {
-        entityManager.createNativeQuery("ALTER TABLE Bid ALTER COLUMN bid_id RESTART WITH 1").executeUpdate();
-        entityManager.createNativeQuery("ALTER TABLE Auction ALTER COLUMN auction_id RESTART WITH 1").executeUpdate();
-        entityManager.createNativeQuery("ALTER TABLE Product ALTER COLUMN product_id RESTART WITH 1").executeUpdate();
-        entityManager.createNativeQuery("ALTER TABLE Image ALTER COLUMN image_id RESTART WITH 1").executeUpdate();
-        entityManager.createNativeQuery("ALTER TABLE Users ALTER COLUMN user_id RESTART WITH 1").executeUpdate();
+        auctionRepository.deleteAll();
+        productRepository.deleteAll();
+        imageRepository.deleteAll();
+        bidRepository.deleteAll();
+        userRepository.deleteAll();
     }
 
     @Test
@@ -168,11 +163,11 @@ class AuctionRepositoryImplTest {
     @DisplayName("경매가 없는 경우 조회")
     public void testFindAuctionsByCategoryNoAuctions() throws Exception {
         //given
-        Pageable pageable = PageRequest.of(0, 10,Sort.by("expensive"));
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("expensive"));
 
         //when
         Page<AuctionResponse> result = auctionRepository.findAuctionsByCategory(
-                Category.TOYS_AND_HOBBIES,  1L, pageable);
+                Category.TOYS_AND_HOBBIES, 1L, pageable);
 
         //then
         assertThat(result).isNotNull();
