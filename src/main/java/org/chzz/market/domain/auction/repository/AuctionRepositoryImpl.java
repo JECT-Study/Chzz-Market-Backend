@@ -140,14 +140,14 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                         auction.id,
                         product.name,
                         image.cdnPath,
-                        auction.endDateTime,
-                        auction.minPrice,
+                        timeRemaining().longValue(),
+                        auction.minPrice.longValue(),
                         getBidCount(),
                         auction.status,
                         auction.createdAt))
                 .join(image).on(image.product.id.eq(product.id)
                         .and(image.id.eq(getFirstImageId())))
-//                .orderBy(getOrderSpecifiers(auction, pageable.getSort()))
+                .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
