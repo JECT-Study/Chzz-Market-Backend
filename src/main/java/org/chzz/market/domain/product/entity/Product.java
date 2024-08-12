@@ -21,8 +21,6 @@ import lombok.NoArgsConstructor;
 import org.chzz.market.common.validation.annotation.ThousandMultiple;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
 import org.chzz.market.domain.like.entity.Like;
-import org.chzz.market.domain.product.error.ProductException;
-import org.chzz.market.domain.product.error.ProductErrorCode;
 import org.chzz.market.domain.user.entity.User;
 
 @Getter
@@ -47,6 +45,10 @@ public class Product extends BaseTimeEntity {
     @Column(length = 1000)
     //TODO 2024 07 18 13:35:30 : custom validate
     private String description;
+
+    @Column
+    @ThousandMultiple
+    private Integer minPrice;
 
     @Column(nullable = false, columnDefinition = "varchar(30)")
     @Enumerated(EnumType.STRING)
