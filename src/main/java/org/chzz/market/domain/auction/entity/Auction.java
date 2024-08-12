@@ -41,7 +41,6 @@ public class Auction extends BaseTimeEntity {
     @JoinColumn(name = "product_id")
     private Product product;
 
-
     @Column
     private Long winnerId;
 
