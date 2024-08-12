@@ -1,6 +1,6 @@
 package org.chzz.market.util;
 
-import org.chzz.market.domain.auction.dto.RegisterAuctionRequest;
+import org.chzz.market.domain.auction.dto.request.BaseRegisterRequest;
 import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.user.entity.User;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -8,7 +8,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.lang.reflect.Constructor;
 
 public class ProductTestFactory {
-    public static Product createProduct(RegisterAuctionRequest request, User user) {
+    public static Product createProduct(BaseRegisterRequest request, User user) {
         try {
             Constructor<Product> constructor = Product.class.getDeclaredConstructor();
             constructor.setAccessible(true);
