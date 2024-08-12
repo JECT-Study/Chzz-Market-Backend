@@ -19,7 +19,7 @@ public class MyController {
     private final AuctionService auctionService;
 
     @GetMapping("/auctions")
-    public ResponseEntity<Page<MyAuctionResponse>> getMyAuctionList(@PageableDefault(sort = "createdAt", direction = Direction.DESC) Pageable pageable) {
+    public ResponseEntity<Page<MyAuctionResponse>> getMyAuctionList(@PageableDefault(sort = "newest") Pageable pageable) {
         return ResponseEntity.ok(auctionService.getAuctionListByUserId(1L, pageable)); // TODO: 추후에 인증된 사용자 정보로 수정 필요
     }
 }
