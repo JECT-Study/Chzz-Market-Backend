@@ -92,6 +92,7 @@ public class Auction extends BaseTimeEntity {
     public void removeBid(Bid bid) {
         bids.remove(bid);
     }
+
     @Getter
     @AllArgsConstructor
     public enum Status {
