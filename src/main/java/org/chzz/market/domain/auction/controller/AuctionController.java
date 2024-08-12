@@ -2,10 +2,11 @@ package org.chzz.market.domain.auction.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.chzz.market.domain.auction.dto.RegisterAuctionRequest;
-import org.chzz.market.domain.auction.dto.RegisterAuctionResponse;
-import org.chzz.market.domain.auction.dto.StartAuctionResponse;
+import org.chzz.market.domain.auction.dto.request.BaseRegisterRequest;
+import org.chzz.market.domain.auction.dto.response.RegisterAuctionResponse;
 import org.chzz.market.domain.auction.service.AuctionService;
+import org.chzz.market.domain.auction.dto.request.StartAuctionRequest;
+import org.chzz.market.domain.auction.dto.response.StartAuctionResponse;
 import org.chzz.market.domain.product.entity.Product.Category;
 import org.chzz.market.domain.auction.entity.SortType;
 import org.slf4j.Logger;
@@ -16,6 +17,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -42,10 +46,16 @@ public class AuctionController {
      * 상품 등록
      */
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<RegisterAuctionResponse> registerAuction(@ModelAttribute @Valid RegisterAuctionRequest request) {
+    public ResponseEntity<RegisterAuctionResponse> registerAuction(
+            @RequestPart("request") @Valid BaseRegisterRequest request,
+            @RequestPart(value = "images", required = true) List<MultipartFile> images) {
 
-        RegisterAuctionResponse response = auctionService.registerAuction(request);
-        logger.info("상품이 성공적으로 등록되었습니다. 상품 ID: {}", response.productId());
+        RegisterAuctionResponse response = auctionService.registerAuction(request, images);
+        if (response.status() != null) {
+            logger.info("상품이 성공적으로 경매 등록되었습니다. 상품 ID: {}, 경매 ID: {}", response.productId(), response.auctionId());
+        } else {
+            logger.info("상품이 성공적으로 사전 등록되었습니다. 상품 ID: {}", response.productId());
+        }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -53,9 +63,10 @@ public class AuctionController {
     /**
      * 경매 상품으로 전환
      */
-    @PostMapping("/{auctionId}/start")
-    public ResponseEntity<StartAuctionResponse> startAuction(@PathVariable Long auctionId, Long userId) {
-        StartAuctionResponse response = auctionService.startAuction(auctionId, userId);
+    @PostMapping("/start")
+    public ResponseEntity<StartAuctionResponse> startAuction(@RequestBody @Valid StartAuctionRequest request) {
+        StartAuctionResponse response = auctionService.startAuction(request);
+        logger.info("경매 상품으로 성공적으로 전환되었습니다. 상품 ID: {}", response.productId());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }
