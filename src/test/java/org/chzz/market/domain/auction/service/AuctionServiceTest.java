@@ -258,7 +258,6 @@ class AuctionServiceTest {
 
             StartAuctionRequest request = new StartAuctionRequest();
             ReflectionTestUtils.setField(request, "productId", productId);
-            ReflectionTestUtils.setField(request, "minPrice", minPrice);
 
             Auction newAuction = AuctionTestFactory.createAuction(preRegisteredProduct, createValidRegisterAuctionRequest(userId), PROCEEDING);
             ReflectionTestUtils.setField(newAuction, "id", newAuctionId);
@@ -291,7 +290,6 @@ class AuctionServiceTest {
             Long nonExistentProductId = 999L;
             StartAuctionRequest request = new StartAuctionRequest();
             ReflectionTestUtils.setField(request, "productId", nonExistentProductId);
-            ReflectionTestUtils.setField(request, "minPrice", 10000);
 
             when(productRepository.findById(nonExistentProductId)).thenReturn(Optional.empty());
 
@@ -310,7 +308,6 @@ class AuctionServiceTest {
             Long productId = 1L;
             StartAuctionRequest request = new StartAuctionRequest();
             ReflectionTestUtils.setField(request, "productId", productId);
-            ReflectionTestUtils.setField(request, "minPrice", 10000);
 
             User user = UserTestFactory.createUser(1L, "seller", "test@naver.com");
             Product product = ProductTestFactory.createProduct(createValidPreRegisterRequest(1L), user);

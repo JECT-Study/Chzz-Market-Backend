@@ -184,8 +184,6 @@ public class AuctionControllerTest {
         void convertToAuction_Success() throws Exception {
             StartAuctionRequest request = new StartAuctionRequest();
             ReflectionTestUtils.setField(request, "productId", 1L);
-            ReflectionTestUtils.setField(request, "minPrice", 10000);
-            ReflectionTestUtils.setField(request, "endDateTime", LocalDateTime.now().plusDays(1));
 
             String requestJson = objectMapper.writeValueAsString(request);
 
@@ -210,8 +208,6 @@ public class AuctionControllerTest {
         void convertToAuction_NotFound() throws Exception {
             StartAuctionRequest request = new StartAuctionRequest();
             ReflectionTestUtils.setField(request, "productId", 999L);
-            ReflectionTestUtils.setField(request, "minPrice", 10000);
-            ReflectionTestUtils.setField(request, "endDateTime", LocalDateTime.now().plusDays(1));
 
             String requestJson = objectMapper.writeValueAsString(request);
 
@@ -230,8 +226,6 @@ public class AuctionControllerTest {
         void convertToAuction_AlreadyInAuction() throws Exception {
             StartAuctionRequest request = new StartAuctionRequest();
             ReflectionTestUtils.setField(request, "productId", 1L);
-            ReflectionTestUtils.setField(request, "minPrice", 10000);
-            ReflectionTestUtils.setField(request, "endDateTime", LocalDateTime.now().plusDays(1));
 
             String requestJson = objectMapper.writeValueAsString(request);
 
@@ -255,8 +249,6 @@ public class AuctionControllerTest {
 
         StartAuctionRequest request = new StartAuctionRequest();
         ReflectionTestUtils.setField(request, "productId", productId);
-        ReflectionTestUtils.setField(request, "minPrice", 10000);
-        ReflectionTestUtils.setField(request, "endDateTime", LocalDateTime.now().plusDays(1));
 
         StartAuctionResponse response = StartAuctionResponse.of(1L, productId, PROCEEDING, endTime);
         when(auctionService.startAuction(any(StartAuctionRequest.class))).thenReturn(response);
