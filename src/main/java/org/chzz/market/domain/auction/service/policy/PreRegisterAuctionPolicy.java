@@ -13,6 +13,7 @@ public class PreRegisterAuctionPolicy implements AuctionPolicy {
         return Product.builder()
                 .user(user)
                 .name(request.getProductName())
+                .minPrice(request.getMinPrice())
                 .description(request.getDescription())
                 .category(request.getCategory())
                 .build();
