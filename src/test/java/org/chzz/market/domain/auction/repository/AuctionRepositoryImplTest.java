@@ -1,8 +1,9 @@
 package org.chzz.market.domain.auction.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.chzz.market.domain.product.entity.Product.*;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -12,7 +13,6 @@ import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.AuctionResponse;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.entity.Auction.AuctionStatus;
-import org.chzz.market.domain.auction.entity.SortType;
 import org.chzz.market.domain.bid.entity.Bid;
 import org.chzz.market.domain.bid.repository.BidRepository;
 import org.chzz.market.domain.image.entity.Image;
@@ -22,6 +22,7 @@ import org.chzz.market.domain.product.entity.Product.Category;
 import org.chzz.market.domain.product.repository.ProductRepository;
 import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.repository.UserRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,11 +30,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 
 @DatabaseTest
-@EnableJpaAuditing
 @Transactional
 class AuctionRepositoryImplTest {
 
@@ -51,6 +51,8 @@ class AuctionRepositoryImplTest {
 
     @Autowired
     UserRepository userRepository;
+    @PersistenceContext
+    EntityManager entityManager;
 
     private static User user1, user2, user3;
     private static Product product1, product2, product3, product4;
@@ -69,10 +71,10 @@ class AuctionRepositoryImplTest {
         user3 = User.builder().providerId("123456").nickname("닉네임3").email("asd12@naver.com").build();
         userRepository.saveAll(List.of(user1, user2, user3));
 
-        product1 = builder().user(user1).name("제품1").category(Category.FASHION_AND_CLOTHING).minPrice(10000).build();
-        product2 = builder().user(user1).name("제품2").category(Category.BOOKS_AND_MEDIA).minPrice(20000).build();
-        product3 = builder().user(user2).name("제품3").category(Category.FASHION_AND_CLOTHING).minPrice(30000).build();
-        product4 = builder().user(user2).name("제품4").category(Category.FASHION_AND_CLOTHING).minPrice(40000).build();
+        product1 = Product.builder().user(user1).name("제품1").category(Category.FASHION_AND_CLOTHING).minPrice(10000).build();
+        product2 = Product.builder().user(user1).name("제품2").category(Category.BOOKS_AND_MEDIA).minPrice(20000).build();
+        product3 = Product.builder().user(user2).name("제품3").category(Category.FASHION_AND_CLOTHING).minPrice(30000).build();
+        product4 = Product.builder().user(user2).name("제품4").category(Category.FASHION_AND_CLOTHING).minPrice(40000).build();
         productRepository.saveAll(List.of(product1, product2, product3, product4));
 
         auction1 = Auction.builder().product(product1).minPrice(1000).status(AuctionStatus.PROCEEDING)
@@ -96,17 +98,31 @@ class AuctionRepositoryImplTest {
         bid3 = Bid.builder().bidder(user1).auction(auction3).amount(5000L).build();
         bid4 = Bid.builder().bidder(user3).auction(auction2).amount(6000L).build();
         bidRepository.saveAll(List.of(bid1, bid2, bid3, bid4));
+
+        auction1.registerBid(bid1);
+        auction1.registerBid(bid2);
+        auction2.registerBid(bid3);
+        auction3.registerBid(bid4);
+    }
+
+    @AfterEach
+    void tearDown() {
+        auctionRepository.deleteAll();
+        productRepository.deleteAll();
+        imageRepository.deleteAll();
+        bidRepository.deleteAll();
+        userRepository.deleteAll();
     }
 
     @Test
     @DisplayName("특정 카테고리 경매를 높은 가격순으로 조회")
     public void testFindAuctionsByCategoryExpensive() throws Exception {
         //given
-        Pageable pageable = PageRequest.of(0, 10);
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("expensive"));
 
         //when
         Page<AuctionResponse> result = auctionRepository.findAuctionsByCategory(
-                Category.FASHION_AND_CLOTHING, SortType.EXPENSIVE, 1L, pageable);
+                Category.FASHION_AND_CLOTHING, 1L, pageable);
 
         //then
         assertThat(result).isNotNull();
@@ -125,11 +141,11 @@ class AuctionRepositoryImplTest {
     @DisplayName("특정 카테고리 경매를 인기순으로 조회")
     public void testFindAuctionsByCategoryPopularity() throws Exception {
         //given
-        Pageable pageable = PageRequest.of(0, 10);
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("popularity"));
 
         //when
         Page<AuctionResponse> result = auctionRepository.findAuctionsByCategory(
-                Category.FASHION_AND_CLOTHING, SortType.POPULARITY, 2L, pageable);
+                Category.FASHION_AND_CLOTHING, 2L, pageable);
 
         //then
         assertThat(result).isNotNull();
@@ -148,11 +164,11 @@ class AuctionRepositoryImplTest {
     @DisplayName("경매가 없는 경우 조회")
     public void testFindAuctionsByCategoryNoAuctions() throws Exception {
         //given
-        Pageable pageable = PageRequest.of(0, 10);
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("expensive"));
 
         //when
         Page<AuctionResponse> result = auctionRepository.findAuctionsByCategory(
-                Category.TOYS_AND_HOBBIES, SortType.EXPENSIVE, 1L, pageable);
+                Category.TOYS_AND_HOBBIES, 1L, pageable);
 
         //then
         assertThat(result).isNotNull();

@@ -8,6 +8,9 @@ import org.chzz.market.domain.auction.dto.response.AuctionResponse;
 import org.chzz.market.domain.auction.dto.response.RegisterAuctionResponse;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.service.policy.AuctionPolicy;
+
+import org.chzz.market.domain.auction.error.AuctionException;
+import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.image.service.ImageService;
 import org.chzz.market.domain.auction.dto.response.StartAuctionResponse;
 import org.chzz.market.domain.product.entity.Product;
@@ -23,15 +26,14 @@ import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 
-import org.chzz.market.domain.auction.error.AuctionException;
-import org.chzz.market.domain.auction.entity.SortType;
-import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.product.entity.Product.Category;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_FOUND;
 import org.springframework.web.multipart.MultipartFile;
 
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.*;
@@ -93,9 +95,9 @@ public class AuctionService {
                 .orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
     }
 
-    public Page<AuctionResponse> getAuctionListByCategory(Category category, SortType sortType, Long userId,
+    public Page<AuctionResponse> getAuctionListByCategory(Category category, Long userId,
                                                           Pageable pageable) {
-        return auctionRepository.findAuctionsByCategory(category, sortType, userId, pageable);
+        return auctionRepository.findAuctionsByCategory(category, userId, pageable);
     }
 
     public AuctionDetailsResponse getAuctionDetails(Long auctionId, Long userId) {

@@ -8,7 +8,6 @@ import org.chzz.market.domain.auction.service.AuctionService;
 import org.chzz.market.domain.auction.dto.request.StartAuctionRequest;
 import org.chzz.market.domain.auction.dto.response.StartAuctionResponse;
 import org.chzz.market.domain.product.entity.Product.Category;
-import org.chzz.market.domain.auction.entity.SortType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
@@ -32,9 +31,8 @@ public class AuctionController {
     @GetMapping
     public ResponseEntity<?> getAuctionList(@RequestParam Category category,
 //                                            @AuthenticationPrincipal CustomUserDetails customUserDetails, // TODO: 추후에 인증된 사용자 정보로 수정 필요
-                                            @RequestParam(defaultValue = "newest") SortType type,
                                             Pageable pageable) {
-        return ResponseEntity.ok(auctionService.getAuctionListByCategory(category, type, 1L, pageable)); // 임의의 사용자 ID
+        return ResponseEntity.ok(auctionService.getAuctionListByCategory(category, 1L, pageable)); // 임의의 사용자 ID
     }
 
     @GetMapping("/{auctionId}")
