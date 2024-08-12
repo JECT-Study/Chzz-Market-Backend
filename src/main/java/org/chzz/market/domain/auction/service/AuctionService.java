@@ -1,8 +1,15 @@
 package org.chzz.market.domain.auction.service;
 
-import org.chzz.market.domain.auction.dto.*;
+import org.chzz.market.domain.auction.dto.request.BaseRegisterRequest;
+import org.chzz.market.domain.auction.dto.request.RegisterAuctionRequest;
+import org.chzz.market.domain.auction.dto.request.StartAuctionRequest;
+import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
+import org.chzz.market.domain.auction.dto.response.AuctionResponse;
+import org.chzz.market.domain.auction.dto.response.RegisterAuctionResponse;
 import org.chzz.market.domain.auction.entity.Auction;
+import org.chzz.market.domain.auction.service.policy.AuctionPolicy;
 import org.chzz.market.domain.image.service.ImageService;
+import org.chzz.market.domain.auction.dto.response.StartAuctionResponse;
 import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.product.repository.ProductRepository;
 import org.chzz.market.domain.user.entity.User;
@@ -12,13 +19,11 @@ import org.chzz.market.domain.user.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 
 import org.chzz.market.domain.auction.error.AuctionException;
-import org.chzz.market.domain.auction.entity.Auction.AuctionStatus;
 import org.chzz.market.domain.auction.entity.SortType;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.product.entity.Product.Category;
@@ -27,10 +32,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
-import static java.time.LocalDateTime.*;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.*;
-import static org.chzz.market.domain.user.error.UserErrorCode.USER_NOT_MATCHED;
 
 @Service
 @Transactional(readOnly = true)
@@ -48,7 +52,7 @@ public class AuctionService {
      * 상품 등록 (사전 등록 & 경매 등록)
      */
     @Transactional
-    public RegisterAuctionResponse registerAuction(RegisterAuctionRequest request) {
+    public RegisterAuctionResponse registerAuction(BaseRegisterRequest request, List<MultipartFile> images) {
         // 유저 유효성 검사
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> {
@@ -56,69 +60,31 @@ public class AuctionService {
                     return new UserException(UserErrorCode.USER_NOT_FOUND);
                 });
 
-        // 상품 테이블 등록
-        // Product product = request.toProductEntity();
-        Product product = createProduct(request, user);
+        Product product;
+        Auction auction = null;
+        AuctionPolicy auctionPolicy = request.getAuctionType().getAuctionPolicy();
 
+        // 상품 생성
+        product = auctionPolicy.createProduct(request, user);
+        productRepository.save(product);
         logger.info("상품이 상품 테이블에 저장되었습니다. 상품 ID : {}", product.getId());
 
-        // 경매 테이블 등록
-        // Auction auction = request.toAuctionEntity(product, initialStatus);
-        Auction auction = createAuction(product, request, request.getStatus());
+        // 경매 생성 (사전 등록일 경우 저장 X)
+        if (request instanceof RegisterAuctionRequest) {
+            auction = auctionPolicy.createAuction(product, request);
+            auctionRepository.save(auction);
+            logger.info("상품이 경매 테이블에 저장되었습니다. 최종 경매 상태 : {}", auction.getStatus());
+        }
 
-        logger.info("상품이 경매 테이블에 저장되었습니다. 최종 경매 상태 : {}", auction.getStatus());
-
-        // 이미지 처리
-        if (request.getImages() != null && !request.getImages().isEmpty()) {
-            List<String> imageUrls = imageService.uploadImages(request.getImages());
+        if (images != null && !images.isEmpty()) {
+            List<String> imageUrls = imageService.uploadImages(images);
             imageService.saveProductImageEntities(product, imageUrls);
         }
 
-        return RegisterAuctionResponse.of(product.getId(), auction.getId(), auction.getStatus());
-    }
-
-    /**
-     * 사전 등록 상품 경매 전환 처리
-     * TODO: 추후에 인증된 사용자 정보로 수정 필요
-     */
-    @Transactional
-    public StartAuctionResponse startAuction(Long auctionId, Long userId) {
-        logger.info("사전 등록 상품을 경매 등록 상품으로 전환하기 시작합니다. 경매 ID: {}", auctionId);
-        // 상품 유효성 검사
-        Auction auction = auctionRepository.findById(auctionId)
-                .orElseThrow(() -> {
-                    logger.info("경매 ID {}번에 해당하는 경매를 찾을 수 없습니다.", auctionId);
-                    return new AuctionException(AUCTION_NOT_FOUND);
-                });
-
-        // 사용자 유효성 검사
-        if (!auction.getProduct().getUser().getId().equals(userId)){
-            throw new UserException(USER_NOT_MATCHED);
-        }
-
-        // 상품 상태 유효성 검사
-        if (auction.getStatus() != AuctionStatus.PENDING) {
-            throw new AuctionException(INVALID_AUCTION_STATE);
-        }
-
-        logger.info("유효성 검사가 끝났습니다. 초기 경매 상태 : {}", auction.getStatus());
-
-        LocalDateTime endTime = now().plusHours(24);
-        logger.info("경매 마감 시간 : {}", endTime);
-
-        // 상품 경매 시작 처리 및 저장
-        auction.start(endTime);
-        logger.info("경매가 시작되었습니다. 현재 경매 상태 : {}", auction.getStatus());
-
-        // 변경 사항은 트랜잭션 커밋 시 자동으로 DB 반영!
-        // Auction savedAuction = auctionRepository.save(auction);
-        logger.info("경매 상품이 저장되었습니다. 최종 경매 상태 : {}", auction.getStatus());
-
-        return StartAuctionResponse.of(
-                auction.getId(),
-                auction.getProduct().getId(),
-                auction.getStatus(),
-                auction.getEndDateTime()
+        return RegisterAuctionResponse.of(
+                product.getId(),
+                auction != null ? auction.getId() : null,
+                auction != null ? auction.getStatus(): null
         );
     }
 
@@ -128,7 +94,7 @@ public class AuctionService {
     }
 
     public Page<AuctionResponse> getAuctionListByCategory(Category category, SortType sortType, Long userId,
-                                                      Pageable pageable) {
+                                                          Pageable pageable) {
         return auctionRepository.findAuctionsByCategory(category, sortType, userId, pageable);
     }
 
@@ -137,22 +103,37 @@ public class AuctionService {
         return auctionDetails.orElseThrow(() -> new AuctionException(AUCTION_NOT_ACCESSIBLE));
     }
 
-    // TODO: createProduct, createAuction 메서드 추후 로그인 기능 병합 이후 toEntity 로 수정
-    private Product createProduct(RegisterAuctionRequest request, User user) {
-        return Product.builder()
-                .user(user)
-                .name(request.getProductName())
-                .description(request.getDescription())
-                .category(request.getCategory())
-                .build();
-    }
+    /**
+     * 사전 등록 상품 경매 전환 처리
+     * TODO: 추후에 인증된 사용자 정보로 수정 필요
+     */
+    @Transactional
+    public StartAuctionResponse startAuction(StartAuctionRequest request) {
+        logger.info("사전 등록 상품을 경매 등록 상품으로 전환하기 시작합니다. 상품 ID: {}", request.getProductId());
+        // 상품 유효성 검사
+        Product product = productRepository.findById(request.getProductId())
+                .orElseThrow(() -> {
+                    logger.info("상품 ID {}번에 해당하는 경매를 찾을 수 없습니다.", request.getProductId());
+                    return new AuctionException(AUCTION_NOT_FOUND);
+                });
 
-    private Auction createAuction(Product product, RegisterAuctionRequest request, AuctionStatus status) {
-        return Auction.builder()
-                .product(product)
-                .minPrice(request.getMinPrice())
-                .status(status)
-                .build();
+        // 이미 경매로 등록된 상품인지 유효성 검사
+        if (auctionRepository.existsByProductId(product.getId())) {
+            throw new AuctionException(AUCTION_ALREADY_REGISTERED);
+        }
+
+        logger.info("유효성 검사가 끝났습니다. 상품 ID : {}", product.getId());
+
+        Auction auction = Auction.toEntity(product);
+        auction = auctionRepository.save(auction);
+        logger.info("경매가 시작되었습니다. 등록된 경매 마감 시간 : {}", auction.getEndDateTime());
+
+        return StartAuctionResponse.of(
+                auction.getId(),
+                auction.getProduct().getId(),
+                auction.getStatus(),
+                auction.getEndDateTime()
+        );
     }
 
 }
