@@ -17,7 +17,6 @@ import org.springframework.stereotype.Component;
 import static org.chzz.market.domain.product.entity.Product.*;
 
 @Getter
-@Setter
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "auctionType", visible = true)
 @JsonSubTypes({
         @JsonSubTypes.Type(name = "PRE_REGISTER", value = PreRegisterRequest.class),

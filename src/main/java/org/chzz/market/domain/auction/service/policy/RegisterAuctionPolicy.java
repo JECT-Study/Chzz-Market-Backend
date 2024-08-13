@@ -15,7 +15,7 @@ public class RegisterAuctionPolicy implements AuctionPolicy{
 
     @Override
     public Product createProduct(BaseRegisterRequest request, User user) {
-        return Product.builder()
+        return Product.createBuilder()
                 .user(user)
                 .name(request.getProductName())
                 .minPrice(request.getMinPrice())
