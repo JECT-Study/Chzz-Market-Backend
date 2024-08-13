@@ -164,13 +164,7 @@ class AuctionServiceTest {
             when(imageService.uploadImages(anyList())).thenReturn(List.of("image1.jpg", "image2.jpg"));
 
             List<MultipartFile> images = createMockMultipartFiles();
-            RegisterAuctionRequest validRequest = new RegisterAuctionRequest();
-            validRequest.setUserId(userId);
-            validRequest.setProductName("테스트 상품");
-            validRequest.setDescription("테스트 상품 설명");
-            validRequest.setCategory(ELECTRONICS);
-            validRequest.setMinPrice(10000);
-            validRequest.setAuctionType(REGISTER);
+            RegisterAuctionRequest validRequest = createValidRegisterAuctionRequest(userId);
 
             Product product = ProductTestFactory.createProduct(validRequest, user);
             ReflectionTestUtils.setField(product, "id", productId);
@@ -210,19 +204,11 @@ class AuctionServiceTest {
         void registerAuction_UserNotFound() {
             // Given
             Long userId = 999L;
-            Long productId = 1L;
-            Long auctionId = 1L;
 
             when(userRepository.findById(999L)).thenReturn(Optional.empty());
 
             List<MultipartFile> images = createMockMultipartFiles();
-            RegisterAuctionRequest invalidRequest = new RegisterAuctionRequest();
-            invalidRequest.setUserId(userId);
-            invalidRequest.setProductName("테스트 상품");
-            invalidRequest.setDescription("테스트 상품 설명");
-            invalidRequest.setCategory(ELECTRONICS);
-            invalidRequest.setMinPrice(10000);
-            invalidRequest.setAuctionType(REGISTER);
+            RegisterAuctionRequest invalidRequest = createValidRegisterAuctionRequest(userId);
 
 
             // When & Then
