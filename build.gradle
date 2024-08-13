@@ -42,6 +42,9 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'com.h2database:h2'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    implementation "com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.1"
+    implementation 'org.reflections:reflections:0.10.2'
+
 
     implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
     annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
@@ -61,7 +64,6 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
     systemProperty 'spring.profiles.active', 'test'
-
 }
 
 def querydslDir = "$buildDir/generated/querydsl"

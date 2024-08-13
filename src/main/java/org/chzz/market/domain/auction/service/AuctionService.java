@@ -1,6 +1,7 @@
 package org.chzz.market.domain.auction.service;
 
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_ACCESSIBLE;
+import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_FOUND;
 
 import java.util.List;
 import java.util.Optional;
@@ -9,7 +10,7 @@ import org.chzz.market.domain.auction.dto.AuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.AuctionResponse;
 import org.chzz.market.domain.auction.dto.request.AuctionCreateRequest;
 import org.chzz.market.domain.auction.entity.Auction;
-import org.chzz.market.domain.auction.entity.SortType;
+
 import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.image.service.ImageService;
@@ -17,8 +18,8 @@ import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.product.entity.Product.Category;
 import org.chzz.market.domain.product.repository.ProductRepository;
 import org.chzz.market.domain.user.entity.User;
-import org.chzz.market.domain.user.error.UserException;
 import org.chzz.market.domain.user.error.UserErrorCode;
+import org.chzz.market.domain.user.error.UserException;
 import org.chzz.market.domain.user.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,9 +73,14 @@ public class AuctionService {
         return auction.getId();
     }
 
-    public Page<AuctionResponse> getAuctionListByCategory(Category category, SortType sortType, Long userId,
+    public Auction getAuction(Long auctionId) {
+        return auctionRepository.findById(auctionId)
+                .orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
+    }
+
+    public Page<AuctionResponse> getAuctionListByCategory(Category category, Long userId,
                                                           Pageable pageable) {
-        return auctionRepository.findAuctionsByCategory(category, sortType, userId, pageable);
+        return auctionRepository.findAuctionsByCategory(category, userId, pageable);
     }
 
     public AuctionDetailsResponse getAuctionDetails(Long auctionId, Long userId) {

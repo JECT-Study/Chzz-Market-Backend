@@ -9,6 +9,7 @@ spring:
         format_sql: true
         highlight_sql: true
         use_sql_comments: true
+    defer-datasource-initialization: true
   datasource:
     url: jdbc:mysql://chzzdb:3306/chzzdb?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
     username: root
@@ -29,6 +30,11 @@ cloud:
       bucket: test
     cloudfront:
       domain: https://test.cloudfront.net
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:db/data.sql
+
 payment:
   toss:
     client-key: test_ck_P9BRQmyarYleDvqAJl9vVJ07KzLN

@@ -8,6 +8,7 @@ import org.chzz.market.common.error.BusinessException;
 import org.chzz.market.common.error.ErrorCode;
 import org.chzz.market.common.error.ErrorResponse;
 import org.chzz.market.common.error.GlobalErrorCode;
+import org.chzz.market.common.error.GlobalException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -63,6 +64,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(BusinessException.class)
     protected ResponseEntity<?> handleBusinessException(BusinessException e) {
         ErrorCode errorCode = e.getErrorCode();
+        logException(e, errorCode);
+        return handleExceptionInternal(errorCode);
+    }
+
+    @ExceptionHandler(GlobalException.class)
+    protected ResponseEntity<?> handleGlobalException(GlobalException e) {
+        GlobalErrorCode errorCode = e.getErrorCode();
         logException(e, errorCode);
         return handleExceptionInternal(errorCode);
     }
