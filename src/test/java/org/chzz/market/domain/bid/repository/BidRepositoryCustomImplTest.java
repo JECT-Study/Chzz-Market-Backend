@@ -78,7 +78,7 @@ class BidRepositoryCustomImplTest {
                 .userRole(UserRole.USER)
                 .providerId("2222")
                 .build();
-        Product product1 = Product.builder()
+        Product product1 = Product.createBuilder()
                 .category(Category.OTHER)
                 .description("asd")
                 .minPrice(1000)
@@ -86,7 +86,7 @@ class BidRepositoryCustomImplTest {
                 .user(seller)
                 .build();
 
-        Product product2 = Product.builder()
+        Product product2 = Product.createBuilder()
                 .category(Category.OTHER)
                 .description("asd")
                 .minPrice(1000)

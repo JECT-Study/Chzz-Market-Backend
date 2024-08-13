@@ -23,11 +23,11 @@ import org.chzz.market.common.validation.annotation.ThousandMultiple;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
 import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.like.entity.Like;
+import org.chzz.market.domain.product.dto.UpdateProductRequest;
 import org.chzz.market.domain.user.entity.User;
 
 @Getter
 @Entity
-@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class Product extends BaseTimeEntity {
@@ -56,13 +56,11 @@ public class Product extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private Category category;
 
-    @Builder.Default
     @OneToMany(mappedBy = "product", cascade = CascadeType.REMOVE)
     private List<Like> likes = new ArrayList<>();
 
-    @Builder.Default
     @OneToMany(mappedBy = "product", cascade = CascadeType.REMOVE)
-    private List<Image> images=new ArrayList<>();
+    private List<Image> images = new ArrayList<>();
 
     @Getter
     @AllArgsConstructor
@@ -77,6 +75,50 @@ public class Product extends BaseTimeEntity {
         OTHER("기타");
 
         private final String displayName;
+    }
+
+    @Builder(builderMethodName = "createBuilder")
+    public Product(Long id, User user, String name, String description, Integer minPrice, Category category) {
+        this.id = id;
+        this.user = user;
+        this.name = name;
+        this.description = description;
+        this.minPrice = minPrice;
+        this.category = category;
+        this.likes = new ArrayList<>();
+        this.images = new ArrayList<>();
+    }
+
+    @Builder(builderClassName = "updateBuilder")
+    public Product(String name, String description, Integer minPrice, Category category) {
+        this.name = name;
+        this.description = description;
+        this.minPrice = minPrice;
+        this.category = category;
+    }
+
+    public static Product toEntity(UpdateProductRequest request, Product existingProduct) {
+        return new updateBuilder()
+                .name(request.getName() != null ? request.getName() : existingProduct.getName())
+                .description(request.getDescription() != null ? request.getDescription() : existingProduct.getDescription())
+                .category(request.getCategory() != null ? request.getCategory() : existingProduct.getCategory())
+                .minPrice(request.getMinPrice() != null ? request.getMinPrice() : existingProduct.getMinPrice())
+                .build();
+    }
+
+    public void update(Product newProduct) {
+        this.name = newProduct.getName();
+        this.description = newProduct.getDescription();
+        this.category = newProduct.getCategory();
+        this.minPrice = newProduct.getMinPrice();
+    }
+
+    public void clearImages() {
+        this.images.clear();
+    }
+
+    public void addImages(List<Image> images) {
+        this.images.addAll(images);
     }
 
 }
