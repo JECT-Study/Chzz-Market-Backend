@@ -24,7 +24,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -42,7 +41,6 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -63,16 +61,43 @@ public class AuctionControllerTest {
     private ObjectMapper objectMapper;
 
     private MockMultipartFile image1, image2, image3;
+    private BaseRegisterRequest registerAuctionRequest, preRegisterRequest;
+    private StartAuctionRequest validStartAuctionRequest, invalidStartAuctionRequest;
 
     @Autowired
     private UserRepository userRepository;
 
     @BeforeEach
     void setUp() {
-
         image1 = new MockMultipartFile("images", "image1.jpg", "image/jpg", "image1".getBytes());
         image2 = new MockMultipartFile("images", "image2.jpg", "image/jpg", "image2".getBytes());
         image3 = new MockMultipartFile("images", "image3.jpg", "image/jpg", "image3".getBytes());
+
+        registerAuctionRequest = RegisterAuctionRequest.builder()
+                .userId(1L)
+                .productName("경매 등록 테스트 상품 이름")
+                .description("경매 등록 테스트 상품 설명")
+                .category(ELECTRONICS)
+                .minPrice(10000)
+                .auctionType(REGISTER)
+                .build();
+
+        preRegisterRequest = PreRegisterRequest.builder()
+                .userId(1L)
+                .productName("사전 등록 테스트 상품 이름")
+                .description("사전 등록 테스트 상품 설명")
+                .category(ELECTRONICS)
+                .minPrice(10000)
+                .auctionType(PRE_REGISTER)
+                .build();
+
+        validStartAuctionRequest = StartAuctionRequest.builder()
+                .productId(1L)
+                .build();
+
+        invalidStartAuctionRequest = StartAuctionRequest.builder()
+                .productId(999L)
+                .build();
 
         System.setProperty("org.mockito.logging.verbosity", "all");
     }
@@ -85,15 +110,8 @@ public class AuctionControllerTest {
         @WithMockUser(username = "tester", roles = "USER")
         @DisplayName("1. 유효한 요청으로 경매 상품 등록 성공 응답")
         void registerAuction_Success() throws Exception {
-            BaseRegisterRequest validRequest = new RegisterAuctionRequest();
-            ReflectionTestUtils.setField(validRequest, "userId", 1L);
-            ReflectionTestUtils.setField(validRequest, "productName", "테스트 상품");
-            ReflectionTestUtils.setField(validRequest, "description", "테스트 설명");
-            ReflectionTestUtils.setField(validRequest, "category", ELECTRONICS);
-            ReflectionTestUtils.setField(validRequest, "minPrice", 10000);
-            ReflectionTestUtils.setField(validRequest, "auctionType", REGISTER);
 
-            String requestJson = objectMapper.writeValueAsString(validRequest);
+            String requestJson = objectMapper.writeValueAsString(registerAuctionRequest);
 
             RegisterAuctionResponse response = RegisterAuctionResponse.of(1L, 1L, PROCEEDING);
             when(auctionService.registerAuction(any(BaseRegisterRequest.class), anyList())).thenReturn(response);
@@ -118,15 +136,8 @@ public class AuctionControllerTest {
         @WithMockUser(username = "tester", roles = "USER")
         @DisplayName("2. 유효한 요청으로 상품 사전 등록 성공 응답")
         void preRegisterAuction_Success() throws Exception {
-            BaseRegisterRequest validRequest = new PreRegisterRequest();
-            ReflectionTestUtils.setField(validRequest, "userId", 1L);
-            ReflectionTestUtils.setField(validRequest, "productName", "테스트 상품");
-            ReflectionTestUtils.setField(validRequest, "description", "테스트 설명");
-            ReflectionTestUtils.setField(validRequest, "category", ELECTRONICS);
-            ReflectionTestUtils.setField(validRequest, "minPrice", 10000);
-            ReflectionTestUtils.setField(validRequest, "auctionType", PRE_REGISTER);
 
-            String requestJson = objectMapper.writeValueAsString(validRequest);
+            String requestJson = objectMapper.writeValueAsString(preRegisterRequest);
 
             RegisterAuctionResponse response = RegisterAuctionResponse.of(1L, null, null);
             when(auctionService.registerAuction(any(BaseRegisterRequest.class), anyList())).thenReturn(response);
@@ -150,15 +161,8 @@ public class AuctionControllerTest {
         @Test
         @DisplayName("3. 존재하지 않는 사용자로 경매 상품 등록 실패")
         void registerAuction_UserNotFound() throws Exception {
-            BaseRegisterRequest invalidRequest = new RegisterAuctionRequest();
-            ReflectionTestUtils.setField(invalidRequest, "userId", 999L);
-            ReflectionTestUtils.setField(invalidRequest, "productName", "테스트 상품");
-            ReflectionTestUtils.setField(invalidRequest, "description", "테스트 설명");
-            ReflectionTestUtils.setField(invalidRequest, "category", ELECTRONICS);
-            ReflectionTestUtils.setField(invalidRequest, "minPrice", 10000);
-            ReflectionTestUtils.setField(invalidRequest, "auctionType", REGISTER);
 
-            String requestJson = objectMapper.writeValueAsString(invalidRequest);
+            String requestJson = objectMapper.writeValueAsString(registerAuctionRequest);
 
             when(auctionService.registerAuction(any(BaseRegisterRequest.class), anyList()))
                     .thenThrow(new UserException(USER_NOT_FOUND));
@@ -182,10 +186,8 @@ public class AuctionControllerTest {
         @Test
         @DisplayName("1. 유효한 요청으로 사전 등록 된 상품 경매 등록 전환 성공 응답")
         void convertToAuction_Success() throws Exception {
-            StartAuctionRequest request = new StartAuctionRequest();
-            ReflectionTestUtils.setField(request, "productId", 1L);
 
-            String requestJson = objectMapper.writeValueAsString(request);
+            String requestJson = objectMapper.writeValueAsString(validStartAuctionRequest);
 
             StartAuctionResponse response = StartAuctionResponse.of(1L, 1L, PROCEEDING, LocalDateTime.now().plusDays(1));
             when(auctionService.startAuction(any(StartAuctionRequest.class))).thenReturn(response);
@@ -206,10 +208,8 @@ public class AuctionControllerTest {
         @Test
         @DisplayName("2. 존재하지 않는 상품 ID로 전환 시도 실패")
         void convertToAuction_NotFound() throws Exception {
-            StartAuctionRequest request = new StartAuctionRequest();
-            ReflectionTestUtils.setField(request, "productId", 999L);
 
-            String requestJson = objectMapper.writeValueAsString(request);
+            String requestJson = objectMapper.writeValueAsString(invalidStartAuctionRequest);
 
             when(auctionService.startAuction(any(StartAuctionRequest.class)))
                     .thenThrow(new AuctionException(AUCTION_NOT_FOUND));
@@ -224,10 +224,8 @@ public class AuctionControllerTest {
         @Test
         @DisplayName("3. 이미 경매 중인 상품 전환 시도 실패")
         void convertToAuction_AlreadyInAuction() throws Exception {
-            StartAuctionRequest request = new StartAuctionRequest();
-            ReflectionTestUtils.setField(request, "productId", 1L);
 
-            String requestJson = objectMapper.writeValueAsString(request);
+            String requestJson = objectMapper.writeValueAsString(validStartAuctionRequest);
 
             when(auctionService.startAuction(any(StartAuctionRequest.class)))
                     .thenThrow(new AuctionException(AUCTION_ALREADY_REGISTERED));
@@ -247,13 +245,10 @@ public class AuctionControllerTest {
         LocalDateTime startTime = now();
         LocalDateTime endTime = startTime.plusHours(24);
 
-        StartAuctionRequest request = new StartAuctionRequest();
-        ReflectionTestUtils.setField(request, "productId", productId);
-
         StartAuctionResponse response = StartAuctionResponse.of(1L, productId, PROCEEDING, endTime);
         when(auctionService.startAuction(any(StartAuctionRequest.class))).thenReturn(response);
 
-        String requestJson = objectMapper.writeValueAsString(request);
+        String requestJson = objectMapper.writeValueAsString(validStartAuctionRequest);
 
         MvcResult result = mockMvc.perform(post("/api/v1/auctions/start")
                 .content(requestJson)

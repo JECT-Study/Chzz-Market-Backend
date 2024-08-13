@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.chzz.market.common.validation.annotation.ThousandMultiple;
 import org.chzz.market.domain.auction.service.policy.AuctionPolicy;
 import org.chzz.market.domain.auction.service.policy.PreRegisterAuctionPolicy;
@@ -17,7 +18,8 @@ import org.springframework.stereotype.Component;
 import static org.chzz.market.domain.product.entity.Product.*;
 
 @Getter
-@Setter
+@SuperBuilder
+@NoArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "auctionType", visible = true)
 @JsonSubTypes({
         @JsonSubTypes.Type(name = "PRE_REGISTER", value = PreRegisterRequest.class),
