@@ -1,4 +1,4 @@
-package org.chzz.market.common.confing;
+package org.chzz.market.common.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
