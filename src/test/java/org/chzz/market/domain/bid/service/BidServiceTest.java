@@ -56,9 +56,9 @@ class BidServiceTest {
     void setUp() {
         user = User.builder().id(1L).providerId("1234").nickname("닉네임1").email("asd@naver.com").build();
         user2 = User.builder().id(2L).providerId("12345").nickname("닉네임2").email("asd@naver.com").build();
-        product = Product.builder().id(1L).user(user).name("제품1").category(Category.FASHION_AND_CLOTHING).build();
-        product2 = Product.builder().id(2L).user(user).name("제품2").category(Category.FASHION_AND_CLOTHING).build();
-        product3 = Product.builder().id(3L).user(user).name("제품3").category(Category.FASHION_AND_CLOTHING).build();
+        product = Product.createBuilder().user(user).name("제품1").category(Category.FASHION_AND_CLOTHING).build();
+        product2 = Product.createBuilder().user(user).name("제품2").category(Category.FASHION_AND_CLOTHING).build();
+        product3 = Product.createBuilder().user(user).name("제품3").category(Category.FASHION_AND_CLOTHING).build();
         auction = Auction.builder().id(1L).product(product).minPrice(1000).status(AuctionStatus.PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusDays(1)).build();
         completeAuction = Auction.builder().id(2L).product(product2).minPrice(1000).status(AuctionStatus.ENDED)
