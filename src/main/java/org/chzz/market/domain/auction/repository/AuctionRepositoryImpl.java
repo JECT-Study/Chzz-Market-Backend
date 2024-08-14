@@ -13,8 +13,6 @@ import static org.chzz.market.domain.user.entity.QUser.user;
 
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.ComparableExpressionBase;
-import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
@@ -210,38 +208,17 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
     private static NumberExpression<Integer> timeRemaining() {
         return Expressions.numberTemplate(Integer.class, "TIMESTAMPDIFF(SECOND, CURRENT_TIMESTAMP, {0})",
                 auction.endDateTime);
-//        NumberExpression<Integer> created = auction.createdAt.second();
-//        NumberExpression<Integer> now = DateTimePath.currentDate().second();
-//        return created.add(Expressions.asNumber(24 * 60 * 60)).subtract(now);
-    }
-
-    /**
-     * 정렬 조건에 따른 OrderSpecifier 반환
-     *
-     * @return OrderSpecifier
-     * @deprecated
-     */
-    private OrderSpecifier<?> getOrderSpecifier(AuctionOrder auctionOrder) {
-        Map<AuctionOrder, OrderSpecifier<?>> orderSpecifierMap = Map.of(
-                AuctionOrder.POPULARITY, bid.countDistinct().desc(),
-                EXPENSIVE, auction.minPrice.desc(),
-                CHEAP, auction.minPrice.asc(),
-                NEWEST, auction.endDateTime.desc()
-        );
-        return orderSpecifierMap.getOrDefault(auctionOrder, auction.createdAt.desc());
     }
 
     @Getter
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public enum AuctionOrder implements QuerydslOrder {
-        POPULARITY("popularity", auction.bids.size().multiply(-1)),
-        EXPENSIVE("expensive", auction.minPrice.multiply(-1)),
-        CHEAP("cheap", auction.minPrice),
-        NEWEST("newest", Expressions.numberTemplate(Long.class, "UNIX_TIMESTAMP({0})", auction.createdAt).multiply(-1));
-//        NEWEST("newest", timeRemaining().multiply(-1));
+        POPULARITY("popularity", auction.bids.size().desc()),
+        EXPENSIVE("expensive", auction.minPrice.desc()),
+        CHEAP("cheap", auction.minPrice.asc()),
+        NEWEST("newest", auction.createdAt.desc());
 
         private final String name;
-        private final ComparableExpressionBase<?> comparableExpressionBase;
-
+        private final OrderSpecifier<?> orderSpecifier;
     }
 }

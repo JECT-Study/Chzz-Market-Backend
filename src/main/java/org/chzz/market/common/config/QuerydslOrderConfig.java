@@ -39,7 +39,7 @@ public class QuerydslOrderConfig {
                 .collect(Collectors.toList());
 
         registeredBeans.forEach(querydslOrder ->
-                log.info("Registered sort type of {}: {}.{}", querydslOrder.getClass(), querydslOrder.getName(), querydslOrder.getComparableExpressionBase())
+                log.info("Registered sort type of {}: {}.{}", querydslOrder.getClass(), querydslOrder.getName(), querydslOrder.getOrderSpecifier())
         );
 
         return new QuerydslOrderRegistry(registeredBeans);
