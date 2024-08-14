@@ -1,5 +1,6 @@
 package org.chzz.market.domain.product.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -20,6 +21,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
+import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.like.entity.Like;
 import org.chzz.market.domain.user.entity.User;
 
@@ -51,8 +53,12 @@ public class Product extends BaseTimeEntity {
     private Category category;
 
     @Builder.Default
-    @OneToMany(mappedBy = "product")
+    @OneToMany(mappedBy = "product", cascade = CascadeType.REMOVE)
     private List<Like> likes = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "product", cascade = CascadeType.REMOVE)
+    private List<Image> images=new ArrayList<>();
 
     @Getter
     @AllArgsConstructor

@@ -10,7 +10,7 @@ import org.chzz.market.domain.auction.dto.AuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.AuctionResponse;
 import org.chzz.market.domain.auction.dto.request.AuctionCreateRequest;
 import org.chzz.market.domain.auction.entity.Auction;
-import org.chzz.market.domain.auction.entity.SortType;
+
 import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.image.service.ImageService;
@@ -78,9 +78,9 @@ public class AuctionService {
                 .orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
     }
 
-    public Page<AuctionResponse> getAuctionListByCategory(Category category, SortType sortType, Long userId,
+    public Page<AuctionResponse> getAuctionListByCategory(Category category, Long userId,
                                                           Pageable pageable) {
-        return auctionRepository.findAuctionsByCategory(category, sortType, userId, pageable);
+        return auctionRepository.findAuctionsByCategory(category, userId, pageable);
     }
 
     public AuctionDetailsResponse getAuctionDetails(Long auctionId, Long userId) {

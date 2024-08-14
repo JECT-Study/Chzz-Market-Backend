@@ -1,16 +1,19 @@
 package org.chzz.market.domain.auction.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -19,8 +22,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.chzz.market.common.validation.annotation.ThousandMultiple;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
+import org.chzz.market.domain.bid.entity.Bid;
 import org.chzz.market.domain.product.entity.Product;
-import org.chzz.market.domain.user.entity.User;
 
 @Getter
 @Entity
@@ -38,9 +41,9 @@ public class Auction extends BaseTimeEntity {
     @JoinColumn(name = "product_id")
     private Product product;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = true)
-    private User winner;
+
+    @Column
+    private Long winnerId;
 
     @Column
     @ThousandMultiple
@@ -68,6 +71,28 @@ public class Auction extends BaseTimeEntity {
         return amount >= minPrice;
     }
 
+    @OneToMany(mappedBy = "auction", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Bid> bids = new ArrayList<>();
+
+    public void registerBid(Bid bid) {
+        if (bids == null) {
+            bids = new ArrayList<>();
+        }
+        boolean isParticipated = bids.stream()
+                .anyMatch(bid1 -> bid1.getBidder().equals(bid.getBidder()));
+        if (isParticipated) {
+            bids.stream()
+                    .filter(bid1 -> bid1.equals(bid))
+                    .findFirst()
+                    .ifPresent(bid1 -> bids.remove(bid));
+        }
+        bids.add(bid);
+        bid.specifyAuction(this);
+    }
+
+    public void removeBid(Bid bid) {
+        bids.remove(bid);
+    }
     @Getter
     @AllArgsConstructor
     public enum Status {

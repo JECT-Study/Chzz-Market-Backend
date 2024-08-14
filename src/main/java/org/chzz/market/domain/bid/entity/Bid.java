@@ -60,4 +60,8 @@ public class Bid extends BaseTimeEntity {
         this.amount = amount; // TODO: 기존 입찰 가격과의 비교
         this.count--;
     }
+
+    public void specifyAuction(Auction auction) {
+        this.auction=auction;
+    }
 }
