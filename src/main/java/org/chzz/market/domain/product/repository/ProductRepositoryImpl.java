@@ -1,6 +1,6 @@
 package org.chzz.market.domain.product.repository;
 
-import com.querydsl.core.types.dsl.ComparableExpressionBase;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -12,13 +12,19 @@ import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.util.QuerydslOrder;
 import org.chzz.market.common.util.QuerydslOrderProvider;
 import org.chzz.market.domain.image.entity.QImage;
+import org.chzz.market.domain.like.entity.QLike;
+import org.chzz.market.domain.product.dto.ProductDetailsResponse;
 import org.chzz.market.domain.product.dto.ProductResponse;
+import org.chzz.market.domain.product.dto.QProductDetailsResponse;
 import org.chzz.market.domain.product.dto.QProductResponse;
+import org.chzz.market.domain.product.entity.QProduct;
+import org.chzz.market.domain.user.entity.QUser;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.chzz.market.domain.auction.entity.QAuction.auction;
 import static org.chzz.market.domain.image.entity.QImage.image;
@@ -40,9 +46,8 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
      */
     @Override
     public Page<ProductResponse> findProductsByCategory(Category category, Long userId, Pageable pageable) {
-
         JPAQuery<?> baseQuery = jpaQueryFactory.from(product)
-                .leftJoin(auction).on(auction.product.eq(product))
+                .leftJoin(auction).on(auction.product.id.eq(product.id))
                 .where(auction.id.isNull())
                 .where(product.category.eq(category));
 
@@ -66,15 +71,63 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        return PageableExecutionUtils.getPage(content, pageable, () -> {
-            JPAQuery<Long> countQuery = jpaQueryFactory
+        return PageableExecutionUtils.getPage(content, pageable, () ->
+            Optional.ofNullable(jpaQueryFactory
                     .select(product.countDistinct())
                     .from(product)
                     .leftJoin(auction).on(auction.product.id.eq(product.id))
                     .where(product.category.eq(category)
-                            .and(auction.id.isNull()));
-            return countQuery.fetchOne() != null ? countQuery.fetchOne() : 0L;
-        });
+                            .and(auction.id.isNull()))
+                    .fetchOne())
+            .orElse(0L)
+        );
+    }
+
+    /**
+     * 사용자 ID와 상품 ID에 따라 사전 등록 상품 상세 정보를 조회합니다.
+     * @param productId 상품 ID
+     * @param userId    사용자 ID
+     * @return
+     */
+    @Override
+    public ProductDetailsResponse findProductDetailsById(Long productId, Long userId) {
+        QProduct product = QProduct.product;
+        QUser seller = QUser.user;
+        QLike like = QLike.like;
+        QImage image = QImage.image;
+
+        ProductDetailsResponse result = jpaQueryFactory
+                .select(new QProductDetailsResponse(
+                        product.id,
+                        product.name,
+                        seller.nickname,
+                        product.minPrice,
+                        product.createdAt,
+                        product.description,
+                        JPAExpressions.select(like.count())
+                                .from(like)
+                                .where(like.product.eq(product)),
+                        JPAExpressions.selectOne()
+                                .from(like)
+                                .where(like.product.eq(product).and(like.user.id.eq(userId)))
+                                .exists()
+                ))
+                .from(product)
+                .join(product.user, seller)
+                .where(product.id.eq(productId))
+                .fetchOne();
+
+        if (result != null) {
+            List<String> imageUrls = jpaQueryFactory
+                    .select(image.cdnPath)
+                    .from(image)
+                    .where(image.product.id.eq(productId))
+                    .orderBy(image.id.asc())
+                    .fetch();
+            result.addImageList(imageUrls);
+        }
+
+        return result;
     }
 
     private JPQLQuery<Long> getFirstImageId() {
@@ -87,13 +140,13 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
     @Getter
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public enum ProductOrder implements QuerydslOrder {
-        POPULARITY("product_popularity", product.likes.size().multiply(-1)),
-        EXPENSIVE("product_expensive", product.minPrice.multiply(-1)),
-        CHEAP("product_cheap", product.minPrice),
-        NEWEST("product_newest", product.createdAt.count().multiply(-1));
+        POPULARITY("product_popularity", product.likes.size().desc()),
+        EXPENSIVE("product_expensive", product.minPrice.desc()),
+        CHEAP("product_cheap", product.minPrice.asc()),
+        NEWEST("product_newest", product.createdAt.desc());
 
         private final String name;
-        private final ComparableExpressionBase<?> comparableExpressionBase;
+        private final OrderSpecifier<?> orderSpecifier;
     }
 
 }
