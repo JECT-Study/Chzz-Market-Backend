@@ -11,12 +11,10 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.util.QuerydslOrder;
 import org.chzz.market.common.util.QuerydslOrderProvider;
+import org.chzz.market.domain.auction.entity.QAuction;
 import org.chzz.market.domain.image.entity.QImage;
 import org.chzz.market.domain.like.entity.QLike;
-import org.chzz.market.domain.product.dto.ProductDetailsResponse;
-import org.chzz.market.domain.product.dto.ProductResponse;
-import org.chzz.market.domain.product.dto.QProductDetailsResponse;
-import org.chzz.market.domain.product.dto.QProductResponse;
+import org.chzz.market.domain.product.dto.*;
 import org.chzz.market.domain.product.entity.QProduct;
 import org.chzz.market.domain.user.entity.QUser;
 import org.springframework.data.domain.Page;
@@ -130,11 +128,60 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
         return result;
     }
 
+    @Override
+    public Page<MyProductResponse> findMyProductsByUserId(Long userId, Pageable pageable) {
+        QProduct product = QProduct.product;
+        QImage image = QImage.image;
+        QAuction auction = QAuction.auction;
+        QUser user = QUser.user;
+
+        JPAQuery<?> baseQuery = jpaQueryFactory.from(product)
+                .join(product.user, user)
+                .leftJoin(auction).on(auction.product.eq(product))
+                .where(auction.id.isNull().and(user.id.eq(userId)));
+
+        List<MyProductResponse> content = baseQuery
+                .select(new QMyProductResponse(
+                        product.id,
+                        product.name,
+                        image.cdnPath,
+                        getLikeCount(),
+                        product.minPrice,
+                        JPAExpressions.selectOne()
+                                .from(like)
+                                .where(like.product.eq(product)
+                                        .and(like.user.id.eq(userId)))
+                                .exists(),
+                        product.createdAt))
+                .leftJoin(image).on(image.product.id.eq(product.id)
+                        .and(image.id.eq(getFirstImageId())))
+                .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        JPAQuery<Long> countQuery = baseQuery
+                .select(product.countDistinct())
+                .groupBy(product.id);
+
+        return PageableExecutionUtils.getPage(content, pageable, () -> {
+            Long totalCount = countQuery.fetchOne();
+            return totalCount != null ? totalCount : 0L;
+        });
+
+    }
+
     private JPQLQuery<Long> getFirstImageId() {
         QImage imageSub = new QImage("imageSub");
         return JPAExpressions.select(imageSub.id.min())
                 .from(imageSub)
                 .where(imageSub.product.id.eq(product.id));
+    }
+
+    private JPQLQuery<Long> getLikeCount() {
+        return JPAExpressions.select(like.count())
+                .from(QLike.like)
+                .where(QLike.like.product.eq(QProduct.product));
     }
 
     @Getter
