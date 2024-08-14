@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -22,7 +23,7 @@ public class QuerydslOrderProvider {
         List<OrderSpecifier<?>> orderSpecifiers = pageable.getSort().stream()
                 .map(this::createOrderSpecifier)
                 .flatMap(Optional::stream)
-                .toList();
+                .collect(Collectors.toList());
 
         if (orderSpecifiers.isEmpty()) {
             orderSpecifiers.add(OrderByNull.DEFAULT);
