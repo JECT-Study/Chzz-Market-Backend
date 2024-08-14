@@ -15,8 +15,8 @@ import org.springframework.stereotype.Component;
 public class QuerydslOrderProvider {
     private final QuerydslOrderRegistry querydslOrderRegistry;
 
-    public Optional<QuerydslOrder> getByName(String name) {
-        return Optional.of(querydslOrderRegistry.getOrderByName(name));
+    public Optional<QuerydslOrder> findOrderByName(String name) {
+        return Optional.ofNullable(querydslOrderRegistry.getOrderByName(name));
     }
 
     public OrderSpecifier<?>[] getOrderSpecifiers(Pageable pageable) {
@@ -33,8 +33,18 @@ public class QuerydslOrderProvider {
     }
 
     private Optional<OrderSpecifier<?>> createOrderSpecifier(Sort.Order order) {
-        Order direction = order.isAscending() ? Order.ASC : Order.DESC;
-        return getByName(order.getProperty())
-                .map(querydslOrder -> new OrderSpecifier<>(direction, querydslOrder.getComparableExpressionBase()));
+        return findOrderByName(order.getProperty())
+                .map(querydslOrder -> buildOrderSpecifier(querydslOrder.getOrderSpecifier(), order.isAscending()));
+    }
+
+    private OrderSpecifier<?> buildOrderSpecifier(OrderSpecifier<?> baseOrderSpecifier, boolean isAscending) {
+        // 오름차순 정렬 시 기본 OrderSpecifier 사용
+        if (isAscending) {
+            return baseOrderSpecifier;
+        }
+
+        // 내림차순 정렬 시 반대 방향의 OrderSpecifier 생성
+        Order oppositeOrder = (baseOrderSpecifier.getOrder() == Order.ASC) ? Order.DESC : Order.ASC;
+        return new OrderSpecifier<>(oppositeOrder, baseOrderSpecifier.getTarget());
     }
 }
