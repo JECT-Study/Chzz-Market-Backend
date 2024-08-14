@@ -264,8 +264,8 @@ class AuctionRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("나의 경매 목록 조회")
-    public void testFindMyAuctions() throws Exception {
+    @DisplayName("나의 경매 목록 조회 - 최신순")
+    public void testFindMyAuctionsWithNewest() throws Exception {
         //given
         Pageable pageable = PageRequest.of(0, 10, Sort.by("newest"));
         Long myId = user1.getId();
@@ -277,11 +277,26 @@ class AuctionRepositoryImplTest {
         //then
         assertThat(result).isNotNull();
         assertThat(result.getContent()).hasSize(2);
-//        assertThat(result.getContent().get(0).getName()).isEqualTo("제품2");
-//        assertThat(result.getContent().get(0).getParticipantCount()).isEqualTo(2);
-//        assertThat(result.getContent().get(1).getName()).isEqualTo("제품1");
-//        assertThat(result.getContent().get(1).getParticipantCount()).isEqualTo(1);
+        assertThat(result.getContent().get(0).getCreatedAt()).isAfter(result.getContent().get(1).getCreatedAt());
     }
+
+    @Test
+    @DisplayName("나의 경매 목록 조회 - 오래된순")
+    public void testFindMyAuctionsWithOldest() throws Exception {
+        //given
+        Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("newest")));
+        Long myId = user1.getId();
+
+        //when
+        Page<MyAuctionResponse> result = auctionRepository.findAuctionsByUserId(
+                myId, pageable);
+
+        //then
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).hasSize(2);
+        assertThat(result.getContent().get(0).getCreatedAt()).isBefore(result.getContent().get(1).getCreatedAt());
+    }
+
 
     @Test
     @DisplayName("나의 경매 목록 조회했는데 없는 경우")
