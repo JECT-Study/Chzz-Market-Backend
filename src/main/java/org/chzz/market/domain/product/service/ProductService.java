@@ -1,7 +1,6 @@
 package org.chzz.market.domain.product.service;
 
 import lombok.RequiredArgsConstructor;
-import org.chzz.market.domain.product.dto.MyProductResponse;
 import org.chzz.market.domain.product.dto.ProductDetailsResponse;
 import org.chzz.market.domain.product.dto.ProductResponse;
 import org.chzz.market.domain.product.repository.ProductRepository;
@@ -41,7 +40,7 @@ public class ProductService {
     /*
      * 나의 사전 등록 상품 목록 조회
      */
-    public Page<MyProductResponse> getMyProductList(Long userId, Pageable pageable) {
+    public Page<ProductResponse> getMyProductList(Long userId, Pageable pageable) {
         return productRepository.findMyProductsByUserId(userId, pageable);
     }
 }

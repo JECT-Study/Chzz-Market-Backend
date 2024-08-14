@@ -1,7 +1,6 @@
 package org.chzz.market.domain.product.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.chzz.market.domain.product.dto.MyProductResponse;
 import org.chzz.market.domain.product.dto.ProductDetailsResponse;
 import org.chzz.market.domain.product.dto.ProductResponse;
 import org.chzz.market.domain.product.entity.Product.Category;
@@ -51,7 +50,7 @@ public class ProductController {
      */
     // TODO: 추후에 인증된 사용자 정보로 수정 필요
     @GetMapping("/my-products")
-    public ResponseEntity<Page<MyProductResponse>> getMyProductList(
+    public ResponseEntity<Page<ProductResponse>> getMyProductList(
             @RequestHeader("X-User-Agent") Long userId,
             Pageable pageable) {
         return ResponseEntity.ok(productService.getMyProductList(userId, pageable));

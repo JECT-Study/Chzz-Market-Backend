@@ -129,7 +129,7 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
     }
 
     @Override
-    public Page<MyProductResponse> findMyProductsByUserId(Long userId, Pageable pageable) {
+    public Page<ProductResponse> findMyProductsByUserId(Long userId, Pageable pageable) {
         QProduct product = QProduct.product;
         QImage image = QImage.image;
         QAuction auction = QAuction.auction;
@@ -140,19 +140,19 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
                 .leftJoin(auction).on(auction.product.eq(product))
                 .where(auction.id.isNull().and(user.id.eq(userId)));
 
-        List<MyProductResponse> content = baseQuery
-                .select(new QMyProductResponse(
+        List<ProductResponse> content = baseQuery
+                .select(new QProductResponse(
                         product.id,
                         product.name,
                         image.cdnPath,
-                        getLikeCount(),
                         product.minPrice,
+                        getLikeCount(),
                         JPAExpressions.selectOne()
                                 .from(like)
                                 .where(like.product.eq(product)
                                         .and(like.user.id.eq(userId)))
-                                .exists(),
-                        product.createdAt))
+                                .exists()
+                ))
                 .leftJoin(image).on(image.product.id.eq(product.id)
                         .and(image.id.eq(getFirstImageId())))
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))

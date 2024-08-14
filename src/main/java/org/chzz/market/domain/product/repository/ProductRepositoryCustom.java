@@ -1,6 +1,5 @@
 package org.chzz.market.domain.product.repository;
 
-import org.chzz.market.domain.product.dto.MyProductResponse;
 import org.chzz.market.domain.product.dto.ProductDetailsResponse;
 import org.chzz.market.domain.product.dto.ProductResponse;
 import org.springframework.data.domain.Page;
@@ -34,6 +33,6 @@ public interface ProductRepositoryCustom {
      * @param pageable  페이징 정보
      * @return          페이징된 사전 등록 상품 리스트
      */
-    Page<MyProductResponse> findMyProductsByUserId(Long userId, Pageable pageable);
+    Page<ProductResponse> findMyProductsByUserId(Long userId, Pageable pageable);
 
 }
