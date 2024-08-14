@@ -93,7 +93,7 @@ public class BidRepositoryCustomImpl implements BidRepositoryCustom {
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public enum BidOrder implements QuerydslOrder {
         AMOUNT("amount", bid.amount.asc()),
-        TIME_REMAINING("time remaining", timeRemaining().desc());
+        TIME_REMAINING("time-remaining", auction.endDateTime.desc());
 
         private final String name;
         private final OrderSpecifier<?> orderSpecifier;
