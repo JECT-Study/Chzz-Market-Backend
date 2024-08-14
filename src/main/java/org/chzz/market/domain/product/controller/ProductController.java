@@ -8,8 +8,6 @@ import org.chzz.market.domain.product.entity.Product.Category;
 import org.chzz.market.domain.product.service.ProductService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
@@ -43,7 +41,9 @@ public class ProductController {
     public ResponseEntity<ProductDetailsResponse> getProductDetails(
             @PathVariable Long productId,
             @RequestHeader("X-User-Agent") Long userId) {
-        return ResponseEntity.ok(productService.getProductDetails(productId, userId));
+        return productService.getProductDetails(productId, userId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     /*

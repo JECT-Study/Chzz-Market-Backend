@@ -6,6 +6,8 @@ import org.chzz.market.domain.product.dto.ProductResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.Optional;
+
 import static org.chzz.market.domain.product.entity.Product.*;
 
 public interface ProductRepositoryCustom {
@@ -24,7 +26,7 @@ public interface ProductRepositoryCustom {
      * @param userId    사용자 ID
      * @return          상품 상세 정보
      */
-    ProductDetailsResponse findProductDetailsById(Long productId, Long userId);
+    Optional<ProductDetailsResponse> findProductDetailsById(Long productId, Long userId);
 
     /**
      * 사용자 ID에 따라 사용자가 등록한 사전 등록 상품 리스트를 조회합니다.

@@ -88,7 +88,7 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
      * @return
      */
     @Override
-    public ProductDetailsResponse findProductDetailsById(Long productId, Long userId) {
+    public Optional<ProductDetailsResponse> findProductDetailsById(Long productId, Long userId) {
         QProduct product = QProduct.product;
         QUser seller = QUser.user;
         QLike like = QLike.like;
@@ -125,7 +125,7 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
             result.addImageList(imageUrls);
         }
 
-        return result;
+        return Optional.ofNullable(result);
     }
 
     @Override

@@ -11,6 +11,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
+
 import static org.chzz.market.domain.product.entity.Product.*;
 
 @Service
@@ -31,7 +34,7 @@ public class ProductService {
     /*
      * 상품 상세 정보 조회
      */
-    public ProductDetailsResponse getProductDetails(Long productId, Long userId) {
+    public Optional<ProductDetailsResponse> getProductDetails(Long productId, Long userId) {
         return productRepository.findProductDetailsById(productId, userId);
     }
 
