@@ -5,7 +5,7 @@ import static org.chzz.market.domain.bid.entity.QBid.bid;
 import static org.chzz.market.domain.image.entity.QImage.image;
 import static org.chzz.market.domain.product.entity.QProduct.product;
 
-import com.querydsl.core.types.dsl.ComparableExpressionBase;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
@@ -94,10 +94,10 @@ public class BidRepositoryCustomImpl implements BidRepositoryCustom {
     @Getter
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public enum BidOrder implements QuerydslOrder {
-        AMOUNT("amount", bid.amount),
-        TIME_REMAINING("time remaining", timeRemaining().multiply(-1));
+        AMOUNT("amount", bid.amount.asc()),
+        TIME_REMAINING("time-remaining", auction.endDateTime.desc());
 
         private final String name;
-        private final ComparableExpressionBase<?> comparableExpressionBase;
+        private final OrderSpecifier<?> orderSpecifier;
     }
 }

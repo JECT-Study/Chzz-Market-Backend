@@ -13,7 +13,6 @@ import static org.chzz.market.domain.user.entity.QUser.user;
 
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.ComparableExpressionBase;
 import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
@@ -199,12 +198,12 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
     @Getter
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public enum AuctionOrder implements QuerydslOrder {
-        POPULARITY("popularity",auction.bids.size().multiply(-1)),
-        EXPENSIVE("expensive",auction.minPrice.multiply(-1)),
-        CHEAP("cheap",auction.minPrice),
-        NEWEST("newest",timeRemaining());
+        POPULARITY("popularity", auction.bids.size().desc()),
+        EXPENSIVE("expensive", auction.minPrice.desc()),
+        CHEAP("cheap", auction.minPrice.asc()),
+        NEWEST("newest", auction.createdAt.desc());
 
         private final String name;
-        private final ComparableExpressionBase<?> comparableExpressionBase;
+        private final OrderSpecifier<?> orderSpecifier;
     }
 }
