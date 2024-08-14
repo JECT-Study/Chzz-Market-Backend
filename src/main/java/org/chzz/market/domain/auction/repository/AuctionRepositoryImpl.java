@@ -145,7 +145,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                         getBidCount(),
                         auction.status,
                         auction.createdAt))
-                .join(image).on(image.product.id.eq(product.id)
+                .leftJoin(image).on(image.product.id.eq(product.id)
                         .and(image.id.eq(getFirstImageId())))
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
@@ -208,9 +208,11 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
     }
 
     private static NumberExpression<Integer> timeRemaining() {
-        NumberExpression<Integer> created = auction.createdAt.second();
-        NumberExpression<Integer> now = DateTimePath.currentDate().second();
-        return created.add(Expressions.asNumber(24 * 60 * 60)).subtract(now);
+        return Expressions.numberTemplate(Integer.class, "TIMESTAMPDIFF(SECOND, CURRENT_TIMESTAMP, {0})",
+                auction.endDateTime);
+//        NumberExpression<Integer> created = auction.createdAt.second();
+//        NumberExpression<Integer> now = DateTimePath.currentDate().second();
+//        return created.add(Expressions.asNumber(24 * 60 * 60)).subtract(now);
     }
 
     /**
@@ -235,9 +237,11 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
         POPULARITY("popularity", auction.bids.size().multiply(-1)),
         EXPENSIVE("expensive", auction.minPrice.multiply(-1)),
         CHEAP("cheap", auction.minPrice),
-        NEWEST("newest", timeRemaining());
+        NEWEST("newest", Expressions.numberTemplate(Long.class, "UNIX_TIMESTAMP({0})", auction.createdAt).multiply(-1));
+//        NEWEST("newest", timeRemaining().multiply(-1));
 
         private final String name;
         private final ComparableExpressionBase<?> comparableExpressionBase;
+
     }
 }
