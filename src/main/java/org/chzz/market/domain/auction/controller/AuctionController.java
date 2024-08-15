@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.domain.auction.dto.request.BaseRegisterRequest;
 import org.chzz.market.domain.auction.dto.response.RegisterAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.RegisterResponse;
 import org.chzz.market.domain.auction.service.AuctionService;
 import org.chzz.market.domain.auction.dto.request.StartAuctionRequest;
 import org.chzz.market.domain.auction.dto.response.StartAuctionResponse;
@@ -44,17 +45,11 @@ public class AuctionController {
      * 상품 등록
      */
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<RegisterAuctionResponse> registerAuction(
+    public ResponseEntity<RegisterResponse> registerAuction(
             @RequestPart("request") @Valid BaseRegisterRequest request,
             @RequestPart(value = "images", required = true) List<MultipartFile> images) {
 
-        RegisterAuctionResponse response = auctionService.registerAuction(request, images);
-        if (response.status() != null) {
-            logger.info("상품이 성공적으로 경매 등록되었습니다. 상품 ID: {}, 경매 ID: {}", response.productId(), response.auctionId());
-        } else {
-            logger.info("상품이 성공적으로 사전 등록되었습니다. 상품 ID: {}", response.productId());
-        }
-
+        RegisterResponse response = auctionService.registerAuction(request, images);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
