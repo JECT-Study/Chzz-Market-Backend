@@ -1,13 +1,11 @@
 package org.chzz.market.domain.product.service;
 
 import lombok.RequiredArgsConstructor;
-import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.image.service.ImageService;
 import org.chzz.market.domain.product.dto.DeleteProductResponse;
 import org.chzz.market.domain.product.entity.Product;
-import org.chzz.market.domain.product.error.ProductErrorCode;
 import org.chzz.market.domain.product.error.ProductException;
 import org.chzz.market.domain.product.repository.ProductRepository;
 import org.slf4j.Logger;
@@ -19,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.chzz.market.domain.product.error.ProductErrorCode.*;
 
@@ -34,6 +31,9 @@ public class ProductService {
     private final AuctionRepository auctionRepository;
     private final ImageService imageService;
 
+    /*
+     * 사전 등록 상품 삭제
+     */
     @Retryable(
             retryFor = {TransientDataAccessException.class},
             maxAttempts = 3,
@@ -50,48 +50,32 @@ public class ProductService {
                     return new ProductException(PRODUCT_NOT_FOUND);
                 });
 
-        // 경매 유효성 검사
-        Optional<Auction> auction = auctionRepository.findByProductId(productId);
+        // 경매 등록 여부 확인
+        if (auctionRepository.existsByProductId(productId)) {
+            logger.info("상품 ID {}번은 이미 경매로 등록되어 삭제할 수 없습니다.", productId);
+            throw new ProductException(PRODUCT_ALREADY_AUCTIONED);
+        }
 
-        // 경매가 존재하면 경매 상품 삭제, 경매가 존재하지 않으면 사전 등록 상품 삭제
-        return auction.map(value -> deleteAuctionProduct(product, value)).orElseGet(() -> deletePreRegisteredProduct(product));
-    }
-
-    /*
-     * 경매 등록 상품 삭제
-     */
-    private DeleteProductResponse deleteAuctionProduct(Product product, Auction auction) {
-        // 경매 참여자 ID 추출
-        List<Long> participantIds = auction.getBids().stream()
-                .map(bid -> bid.getBidder().getId())
+        // 좋아요 누른 사용자 ID 추출
+        List<Long> likedUserIds = product.getLikes().stream()
+                .map(like -> like.getUser().getId())
                 .distinct()
                 .toList();
 
         deleteProductImages(product);
-        auctionRepository.delete(auction);
         productRepository.delete(product);
 
-        // TODO: 알림 발송 로직 추가
-        // NotificationMessage notificationMessage = NotificationMessage.builder()
-        //          .userIds(participantIds)
-        //          .type(NotificationType.AUCTION_DELETED)
-        //          .message("참여하신 경매 상품이 취소되었습니다. 상품명 : " + product.getName()))
-        //          .build();
+        // 좋아요 누른 사용자들에게 알림 전송
+        // Notification notificationMessage = new Notification(
+        //        likedUserIds,
+        //        Notificationtype.PRE_REGISTER_DELETED,
+        //        product.getName()
+        // );
         // notificationService.sendNotification(notificationMessage);
 
-        logger.info("상품 ID {}번, 경매 ID {}번에 해당하는 경매 상품 삭제가 성공적으로 진행되었습니다 (전체 참가자 수: {})", product.getId(), auction.getId(), participantIds.size());
+        logger.info("사전 등록 상품 ID{}번에 해당하는 상품을 성공적으로 삭제하였습니다. (좋아요 누른 사용자 수: {})", productId, likedUserIds.size());
 
-        return DeleteProductResponse.ofAuctioned(product, auction, participantIds.size());
-    }
-
-    /*
-     * 사전 등록 상품 삭제
-     */
-    private DeleteProductResponse deletePreRegisteredProduct(Product product) {
-        deleteProductImages(product);
-        productRepository.delete(product);
-        logger.info("상품 ID {}번에 해당하는 사전 등록 상품 삭제가 성공적으로 진행되었습니다.", product.getId());
-        return DeleteProductResponse.ofPreRegistered(product);
+        return DeleteProductResponse.ofPreRegistered(product, likedUserIds.size());
     }
 
     /*
