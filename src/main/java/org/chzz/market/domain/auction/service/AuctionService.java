@@ -57,10 +57,7 @@ public class AuctionService {
     public RegisterAuctionResponse registerAuction(BaseRegisterRequest request, List<MultipartFile> images) {
         // 유저 유효성 검사
         User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> {
-                    logger.info("유저 ID {}번에 해당하는 유저를 찾을 수 없습니다.", request.getUserId());
-                    return new UserException(UserErrorCode.USER_NOT_FOUND);
-                });
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
         Product product;
         Auction auction = null;
@@ -114,10 +111,7 @@ public class AuctionService {
         logger.info("사전 등록 상품을 경매 등록 상품으로 전환하기 시작합니다. 상품 ID: {}", request.getProductId());
         // 상품 유효성 검사
         Product product = productRepository.findById(request.getProductId())
-                .orElseThrow(() -> {
-                    logger.info("상품 ID {}번에 해당하는 경매를 찾을 수 없습니다.", request.getProductId());
-                    return new AuctionException(AUCTION_NOT_FOUND);
-                });
+                .orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
 
         // 이미 경매로 등록된 상품인지 유효성 검사
         if (auctionRepository.existsByProductId(product.getId())) {
