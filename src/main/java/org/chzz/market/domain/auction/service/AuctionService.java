@@ -102,15 +102,9 @@ public class AuctionService {
         return auctionDetails.orElseThrow(() -> new AuctionException(AUCTION_NOT_ACCESSIBLE));
     }
 
-    /**
-     * 사전 등록 상품 경매 전환 처리
-     * TODO: 추후에 인증된 사용자 정보로 수정 필요
-     */
-    @Transactional
-    public StartAuctionResponse startAuction(StartAuctionRequest request) {
-        logger.info("사전 등록 상품을 경매 등록 상품으로 전환하기 시작합니다. 상품 ID: {}", request.getProductId());
-        // 상품 유효성 검사
-        Product product = productRepository.findById(request.getProductId())
+    public Product validateStartAuction(Long productId) {
+        logger.info("사전 등록 상품 유효성 검사를 시작합니다. 상품 ID: {}", productId);
+        Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
 
         // 이미 경매로 등록된 상품인지 유효성 검사
@@ -118,7 +112,13 @@ public class AuctionService {
             throw new AuctionException(AUCTION_ALREADY_REGISTERED);
         }
 
-        logger.info("유효성 검사가 끝났습니다. 상품 ID : {}", product.getId());
+        logger.info("유효성 검사가 끝났습니다. 상품 ID : {}", productId);
+        return product;
+    }
+
+    @Transactional
+    public StartAuctionResponse changeAuction(Product product) {
+        logger.info("사전 등록 상품을 경매 등록 상품으로 전환하기 시작합니다. 상품 ID: {}", product.getId());
 
         Auction auction = Auction.toEntity(product);
         auction = auctionRepository.save(auction);
@@ -130,6 +130,16 @@ public class AuctionService {
                 auction.getStatus(),
                 auction.getEndDateTime()
         );
+    }
+
+    /**
+     * 사전 등록 상품 경매 전환 처리
+     * TODO: 추후에 인증된 사용자 정보로 수정 필요
+     */
+    @Transactional
+    public StartAuctionResponse startAuction(StartAuctionRequest request) {
+        Product product = validateStartAuction(request.getProductId());
+        return changeAuction(product);
     }
 
 }
