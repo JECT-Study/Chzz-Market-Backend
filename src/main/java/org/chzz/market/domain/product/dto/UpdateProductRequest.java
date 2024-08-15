@@ -1,7 +1,6 @@
 package org.chzz.market.domain.product.dto;
 
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.chzz.market.common.validation.annotation.ThousandMultiple;
@@ -10,6 +9,8 @@ import static org.chzz.market.domain.product.entity.Product.*;
 
 @Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class UpdateProductRequest {
     private Long userId;
 

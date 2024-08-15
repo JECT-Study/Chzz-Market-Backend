@@ -18,7 +18,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-import static org.chzz.market.domain.product.entity.Product.toEntity;
 import static org.chzz.market.domain.product.error.ProductErrorCode.ALREADY_IN_AUCTION;
 import static org.chzz.market.domain.product.error.ProductErrorCode.PRODUCT_NOT_FOUND;
 
@@ -51,8 +50,7 @@ public class ProductService {
         }
 
         // 상품 정보 업데이트
-        Product updatedProduct = toEntity(request, existingProduct);
-        existingProduct.update(updatedProduct);
+        existingProduct.update(request);
 
         // 이미지 저장
         if (images != null && !images.isEmpty()) {

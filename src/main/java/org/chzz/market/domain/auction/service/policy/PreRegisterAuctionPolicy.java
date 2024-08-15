@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 public class PreRegisterAuctionPolicy extends AuctionPolicy {
     @Override
     public Product createProduct(BaseRegisterRequest request, User user) {
-        return Product.createBuilder()
+        return Product.builder()
                 .user(user)
                 .name(request.getProductName())
                 .minPrice(request.getMinPrice())

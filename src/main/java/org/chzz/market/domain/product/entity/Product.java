@@ -25,9 +25,12 @@ import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.like.entity.Like;
 import org.chzz.market.domain.product.dto.UpdateProductRequest;
 import org.chzz.market.domain.user.entity.User;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Getter
 @Entity
+@Builder
+@DynamicUpdate
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class Product extends BaseTimeEntity {
@@ -77,40 +80,11 @@ public class Product extends BaseTimeEntity {
         private final String displayName;
     }
 
-    @Builder(builderMethodName = "createBuilder")
-    public Product(Long id, User user, String name, String description, Integer minPrice, Category category) {
-        this.id = id;
-        this.user = user;
-        this.name = name;
-        this.description = description;
-        this.minPrice = minPrice;
-        this.category = category;
-        this.likes = new ArrayList<>();
-        this.images = new ArrayList<>();
-    }
-
-    @Builder(builderClassName = "updateBuilder")
-    public Product(String name, String description, Integer minPrice, Category category) {
-        this.name = name;
-        this.description = description;
-        this.minPrice = minPrice;
-        this.category = category;
-    }
-
-    public static Product toEntity(UpdateProductRequest request, Product existingProduct) {
-        return new updateBuilder()
-                .name(request.getName() != null ? request.getName() : existingProduct.getName())
-                .description(request.getDescription() != null ? request.getDescription() : existingProduct.getDescription())
-                .category(request.getCategory() != null ? request.getCategory() : existingProduct.getCategory())
-                .minPrice(request.getMinPrice() != null ? request.getMinPrice() : existingProduct.getMinPrice())
-                .build();
-    }
-
-    public void update(Product newProduct) {
-        this.name = newProduct.getName();
-        this.description = newProduct.getDescription();
-        this.category = newProduct.getCategory();
-        this.minPrice = newProduct.getMinPrice();
+    public void update(UpdateProductRequest modifiedProduct) {
+        this.name = modifiedProduct.getName();
+        this.description = modifiedProduct.getDescription();
+        this.category = modifiedProduct.getCategory();
+        this.minPrice = modifiedProduct.getMinPrice();
     }
 
     public void clearImages() {
