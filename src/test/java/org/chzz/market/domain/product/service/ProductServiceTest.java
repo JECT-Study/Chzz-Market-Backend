@@ -24,6 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -71,13 +72,14 @@ public class ProductServiceTest {
                 .nickname("테스트 유저")
                 .build();
 
-        existingProduct = createBuilder()
+        existingProduct = builder()
                 .id(1L)
                 .user(user)
                 .name("기존 상품")
                 .description("기존 설명")
                 .category(ELECTRONICS)
                 .minPrice(10000)
+                .images(new ArrayList<>())
                 .build();
 
         updateRequest = UpdateProductRequest.builder()
