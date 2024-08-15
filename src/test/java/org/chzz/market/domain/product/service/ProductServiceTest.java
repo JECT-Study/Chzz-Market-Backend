@@ -19,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -60,18 +61,12 @@ public class ProductServiceTest {
         product = Product.builder()
                 .id(1L)
                 .user(user)
-                .name("기존 상품")
-                .description("기존 설명")
+                .name("사전 등록 상품")
+                .description("사전 등록 상품 설명")
                 .category(ELECTRONICS)
                 .minPrice(10000)
-                .build();
-
-        auction = Auction.builder()
-                .id(1L)
-                .product(product)
-                .minPrice(10000)
-                .status(PROCEEDING)
-                .endDateTime(LocalDateTime.now().plusHours(24))
+                .likes(new ArrayList<>())
+                .images(new ArrayList<>())
                 .build();
 
         System.setProperty("org.mockito.logging.verbosity", "all");
@@ -86,35 +81,30 @@ public class ProductServiceTest {
         void deletePreRegisteredProduct_Success() {
             // given
             when(productRepository.findByIdAndUserId(anyLong(), anyLong())).thenReturn(Optional.of(product));
-            when(auctionRepository.findByProductId(anyLong())).thenReturn(Optional.empty());
+            when(auctionRepository.existsByProductId(anyLong())).thenReturn(false);
 
             // when
             DeleteProductResponse response = productService.deleteProduct(1L, 1L);
 
             // then
             assertThat(response.productId()).isEqualTo(1L);
-            assertThat(response.wasAuctioned()).isFalse();
-            assertThat(response.notifiedParticipants()).isZero();
+            assertThat(response.productName()).isEqualTo("사전 등록 상품");
+            assertThat(response.likeCount()).isZero();
             verify(productRepository, times(1)).delete(product);
             verify(imageService, times(1)).deleteUploadImages(any());
         }
 
         @Test
-        @DisplayName("2. 유효한 요청으로 경매 상품 삭제 성공 응답")
-        void deleteAuctionedProduct_Success() {
+        @DisplayName("2. 이미 경매로 등록된 상품 삭제 시도")
+        void deleteAlreadyAuctionedProduct() {
             // Given
             when(productRepository.findByIdAndUserId(anyLong(), anyLong())).thenReturn(Optional.of(product));
-            when(auctionRepository.findByProductId(anyLong())).thenReturn(Optional.of(auction));
+            when(auctionRepository.existsByProductId(anyLong())).thenReturn(true);
 
-            // When
-            DeleteProductResponse response = productService.deleteProduct(1L, 1L);
-
-            // Then
-            assertThat(response.productId()).isEqualTo(1L);
-            assertThat(response.wasAuctioned()).isTrue();
-            verify(productRepository, times(1)).delete(product);
-            verify(auctionRepository, times(1)).delete(auction);
-            verify(imageService, times(1)).deleteUploadImages(any());
+            // When & Then
+            assertThatThrownBy(() -> productService.deleteProduct(1L, 1L))
+                    .isInstanceOf(ProductException.class)
+                    .hasMessage("상품이 이미 경매로 등록되어 삭제할 수 없습니다.");
         }
 
         @Test
