@@ -1,7 +1,6 @@
 package org.chzz.market.domain.auction.service;
 
 import org.chzz.market.domain.auction.dto.request.BaseRegisterRequest;
-import org.chzz.market.domain.auction.dto.request.RegisterAuctionRequest;
 import org.chzz.market.domain.auction.dto.request.StartAuctionRequest;
 import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.AuctionResponse;
@@ -33,6 +32,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.chzz.market.domain.auction.dto.request.BaseRegisterRequest.AuctionType.*;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_FOUND;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -59,17 +59,16 @@ public class AuctionService {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
-        Product product;
-        Auction auction = null;
         AuctionPolicy auctionPolicy = request.getAuctionType().getAuctionPolicy();
 
         // 상품 생성
-        product = auctionPolicy.createProduct(request, user);
+        Product product = auctionPolicy.createProduct(request, user);
         productRepository.save(product);
         logger.info("상품이 상품 테이블에 저장되었습니다. 상품 ID : {}", product.getId());
 
-        // 경매 생성 (사전 등록일 경우 저장 X)
-        if (request instanceof RegisterAuctionRequest) {
+        Auction auction = null;
+        // 경매 등록인 경우만 경매 테이블 저장
+        if (request.getAuctionType() == REGISTER) {
             auction = auctionPolicy.createAuction(product, request);
             auctionRepository.save(auction);
             logger.info("상품이 경매 테이블에 저장되었습니다. 최종 경매 상태 : {}", auction.getStatus());
@@ -83,7 +82,7 @@ public class AuctionService {
         return RegisterAuctionResponse.of(
                 product.getId(),
                 auction != null ? auction.getId() : null,
-                auction != null ? auction.getStatus(): null
+                auction != null ? auction.getStatus() : null
         );
     }
 

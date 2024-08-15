@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 import static org.chzz.market.domain.auction.entity.Auction.*;
 
 @Component
-public class RegisterAuctionPolicy implements AuctionPolicy{
+public class RegisterAuctionPolicy extends AuctionPolicy{
 
     @Override
     public Product createProduct(BaseRegisterRequest request, User user) {
@@ -26,12 +26,11 @@ public class RegisterAuctionPolicy implements AuctionPolicy{
 
     @Override
     public Auction createAuction(Product product, BaseRegisterRequest request) {
-        return builder()
+        return Auction.builder()
                 .product(product)
                 .minPrice(request.getMinPrice())
                 .status(AuctionStatus.PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusHours(24))
                 .build();
-
     }
 }
