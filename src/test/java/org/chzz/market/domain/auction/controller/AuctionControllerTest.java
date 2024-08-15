@@ -6,6 +6,7 @@ import org.chzz.market.domain.auction.dto.request.BaseRegisterRequest;
 import org.chzz.market.domain.auction.dto.request.PreRegisterRequest;
 import org.chzz.market.domain.auction.dto.request.RegisterAuctionRequest;
 import org.chzz.market.domain.auction.dto.request.StartAuctionRequest;
+import org.chzz.market.domain.auction.dto.response.PreRegisterResponse;
 import org.chzz.market.domain.auction.dto.response.RegisterAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.StartAuctionResponse;
 import org.chzz.market.domain.auction.error.AuctionException;
@@ -128,7 +129,7 @@ public class AuctionControllerTest {
 
             String requestJson = objectMapper.writeValueAsString(validRequest);
 
-            RegisterAuctionResponse response = RegisterAuctionResponse.of(1L, null, null);
+            PreRegisterResponse response = PreRegisterResponse.of(1L);
             when(auctionService.registerAuction(any(BaseRegisterRequest.class), anyList())).thenReturn(response);
 
             MockMultipartFile requestPart = new MockMultipartFile("request", "", "application/json", requestJson.getBytes());

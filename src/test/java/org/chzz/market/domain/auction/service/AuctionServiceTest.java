@@ -21,6 +21,7 @@ import org.chzz.market.domain.auction.dto.request.RegisterAuctionRequest;
 import org.chzz.market.domain.auction.dto.request.StartAuctionRequest;
 import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.RegisterAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.RegisterResponse;
 import org.chzz.market.domain.auction.dto.response.StartAuctionResponse;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.error.AuctionException;
@@ -109,13 +110,10 @@ class AuctionServiceTest {
 
 
             // when
-            RegisterAuctionResponse response = auctionService.registerAuction(validRequest, images);
+            RegisterResponse response = auctionService.registerAuction(validRequest, images);
 
             // then
             assertNotNull(response);
-            assertEquals(productId, response.productId());
-            assertNull(response.auctionId());
-            assertNull(response.status());
             verify(userRepository, times(1)).findById(userId);
             verify(productRepository, times(1)).save(any(Product.class));
             verify(auctionRepository, never()).save(any(Auction.class));
@@ -184,13 +182,11 @@ class AuctionServiceTest {
             ReflectionTestUtils.setField(REGISTER, "auctionPolicy", mockAuctionPolicy);
 
             // when
-            RegisterAuctionResponse response = auctionService.registerAuction(validRequest, images);
+            RegisterResponse response = auctionService.registerAuction(validRequest, images);
 
             // then
             assertNotNull(response);
-            assertEquals(productId, response.productId());
-            assertEquals(auctionId, response.auctionId());
-            assertEquals(PROCEEDING, response.status());
+            assertEquals(productId, response.getProductId());
             verify(userRepository, times(1)).findById(userId);
             verify(productRepository, times(1)).save(any(Product.class));
             verify(auctionRepository, times(1)).save(any(Auction.class));
