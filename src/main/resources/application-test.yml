@@ -12,6 +12,19 @@ spring:
     username: sa
     password:
 
+    h2:
+      console:
+        enabled: true
+    jpa:
+      hibernate:
+        ddl-auto: create
+      properties:
+        hibernate:
+          dialect: org.hibernate.dialect.H2Dialect
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
 cloud:
   aws:
     credentials:
