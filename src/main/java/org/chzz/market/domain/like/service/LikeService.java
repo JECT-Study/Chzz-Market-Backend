@@ -11,8 +11,11 @@ import org.chzz.market.domain.product.repository.ProductRepository;
 import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.error.exception.UserException;
 import org.chzz.market.domain.user.repository.UserRepository;
+import org.hibernate.dialect.lock.OptimisticEntityLockException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +35,11 @@ public class LikeService {
     private final UserRepository userRepository;
 
     @Transactional
+    @Retryable(
+            retryFor = {OptimisticEntityLockException.class},
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 1000)
+    )
     public LikeResponse toggleLike(Long userId, Long productId) {
         logger.info("상품 ID {}번 상품에 유저 ID {}번의 유저가 좋아요 토글 API를 호출합니다.", userId, productId);
         Product product = findProductForLike(productId);
