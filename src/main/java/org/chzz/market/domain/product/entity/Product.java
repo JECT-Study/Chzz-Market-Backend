@@ -79,4 +79,19 @@ public class Product extends BaseTimeEntity {
         private final String displayName;
     }
 
+    // 좋아요 수 계산 메서드
+    public int getLikeCount() {
+        return likes.size();
+    }
+
+    // 좋아요 추가 메서드
+    public void addLike(Like like) {
+        likes.add(like);
+    }
+
+    // 좋아요 제거 메서드
+    public void removeLike(Like like) {
+        likes.remove(like);
+    }
+
 }
