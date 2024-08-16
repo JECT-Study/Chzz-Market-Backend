@@ -28,7 +28,6 @@ public class RegisterAuctionPolicy extends AuctionPolicy{
     public Auction createAuction(Product product, BaseRegisterRequest request) {
         return Auction.builder()
                 .product(product)
-                .minPrice(request.getMinPrice())
                 .status(AuctionStatus.PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusHours(24))
                 .build();

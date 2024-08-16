@@ -243,8 +243,6 @@ class AuctionServiceTest {
 
             Auction newAuction = AuctionTestFactory.createAuction(preRegisteredProduct, createValidRegisterAuctionRequest(userId), PROCEEDING);
             ReflectionTestUtils.setField(newAuction, "id", newAuctionId);
-            ReflectionTestUtils.setField(newAuction, "minPrice", minPrice);
-            ReflectionTestUtils.setField(newAuction, "endDateTime", LocalDateTime.now().plusHours(24));
 
             when(productRepository.findById(productId)).thenReturn(Optional.of(preRegisteredProduct));
             when(auctionRepository.existsByProductId(productId)).thenReturn(false);

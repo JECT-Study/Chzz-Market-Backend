@@ -68,12 +68,12 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                         product.name,
                         image.cdnPath,
                         timeRemaining().longValue(),
-                        auction.minPrice.longValue(),
+                        product.minPrice.longValue(),
                         bid.countDistinct(),
                         isParticipating(userId)
                 ))
                 .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId())))
-                .groupBy(auction.id, product.name, image.cdnPath, auction.createdAt, auction.minPrice)
+                .groupBy(auction.id, product.name, image.cdnPath, auction.createdAt, product.minPrice)
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -100,7 +100,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                         user.nickname,
                         product.name,
                         product.description,
-                        auction.minPrice,
+                        product.minPrice,
                         auction.endDateTime,
                         auction.status,
                         user.id.eq(userId),
@@ -189,8 +189,8 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
     private OrderSpecifier<?> getOrderSpecifier(AuctionOrder auctionOrder) {
         Map<AuctionOrder, OrderSpecifier<?>> orderSpecifierMap = Map.of(
                 AuctionOrder.POPULARITY, bid.countDistinct().desc(),
-                EXPENSIVE, auction.minPrice.desc(),
-                CHEAP, auction.minPrice.asc(),
+                EXPENSIVE, product.minPrice.desc(),
+                CHEAP, product.minPrice.asc(),
                 NEWEST, auction.endDateTime.desc()
         );
         return orderSpecifierMap.getOrDefault(auctionOrder, auction.createdAt.desc());
@@ -200,8 +200,8 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public enum AuctionOrder implements QuerydslOrder {
         POPULARITY("popularity",auction.bids.size().multiply(-1)),
-        EXPENSIVE("expensive",auction.minPrice.multiply(-1)),
-        CHEAP("cheap",auction.minPrice),
+        EXPENSIVE("expensive",product.minPrice.multiply(-1)),
+        CHEAP("cheap",product.minPrice),
         NEWEST("newest",timeRemaining());
 
         private final String name;

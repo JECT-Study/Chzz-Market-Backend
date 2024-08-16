@@ -11,7 +11,6 @@ public abstract class AuctionPolicy {
     public Auction createAuction(Product product, BaseRegisterRequest request) {
         return Auction.builder()
                 .product(product)
-                .minPrice(request.getMinPrice())
                 .status(Auction.AuctionStatus.PROCEEDING)
                 .build();
     }

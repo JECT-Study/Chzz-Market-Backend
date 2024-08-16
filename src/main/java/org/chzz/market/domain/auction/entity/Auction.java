@@ -45,20 +45,19 @@ public class Auction extends BaseTimeEntity {
     private Long winnerId;
 
     @Column
-    @ThousandMultiple
-    private Integer minPrice;
-
-    @Column
     private LocalDateTime endDateTime;
 
     @Column(columnDefinition = "varchar(20)")
     @Enumerated(EnumType.STRING)
     private AuctionStatus status;
 
+    public Integer getMinPrice() {
+        return product.getMinPrice();
+    }
+
     public static Auction toEntity(Product product) {
         return Auction.builder()
                 .product(product)
-                .minPrice(product.getMinPrice())
                 .status(PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusHours(24))
                 .build();
@@ -76,7 +75,7 @@ public class Auction extends BaseTimeEntity {
 
     // 입찰 금액이 최소 금액 이상인지 확인
     public boolean isAboveMinPrice(Long amount) {
-        return amount >= minPrice;
+        return amount >= getMinPrice();
     }
 
     @OneToMany(mappedBy = "auction", cascade = CascadeType.ALL, orphanRemoval = true)
