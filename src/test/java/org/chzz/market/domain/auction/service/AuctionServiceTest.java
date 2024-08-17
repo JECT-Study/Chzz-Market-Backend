@@ -239,6 +239,7 @@ class AuctionServiceTest {
 
             StartAuctionRequest request = new StartAuctionRequest();
             ReflectionTestUtils.setField(request, "productId", productId);
+            ReflectionTestUtils.setField(request, "userId", userId);
 
             Auction newAuction = AuctionTestFactory.createAuction(preRegisteredProduct, createValidRegisterAuctionRequest(userId), PROCEEDING);
             ReflectionTestUtils.setField(newAuction, "id", newAuctionId);
@@ -285,12 +286,14 @@ class AuctionServiceTest {
         void startAuction_AlreadyProceeding() {
             // given
             Long productId = 1L;
+            Long userId = 1L;
             StartAuctionRequest request = new StartAuctionRequest();
             ReflectionTestUtils.setField(request, "productId", productId);
 
             User user = UserTestFactory.createUser(1L, "seller", "test@naver.com");
             Product product = ProductTestFactory.createProduct(createValidPreRegisterRequest(1L), user);
             ReflectionTestUtils.setField(product, "id", productId);
+            ReflectionTestUtils.setField(request, "userId", userId);
 
             when(productRepository.findById(productId)).thenReturn(Optional.of(product));
             when(auctionRepository.existsByProductId(productId)).thenReturn(true);
