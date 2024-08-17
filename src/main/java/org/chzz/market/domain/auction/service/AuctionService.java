@@ -38,9 +38,6 @@ import static org.chzz.market.domain.auction.dto.request.BaseRegisterRequest.Auc
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_FOUND;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-import java.util.Optional;
-
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.*;
 
 @Service
@@ -106,10 +103,15 @@ public class AuctionService {
         return auctionRepository.findAuctionsByUserId(userId, pageable);
     }
 
-    public Product validateStartAuction(Long productId) {
+    public Product validateStartAuction(Long productId, Long userId) {
         logger.info("사전 등록 상품 유효성 검사를 시작합니다. 상품 ID: {}", productId);
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
+
+        // 사용자 유효성 검사
+        if (!product.getUser().getId().equals(userId)) {
+            throw new AuctionException(UNAUTHORIZED_ACCESS);
+        }
 
         // 이미 경매로 등록된 상품인지 유효성 검사
         if (auctionRepository.existsByProductId(product.getId())) {
@@ -142,7 +144,7 @@ public class AuctionService {
      */
     @Transactional
     public StartAuctionResponse startAuction(StartAuctionRequest request) {
-        Product product = validateStartAuction(request.getProductId());
+        Product product = validateStartAuction(request.getProductId(), request.getUserId());
         return changeAuction(product);
     }
 
