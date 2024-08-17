@@ -11,8 +11,8 @@ import java.util.Optional;
 import org.chzz.market.common.DatabaseTest;
 import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.AuctionResponse;
+import org.chzz.market.domain.auction.dto.response.MyAuctionResponse;
 import org.chzz.market.domain.auction.entity.Auction;
-import org.chzz.market.domain.auction.entity.Auction.AuctionStatus;
 import org.chzz.market.domain.bid.entity.Bid;
 import org.chzz.market.domain.bid.repository.BidRepository;
 import org.chzz.market.domain.image.entity.Image;
@@ -54,7 +54,7 @@ class AuctionRepositoryImplTest {
     @PersistenceContext
     EntityManager entityManager;
 
-    private static User user1, user2, user3;
+    private static User user1, user2, user3, user4;
     private static Product product1, product2, product3, product4;
     private static Auction auction1, auction2, auction3, auction4;
     private static Image image1, image2, image3, image4;
@@ -69,7 +69,8 @@ class AuctionRepositoryImplTest {
         user1 = User.builder().providerId("1234").nickname("닉네임1").email("asd@naver.com").build();
         user2 = User.builder().providerId("12345").nickname("닉네임2").email("asd1@naver.com").build();
         user3 = User.builder().providerId("123456").nickname("닉네임3").email("asd12@naver.com").build();
-        userRepository.saveAll(List.of(user1, user2, user3));
+        user4 = User.builder().providerId("1234567").nickname("닉네임4").email("asd123@naver.com").build();
+        userRepository.saveAll(List.of(user1, user2, user3, user4));
 
         product1 = Product.builder().user(user1).name("제품1").category(Category.FASHION_AND_CLOTHING).minPrice(10000).build();
         product2 = Product.builder().user(user1).name("제품2").category(Category.BOOKS_AND_MEDIA).minPrice(20000).build();
@@ -77,13 +78,13 @@ class AuctionRepositoryImplTest {
         product4 = Product.builder().user(user2).name("제품4").category(Category.FASHION_AND_CLOTHING).minPrice(40000).build();
         productRepository.saveAll(List.of(product1, product2, product3, product4));
 
-        auction1 = Auction.builder().product(product1).minPrice(1000).status(AuctionStatus.PROCEEDING)
+        auction1 = Auction.builder().product(product1).minPrice(1000).status(Auction.AuctionStatus.PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusDays(1)).build();
-        auction2 = Auction.builder().product(product2).minPrice(2000).status(AuctionStatus.PROCEEDING)
+        auction2 = Auction.builder().product(product2).minPrice(2000).status(Auction.AuctionStatus.PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusDays(1)).build();
-        auction3 = Auction.builder().product(product3).minPrice(3000).status(AuctionStatus.PROCEEDING)
+        auction3 = Auction.builder().product(product3).minPrice(3000).status(Auction.AuctionStatus.PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusDays(1)).build();
-        auction4 = Auction.builder().product(product4).minPrice(3000).status(AuctionStatus.CANCELLED)
+        auction4 = Auction.builder().product(product4).minPrice(3000).status(Auction.AuctionStatus.CANCELLED)
                 .endDateTime(LocalDateTime.now().plusDays(1)).build();
         auctionRepository.saveAll(List.of(auction1, auction2, auction3, auction4));
 
@@ -260,6 +261,57 @@ class AuctionRepositoryImplTest {
 
         //then
         assertThat(result).isNotPresent();
+    }
+
+    @Test
+    @DisplayName("나의 경매 목록 조회 - 최신순")
+    public void testFindMyAuctionsWithNewest() throws Exception {
+        //given
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("newest"));
+        Long myId = user1.getId();
+
+        //when
+        Page<MyAuctionResponse> result = auctionRepository.findAuctionsByUserId(
+                myId, pageable);
+
+        //then
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).hasSize(2);
+        assertThat(result.getContent().get(0).getCreatedAt()).isAfter(result.getContent().get(1).getCreatedAt());
+    }
+
+    @Test
+    @DisplayName("나의 경매 목록 조회 - 오래된순")
+    public void testFindMyAuctionsWithOldest() throws Exception {
+        //given
+        Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("newest")));
+        Long myId = user1.getId();
+
+        //when
+        Page<MyAuctionResponse> result = auctionRepository.findAuctionsByUserId(
+                myId, pageable);
+
+        //then
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).hasSize(2);
+        assertThat(result.getContent().get(0).getCreatedAt()).isBefore(result.getContent().get(1).getCreatedAt());
+    }
+
+
+    @Test
+    @DisplayName("나의 경매 목록 조회했는데 없는 경우")
+    public void testFindMyAuctionsNotExist() throws Exception {
+        //given
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("newest"));
+        Long myId = user4.getId();
+
+        //when
+        Page<MyAuctionResponse> result = auctionRepository.findAuctionsByUserId(
+                myId, pageable);
+
+        //then
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).hasSize(0);
     }
 
 }

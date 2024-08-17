@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.*;
 
 import jakarta.persistence.EntityManagerFactory;
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import org.chzz.market.common.DatabaseTest;
@@ -104,6 +105,7 @@ class BidRepositoryCustomImplTest {
         Auction auction1 = Auction.builder()
                 .product(product1)
                 .minPrice(1000)
+                .endDateTime(LocalDateTime.now().plusDays(2))
                 .status(PROCEEDING)
                 .winnerId(2L)
                 .build();
@@ -111,6 +113,7 @@ class BidRepositoryCustomImplTest {
         Auction auction2 = Auction.builder()
                 .product(product2)
                 .minPrice(1000)
+                .endDateTime(LocalDateTime.now().plusDays(1))
                 .status(PROCEEDING)
                 .winnerId(2L)
                 .build();
@@ -123,7 +126,7 @@ class BidRepositoryCustomImplTest {
                 .build();
         Bid bid2 = Bid.builder()
                 .amount(2000L)
-                .auction(auction1)
+                .auction(auction2)
                 .count(3)
                 .bidder(bidder1)
                 .build();
@@ -139,11 +142,11 @@ class BidRepositoryCustomImplTest {
                 .count(1)
                 .bidder(bidder2)
                 .build();
-        userRepository.saveAll(List.of(seller, bidder1,bidder2));
-        productRepository.saveAll(List.of(product1,product2));
-        imageRepository.saveAll(List.of(image1,image2));
-        auctionRepository.saveAll(List.of(auction1,auction2));
-        bidRepository.saveAll(List.of(bid1,bid2,bid3,bid4));
+        userRepository.saveAll(List.of(seller, bidder1, bidder2));
+        productRepository.saveAll(List.of(product1, product2));
+        imageRepository.saveAll(List.of(image1, image2));
+        auctionRepository.saveAll(List.of(auction1, auction2));
+        bidRepository.saveAll(List.of(bid1, bid2, bid3, bid4));
     }
 
     @Test
@@ -162,17 +165,17 @@ class BidRepositoryCustomImplTest {
         assertThat(usersBidHistory1.getNumberOfElements()).isEqualTo(2);
         assertThat(usersBidHistory1.getContent()).isSortedAccordingTo(Comparator.comparing(BiddingRecord::getBidAmount));
 
-        assertThat(usersBidHistory1.isEmpty()).isFalse();
+        assertThat(usersBidHistory2.isEmpty()).isFalse();
         assertThat(usersBidHistory2.getTotalPages()).isEqualTo(1);
         assertThat(usersBidHistory2.getNumberOfElements()).isEqualTo(2);
-        assertThat(usersBidHistory1.getContent()).isSortedAccordingTo(Comparator.comparing(BiddingRecord::getBidAmount));
+        assertThat(usersBidHistory2.getContent()).isSortedAccordingTo(Comparator.comparing(BiddingRecord::getBidAmount));
     }
 
     @Test
     @DisplayName("입찰 기록은 남은 시간 기준으로 정렬 가능하다")
     void testFindBidHistoryOrderByTimeRemaining() {
         // given
-        Pageable pageable = PageRequest.of(0, 10, Sort.by("time remaining"));
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("time-remaining"));
         Page<BiddingRecord> usersBidHistory1 = bidRepository.findUsersBidHistory(bidder1, pageable);
         Page<BiddingRecord> usersBidHistory2 = bidRepository.findUsersBidHistory(bidder2, pageable);
         // when
@@ -181,12 +184,14 @@ class BidRepositoryCustomImplTest {
         assertThat(usersBidHistory1.isEmpty()).isFalse();
         assertThat(usersBidHistory1.getTotalPages()).isEqualTo(1);
         assertThat(usersBidHistory1.getNumberOfElements()).isEqualTo(2);
-        assertThat(usersBidHistory1.getContent()).isSortedAccordingTo(Comparator.comparing(BiddingRecord::getTimeRemaining));
+        assertThat(usersBidHistory1.getContent()).isSortedAccordingTo(
+                Comparator.comparing(BiddingRecord::getTimeRemaining).reversed());
 
-        assertThat(usersBidHistory1.isEmpty()).isFalse();
+        assertThat(usersBidHistory2.isEmpty()).isFalse();
         assertThat(usersBidHistory2.getTotalPages()).isEqualTo(1);
         assertThat(usersBidHistory2.getNumberOfElements()).isEqualTo(2);
-        assertThat(usersBidHistory1.getContent()).isSortedAccordingTo(Comparator.comparing(BiddingRecord::getTimeRemaining));
-    }
+        assertThat(usersBidHistory2.getContent()).isSortedAccordingTo(
+                Comparator.comparing(BiddingRecord::getTimeRemaining).reversed());
 
+    }
 }

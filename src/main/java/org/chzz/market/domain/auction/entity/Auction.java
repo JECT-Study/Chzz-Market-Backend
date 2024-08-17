@@ -40,7 +40,6 @@ public class Auction extends BaseTimeEntity {
     @JoinColumn(name = "product_id")
     private Product product;
 
-
     @Column
     private Long winnerId;
 
@@ -102,6 +101,7 @@ public class Auction extends BaseTimeEntity {
     public void removeBid(Bid bid) {
         bids.remove(bid);
     }
+
     @Getter
     @AllArgsConstructor
     public enum AuctionStatus {

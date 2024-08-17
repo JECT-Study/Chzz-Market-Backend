@@ -1,10 +1,17 @@
 package org.chzz.market.domain.auction.service;
 
+import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_ACCESSIBLE;
+import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_FOUND;
+
+import java.util.List;
+import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
+import org.chzz.market.domain.auction.dto.response.AuctionResponse;
+import org.chzz.market.domain.auction.dto.response.MyAuctionResponse;
 import org.chzz.market.domain.auction.dto.request.BaseRegisterRequest;
 import org.chzz.market.domain.auction.dto.request.RegisterAuctionRequest;
 import org.chzz.market.domain.auction.dto.request.StartAuctionRequest;
-import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
-import org.chzz.market.domain.auction.dto.response.AuctionResponse;
 import org.chzz.market.domain.auction.dto.response.RegisterAuctionResponse;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.service.policy.AuctionPolicy;
@@ -22,10 +29,6 @@ import org.chzz.market.domain.user.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.Optional;
-import lombok.RequiredArgsConstructor;
-
 import org.chzz.market.domain.product.entity.Product.Category;
 
 import org.springframework.data.domain.Page;
@@ -33,7 +36,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_FOUND;
 import org.springframework.web.multipart.MultipartFile;
 
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.*;
@@ -103,6 +105,10 @@ public class AuctionService {
     public AuctionDetailsResponse getAuctionDetails(Long auctionId, Long userId) {
         Optional<AuctionDetailsResponse> auctionDetails = auctionRepository.findAuctionDetailsById(auctionId, userId);
         return auctionDetails.orElseThrow(() -> new AuctionException(AUCTION_NOT_ACCESSIBLE));
+    }
+
+    public Page<MyAuctionResponse> getAuctionListByUserId(Long userId, Pageable pageable) {
+        return auctionRepository.findAuctionsByUserId(userId, pageable);
     }
 
     /**

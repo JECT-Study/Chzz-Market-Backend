@@ -38,7 +38,7 @@ public class QuerydslOrderProvider {
     }
 
     private OrderSpecifier<?> buildOrderSpecifier(OrderSpecifier<?> baseOrderSpecifier, boolean isAscending) {
-        // 오름차순 정렬 시 기본 OrderSpecifier 반환
+        // 오름차순 정렬 시 기본 OrderSpecifier 사용
         if (isAscending) {
             return baseOrderSpecifier;
         }

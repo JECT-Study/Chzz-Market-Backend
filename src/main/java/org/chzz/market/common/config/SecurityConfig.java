@@ -20,6 +20,7 @@ public class SecurityConfig {
                                 .requestMatchers(ACTUATOR).permitAll()
                                 .requestMatchers("/api/v1/auctions/**").permitAll()
                                 .requestMatchers("api/v1/bids/**").permitAll()
+                                .requestMatchers("api/v1/users/**").permitAll()
                                 .requestMatchers("/api/v1/products/**").permitAll()
                                 .requestMatchers("/error").permitAll()
                                 .anyRequest().authenticated()
