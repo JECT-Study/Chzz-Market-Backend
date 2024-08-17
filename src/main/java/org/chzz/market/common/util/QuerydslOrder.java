@@ -1,9 +1,9 @@
 package org.chzz.market.common.util;
 
-import com.querydsl.core.types.dsl.ComparableExpressionBase;
+import com.querydsl.core.types.OrderSpecifier;
 
 public interface QuerydslOrder {
     String getName();
 
-    ComparableExpressionBase<?> getComparableExpressionBase();
+    OrderSpecifier<?> getOrderSpecifier();
 }
