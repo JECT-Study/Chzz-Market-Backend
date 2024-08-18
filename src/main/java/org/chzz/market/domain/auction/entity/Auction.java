@@ -14,9 +14,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -58,6 +58,10 @@ public class Auction extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private Status status;
 
+    @OneToMany(mappedBy = "auction", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Bid> bids = new ArrayList<>();
+
     public void validateAuctionEndTime() {
         // 경매가 진행중이 아닐 때
         if (status != Status.PROCEEDING || LocalDateTime.now().isAfter(endDateTime)) {
@@ -70,26 +74,14 @@ public class Auction extends BaseTimeEntity {
         return amount >= minPrice;
     }
 
-    @OneToMany(mappedBy = "auction", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Bid> bids = new ArrayList<>();
 
     public void registerBid(Bid bid) {
-        if (bids == null) {
-            bids = new ArrayList<>();
-        }
-        boolean isParticipated = bids.stream()
-                .anyMatch(bid1 -> bid1.getBidder().equals(bid.getBidder()));
-        if (isParticipated) {
-            bids.stream()
-                    .filter(bid1 -> bid1.equals(bid))
-                    .findFirst()
-                    .ifPresent(bid1 -> bids.remove(bid));
-        }
-        bids.add(bid);
         bid.specifyAuction(this);
+        bids.add(bid);
     }
 
     public void removeBid(Bid bid) {
+        bid.cancelBid();
         bids.remove(bid);
     }
 
