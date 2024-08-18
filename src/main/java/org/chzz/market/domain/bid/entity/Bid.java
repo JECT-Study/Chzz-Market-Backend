@@ -2,6 +2,7 @@ package org.chzz.market.domain.bid.entity;
 
 import static org.chzz.market.domain.bid.error.BidErrorCode.BID_ALREADY_CANCELLED;
 import static org.chzz.market.domain.bid.error.BidErrorCode.BID_LIMIT_EXCEEDED;
+import static org.chzz.market.domain.bid.error.BidErrorCode.BID_SAME_AS_PREVIOUS;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -66,12 +67,15 @@ public class Bid extends BaseTimeEntity {
         if (this.count <= 0) {
             throw new BidException(BID_LIMIT_EXCEEDED);
         }
+        if (this.amount.equals(amount)) {
+            throw new BidException(BID_SAME_AS_PREVIOUS);
+        }
         this.amount = amount;
         this.count--;
     }
 
     public void specifyAuction(Auction auction) {
-        this.auction=auction;
+        this.auction = auction;
     }
 
     public void cancelBid() {
