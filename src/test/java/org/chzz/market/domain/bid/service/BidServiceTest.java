@@ -9,6 +9,8 @@ import static org.chzz.market.domain.bid.error.BidErrorCode.BID_BELOW_MIN_PRICE;
 import static org.chzz.market.domain.bid.error.BidErrorCode.BID_BY_OWNER;
 import static org.chzz.market.domain.bid.error.BidErrorCode.BID_LIMIT_EXCEEDED;
 import static org.chzz.market.domain.bid.error.BidErrorCode.BID_NOT_ACCESSIBLE;
+import static org.chzz.market.domain.bid.error.BidErrorCode.BID_SAME_AS_PREVIOUS;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
@@ -25,7 +27,6 @@ import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.product.entity.Product.Category;
 import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.repository.UserRepository;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -81,7 +82,8 @@ class BidServiceTest {
         when(bidRepository.findByAuctionAndBidder(auction, user2)).thenReturn(Optional.empty());
 
         //when & then
-        Assertions.assertDoesNotThrow(() -> bidService.createBid(bidCreateRequest, 2L));
+        assertDoesNotThrow(() -> bidService.createBid(bidCreateRequest, 2L));
+        assertThat(auction.getBids().size()).isEqualTo(1);
     }
 
     @Test
@@ -182,18 +184,36 @@ class BidServiceTest {
     }
 
     @Test
+    @DisplayName("실패 - 기존 입찰 금액과 동일한 입찰 금액인 경우")
+    public void asd() throws Exception {
+        //given
+        bidCreateRequest = BidCreateRequest.builder().auctionId(1L).amount(1000L).build();
+        Bid bid = Bid.builder().id(1L).auction(auction).bidder(user2).amount(1000L).build();
+        when(userRepository.findById(2L)).thenReturn(Optional.of(user2));
+        when(auctionService.getAuction(bidCreateRequest.getAuctionId())).thenReturn(auction);
+        when(bidRepository.findByAuctionAndBidder(auction, user2)).thenReturn(Optional.of(bid));
+
+        //when & then
+        assertThatThrownBy(() -> bidService.createBid(bidCreateRequest, 2L))
+                .isInstanceOf(BidException.class)
+                .extracting(ERROR_CODE)
+                .isEqualTo(BID_SAME_AS_PREVIOUS);
+    }
+
+    @Test
     @DisplayName("성공 - 입찰 취소")
     public void cancelBid_Success() throws Exception {
         //given
         Bid bid = Bid.builder().id(1L).auction(auction).bidder(user2).amount(1000L).count(3).build();
+        auction.registerBid(bid);
 
         //when
         when(userRepository.findById(2L)).thenReturn(Optional.of(user2));
         when(bidRepository.findById(1L)).thenReturn(Optional.of(bid));
         bidService.cancelBid(bid.getId(), user2.getId());
-
         //then
         assertThat(bid.getStatus()).isEqualTo(CANCELLED);
+        assertThat(auction.getBids().size()).isEqualTo(0);
     }
 
     @Test
