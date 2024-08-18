@@ -70,6 +70,10 @@ public class Bid extends BaseTimeEntity {
         this.count--;
     }
 
+    public void specifyAuction(Auction auction) {
+        this.auction=auction;
+    }
+
     public void cancelBid() {
         validateActiveStatus();
         this.status = BidStatus.CANCELLED;

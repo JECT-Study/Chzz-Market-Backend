@@ -19,7 +19,9 @@ public class SecurityConfig {
         return http.authorizeHttpRequests(
                         authorizationManagerRequestMatcherRegistry -> authorizationManagerRequestMatcherRegistry
                                 .requestMatchers(ACTUATOR).permitAll()
-                                .requestMatchers("/api/v1/auctions").permitAll()
+                                .requestMatchers("/api/v1/auctions/**").permitAll()
+                                .requestMatchers("api/v1/bids/**").permitAll()
+                                .requestMatchers("api/v1/users/**").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .headers(header -> header.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable).disable())
