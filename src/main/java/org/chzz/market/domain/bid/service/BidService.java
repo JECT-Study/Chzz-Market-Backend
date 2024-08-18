@@ -48,7 +48,7 @@ public class BidService {
                         // 이미 입찰을 한 경우
                         bid -> bid.adjustBidAmount(bidCreateRequest.getAmount()),
                         // 입찰을 처음 하는 경우
-                        () -> bidRepository.save(bidCreateRequest.toEntity(auction, user))
+                        () -> auction.registerBid(bidCreateRequest.toEntity(auction, user)) // 연관관계 설정
                 );
     }
 
@@ -59,7 +59,7 @@ public class BidService {
         Auction auction = bid.getAuction();
         validateBidOwnership(user, bid);
         auction.validateAuctionEndTime();
-        bid.cancelBid();
+        auction.removeBid(bid);
         log.info("입찰이 취소되었습니다. 입찰 ID: {}, 사용자 ID: {}, 경매 ID: {}", bid.getId(), user.getId(), auction.getId());
     }
 
