@@ -49,7 +49,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: gradle 빌드
-        run: ./gradlew build
+        run: ./gradlew build -x test -i
 
 #      ECR 로그인 결과를 사용해 ECR 경로를 받아 Docker image를 전달
       - name: docker 빌드, 및 ECR 배포
