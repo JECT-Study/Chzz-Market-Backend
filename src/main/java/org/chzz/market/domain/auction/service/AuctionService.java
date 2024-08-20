@@ -93,4 +93,7 @@ public class AuctionService {
         return auctionRepository.findAuctionsByUserId(userId, pageable);
     }
 
+    public Page<AuctionResponse> getAuctionHistory(Long userId, Pageable pageable) {
+        return auctionRepository.findParticipatingAuctionRecord(userId, pageable);
+    }
 }

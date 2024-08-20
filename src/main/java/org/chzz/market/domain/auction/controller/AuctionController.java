@@ -8,8 +8,13 @@ import org.chzz.market.domain.auction.service.AuctionService;
 import org.chzz.market.domain.product.entity.Product.Category;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
 @RestController
@@ -35,5 +40,13 @@ public class AuctionController {
     @GetMapping("/{auctionId}")
     public ResponseEntity<?> getAuctionDetails(@PathVariable Long auctionId) {
         return ResponseEntity.ok(auctionService.getAuctionDetails(auctionId, 1L)); // TODO: 추후에 인증된 사용자 정보로 수정 필요
+    }
+
+    @GetMapping("/history")
+    public ResponseEntity<?> getAuctionHistory(
+            //                                            @AuthenticationPrincipal CustomUserDetails customUserDetails, // TODO: 추후에 인증된 사용자 정보로 수정 필요
+            Pageable pageable
+    ) {
+        return ResponseEntity.ok(auctionService.getAuctionHistory(1L, pageable));
     }
 }
