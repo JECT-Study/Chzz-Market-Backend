@@ -3,9 +3,6 @@ package org.chzz.market.domain.auction.repository;
 import static org.chzz.market.domain.auction.entity.Auction.Status.ENDED;
 import static org.chzz.market.domain.auction.entity.Auction.Status.PROCEEDING;
 import static org.chzz.market.domain.auction.entity.QAuction.auction;
-import static org.chzz.market.domain.auction.repository.AuctionRepositoryImpl.AuctionOrder.CHEAP;
-import static org.chzz.market.domain.auction.repository.AuctionRepositoryImpl.AuctionOrder.EXPENSIVE;
-import static org.chzz.market.domain.auction.repository.AuctionRepositoryImpl.AuctionOrder.NEWEST;
 import static org.chzz.market.domain.bid.entity.QBid.bid;
 import static org.chzz.market.domain.image.entity.QImage.image;
 import static org.chzz.market.domain.product.entity.QProduct.product;
@@ -20,7 +17,6 @@ import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -107,6 +103,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                         user.id.eq(userId),
                         getBidCount(),
                         bid.id.isNotNull(),
+                        bid.id,
                         bid.amount.coalesce(0L),
                         bid.count.coalesce(3)
                 ))

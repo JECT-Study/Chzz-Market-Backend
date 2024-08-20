@@ -20,6 +20,7 @@ public class AuctionDetailsResponse {
     private Boolean isSeller;
     private Long participantCount;
     private Boolean isParticipating;
+    private Long bidId;
     private Long bidAmount;
     private int remainingBidCount;
     private List<String> imageList;
@@ -28,7 +29,7 @@ public class AuctionDetailsResponse {
     public AuctionDetailsResponse(Long productId, Long sellerId, String sellerName, String title, String description,
                                   Integer minPrice, LocalDateTime endDateTime, Status status,
                                   Boolean isSeller,
-                                  Long participantCount, Boolean isParticipating, Long bidAmount,
+                                  Long participantCount, Boolean isParticipating, Long bidId, Long bidAmount,
                                   int remainingBidCount) {
         this.productId = productId;
         this.sellerId = sellerId;
@@ -41,6 +42,7 @@ public class AuctionDetailsResponse {
         this.isSeller = isSeller;
         this.participantCount = participantCount;
         this.isParticipating = isParticipating;
+        this.bidId = bidId;
         this.bidAmount = bidAmount;
         this.remainingBidCount = remainingBidCount;
     }
