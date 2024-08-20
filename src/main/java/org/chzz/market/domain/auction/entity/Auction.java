@@ -3,6 +3,7 @@ package org.chzz.market.domain.auction.entity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
@@ -21,6 +22,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.chzz.market.common.validation.annotation.ThousandMultiple;
+import org.chzz.market.domain.auction.entity.listener.AuctionEntityListener;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
 import org.chzz.market.domain.bid.entity.Bid;
 import org.chzz.market.domain.product.entity.Product;
@@ -31,6 +33,7 @@ import org.chzz.market.domain.product.entity.Product;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EntityListeners(value = AuctionEntityListener.class)
 public class Auction extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -91,6 +94,14 @@ public class Auction extends BaseTimeEntity {
 
     public void removeBid(Bid bid) {
         bids.remove(bid);
+    }
+
+    public void endAuction() {
+        this.status = Status.ENDED;
+    }
+
+    public void assignWinner(Long winnerId) {
+        this.winnerId = winnerId;
     }
 
     @Getter
