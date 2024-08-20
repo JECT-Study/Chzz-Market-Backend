@@ -8,12 +8,12 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.chzz.market.common.validation.annotation.ThousandMultiple;
-import org.chzz.market.domain.auction.dto.AuctionType;
+import org.chzz.market.domain.auction.enums.AuctionRegisterType;
 
 import static org.chzz.market.domain.product.entity.Product.*;
 
 @Getter
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "auctionType", visible = true)
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "auctionRegisterType", visible = true)
 @JsonSubTypes({
         @JsonSubTypes.Type(name = "PRE_REGISTER", value = PreRegisterRequest.class),
         @JsonSubTypes.Type(name = "REGISTER", value = RegisterAuctionRequest.class)
@@ -39,5 +39,5 @@ public abstract class BaseRegisterRequest {
     protected Integer minPrice;
 
     @NotNull(message = "경매 타입을 선택해주세요")
-    protected AuctionType auctionType;
+    protected AuctionRegisterType auctionRegisterType;
 }
