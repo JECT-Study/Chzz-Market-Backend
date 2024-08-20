@@ -2,19 +2,26 @@ package org.chzz.market.domain.auction.service;
 
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_ACCESSIBLE;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_FOUND;
+import static org.chzz.market.domain.notification.entity.Notification.Type.AUCTION_FAILURE;
+import static org.chzz.market.domain.notification.entity.Notification.Type.AUCTION_NON_WINNER;
+import static org.chzz.market.domain.notification.entity.Notification.Type.AUCTION_SUCCESS;
+import static org.chzz.market.domain.notification.entity.Notification.Type.AUCTION_WINNER;
 
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.domain.auction.dto.request.AuctionCreateRequest;
 import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.AuctionResponse;
 import org.chzz.market.domain.auction.dto.response.MyAuctionResponse;
 import org.chzz.market.domain.auction.entity.Auction;
-
 import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
+import org.chzz.market.domain.bid.service.BidService;
 import org.chzz.market.domain.image.service.ImageService;
+import org.chzz.market.domain.notification.dto.NotificationMessage;
+import org.chzz.market.domain.notification.service.NotificationService;
 import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.product.entity.Product.Category;
 import org.chzz.market.domain.product.repository.ProductRepository;
@@ -32,13 +39,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
+@Slf4j
 public class AuctionService {
 
     private static final Logger logger = LoggerFactory.getLogger(AuctionService.class);
 
+    private final BidService bidService;
+    private final ImageService imageService;
+    private final NotificationService notificationService;
     private final ProductRepository productRepository;
     private final AuctionRepository auctionRepository;
-    private final ImageService imageService;
     private final UserRepository userRepository;
 
     @Transactional
@@ -91,6 +101,49 @@ public class AuctionService {
 
     public Page<MyAuctionResponse> getAuctionListByUserId(Long userId, Pageable pageable) {
         return auctionRepository.findAuctionsByUserId(userId, pageable);
+    }
+
+    @Transactional
+    public void completeAuction(Long auctionId) {
+        logger.info("경매 종료 작업 시작 auction ID: {}", auctionId);
+        Auction auction = getAuction(auctionId);
+        auction.endAuction();
+        processAuctionResults(auction);
+    }
+
+    private void processAuctionResults(Auction auction) {
+        String productName = auction.getProduct().getName();
+        Long productUserId = auction.getProduct().getUser().getId();
+        bidService.determineAuctionWinner(auction)
+                .ifPresentOrElse(winnerId -> {
+                    auction.assignWinner(winnerId);
+                    // 낙찰자 알림 전송
+                    notificationService.sendNotification(
+                            new NotificationMessage(winnerId, AUCTION_WINNER, productName));
+
+                    // 미 낙찰자 알림 전송
+                    processNonWinners(auction, productName, winnerId);
+
+                    // 판매자에게 낙찰 알림 전송
+                    notificationService.sendNotification(
+                            new NotificationMessage(productUserId, AUCTION_SUCCESS, productName));
+                }, () -> {
+                    // 판매자 한테 미 낙찰 알림 전송
+                    notificationService.sendNotification(
+                            new NotificationMessage(productUserId, AUCTION_FAILURE, productName));
+                });
+    }
+
+    private void processNonWinners(Auction auction, String productName, Long winnerId) {
+        List<Long> nonWinnerIds = auction.getBids().stream()
+                .map(bid -> bid.getBidder().getId())
+                .filter(bidderId -> !bidderId.equals(winnerId))
+                .toList();
+
+        if (!nonWinnerIds.isEmpty()) {
+            notificationService.sendNotification(
+                    new NotificationMessage(nonWinnerIds, AUCTION_NON_WINNER, productName));
+        }
     }
 
 }
