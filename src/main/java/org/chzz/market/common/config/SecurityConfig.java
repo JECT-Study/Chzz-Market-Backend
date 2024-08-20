@@ -22,6 +22,7 @@ public class SecurityConfig {
                                 .requestMatchers("/api/v1/auctions/**").permitAll()
                                 .requestMatchers("api/v1/bids/**").permitAll()
                                 .requestMatchers("api/v1/users/**").permitAll()
+                                .requestMatchers("api/v1/notifications/**").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .headers(header -> header.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable).disable())
