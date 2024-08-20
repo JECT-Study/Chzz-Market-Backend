@@ -1,7 +1,8 @@
 package org.chzz.market.domain.auction.repository;
 
-import static org.chzz.market.domain.auction.entity.Auction.Status.ENDED;
-import static org.chzz.market.domain.auction.entity.Auction.Status.PROCEEDING;
+import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.CANCELLED;
+import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.ENDED;
+import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.PROCEEDING;
 import static org.chzz.market.domain.auction.entity.QAuction.auction;
 import static org.chzz.market.domain.bid.entity.QBid.bid;
 import static org.chzz.market.domain.image.entity.QImage.image;
@@ -30,7 +31,6 @@ import org.chzz.market.domain.auction.dto.response.MyAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.QAuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.QAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.QMyAuctionResponse;
-import org.chzz.market.domain.auction.entity.Auction.Status;
 import org.chzz.market.domain.image.entity.QImage;
 import org.chzz.market.domain.product.entity.Product.Category;
 import org.springframework.data.domain.Page;
@@ -127,7 +127,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
         JPAQuery<?> baseQuery = jpaQueryFactory.from(auction)
                 .join(auction.product, product)
                 .join(product.user, user)
-                .where(auction.status.ne(Status.CANCELLED)
+                .where(auction.status.ne(CANCELLED)
                         .and(user.id.eq(userId)));
 
         List<MyAuctionResponse> content = baseQuery

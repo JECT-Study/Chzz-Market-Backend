@@ -1,6 +1,7 @@
 package org.chzz.market.domain.bid.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.*;
 
 import jakarta.persistence.EntityManagerFactory;
 import java.time.LocalDateTime;
@@ -8,7 +9,6 @@ import java.util.Comparator;
 import java.util.List;
 import org.chzz.market.common.DatabaseTest;
 import org.chzz.market.domain.auction.entity.Auction;
-import org.chzz.market.domain.auction.entity.Auction.Status;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.bid.dto.query.BiddingRecord;
 import org.chzz.market.domain.bid.entity.Bid;
@@ -83,6 +83,7 @@ class BidRepositoryCustomImplTest {
         Product product1 = Product.builder()
                 .category(Category.OTHER)
                 .description("asd")
+                .minPrice(1000)
                 .name("asd")
                 .user(seller)
                 .build();
@@ -90,6 +91,7 @@ class BidRepositoryCustomImplTest {
         Product product2 = Product.builder()
                 .category(Category.OTHER)
                 .description("asd")
+                .minPrice(1000)
                 .name("asd")
                 .user(seller)
                 .build();
@@ -104,16 +106,16 @@ class BidRepositoryCustomImplTest {
         auction1 = Auction.builder()
                 .product(product1)
                 .minPrice(1000)
-                .status(Status.PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusDays(2))
+                .status(PROCEEDING)
                 .winnerId(2L)
                 .build();
 
         auction2 = Auction.builder()
                 .product(product2)
                 .minPrice(1000)
-                .status(Status.PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusDays(1))
+                .status(PROCEEDING)
                 .winnerId(2L)
                 .build();
 
@@ -227,7 +229,7 @@ class BidRepositoryCustomImplTest {
         Auction auction3 = Auction.builder()
                 .product(product3)
                 .minPrice(1000)
-                .status(Status.PROCEEDING)
+                .status(PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusDays(2))
                 .build();
 

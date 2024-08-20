@@ -12,7 +12,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.validation.constraints.Pattern;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
@@ -20,6 +19,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.chzz.market.common.validation.annotation.ThousandMultiple;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
 import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.like.entity.Like;
@@ -48,6 +48,10 @@ public class Product extends BaseTimeEntity {
     //TODO 2024 07 18 13:35:30 : custom validate
     private String description;
 
+    @Column
+    @ThousandMultiple
+    private Integer minPrice;
+
     @Column(nullable = false, columnDefinition = "varchar(30)")
     @Enumerated(EnumType.STRING)
     private Category category;
@@ -74,4 +78,5 @@ public class Product extends BaseTimeEntity {
 
         private final String displayName;
     }
+
 }

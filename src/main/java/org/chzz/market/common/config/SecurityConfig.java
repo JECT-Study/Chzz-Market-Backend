@@ -4,8 +4,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -16,14 +16,14 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(final HttpSecurity http) throws Exception {
-        return http.authorizeHttpRequests(
-                        authorizationManagerRequestMatcherRegistry -> authorizationManagerRequestMatcherRegistry
-                                .requestMatchers(ACTUATOR).permitAll()
-                                .requestMatchers("/api/v1/auctions/**").permitAll()
-                                .requestMatchers("api/v1/bids/**").permitAll()
-                                .requestMatchers("api/v1/users/**").permitAll()
-                                .requestMatchers("api/v1/notifications/**").permitAll()
-                                .anyRequest().authenticated()
+        return http.authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers(ACTUATOR).permitAll()
+                        .requestMatchers("/api/v1/auctions/**").permitAll()
+                        .requestMatchers("api/v1/bids/**").permitAll()
+                        .requestMatchers("api/v1/users/**").permitAll()
+                        .requestMatchers("api/v1/notifications/**").permitAll()
+                        .requestMatchers("/error").permitAll()
+                        .anyRequest().authenticated()
                 )
                 .headers(header -> header.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable).disable())
                 .httpBasic(AbstractHttpConfigurer::disable)
