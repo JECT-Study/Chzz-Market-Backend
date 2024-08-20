@@ -3,9 +3,8 @@ package org.chzz.market.domain.auction.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.domain.auction.dto.request.BaseRegisterRequest;
-import org.chzz.market.domain.auction.dto.response.RegisterAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.RegisterResponse;
-import org.chzz.market.domain.auction.service.AuctionRegistrationService;
+import org.chzz.market.domain.auction.service.register.AuctionRegistrationService;
 import org.chzz.market.domain.auction.service.AuctionRegistrationServiceFactory;
 import org.chzz.market.domain.auction.service.AuctionService;
 import org.chzz.market.domain.auction.dto.request.StartAuctionRequest;
@@ -30,7 +29,7 @@ public class AuctionController {
     private static final Logger logger = LoggerFactory.getLogger(AuctionController.class);
 
     private final AuctionService auctionService;
-    private final AuctionRegistrationServiceFactory serviceFactory;
+    private final AuctionRegistrationServiceFactory registrationServiceFactory;
 
     @GetMapping
     public ResponseEntity<?> getAuctionList(@RequestParam Category category,
@@ -52,10 +51,9 @@ public class AuctionController {
             @RequestPart("request") @Valid BaseRegisterRequest request,
             @RequestPart(value = "images", required = true) List<MultipartFile> images) {
 
-        AuctionRegistrationService service = serviceFactory.getService(request.getAuctionType());
-        RegisterResponse response = service.register(request, images);
+        AuctionRegistrationService auctionRegistrationService = registrationServiceFactory.getService(request.getAuctionRegisterType());
+        RegisterResponse response = auctionRegistrationService.register(request, images);
 
-//        RegisterResponse response = auctionService.registerAuction(request, images);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
