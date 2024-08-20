@@ -71,7 +71,7 @@ public class AuctionService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
 
-        // 사용자 유효성 검사
+        // 등록된 상품의 사용자 정보와 전환 요청한 사용자 정보 유효성 검사
         if (!product.getUser().getId().equals(userId)) {
             throw new AuctionException(UNAUTHORIZED_AUCTION);
         }

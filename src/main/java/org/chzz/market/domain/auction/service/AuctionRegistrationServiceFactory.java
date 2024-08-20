@@ -1,11 +1,14 @@
 package org.chzz.market.domain.auction.service;
 
 import lombok.RequiredArgsConstructor;
-import org.chzz.market.domain.auction.dto.request.BaseRegisterRequest;
+import org.chzz.market.domain.auction.enums.AuctionRegisterType;
+import org.chzz.market.domain.auction.error.AuctionException;
+import org.chzz.market.domain.auction.service.register.AuctionRegisterService;
+import org.chzz.market.domain.auction.service.register.AuctionRegistrationService;
+import org.chzz.market.domain.auction.service.register.PreRegisterService;
 import org.springframework.stereotype.Component;
 
-import static org.chzz.market.domain.auction.dto.AuctionType.PRE_REGISTER;
-import static org.chzz.market.domain.auction.dto.AuctionType.REGISTER;
+import static org.chzz.market.domain.auction.error.AuctionErrorCode.UNKNOWN_AUCTION_TYPE;
 
 @Component
 @RequiredArgsConstructor
@@ -13,14 +16,11 @@ public class AuctionRegistrationServiceFactory {
     private final PreRegisterService preRegisterService;
     private final AuctionRegisterService auctionRegisterService;
 
-    public AuctionRegistrationService getService(BaseRegisterRequest.AuctionType type) {
-        switch (type) {
-            case PRE_REGISTER:
-                return preRegisterService;
-            case REGISTER:
-                return auctionRegisterService;
-            default:
-                throw new IllegalArgumentException("알 수 없는 등록 유형 : " + type);
-        }
+    public AuctionRegistrationService getService(AuctionRegisterType type) {
+        return switch (type) {
+            case PRE_REGISTER -> preRegisterService;
+            case REGISTER -> auctionRegisterService;
+            default -> throw new AuctionException(UNKNOWN_AUCTION_TYPE);
+        };
     }
 }
