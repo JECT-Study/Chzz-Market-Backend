@@ -1,7 +1,6 @@
 package org.chzz.market.domain.auction.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.chzz.market.domain.auction.entity.Auction.*;
 import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.*;
 import static org.chzz.market.domain.auction.enums.AuctionRegisterType.PRE_REGISTER;
 import static org.chzz.market.domain.auction.enums.AuctionRegisterType.REGISTER;
@@ -241,7 +240,7 @@ class AuctionServiceTest {
             assertNotNull(response);
             assertEquals(newAuctionId, response.auctionId());
             assertEquals(productId, response.productId());
-            assertEquals(AuctionStatus.PROCEEDING, response.status());
+            assertEquals(PROCEEDING, response.status());
             assertTrue(response.endTime().isAfter(now) && response.endTime().isBefore(now.plusHours(25)));
 
             verify(productRepository).findById(productId);
@@ -300,7 +299,7 @@ class AuctionServiceTest {
         Long existingAuctionId = 1L;
         Long userId = 1L;
         AuctionDetailsResponse auctionDetails = new AuctionDetailsResponse(1L, 2L, "닉네임2", "제품1", null, 1000,
-                LocalDateTime.now().plusDays(1), PROCEEDING, false, 0L, false, 0L, 0);
+                LocalDateTime.now().plusDays(1), PROCEEDING, false, 0L, false, null, 0L, 0);
 
         // when
         when(auctionRepository.findAuctionDetailsById(anyLong(), anyLong())).thenReturn(Optional.of(auctionDetails));
