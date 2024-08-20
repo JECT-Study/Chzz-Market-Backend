@@ -1,4 +1,4 @@
-package org.chzz.market.domain.auction.service;
+package org.chzz.market.domain.auction.service.register;
 
 import org.chzz.market.domain.auction.dto.request.BaseRegisterRequest;
 import org.chzz.market.domain.auction.dto.response.RegisterResponse;
