@@ -5,6 +5,7 @@ import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.common.quartz.MyJobListener;
 import org.chzz.market.common.quartz.MyTriggerListener;
+import org.quartz.Scheduler;
 import org.springframework.boot.autoconfigure.quartz.QuartzProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -38,11 +39,17 @@ public class QuartzConfig {
     }
 
     @Bean
+    public Scheduler scheduler(SchedulerFactoryBean schedulerFactoryBean) {
+        return schedulerFactoryBean.getScheduler();
+    }
+
+    @Bean
     public MyTriggerListener myTriggerListener() {
         return new MyTriggerListener();
     }
 
-    @Bean MyJobListener myJobListener() {
+    @Bean
+    MyJobListener myJobListener() {
         return new MyJobListener();
     }
 
