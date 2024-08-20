@@ -20,6 +20,14 @@ public interface AuctionRepositoryCustom {
     Page<AuctionResponse> findAuctionsByCategory(Category category, Long userId, Pageable pageable);
 
     /**
+     * 사용자가 참여한(입찰한) 경매 상세 정보를 조회합니다.
+     * @param userId - 사용자 ID
+     * @param pageable - 페이징 정보
+     * @return
+     */
+    Page<AuctionResponse> findParticipatingAuctionRecord(Long userId, Pageable pageable);
+
+    /**
      * 경매 ID와 사용자 ID로 경매 상세 정보를 조회합니다.
      *
      * @param auctionId 경매 ID
