@@ -6,9 +6,10 @@ import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.chzz.market.domain.auction.dto.AuctionDetailsResponse;
-import org.chzz.market.domain.auction.dto.AuctionResponse;
 import org.chzz.market.domain.auction.dto.request.AuctionCreateRequest;
+import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
+import org.chzz.market.domain.auction.dto.response.AuctionResponse;
+import org.chzz.market.domain.auction.dto.response.MyAuctionResponse;
 import org.chzz.market.domain.auction.entity.Auction;
 
 import org.chzz.market.domain.auction.error.AuctionException;
@@ -86,6 +87,10 @@ public class AuctionService {
     public AuctionDetailsResponse getAuctionDetails(Long auctionId, Long userId) {
         Optional<AuctionDetailsResponse> auctionDetails = auctionRepository.findAuctionDetailsById(auctionId, userId);
         return auctionDetails.orElseThrow(() -> new AuctionException(AUCTION_NOT_ACCESSIBLE));
+    }
+
+    public Page<MyAuctionResponse> getAuctionListByUserId(Long userId, Pageable pageable) {
+        return auctionRepository.findAuctionsByUserId(userId, pageable);
     }
 
 }

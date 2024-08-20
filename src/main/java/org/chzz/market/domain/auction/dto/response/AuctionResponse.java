@@ -1,7 +1,8 @@
-package org.chzz.market.domain.auction.dto;
+package org.chzz.market.domain.auction.dto.response;
 
 import com.querydsl.core.annotations.QueryProjection;
 import lombok.Getter;
+import org.chzz.market.domain.auction.dto.BaseAuctionDTO;
 
 /**
  * 진행중인 경매 목록 조회 DTO
