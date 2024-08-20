@@ -29,7 +29,7 @@ public class ProductController {
     public ResponseEntity<UpdateProductResponse> updateProduct(
             @PathVariable Long productId,
             @RequestPart("request") @Valid UpdateProductRequest request,
-            @RequestPart(value = "images", required = true) List<MultipartFile> images) {
+            @RequestPart(value = "images", required = false) List<MultipartFile> images) {
         UpdateProductResponse response = productService.updateProduct(productId, request, images);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
