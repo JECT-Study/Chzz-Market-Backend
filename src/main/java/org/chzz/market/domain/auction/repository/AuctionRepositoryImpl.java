@@ -101,6 +101,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                         user.id.eq(userId),
                         getBidCount(),
                         bid.id.isNotNull(),
+                        bid.id,
                         bid.amount.coalesce(0L),
                         bid.count.coalesce(3)
                 ))
