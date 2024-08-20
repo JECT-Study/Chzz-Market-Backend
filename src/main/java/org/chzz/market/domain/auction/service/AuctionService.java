@@ -9,6 +9,7 @@ import static org.chzz.market.domain.notification.entity.Notification.Type.AUCTI
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.domain.auction.dto.request.AuctionCreateRequest;
@@ -18,6 +19,7 @@ import org.chzz.market.domain.auction.dto.response.MyAuctionResponse;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
+import org.chzz.market.domain.bid.entity.Bid;
 import org.chzz.market.domain.bid.service.BidService;
 import org.chzz.market.domain.image.service.ImageService;
 import org.chzz.market.domain.notification.dto.NotificationMessage;
@@ -114,36 +116,54 @@ public class AuctionService {
     private void processAuctionResults(Auction auction) {
         String productName = auction.getProduct().getName();
         Long productUserId = auction.getProduct().getUser().getId();
-        bidService.determineAuctionWinner(auction)
-                .ifPresentOrElse(winnerId -> {
-                    auction.assignWinner(winnerId);
-                    // 낙찰자 알림 전송
-                    notificationService.sendNotification(
-                            new NotificationMessage(winnerId, AUCTION_WINNER, productName));
+        List<Bid> bids = bidService.findAllBidsByAuction(auction);
 
-                    // 미 낙찰자 알림 전송
-                    processNonWinners(auction, productName, winnerId);
+        if (bids.isEmpty()) { // 입찰이 없는 경우
+            notifyAuctionFailure(productUserId, productName);
+            return;
+        }
+        notifyAuctionSuccess(productUserId, productName);
 
-                    // 판매자에게 낙찰 알림 전송
-                    notificationService.sendNotification(
-                            new NotificationMessage(productUserId, AUCTION_SUCCESS, productName));
-                }, () -> {
-                    // 판매자 한테 미 낙찰 알림 전송
-                    notificationService.sendNotification(
-                            new NotificationMessage(productUserId, AUCTION_FAILURE, productName));
-                });
+        log.info("경매 ID {}: 낙찰 계산", auction.getId());
+        Bid winningBid = bids.get(0); // 첫 번째 입찰이 낙찰
+        auction.assignWinner(winningBid.getBidder().getId());
+
+        notifyAuctionWinner(winningBid.getBidder().getId(), productName);
+        notifyNonWinners(bids, productName);
     }
 
-    private void processNonWinners(Auction auction, String productName, Long winnerId) {
-        List<Long> nonWinnerIds = auction.getBids().stream()
+    // 판매자에게 미 낙찰 알림
+    private void notifyAuctionFailure(Long productUserId, String productName) {
+        notificationService.sendNotification(
+                new NotificationMessage(productUserId, AUCTION_FAILURE, productName)
+        );
+    }
+
+    // 판매자에게 낙찰 알림
+    private void notifyAuctionSuccess(Long productUserId, String productName) {
+        notificationService.sendNotification(
+                new NotificationMessage(productUserId, AUCTION_SUCCESS, productName)
+        );
+    }
+
+    // 낙찰자에게 알림
+    private void notifyAuctionWinner(Long winnerId, String productName) {
+        notificationService.sendNotification(
+                new NotificationMessage(winnerId, AUCTION_WINNER, productName)
+        );
+    }
+
+    // 미낙찰자들에게 알림
+    private void notifyNonWinners(List<Bid> bids, String productName) {
+        List<Long> nonWinnerIds = bids.stream()
+                .skip(1) // 낙찰자를 제외한 나머지 입찰자들
                 .map(bid -> bid.getBidder().getId())
-                .filter(bidderId -> !bidderId.equals(winnerId))
-                .toList();
+                .collect(Collectors.toList());
 
         if (!nonWinnerIds.isEmpty()) {
             notificationService.sendNotification(
-                    new NotificationMessage(nonWinnerIds, AUCTION_NON_WINNER, productName));
+                    new NotificationMessage(nonWinnerIds, AUCTION_NON_WINNER, productName)
+            );
         }
     }
-
 }

@@ -50,14 +50,15 @@ public class BidRepositoryCustomImpl implements BidRepositoryCustom {
     }
 
     @Override
-    public Optional<Bid> findWinningBid(Auction auction) {
-        return Optional.ofNullable(jpaQueryFactory
+    public List<Bid> findAllBidsByAuction(Auction auction) {
+        return jpaQueryFactory
                 .selectFrom(bid)
+                .leftJoin(bid.bidder).fetchJoin()
                 .where(
                         bid.auction.eq(auction).and(bid.status.eq(BidStatus.ACTIVE))
                 )
                 .orderBy(bid.amount.desc(), bid.updatedAt.asc())
-                .fetchFirst());
+                .fetch();
     }
 
     private JPQLQuery<BiddingRecord> getBaseQuery(QImage firstImage, User user) {

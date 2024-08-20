@@ -7,6 +7,7 @@ import static org.chzz.market.domain.bid.error.BidErrorCode.BID_NOT_ACCESSIBLE;
 import static org.chzz.market.domain.bid.error.BidErrorCode.BID_NOT_FOUND;
 import static org.chzz.market.domain.user.error.UserErrorCode.USER_NOT_FOUND;
 
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -67,9 +68,8 @@ public class BidService {
         log.info("입찰이 취소되었습니다. 입찰 ID: {}, 사용자 ID: {}, 경매 ID: {}", bid.getId(), user.getId(), auction.getId());
     }
 
-    public Optional<Long> determineAuctionWinner(Auction auction) {
-        log.info("낙찰로직 실행");
-        return bidRepository.findWinningBid(auction).map(bid -> bid.getBidder().getId());
+    public List<Bid> findAllBidsByAuction(Auction auction) {
+        return bidRepository.findAllBidsByAuction(auction);
     }
 
     private void validateBidConditions(BidCreateRequest bidCreateRequest, Long userId, Auction auction) {
