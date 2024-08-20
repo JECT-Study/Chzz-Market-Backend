@@ -10,7 +10,10 @@ import org.chzz.market.domain.auction.dto.response.PreRegisterResponse;
 import org.chzz.market.domain.auction.dto.response.RegisterAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.StartAuctionResponse;
 import org.chzz.market.domain.auction.error.AuctionException;
+import org.chzz.market.domain.auction.service.AuctionRegistrationServiceFactory;
 import org.chzz.market.domain.auction.service.AuctionService;
+import org.chzz.market.domain.auction.service.register.AuctionRegisterService;
+import org.chzz.market.domain.auction.service.register.PreRegisterService;
 import org.chzz.market.domain.user.error.exception.UserException;
 import org.chzz.market.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,16 +37,14 @@ import java.time.temporal.ChronoUnit;
 
 import static java.time.LocalDateTime.now;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.chzz.market.domain.auction.dto.request.BaseRegisterRequest.AuctionType.*;
 import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.*;
+import static org.chzz.market.domain.auction.enums.AuctionRegisterType.*;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.*;
 import static org.chzz.market.domain.product.entity.Product.Category.*;
 import static org.chzz.market.domain.user.error.UserErrorCode.USER_NOT_FOUND;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -56,6 +57,9 @@ public class AuctionControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockBean
+    private AuctionRegistrationServiceFactory registrationServiceFactory;
 
     @MockBean
     private AuctionService auctionService;
@@ -92,12 +96,15 @@ public class AuctionControllerTest {
             ReflectionTestUtils.setField(validRequest, "description", "테스트 설명");
             ReflectionTestUtils.setField(validRequest, "category", ELECTRONICS);
             ReflectionTestUtils.setField(validRequest, "minPrice", 10000);
-            ReflectionTestUtils.setField(validRequest, "auctionType", REGISTER);
+            ReflectionTestUtils.setField(validRequest, "auctionRegisterType", REGISTER);
 
             String requestJson = objectMapper.writeValueAsString(validRequest);
 
             RegisterAuctionResponse response = RegisterAuctionResponse.of(1L, 1L, PROCEEDING);
-            when(auctionService.registerAuction(any(BaseRegisterRequest.class), anyList())).thenReturn(response);
+
+            AuctionRegisterService mockService = mock(AuctionRegisterService.class);
+            when(mockService.register(any(BaseRegisterRequest.class), anyList())).thenReturn(response);
+            when(registrationServiceFactory.getService(REGISTER)).thenReturn(mockService);
 
             MockMultipartFile requestPart = new MockMultipartFile("request", "", "application/json", requestJson.getBytes());
 
@@ -112,7 +119,7 @@ public class AuctionControllerTest {
                     .andExpect(jsonPath("$.status").value("PROCEEDING"))
                     .andExpect(jsonPath("$.message").value("상품이 성공적으로 경매 등록되었습니다."));
 
-            verify(auctionService).registerAuction(any(BaseRegisterRequest.class), anyList());
+            verify(mockService).register(any(BaseRegisterRequest.class), anyList());
         }
 
         @Test
@@ -125,12 +132,15 @@ public class AuctionControllerTest {
             ReflectionTestUtils.setField(validRequest, "description", "테스트 설명");
             ReflectionTestUtils.setField(validRequest, "category", ELECTRONICS);
             ReflectionTestUtils.setField(validRequest, "minPrice", 10000);
-            ReflectionTestUtils.setField(validRequest, "auctionType", PRE_REGISTER);
+            ReflectionTestUtils.setField(validRequest, "auctionRegisterType", PRE_REGISTER);
 
             String requestJson = objectMapper.writeValueAsString(validRequest);
 
             PreRegisterResponse response = PreRegisterResponse.of(1L);
-            when(auctionService.registerAuction(any(BaseRegisterRequest.class), anyList())).thenReturn(response);
+
+            PreRegisterService mockService = mock(PreRegisterService.class);
+            when(mockService.register(any(BaseRegisterRequest.class), anyList())).thenReturn(response);
+            when(registrationServiceFactory.getService(PRE_REGISTER)).thenReturn(mockService);
 
             MockMultipartFile requestPart = new MockMultipartFile("request", "", "application/json", requestJson.getBytes());
 
@@ -145,7 +155,7 @@ public class AuctionControllerTest {
                     .andExpect(jsonPath("$.status").doesNotExist())
                     .andExpect(jsonPath("$.message").value("상품이 성공적으로 사전 등록되었습니다."));
 
-            verify(auctionService).registerAuction(any(BaseRegisterRequest.class), anyList());
+            verify(mockService).register(any(BaseRegisterRequest.class), anyList());
         }
 
         @Test
@@ -157,12 +167,14 @@ public class AuctionControllerTest {
             ReflectionTestUtils.setField(invalidRequest, "description", "테스트 설명");
             ReflectionTestUtils.setField(invalidRequest, "category", ELECTRONICS);
             ReflectionTestUtils.setField(invalidRequest, "minPrice", 10000);
-            ReflectionTestUtils.setField(invalidRequest, "auctionType", REGISTER);
+            ReflectionTestUtils.setField(invalidRequest, "auctionRegisterType", REGISTER);
 
             String requestJson = objectMapper.writeValueAsString(invalidRequest);
 
-            when(auctionService.registerAuction(any(BaseRegisterRequest.class), anyList()))
+            AuctionRegisterService mockService = mock(AuctionRegisterService.class);
+            when(mockService.register(any(BaseRegisterRequest.class), anyList()))
                     .thenThrow(new UserException(USER_NOT_FOUND));
+            when(registrationServiceFactory.getService(REGISTER)).thenReturn(mockService);
 
             MockMultipartFile requestPart = new MockMultipartFile("request", "", "application/json", requestJson.getBytes());
 
