@@ -223,12 +223,13 @@ class BidRepositoryCustomImplTest {
                 .category(Category.OTHER)
                 .description("product3")
                 .name("product3")
+                .minPrice(100000)
                 .user(userRepository.findById(1L).orElseThrow())
                 .build();
 
         Auction auction3 = Auction.builder()
                 .product(product3)
-                .minPrice(1000)
+                .minPrice(100000)
                 .status(PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusDays(2))
                 .build();
