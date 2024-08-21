@@ -23,7 +23,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.chzz.market.common.validation.annotation.ThousandMultiple;
 import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
 import org.chzz.market.domain.bid.entity.Bid;
@@ -105,10 +104,5 @@ public class Auction extends BaseTimeEntity {
         CANCELLED("취소 됨");
 
         private final String description;
-    }
-
-    public void start(LocalDateTime endDateTime) {
-        this.status = PROCEEDING;
-        this.endDateTime = endDateTime;
     }
 }
