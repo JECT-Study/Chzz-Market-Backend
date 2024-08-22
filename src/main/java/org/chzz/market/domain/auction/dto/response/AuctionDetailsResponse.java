@@ -1,11 +1,12 @@
 package org.chzz.market.domain.auction.dto.response;
 
-import static org.chzz.market.domain.auction.entity.Auction.Status;
-
 import com.querydsl.core.annotations.QueryProjection;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Getter;
+import org.chzz.market.domain.auction.entity.Auction;
+import org.chzz.market.domain.auction.entity.Auction.AuctionStatus;
 
 @Getter
 public class AuctionDetailsResponse {
@@ -16,7 +17,7 @@ public class AuctionDetailsResponse {
     private String description;
     private Integer minPrice;
     private LocalDateTime endDateTime;
-    private Status status;
+    private Auction.AuctionStatus status;
     private Boolean isSeller;
     private Long participantCount;
     private Boolean isParticipating;
@@ -27,7 +28,7 @@ public class AuctionDetailsResponse {
 
     @QueryProjection
     public AuctionDetailsResponse(Long productId, Long sellerId, String sellerName, String title, String description,
-                                  Integer minPrice, LocalDateTime endDateTime, Status status,
+                                  Integer minPrice, LocalDateTime endDateTime, AuctionStatus status,
                                   Boolean isSeller,
                                   Long participantCount, Boolean isParticipating, Long bidId, Long bidAmount,
                                   int remainingBidCount) {

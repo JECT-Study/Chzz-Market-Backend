@@ -16,7 +16,7 @@ import org.chzz.market.domain.bid.entity.Bid;
 import org.chzz.market.domain.bid.error.BidException;
 import org.chzz.market.domain.bid.repository.BidRepository;
 import org.chzz.market.domain.user.entity.User;
-import org.chzz.market.domain.user.error.UserException;
+import org.chzz.market.domain.user.error.exception.UserException;
 import org.chzz.market.domain.user.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
