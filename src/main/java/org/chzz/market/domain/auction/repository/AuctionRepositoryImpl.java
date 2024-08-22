@@ -92,7 +92,8 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                 .from(auction)
                 .join(auction.bids, bid)
                 .join(auction.product, product)
-                .on(bid.bidder.id.eq(userId));
+                .on(bid.bidder.id.eq(userId))
+                .where(auction.status.eq(PROCEEDING));
 
         List<AuctionResponse> content = baseQuery
                 .select(new QAuctionResponse(
