@@ -43,6 +43,15 @@ public class User extends BaseTimeEntity {
     @Column(length = 25, nullable = false)
     private String nickname;
 
+    @Column
+    private String description;
+
+    @Column
+    private String region;
+
+    @Column
+    private String url;
+
     @Column(nullable = false)
     @Email(message = "invalid type of email")
     private String email;
@@ -71,6 +80,13 @@ public class User extends BaseTimeEntity {
     @Builder.Default
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private List<BankAccount> bankAccounts = new ArrayList<>();
+
+    public void updateProfile(String nickname, String description, String region, String url) {
+        this.nickname = nickname;
+        this.description = description;
+        this.region = region;
+        this.url = url;
+    }
 
     public enum UserRole {
         USER, ADMIN, SELLER // Test 실행을 위해 임시 추가
