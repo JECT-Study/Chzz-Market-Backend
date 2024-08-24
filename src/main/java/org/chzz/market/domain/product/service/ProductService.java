@@ -38,14 +38,10 @@ public class ProductService {
         logger.info("상품 ID {}번에 대한 사전 등록 정보를 업데이트를 시작합니다.", productId);
         // 상품 유효성 검사
         Product existingProduct = productRepository.findByIdAndUserId(productId, request.getUserId())
-                .orElseThrow(() -> {
-                    logger.info("유저 ID {}번 유저가 등록한 상품 ID {}번에 해당하는 사전 등록 상품을 찾을 수 없습니다.", request.getUserId(), productId);
-                    return new ProductException(PRODUCT_NOT_FOUND);
-                });
+                .orElseThrow(() -> new ProductException(PRODUCT_NOT_FOUND));
 
         // 경매 등록 상태 유무 유효성 검사
         if (auctionRepository.existsByProductId(productId)) {
-            logger.info("상품 ID {}번에 해당하는 상품은 이미 경매 등록 상태입니다.", productId);
             throw new ProductException(ALREADY_IN_AUCTION);
         }
 
