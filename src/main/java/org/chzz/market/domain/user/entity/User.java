@@ -81,7 +81,7 @@ public class User extends BaseTimeEntity {
 
     public void addBankAccount(BankAccount bankAccount) {
         this.bankAccounts.add(bankAccount);
-        bankAccount.setUser(this);
+        bankAccount.specifyUser(this);
     }
 
     public boolean isTempUser() {
