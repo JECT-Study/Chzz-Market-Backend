@@ -1,14 +1,13 @@
 package org.chzz.market.domain.auction.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.chzz.market.domain.auction.dto.request.BaseRegisterRequest.AuctionType.*;
-import static org.chzz.market.domain.auction.dto.request.BaseRegisterRequest.AuctionType.PRE_REGISTER;
-import static org.chzz.market.domain.auction.entity.Auction.*;
 import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.*;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.*;
 import static org.chzz.market.domain.product.entity.Product.Category.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.chzz.market.domain.auction.enums.AuctionRegisterType.PRE_REGISTER;
+import static org.chzz.market.domain.auction.enums.AuctionRegisterType.REGISTER;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
@@ -17,16 +16,19 @@ import java.util.List;
 import java.util.Optional;
 
 import org.chzz.market.domain.auction.dto.request.BaseRegisterRequest;
+import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
+
 import org.chzz.market.domain.auction.dto.request.PreRegisterRequest;
 import org.chzz.market.domain.auction.dto.request.RegisterAuctionRequest;
 import org.chzz.market.domain.auction.dto.request.StartAuctionRequest;
-import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
-import org.chzz.market.domain.auction.dto.response.RegisterAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.RegisterResponse;
 import org.chzz.market.domain.auction.dto.response.StartAuctionResponse;
+
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
-import org.chzz.market.domain.auction.service.policy.AuctionPolicy;
+import org.chzz.market.domain.auction.service.register.AuctionRegisterService;
+import org.chzz.market.domain.auction.service.register.PreRegisterService;
 import org.chzz.market.domain.image.service.ImageService;
 import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.product.repository.ProductRepository;
@@ -64,14 +66,18 @@ class AuctionServiceTest {
 
     @InjectMocks
     private AuctionService auctionService;
-
-    private User user;
-    private BaseRegisterRequest registerAuctionRequest, preRegisterRequest;
-    private StartAuctionRequest validStartAuctionRequest, invalidStartAuctionRequest;
+    @InjectMocks
+    private PreRegisterService preRegisterService;
+    @InjectMocks
+    private AuctionRegisterService auctionRegisterService;
 
     private ProductTestFactory productTestFactory;
     private AuctionTestFactory auctionTestFactory;
     private UserTestFactory userTestFactory;
+
+    private User user;
+    private BaseRegisterRequest registerAuctionRequest, preRegisterRequest;
+    private StartAuctionRequest validStartAuctionRequest, invalidStartAuctionRequest;
 
     @BeforeEach
     void setUp() {
@@ -91,7 +97,7 @@ class AuctionServiceTest {
                 .description("경매 등록 테스트 상품 설명")
                 .category(ELECTRONICS)
                 .minPrice(10000)
-                .auctionType(REGISTER)
+                .auctionRegisterType(REGISTER)
                 .build();
 
         preRegisterRequest = PreRegisterRequest.builder()
@@ -100,15 +106,17 @@ class AuctionServiceTest {
                 .description("사전 등록 테스트 상품 설명")
                 .category(ELECTRONICS)
                 .minPrice(10000)
-                .auctionType(PRE_REGISTER)
+                .auctionRegisterType(PRE_REGISTER)
                 .build();
 
         validStartAuctionRequest = StartAuctionRequest.builder()
                 .productId(1L)
+                .userId(1L)
                 .build();
 
         invalidStartAuctionRequest = StartAuctionRequest.builder()
                 .productId(999L)
+                .userId(1L)
                 .build();
 
         System.setProperty("org.mockito.logging.verbosity", "all");
@@ -130,32 +138,20 @@ class AuctionServiceTest {
 
             List<MultipartFile> images = createMockMultipartFiles();
 
-            Product product = ProductTestFactory.createProduct(preRegisterRequest, user);
-            ReflectionTestUtils.setField(product, "id", productId);
+            Product savedProduct = ProductTestFactory.createProduct(preRegisterRequest, user);
+            ReflectionTestUtils.setField(savedProduct, "id", productId);
 
-            when(productRepository.save(any(Product.class))).thenReturn(product);
-
-            // Mock AuctionPolicy
-            AuctionPolicy mockAuctionPolicy = mock(AuctionPolicy.class);
-            when(mockAuctionPolicy.createProduct(eq(preRegisterRequest), eq(user))).thenReturn(product);
-
-            // Inject mock AuctionPolicy
-            ReflectionTestUtils.setField(PRE_REGISTER, "auctionPolicy", mockAuctionPolicy);
-
+            when(productRepository.save(any(Product.class))).thenReturn(savedProduct);
 
             // when
-            RegisterAuctionResponse response = auctionService.registerAuction(preRegisterRequest, images);
+            RegisterResponse response = preRegisterService.register(preRegisterRequest, images);
 
             // then
             assertNotNull(response);
-            assertEquals(productId, response.productId());
-            assertNull(response.auctionId());
-            assertNull(response.status());
+            assertEquals(productId, response.getProductId());
             verify(userRepository, times(1)).findById(userId);
             verify(productRepository, times(1)).save(any(Product.class));
-            verify(auctionRepository, never()).save(any(Auction.class));
             verify(imageService, times(1)).uploadImages(anyList());
-            verify(mockAuctionPolicy, times(1)).createProduct(eq(preRegisterRequest), eq(user));
         }
 
         @Test
@@ -169,7 +165,7 @@ class AuctionServiceTest {
                     .description("사전 등록 테스트 상품 설명")
                     .category(ELECTRONICS)
                     .minPrice(10000)
-                    .auctionType(PRE_REGISTER)
+                    .auctionRegisterType(PRE_REGISTER)
                     .build();
 
             when(userRepository.findById(userId)).thenReturn(Optional.empty());
@@ -178,7 +174,7 @@ class AuctionServiceTest {
 
             // When & Then
             assertThrows(UserException.class, () -> {
-                auctionService.registerAuction(invalidPreRegisterRequest, images);
+                preRegisterService.register(invalidPreRegisterRequest, images);
             });
 
             // verify
@@ -215,28 +211,16 @@ class AuctionServiceTest {
             when(productRepository.save(any(Product.class))).thenReturn(product);
             when(auctionRepository.save(any(Auction.class))).thenReturn(auction);
 
-            // Mock AuctionPolicy
-            AuctionPolicy mockAuctionPolicy = mock(AuctionPolicy.class);
-            when(mockAuctionPolicy.createProduct(any(), any())).thenReturn(product);
-            when(mockAuctionPolicy.createAuction(any(), any())).thenReturn(auction);
-
-            // AuctionPolicy mock 주입
-            ReflectionTestUtils.setField(REGISTER, "auctionPolicy", mockAuctionPolicy);
-
             // when
-            RegisterAuctionResponse response = auctionService.registerAuction(registerAuctionRequest, images);
+            RegisterResponse response = auctionRegisterService.register(registerAuctionRequest, images);
 
             // then
             assertNotNull(response);
-            assertEquals(productId, response.productId());
-            assertEquals(auctionId, response.auctionId());
-            assertEquals(PROCEEDING, response.status());
+            assertEquals(productId, response.getProductId());
             verify(userRepository, times(1)).findById(userId);
             verify(productRepository, times(1)).save(any(Product.class));
             verify(auctionRepository, times(1)).save(any(Auction.class));
             verify(imageService, times(1)).uploadImages(anyList());
-            verify(mockAuctionPolicy, times(1)).createProduct(eq(registerAuctionRequest), eq(user));
-            verify(mockAuctionPolicy, times(1)).createAuction(eq(product), eq(registerAuctionRequest));
         }
 
         @Test
@@ -250,7 +234,7 @@ class AuctionServiceTest {
                     .description("경매 등록 테스트 상품 설명")
                     .category(ELECTRONICS)
                     .minPrice(10000)
-                    .auctionType(REGISTER)
+                    .auctionRegisterType(REGISTER)
                     .build();
 
             when(userRepository.findById(999L)).thenReturn(Optional.empty());
@@ -259,7 +243,7 @@ class AuctionServiceTest {
 
             // When & Then
             assertThrows(UserException.class, () -> {
-                auctionService.registerAuction(invalidRegisterAuctionRequest, images);
+                auctionRegisterService.register(invalidRegisterAuctionRequest, images);
             });
 
             // verify
@@ -280,7 +264,6 @@ class AuctionServiceTest {
             // given
             Long productId = 1L;
             Long newAuctionId = 2L;
-            Integer minPrice = 20000;
             LocalDateTime now = LocalDateTime.now();
 
             Product preRegisteredProduct = ProductTestFactory.createProduct(preRegisterRequest, user);
@@ -288,7 +271,6 @@ class AuctionServiceTest {
 
             Auction newAuction = AuctionTestFactory.createAuction(preRegisteredProduct, registerAuctionRequest, PROCEEDING);
             ReflectionTestUtils.setField(newAuction, "id", newAuctionId);
-            ReflectionTestUtils.setField(newAuction, "minPrice", minPrice);
             ReflectionTestUtils.setField(newAuction, "endDateTime", LocalDateTime.now().plusHours(24));
 
             when(productRepository.findById(productId)).thenReturn(Optional.of(preRegisteredProduct));
@@ -302,7 +284,7 @@ class AuctionServiceTest {
             assertNotNull(response);
             assertEquals(newAuctionId, response.auctionId());
             assertEquals(productId, response.productId());
-            assertEquals(AuctionStatus.PROCEEDING, response.status());
+            assertEquals(PROCEEDING, response.status());
             assertTrue(response.endTime().isAfter(now) && response.endTime().isBefore(now.plusHours(25)));
 
             verify(productRepository).findById(productId);
@@ -353,7 +335,7 @@ class AuctionServiceTest {
         Long existingAuctionId = 1L;
         Long userId = 1L;
         AuctionDetailsResponse auctionDetails = new AuctionDetailsResponse(1L, 2L, "닉네임2", "제품1", null, 1000,
-                LocalDateTime.now().plusDays(1), PROCEEDING, false, 0L, false, 0L, 0);
+                LocalDateTime.now().plusDays(1), PROCEEDING, false, 0L, false, null, 0L, 0);
 
         // when
         when(auctionRepository.findAuctionDetailsById(anyLong(), anyLong())).thenReturn(Optional.of(auctionDetails));
