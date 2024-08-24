@@ -59,7 +59,7 @@ jobs:
           DOCKERFILE_DIR: .
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t chzz-was $DOCKERFILE_DIR
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $DOCKERFILE_DIR
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 #
@@ -147,6 +147,14 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            sudo docker stop chzz-was || true
-            sudo docker rm chzz-was || true
-            sudo docker run -d --name chzz-was -p 8080:8080 ${{ steps.build-image.outputs.image }}
+            IMAGE_URI=${{ steps.build-image.outputs.image }}
+            
+            # 기존 컨테이너가 실행 중이면 정지하고 삭제
+            if [ $(sudo docker ps -q -f name=chzz-was) ]; then
+              sudo docker stop chzz-was
+              sudo docker rm chzz-was
+            fi
+            
+            sudo docker pull $IMAGE_URI
+            
+            sudo docker run -d --name chzz-was -p 8080:8080 $IMAGE_URI
