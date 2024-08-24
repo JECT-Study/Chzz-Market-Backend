@@ -5,6 +5,7 @@ import static org.chzz.market.domain.user.error.UserErrorCode.USER_NOT_FOUND;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.domain.user.dto.request.UserCreateRequest;
+import org.chzz.market.domain.user.dto.response.NicknameAvailabilityResponse;
 import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.error.UserErrorCode;
 import org.chzz.market.domain.user.error.exception.UserException;
@@ -28,5 +29,9 @@ public class UserService {
         user.createUser(userCreateRequest);
         user.addBankAccount(userCreateRequest.toBankAccount(user));
         return user;
+    }
+
+    public NicknameAvailabilityResponse checkNickname(String nickname) {
+        return new NicknameAvailabilityResponse(!userRepository.existsByNickname(nickname));
     }
 }
