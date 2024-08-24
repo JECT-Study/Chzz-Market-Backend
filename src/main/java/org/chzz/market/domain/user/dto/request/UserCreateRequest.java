@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.chzz.market.domain.bank_account.entity.BankAccount;
@@ -11,6 +12,7 @@ import org.chzz.market.domain.bank_account.entity.BankAccount.BankName;
 import org.chzz.market.domain.user.entity.User;
 
 @NoArgsConstructor
+@AllArgsConstructor
 @Getter
 public class UserCreateRequest {
     @NotBlank(message = "닉네임은 필수 입력 항목입니다.")
