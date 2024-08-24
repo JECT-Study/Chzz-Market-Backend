@@ -12,10 +12,10 @@ import static org.chzz.market.domain.product.entity.Product.*;
 public interface ProductRepositoryCustom {
     /**
      * 카테고리와 정렬 조건에 따라 사전 등록 상품 리스트를 조회합니다.
-     * @param category
-     * @param userId
-     * @param pageable
-     * @return
+     * @param category 카테고리
+     * @param userId   사용자 ID
+     * @param pageable 페이징 정보
+     * @return         페이징된 사전 등록 상품 리스트
      */
     Page<ProductResponse> findProductsByCategory(Category category, Long userId, Pageable pageable);
 
@@ -28,11 +28,11 @@ public interface ProductRepositoryCustom {
     Optional<ProductDetailsResponse> findProductDetailsById(Long productId, Long userId);
 
     /**
-     * 사용자 ID에 따라 사용자가 등록한 사전 등록 상품 리스트를 조회합니다.
-     * @param userId    사용자 ID
-     * @param pageable  페이징 정보
-     * @return          페이징된 사전 등록 상품 리스트
+     * 사용자 닉네임에 따라 사용자가 등록한 사전 등록 상품 리스트를 조회합니다.
+     * @param nickname    사용자 닉네임
+     * @param pageable    페이징 정보
+     * @return            페이징된 사전 등록 상품 리스트
      */
-    Page<ProductResponse> findMyProductsByUserId(Long userId, Pageable pageable);
+    Page<ProductResponse> findMyProductsByUserId(String nickname, Pageable pageable);
 
 }

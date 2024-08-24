@@ -48,15 +48,16 @@ public class ProductService {
     /*
      * 상품 상세 정보 조회
      */
-    public Optional<ProductDetailsResponse> getProductDetails(Long productId, Long userId) {
-        return productRepository.findProductDetailsById(productId, userId);
+    public ProductDetailsResponse getProductDetails(Long productId, Long userId) {
+        return productRepository.findProductDetailsById(productId, userId)
+                .orElseThrow(() -> new ProductException(PRODUCT_NOT_FOUND));
     }
 
     /*
      * 나의 사전 등록 상품 목록 조회
      */
-    public Page<ProductResponse> getMyProductList(Long userId, Pageable pageable) {
-        return productRepository.findMyProductsByUserId(userId, pageable);
+    public Page<ProductResponse> getMyProductList(String nickname, Pageable pageable) {
+        return productRepository.findMyProductsByUserId(nickname, pageable);
     }
 
     /*
