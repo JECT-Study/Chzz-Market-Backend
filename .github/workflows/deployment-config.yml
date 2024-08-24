@@ -62,24 +62,70 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $DOCKERFILE_DIR
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
-
-      - name: task definition 다운로드
-        run: |
-          aws ecs describe-task-definition --task-definition chzz-task --query taskDefinition > task-definition.json
-
-#      빌드한 docker image를 다운로드한 task definition를 통해 서비스에 올림
-      - name: Fill in the new image ID in the Amazon ECS task definition
-        id: task-def
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
+#
+#      - name: task definition 다운로드
+#        run: |
+#          aws ecs describe-task-definition --task-definition chzz-task --query taskDefinition > task-definition.json
+#
+##      빌드한 docker image를 다운로드한 task definition를 통해 서비스에 올림
+#      - name: Fill in the new image ID in the Amazon ECS task definition
+#        id: task-def
+#        uses: aws-actions/amazon-ecs-render-task-definition@v1
+#        with:
+#          task-definition: task-definition.json
+#          container-name: chzz-rep
+#          image: ${{ steps.build-image.outputs.image }}
+#
+#      - name: ECS로 배포
+#        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+#        with:
+#          task-definition: ${{ steps.task-def.outputs.task-definition }}
+#          service: chzz-service
+#          cluster: chzz-cluster
+#          wait-for-service-stability: true
+      - name: EC2에서 ECR에 로그인하기
+        uses: appleboy/ssh-action@master
         with:
-          task-definition: task-definition.json
-          container-name: chzz-rep
-          image: ${{ steps.build-image.outputs.image }}
+          host: ${{ secrets.EC2_IP }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            aws ecr get-login-password --profile ${{ secrets.IAM_PROFILE_USERNAME }}
+           --region ${{ env.AWS_REGION }} | 
+            sudo docker login --username AWS --password-stdin ${{ secrets.ECR_URI }}
 
-      - name: ECS로 배포
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      - name: 기존 EC2에서 실행중인 컨테이너 종료
+        uses: appleboy/ssh-action@master
         with:
-          task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: chzz-service
-          cluster: chzz-cluster
-          wait-for-service-stability: true
+          host: ${{ secrets.EC2_IP }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            sudo docker ps -q | xargs -r docker stop
+
+      - name: 기존 EC2에 존재하는 모든 컨테이너 삭제
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_IP }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            sudo docker ps -asq | xargs -r docker rm
+
+      - name: 기존 EC2에 저장되어있는 이미지 삭제
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_IP }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            sudo docker images -q | xargs -r docker rmi
+
+      - name: EC2에서 도커에서 사용하지 않는 자원 삭제처리
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_IP }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            sudo docker system prune -af
