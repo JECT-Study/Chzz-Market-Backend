@@ -69,23 +69,16 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        return PageableExecutionUtils.getPage(content, pageable, () ->
-            Optional.ofNullable(jpaQueryFactory
-                    .select(product.countDistinct())
-                    .from(product)
-                    .leftJoin(auction).on(auction.product.id.eq(product.id))
-                    .where(product.category.eq(category)
-                            .and(auction.id.isNull()))
-                    .fetchOne())
-            .orElse(0L)
-        );
+        JPAQuery<Long> countQuery = baseQuery.select(product.countDistinct());
+
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
 
     /**
      * 사용자 ID와 상품 ID에 따라 사전 등록 상품 상세 정보를 조회합니다.
      * @param productId 상품 ID
      * @param userId    사용자 ID
-     * @return
+     * @return          상품 상세 정보
      */
     @Override
     public Optional<ProductDetailsResponse> findProductDetailsById(Long productId, Long userId) {
@@ -94,7 +87,7 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
         QLike like = QLike.like;
         QImage image = QImage.image;
 
-        ProductDetailsResponse result = jpaQueryFactory
+        Optional<ProductDetailsResponse> result = Optional.ofNullable(jpaQueryFactory
                 .select(new QProductDetailsResponse(
                         product.id,
                         product.name,
@@ -113,23 +106,22 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
                 .from(product)
                 .join(product.user, seller)
                 .where(product.id.eq(productId))
-                .fetchOne();
+                .fetchOne());
 
-        if (result != null) {
+        return result.map(response -> {
             List<String> imageUrls = jpaQueryFactory
                     .select(image.cdnPath)
                     .from(image)
                     .where(image.product.id.eq(productId))
                     .orderBy(image.id.asc())
                     .fetch();
-            result.addImageList(imageUrls);
-        }
-
-        return Optional.ofNullable(result);
+            response.addImageList(imageUrls);
+            return response;
+        });
     }
 
     @Override
-    public Page<ProductResponse> findMyProductsByUserId(Long userId, Pageable pageable) {
+    public Page<ProductResponse> findMyProductsByUserId(String nickname, Pageable pageable) {
         QProduct product = QProduct.product;
         QImage image = QImage.image;
         QAuction auction = QAuction.auction;
@@ -138,7 +130,7 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
         JPAQuery<?> baseQuery = jpaQueryFactory.from(product)
                 .join(product.user, user)
                 .leftJoin(auction).on(auction.product.eq(product))
-                .where(auction.id.isNull().and(user.id.eq(userId)));
+                .where(auction.id.isNull().and(user.nickname.eq(nickname)));
 
         List<ProductResponse> content = baseQuery
                 .select(new QProductResponse(
@@ -150,7 +142,7 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
                         JPAExpressions.selectOne()
                                 .from(like)
                                 .where(like.product.eq(product)
-                                        .and(like.user.id.eq(userId)))
+                                        .and(like.user.nickname.eq(nickname)))
                                 .exists()
                 ))
                 .leftJoin(image).on(image.product.id.eq(product.id)
@@ -161,14 +153,9 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
                 .fetch();
 
         JPAQuery<Long> countQuery = baseQuery
-                .select(product.countDistinct())
-                .groupBy(product.id);
+                .select(product.count());
 
-        return PageableExecutionUtils.getPage(content, pageable, () -> {
-            Long totalCount = countQuery.fetchOne();
-            return totalCount != null ? totalCount : 0L;
-        });
-
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
 
     private JPQLQuery<Long> getFirstImageId() {
@@ -187,10 +174,10 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
     @Getter
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public enum ProductOrder implements QuerydslOrder {
-        POPULARITY("product_popularity", product.likes.size().desc()),
-        EXPENSIVE("product_expensive", product.minPrice.desc()),
-        CHEAP("product_cheap", product.minPrice.asc()),
-        NEWEST("product_newest", product.createdAt.desc());
+        POPULARITY("product-popularity", product.likes.size().desc()),
+        EXPENSIVE("product-expensive", product.minPrice.desc()),
+        CHEAP("product-cheap", product.minPrice.asc()),
+        NEWEST("product-newest", product.createdAt.desc());
 
         private final String name;
         private final OrderSpecifier<?> orderSpecifier;
