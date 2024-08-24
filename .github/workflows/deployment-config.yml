@@ -90,9 +90,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            aws ecr get-login-password --profile ${{ secrets.IAM_PROFILE_USERNAME }}
-           --region ${{ env.AWS_REGION }} | 
-            sudo docker login --username AWS --password-stdin ${{ secrets.ECR_URI }}
+            aws ecr get-login-password --profile ${{ secrets.IAM_PROFILE_USERNAME }} --region ${{ env.AWS_REGION }} | sudo docker login --username AWS --password-stdin ${{ secrets.ECR_URI }}
 
       - name: 기존 EC2에서 실행중인 컨테이너 종료
         uses: appleboy/ssh-action@master
