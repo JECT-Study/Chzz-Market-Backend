@@ -59,7 +59,7 @@ jobs:
           DOCKERFILE_DIR: .
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $DOCKERFILE_DIR
+          docker build -t chzz-was $DOCKERFILE_DIR
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 #
@@ -147,6 +147,6 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            sudo docker stop $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG || true
-            sudo docker rm $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG || true
-            sudo docker run -d --name $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -p 8080:8080 ${{ steps.build-image.outputs.image }}
+            sudo docker stop chzz-was || true
+            sudo docker rm chzz-was || true
+            sudo docker run -d --name chzz-was -p 8080:8080 ${{ steps.build-image.outputs.image }}
