@@ -63,12 +63,12 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                         product.name,
                         image.cdnPath,
                         timeRemaining().longValue(),
-                        auction.minPrice.longValue(),
+                        product.minPrice.longValue(),
                         bid.countDistinct(),
                         isParticipating(userId)
                 ))
                 .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId())))
-                .groupBy(auction.id, product.name, image.cdnPath, auction.createdAt, auction.minPrice)
+                .groupBy(auction.id, product.name, image.cdnPath, auction.createdAt, product.minPrice)
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -132,7 +132,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                         user.nickname,
                         product.name,
                         product.description,
-                        auction.minPrice,
+                        product.minPrice,
                         auction.endDateTime,
                         auction.status,
                         user.id.eq(userId),
@@ -171,7 +171,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                         product.name,
                         image.cdnPath,
                         timeRemaining().longValue(),
-                        auction.minPrice.longValue(),
+                        product.minPrice.longValue(),
                         getBidCount(),
                         auction.status,
                         auction.createdAt))
@@ -246,8 +246,8 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public enum AuctionOrder implements QuerydslOrder {
         POPULARITY("popularity", auction.bids.size().desc()),
-        EXPENSIVE("expensive", auction.minPrice.desc()),
-        CHEAP("cheap", auction.minPrice.asc()),
+        EXPENSIVE("expensive", product.minPrice.desc()),
+        CHEAP("cheap", product.minPrice.asc()),
         NEWEST("newest", auction.createdAt.desc());
 
         private final String name;
