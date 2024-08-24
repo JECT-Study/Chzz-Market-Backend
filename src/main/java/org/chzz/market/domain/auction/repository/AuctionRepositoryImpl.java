@@ -101,7 +101,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                         product.name,
                         image.cdnPath,
                         timeRemaining().longValue(),
-                        auction.minPrice.longValue(),
+                        auction.product.minPrice.longValue(),
                         getBidCount()
                 ))
                 .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId())))
