@@ -32,7 +32,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         ProviderType providerType = ProviderType.valueOf(registrationId.toUpperCase());
 
         if (registrationId == null) {
-            throw new OAuth2AuthenticationException("null");
+            throw new OAuth2AuthenticationException("유효하지않는 OAuth2 제공자입니다.");
         }
         OAuth2Response oAuth2Response;
         switch (providerType) {
@@ -43,7 +43,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 oAuth2Response = new KaKaoResponse(oAuth2User.getAttributes());
                 break;
             default:
-                throw new OAuth2AuthenticationException("unsupported");
+                throw new OAuth2AuthenticationException("지원되지 않는 OAuth2 제공자입니다.");
         }
         User user = findOrCreateMember(oAuth2Response, providerType);
         return new CustomUserDetails(user, oAuth2User.getAttributes());
