@@ -3,7 +3,7 @@ package org.chzz.market.domain.user.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.domain.user.dto.CustomUserDetails;
-import org.chzz.market.domain.user.dto.KakaoResponse;
+import org.chzz.market.domain.user.dto.KaKaoResponse;
 import org.chzz.market.domain.user.dto.NaverResponse;
 import org.chzz.market.domain.user.dto.OAuth2Response;
 import org.chzz.market.domain.user.entity.User;
@@ -40,7 +40,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 oAuth2Response = new NaverResponse(oAuth2User.getAttributes());
                 break;
             case KAKAO:
-                oAuth2Response = new KakaoResponse(oAuth2User.getAttributes());
+                oAuth2Response = new KaKaoResponse(oAuth2User.getAttributes());
                 break;
             default:
                 throw new OAuth2AuthenticationException("unsupported");
