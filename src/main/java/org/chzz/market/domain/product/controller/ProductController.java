@@ -31,7 +31,7 @@ public class ProductController {
      * 카테고리 별 사전 등록 상품 목록 조회
      */
     // TODO: 추후에 인증된 사용자 정보로 수정 필요
-    @GetMapping
+    @GetMapping("/categories")
     public ResponseEntity<Page<ProductResponse>> getProductList(
             @RequestParam Product.Category category,
             @RequestHeader("X-User-Agent") Long userId,
@@ -47,20 +47,19 @@ public class ProductController {
     public ResponseEntity<ProductDetailsResponse> getProductDetails(
             @PathVariable Long productId,
             @RequestHeader("X-User-Agent") Long userId) {
-        return productService.getProductDetails(productId, userId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        ProductDetailsResponse response = productService.getProductDetails(productId, userId);
+        return ResponseEntity.ok(response);
     }
 
     /*
      * 나의 사전 등록 상품 목록 조회
      */
     // TODO: 추후에 인증된 사용자 정보로 수정 필요
-    @GetMapping("/my-products")
+    @GetMapping
     public ResponseEntity<Page<ProductResponse>> getMyProductList(
-            @RequestHeader("X-User-Agent") Long userId,
+            @RequestParam("user") String nickname,
             Pageable pageable) {
-        return ResponseEntity.ok(productService.getMyProductList(userId, pageable));
+        return ResponseEntity.ok(productService.getMyProductList(nickname, pageable));
     }
 
     /**
