@@ -1,16 +1,23 @@
 package org.chzz.market.domain.product.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.domain.product.dto.ProductDetailsResponse;
 import org.chzz.market.domain.product.dto.ProductResponse;
-import org.chzz.market.domain.product.entity.Product.Category;
+import org.chzz.market.domain.product.dto.UpdateProductRequest;
+import org.chzz.market.domain.product.dto.UpdateProductResponse;
+import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.product.service.ProductService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -26,7 +33,7 @@ public class ProductController {
     // TODO: 추후에 인증된 사용자 정보로 수정 필요
     @GetMapping
     public ResponseEntity<Page<ProductResponse>> getProductList(
-            @RequestParam Category category,
+            @RequestParam Product.Category category,
             @RequestHeader("X-User-Agent") Long userId,
             Pageable pageable) {
         return ResponseEntity.ok(productService.getProductListByCategory(category, userId, pageable)); // 임의의 사용자 ID
@@ -54,5 +61,17 @@ public class ProductController {
             @RequestHeader("X-User-Agent") Long userId,
             Pageable pageable) {
         return ResponseEntity.ok(productService.getMyProductList(userId, pageable));
+    }
+
+    /**
+     * 사전 등록 상품 수정
+     */
+    @PatchMapping("/{productId}")
+    public ResponseEntity<UpdateProductResponse> updateProduct(
+            @PathVariable Long productId,
+            @RequestPart("request") @Valid UpdateProductRequest request,
+            @RequestPart(value = "images", required = false) List<MultipartFile> images) {
+        UpdateProductResponse response = productService.updateProduct(productId, request, images);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

@@ -104,7 +104,6 @@ class BidRepositoryCustomImplTest {
                 .build();
         Auction auction1 = Auction.builder()
                 .product(product1)
-                .minPrice(1000)
                 .endDateTime(LocalDateTime.now().plusDays(2))
                 .status(PROCEEDING)
                 .winnerId(2L)
@@ -112,7 +111,6 @@ class BidRepositoryCustomImplTest {
 
         Auction auction2 = Auction.builder()
                 .product(product2)
-                .minPrice(1000)
                 .endDateTime(LocalDateTime.now().plusDays(1))
                 .status(PROCEEDING)
                 .winnerId(2L)

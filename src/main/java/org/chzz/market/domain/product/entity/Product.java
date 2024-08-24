@@ -23,11 +23,14 @@ import org.chzz.market.common.validation.annotation.ThousandMultiple;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
 import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.like.entity.Like;
+import org.chzz.market.domain.product.dto.UpdateProductRequest;
 import org.chzz.market.domain.user.entity.User;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Getter
 @Entity
 @Builder
+@DynamicUpdate
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class Product extends BaseTimeEntity {
@@ -62,7 +65,7 @@ public class Product extends BaseTimeEntity {
 
     @Builder.Default
     @OneToMany(mappedBy = "product", cascade = CascadeType.REMOVE)
-    private List<Image> images=new ArrayList<>();
+    private List<Image> images = new ArrayList<>();
 
     @Getter
     @AllArgsConstructor
@@ -77,6 +80,21 @@ public class Product extends BaseTimeEntity {
         OTHER("기타");
 
         private final String displayName;
+    }
+
+    public void update(UpdateProductRequest modifiedProduct) {
+        this.name = modifiedProduct.getName();
+        this.description = modifiedProduct.getDescription();
+        this.category = modifiedProduct.getCategory();
+        this.minPrice = modifiedProduct.getMinPrice();
+    }
+
+    public void clearImages() {
+        this.images.clear();
+    }
+
+    public void addImages(List<Image> images) {
+        this.images.addAll(images);
     }
 
 }

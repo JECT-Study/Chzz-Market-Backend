@@ -1,5 +1,7 @@
 package org.chzz.market.domain.auction.entity;
 
+import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_ENDED;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,12 +14,16 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.time.LocalDateTime;
 
-import lombok.*;
-import org.chzz.market.common.validation.annotation.ThousandMultiple;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
 import org.chzz.market.domain.bid.entity.Bid;
 import org.chzz.market.domain.product.entity.Product;
@@ -44,61 +50,48 @@ public class Auction extends BaseTimeEntity {
     private Long winnerId;
 
     @Column
-    @ThousandMultiple
-    private Integer minPrice;
-
-    @Column
     private LocalDateTime endDateTime;
 
     @Column(columnDefinition = "varchar(20)")
     @Enumerated(EnumType.STRING)
     private AuctionStatus status;
 
+    public Integer getMinPrice() {
+        return product.getMinPrice();
+    }
+
     public static Auction toEntity(Product product) {
         return Auction.builder()
                 .product(product)
-                .minPrice(product.getMinPrice())
                 .status(PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusHours(24))
                 .build();
-    }
-
-    // 경매가 진행 중인지 확인
-    public boolean isProceeding() {
-        return status == PROCEEDING;
-    }
-
-    // 경매가 종료되었는지 확인
-    public boolean isEnded() {
-        return LocalDateTime.now().isAfter(endDateTime);
-    }
-
-    // 입찰 금액이 최소 금액 이상인지 확인
-    public boolean isAboveMinPrice(Long amount) {
-        return amount >= minPrice;
     }
 
     @OneToMany(mappedBy = "auction", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Bid> bids = new ArrayList<>();
 
+    public void validateAuctionEndTime() {
+        // 경매가 진행중이 아닐 때
+        if (status != AuctionStatus.PROCEEDING || LocalDateTime.now().isAfter(endDateTime)) {
+            throw new AuctionException(AUCTION_ENDED);
+        }
+    }
+
+    // 입찰 금액이 최소 금액 이상인지 확인
+    public boolean isAboveMinPrice(Long amount) {
+        return amount >= getMinPrice();
+    }
+
+
     public void registerBid(Bid bid) {
-        if (bids == null) {
-            bids = new ArrayList<>();
-        }
-        boolean isParticipated = bids.stream()
-                .anyMatch(bid1 -> bid1.getBidder().equals(bid.getBidder()));
-        if (isParticipated) {
-            bids.stream()
-                    .filter(bid1 -> bid1.equals(bid))
-                    .findFirst()
-                    .ifPresent(bid1 -> bids.remove(bid));
-        }
-        bids.add(bid);
         bid.specifyAuction(this);
+        bids.add(bid);
     }
 
     public void removeBid(Bid bid) {
+        bid.cancelBid();
         bids.remove(bid);
     }
 

@@ -78,13 +78,13 @@ class AuctionRepositoryImplTest {
         product4 = Product.builder().user(user2).name("제품4").category(Category.FASHION_AND_CLOTHING).minPrice(40000).build();
         productRepository.saveAll(List.of(product1, product2, product3, product4));
 
-        auction1 = Auction.builder().product(product1).minPrice(1000).status(Auction.AuctionStatus.PROCEEDING)
+        auction1 = Auction.builder().product(product1).status(Auction.AuctionStatus.PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusDays(1)).build();
-        auction2 = Auction.builder().product(product2).minPrice(2000).status(Auction.AuctionStatus.PROCEEDING)
+        auction2 = Auction.builder().product(product2).status(Auction.AuctionStatus.PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusDays(1)).build();
-        auction3 = Auction.builder().product(product3).minPrice(3000).status(Auction.AuctionStatus.PROCEEDING)
+        auction3 = Auction.builder().product(product3).status(Auction.AuctionStatus.PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusDays(1)).build();
-        auction4 = Auction.builder().product(product4).minPrice(3000).status(Auction.AuctionStatus.CANCELLED)
+        auction4 = Auction.builder().product(product4).status(Auction.AuctionStatus.CANCELLED)
                 .endDateTime(LocalDateTime.now().plusDays(1)).build();
         auctionRepository.saveAll(List.of(auction1, auction2, auction3, auction4));
 
@@ -193,6 +193,7 @@ class AuctionRepositoryImplTest {
         assertThat(result.get().getIsSeller()).isTrue();
         assertThat(result.get().getBidAmount()).isEqualTo(0);
         assertThat(result.get().getIsParticipating()).isFalse();
+        assertThat(result.get().getBidId()).isNull();
         assertThat(result.get().getImageList()).containsOnly(image1.getCdnPath(), image2.getCdnPath());
     }
 
@@ -213,6 +214,7 @@ class AuctionRepositoryImplTest {
         assertThat(result.get().getIsSeller()).isFalse();
         assertThat(result.get().getBidAmount()).isEqualTo(0);
         assertThat(result.get().getIsParticipating()).isFalse();
+        assertThat(result.get().getBidId()).isNull();
     }
 
     @Test
@@ -232,6 +234,7 @@ class AuctionRepositoryImplTest {
         assertThat(result.get().getIsSeller()).isFalse();
         assertThat(result.get().getBidAmount()).isEqualTo(6000L);
         assertThat(result.get().getIsParticipating()).isTrue();
+        assertThat(result.get().getBidId()).isEqualTo(bid4.getId());
     }
 
     @Test
