@@ -54,7 +54,7 @@ public class UserController {
         return ResponseEntity.ok((userService.checkNickname(nickname)));
     }
 
-    @PostMapping("/token/reissue")
+    @PostMapping("/tokens/reissue")
     public ResponseEntity<?> reissue(HttpServletRequest request, HttpServletResponse response) {
         Cookie refreshCookie = CookieUtil.getCookieByName(request, TokenType.REFRESH.name());
         Map<TokenType, String> newTokens = tokenService.reissue(refreshCookie);
