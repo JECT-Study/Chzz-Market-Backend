@@ -58,7 +58,7 @@ public class ImageService {
      * 상품에 대한 이미지 Entity 생성 및 저장
      */
     @Transactional
-    public void saveProductImageEntities(Product product, List<String> cdnPaths) {
+    public List<Image> saveProductImageEntities(Product product, List<String> cdnPaths) {
         List<Image> images = cdnPaths.stream()
                 .map(cdnPath -> Image.builder()
                         .cdnPath(cdnPath)
@@ -66,6 +66,8 @@ public class ImageService {
                         .build())
                 .toList();
         imageRepository.saveAll(images);
+
+        return images;
     }
 
     /**

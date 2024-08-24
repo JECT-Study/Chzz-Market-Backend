@@ -8,8 +8,4 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @NoArgsConstructor
 public class PreRegisterRequest extends BaseRegisterRequest {
-    @Override
-    public void validate() {
-        // TODO: 사전 등록 요청 검증 로직 추가
-    }
 }

@@ -13,4 +13,7 @@ import lombok.NoArgsConstructor;
 public class StartAuctionRequest {
     @NotNull
     private Long productId;
+
+    @NotNull
+    private Long userId;
 }
