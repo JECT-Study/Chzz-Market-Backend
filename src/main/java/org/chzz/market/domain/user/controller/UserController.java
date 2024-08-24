@@ -36,9 +36,9 @@ public class UserController {
     private final TokenService tokenService;
 
     @PostMapping
-    public ResponseEntity<?> createUser(@LoginUser Long userId, @Valid @RequestBody UserCreateRequest userCreateRequest,
+    public ResponseEntity<?> completeRegistration(@LoginUser Long userId, @Valid @RequestBody UserCreateRequest userCreateRequest,
                                         HttpServletResponse response) {
-        User user = userService.createUser(userId, userCreateRequest);
+        User user = userService.completeUserRegistration(userId, userCreateRequest);
         // 임시토큰 만료
         response.addCookie(CookieUtil.expireCookie(TokenType.TEMP.name()));
         // 리프레쉬 토큰 발급

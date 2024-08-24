@@ -49,7 +49,7 @@ class UserServiceTest {
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(userRepository.existsByNickname(userCreateRequest.getNickname())).thenReturn(false);
         // when
-        userService.createUser(userId, userCreateRequest);
+        userService.completeUserRegistration(userId, userCreateRequest);
         // then
         assertThat(user.getNickname()).isEqualTo(userCreateRequest.getNickname());
         assertThat(user.getBio()).isEqualTo(userCreateRequest.getBio());
@@ -74,7 +74,7 @@ class UserServiceTest {
         when(userRepository.existsByNickname(userCreateRequest.getNickname())).thenReturn(false);
 
         // when
-        userService.createUser(userId, userCreateRequest);
+        userService.completeUserRegistration(userId, userCreateRequest);
 
         // then
         assertThat(user.getNickname()).isEqualTo(userCreateRequest.getNickname());
@@ -93,7 +93,7 @@ class UserServiceTest {
 
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> userService.createUser(userId, userCreateRequest))
+        assertThatThrownBy(() -> userService.completeUserRegistration(userId, userCreateRequest))
                 .isInstanceOf(UserException.class)
                 .extracting("errorCode")
                 .isEqualTo(UserErrorCode.USER_NOT_FOUND);
@@ -111,7 +111,7 @@ class UserServiceTest {
         when(userRepository.existsByNickname(userCreateRequest.getNickname())).thenReturn(true);
 
         // when & then
-        assertThatThrownBy(() -> userService.createUser(userId, userCreateRequest))
+        assertThatThrownBy(() -> userService.completeUserRegistration(userId, userCreateRequest))
                 .isInstanceOf(UserException.class)
                 .extracting("errorCode")
                 .isEqualTo(UserErrorCode.NICKNAME_DUPLICATION);

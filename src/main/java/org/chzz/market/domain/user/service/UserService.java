@@ -21,7 +21,7 @@ public class UserService {
     private final UserRepository userRepository;
 
     @Transactional
-    public User createUser(Long userId, UserCreateRequest userCreateRequest) {
+    public User completeUserRegistration(Long userId, UserCreateRequest userCreateRequest) {
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(USER_NOT_FOUND));
         if (userRepository.existsByNickname(userCreateRequest.getNickname())) {
             throw new UserException(UserErrorCode.NICKNAME_DUPLICATION);
