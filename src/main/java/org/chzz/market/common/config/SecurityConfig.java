@@ -1,13 +1,11 @@
 package org.chzz.market.common.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Collections;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.error.handler.CustomAccessDeniedHandler;
 import org.chzz.market.common.error.handler.CustomAuthenticationEntryPoint;
 import org.chzz.market.common.error.handler.ExceptionHandlingFilter;
 import org.chzz.market.common.filter.JWTFilter;
-import org.chzz.market.common.util.JWTUtil;
 import org.chzz.market.domain.user.oauth2.CustomFailureHandler;
 import org.chzz.market.domain.user.oauth2.CustomSuccessHandler;
 import org.chzz.market.domain.user.service.CustomOAuth2UserService;
@@ -35,14 +33,13 @@ public class SecurityConfig {
 
     @Value("${client.url}")
     private String clientUrl;
-    private final ObjectMapper objectMapper;
-    private final JWTUtil jwtUtil;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomSuccessHandler customSuccessHandler;
     private final CustomFailureHandler customFailureHandler;
-
+    private final JWTFilter jwtFilter;
+    private final ExceptionHandlingFilter exceptionHandlingFilter;
 
     @Bean
     public SecurityFilterChain filterChain(final HttpSecurity http) throws Exception {
@@ -71,8 +68,8 @@ public class SecurityConfig {
                         .successHandler(customSuccessHandler)
                         .failureHandler(customFailureHandler)
                 )
-                .addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(new ExceptionHandlingFilter(objectMapper), JWTFilter.class)
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(exceptionHandlingFilter, JWTFilter.class)
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .build();
