@@ -38,7 +38,7 @@ public class ProductController {
     /**
      * 상품 삭제
      */
-    @PostMapping("/{productId}/delete")
+    @DeleteMapping("/{productId}")
     public ResponseEntity<DeleteProductResponse> deleteProduct(
             @PathVariable Long productId,
             @RequestHeader("X-User-Agent") Long userId) {
