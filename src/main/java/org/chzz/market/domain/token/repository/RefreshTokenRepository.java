@@ -17,8 +17,8 @@ public class RefreshTokenRepository {
 
     public void save(final TokenData tokenData) {
         ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
-        valueOperations.set(tokenData.getToken(), String.valueOf(tokenData.getUserId()));
-        redisTemplate.expire(tokenData.getToken(), TokenType.REFRESH.getExpirationTime(), TimeUnit.SECONDS);
+        valueOperations.set(tokenData.token(), String.valueOf(tokenData.userId()));
+        redisTemplate.expire(tokenData.token(), TokenType.REFRESH.getExpirationTime(), TimeUnit.SECONDS);
     }
 
     public Optional<TokenData> findByToken(final String token) {

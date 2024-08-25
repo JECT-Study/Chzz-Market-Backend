@@ -38,7 +38,7 @@ public class TokenService {
         String refreshToken = getRefreshTokenByCookie(refreshCookie);
         jwtUtil.validateToken(refreshToken, TokenType.REFRESH);
         Long userId = refreshTokenRepository.findByToken(refreshToken)
-                .orElseThrow(() -> new TokenException(TokenErrorCode.REFRESH_TOKEN_NOT_FOUND)).getUserId();
+                .orElseThrow(() -> new TokenException(TokenErrorCode.REFRESH_TOKEN_NOT_FOUND)).userId();
         String role = jwtUtil.getRole(refreshToken);
         User user = User.builder()
                 .id(userId)
@@ -52,7 +52,7 @@ public class TokenService {
         String refreshToken = getRefreshTokenByCookie(refreshCookie);
         jwtUtil.validateToken(refreshToken, TokenType.REFRESH);
         Long userId = refreshTokenRepository.findByToken(refreshToken)
-                .orElseThrow(() -> new TokenException(TokenErrorCode.REFRESH_TOKEN_NOT_FOUND)).getUserId();
+                .orElseThrow(() -> new TokenException(TokenErrorCode.REFRESH_TOKEN_NOT_FOUND)).userId();
         refreshTokenRepository.deleteByToken(refreshToken);
         log.info("사용자 ID {}: 로그아웃이 완료되었습니다.", userId);
     }
