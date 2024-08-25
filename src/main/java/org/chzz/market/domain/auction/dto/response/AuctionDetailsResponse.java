@@ -8,6 +8,8 @@ import lombok.Getter;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.entity.Auction.AuctionStatus;
 
+import static org.chzz.market.domain.auction.entity.Auction.*;
+
 @Getter
 public class AuctionDetailsResponse {
     private Long productId;
@@ -17,7 +19,7 @@ public class AuctionDetailsResponse {
     private String description;
     private Integer minPrice;
     private LocalDateTime endDateTime;
-    private Auction.AuctionStatus status;
+    private AuctionStatus status;
     private Boolean isSeller;
     private Long participantCount;
     private Boolean isParticipating;

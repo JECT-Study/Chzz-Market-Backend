@@ -23,7 +23,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.chzz.market.common.validation.annotation.ThousandMultiple;
 import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
 import org.chzz.market.domain.bid.entity.Bid;
@@ -51,20 +50,19 @@ public class Auction extends BaseTimeEntity {
     private Long winnerId;
 
     @Column
-    @ThousandMultiple
-    private Integer minPrice;
-
-    @Column
     private LocalDateTime endDateTime;
 
     @Column(columnDefinition = "varchar(20)")
     @Enumerated(EnumType.STRING)
     private AuctionStatus status;
 
+    public Integer getMinPrice() {
+        return product.getMinPrice();
+    }
+
     public static Auction toEntity(Product product) {
         return Auction.builder()
                 .product(product)
-                .minPrice(product.getMinPrice())
                 .status(PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusHours(24))
                 .build();
@@ -83,7 +81,7 @@ public class Auction extends BaseTimeEntity {
 
     // 입찰 금액이 최소 금액 이상인지 확인
     public boolean isAboveMinPrice(Long amount) {
-        return amount >= minPrice;
+        return amount >= getMinPrice();
     }
 
 
@@ -106,10 +104,5 @@ public class Auction extends BaseTimeEntity {
         CANCELLED("취소 됨");
 
         private final String description;
-    }
-
-    public void start(LocalDateTime endDateTime) {
-        this.status = PROCEEDING;
-        this.endDateTime = endDateTime;
     }
 }

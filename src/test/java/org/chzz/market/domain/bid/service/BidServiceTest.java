@@ -59,16 +59,16 @@ class BidServiceTest {
     @BeforeEach
     void setUp() {
         user = User.builder().id(1L).providerId("1234").nickname("닉네임1").email("asd@naver.com").build();
-        user2 = User.builder().id(2L).providerId("12345").nickname("닉네임2").email("asd1@naver.com").build();
+        user2 = User.builder().id(2L).providerId("12345").nickname("닉네임2").email("asd@naver.com").build();
         user3 = User.builder().id(3L).providerId("123").nickname("닉네임").email("as@naver.com").build();
-        product = Product.builder().id(1L).user(user).name("제품1").category(Category.FASHION_AND_CLOTHING).build();
-        product2 = Product.builder().id(2L).user(user).name("제품2").category(Category.FASHION_AND_CLOTHING).build();
-        product3 = Product.builder().id(3L).user(user).name("제품3").category(Category.FASHION_AND_CLOTHING).build();
-        auction = Auction.builder().id(1L).product(product).minPrice(1000).status(AuctionStatus.PROCEEDING)
+        product = Product.builder().user(user).name("제품1").category(Category.FASHION_AND_CLOTHING).minPrice(1000).build();
+        product2 = Product.builder().user(user).name("제품2").category(Category.FASHION_AND_CLOTHING).minPrice(1000).build();
+        product3 = Product.builder().user(user).name("제품3").category(Category.FASHION_AND_CLOTHING).minPrice(1000).build();
+        auction = Auction.builder().id(1L).product(product).status(AuctionStatus.PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusDays(1)).build();
-        completeAuction = Auction.builder().id(2L).product(product2).minPrice(1000).status(AuctionStatus.ENDED)
+        completeAuction = Auction.builder().id(2L).product(product2).status(AuctionStatus.ENDED)
                 .endDateTime(LocalDateTime.now().minusDays(1)).build();
-        endAuction = Auction.builder().id(3L).product(product3).minPrice(1000).status(AuctionStatus.PROCEEDING)
+        endAuction = Auction.builder().id(3L).product(product3).status(AuctionStatus.PROCEEDING)
                 .endDateTime(LocalDateTime.now().minusDays(1)).build();
     }
 
