@@ -9,7 +9,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.chzz.market.domain.bank_account.entity.BankAccount;
 import org.chzz.market.domain.bank_account.entity.BankAccount.BankName;
-import org.chzz.market.domain.user.entity.User;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -31,11 +30,10 @@ public class UserCreateRequest {
     @Pattern(regexp = "^(http|https)://.*$|^$", message = "링크는 유효한 URL 형식이어야 합니다.")
     private String link;
 
-    public BankAccount toBankAccount(User user) {
+    public BankAccount toBankAccount() {
         return BankAccount.builder()
                 .name(bankName)
                 .number(accountNumber)
-                .user(user)
                 .build();
     }
 }

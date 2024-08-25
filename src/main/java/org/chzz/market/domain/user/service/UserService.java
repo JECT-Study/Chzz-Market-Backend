@@ -27,7 +27,7 @@ public class UserService {
             throw new UserException(UserErrorCode.NICKNAME_DUPLICATION);
         }
         user.createUser(userCreateRequest);
-        user.addBankAccount(userCreateRequest.toBankAccount(user));
+        user.addBankAccount(userCreateRequest.toBankAccount());
         return user;
     }
 
