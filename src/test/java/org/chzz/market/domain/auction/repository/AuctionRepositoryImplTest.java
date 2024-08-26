@@ -5,9 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-
 import org.chzz.market.common.DatabaseTest;
 import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.AuctionResponse;
@@ -58,7 +58,7 @@ class AuctionRepositoryImplTest {
     private static Product product1, product2, product3, product4;
     private static Auction auction1, auction2, auction3, auction4;
     private static Image image1, image2, image3, image4;
-    private static Bid bid1, bid2, bid3, bid4;
+    private static Bid bid1, bid2, bid3, bid4, bid5, bid6;
 
     @BeforeAll
     static void setUpOnce(@Autowired UserRepository userRepository,
@@ -98,12 +98,16 @@ class AuctionRepositoryImplTest {
         bid2 = Bid.builder().bidder(user2).auction(auction2).amount(4000L).build();
         bid3 = Bid.builder().bidder(user1).auction(auction3).amount(5000L).build();
         bid4 = Bid.builder().bidder(user3).auction(auction2).amount(6000L).build();
-        bidRepository.saveAll(List.of(bid1, bid2, bid3, bid4));
+        bid5 = Bid.builder().bidder(user1).auction(auction2).amount(7000L).build();
+        bid6 = Bid.builder().bidder(user2).auction(auction1).amount(8000L).build();
+        bidRepository.saveAll(List.of(bid1, bid2, bid3, bid4,bid5,bid6));
 
         auction1.registerBid(bid1);
         auction1.registerBid(bid2);
         auction2.registerBid(bid3);
         auction3.registerBid(bid4);
+        auction2.registerBid(bid5);
+        auction1.registerBid(bid6);
     }
 
     @AfterEach
@@ -134,7 +138,7 @@ class AuctionRepositoryImplTest {
         assertThat(result.getContent().get(0).getCdnPath()).isEqualTo("path/to/image3.jpg");
         assertThat(result.getContent().get(1).getName()).isEqualTo("제품1");
         assertThat(result.getContent().get(1).getIsParticipating()).isFalse();
-        assertThat(result.getContent().get(1).getParticipantCount()).isEqualTo(1);
+        assertThat(result.getContent().get(1).getParticipantCount()).isEqualTo(2);
         assertThat(result.getContent().get(1).getCdnPath()).isEqualTo("path/to/image1_1.jpg");
     }
 
@@ -153,7 +157,7 @@ class AuctionRepositoryImplTest {
         assertThat(result.getContent()).hasSize(2);
         assertThat(result.getContent().get(0).getName()).isEqualTo("제품1");
         assertThat(result.getContent().get(0).getIsParticipating()).isTrue();
-        assertThat(result.getContent().get(0).getParticipantCount()).isEqualTo(1);
+        assertThat(result.getContent().get(0).getParticipantCount()).isEqualTo(2);
         assertThat(result.getContent().get(0).getCdnPath()).isEqualTo("path/to/image1_1.jpg");
         assertThat(result.getContent().get(1).getName()).isEqualTo("제품3");
         assertThat(result.getContent().get(1).getIsParticipating()).isFalse();
@@ -315,6 +319,17 @@ class AuctionRepositoryImplTest {
         //then
         assertThat(result).isNotNull();
         assertThat(result.getContent()).hasSize(0);
+    }
+
+    @Test
+    void testFindBestAuctions() {
+        // given
+        Long userId = user1.getId();
+        List<AuctionResponse> bestAuctions = auctionRepository.findBestAuctions(userId);
+        // when
+
+        // then
+        assertThat(bestAuctions).isSortedAccordingTo(Comparator.comparingLong(AuctionResponse::getParticipantCount).reversed());
     }
 
 }
