@@ -1,11 +1,11 @@
 package org.chzz.market.domain.auction.dto.request;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Getter
-@Builder
-@AllArgsConstructor
+@SuperBuilder
+@NoArgsConstructor
 public class RegisterAuctionRequest extends BaseRegisterRequest {
 }

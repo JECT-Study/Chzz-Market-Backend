@@ -1,6 +1,8 @@
 package org.chzz.market.domain.auction.repository;
 
 import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.*;
+import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.PROCEEDING;
+import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.ENDED;
 import static org.chzz.market.domain.auction.entity.QAuction.auction;
 import static org.chzz.market.domain.bid.entity.QBid.bid;
 import static org.chzz.market.domain.image.entity.QImage.image;

@@ -1,7 +1,5 @@
 package org.chzz.market.domain.auction.dto.response;
 
-import lombok.Getter;
-
 import static org.chzz.market.domain.auction.entity.Auction.*;
 
 /**
