@@ -1,8 +1,9 @@
 package org.chzz.market.domain.auction.repository;
 
+import java.util.List;
 import java.util.Optional;
-import org.chzz.market.domain.auction.dto.response.AuctionResponse;
 import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
+import org.chzz.market.domain.auction.dto.response.AuctionResponse;
 import org.chzz.market.domain.auction.dto.response.MyAuctionResponse;
 import org.chzz.market.domain.product.entity.Product.Category;
 import org.springframework.data.domain.Page;
@@ -36,4 +37,11 @@ public interface AuctionRepositoryCustom {
      * @return 페이징된 사용자 경매 응답 리스트
      */
     Page<MyAuctionResponse> findAuctionsByUserId(Long userId, Pageable pageable);
+
+
+    /**
+     * 홈 화면의 베스트 경매 조회
+     * @return 입찰 기록이 많은 10개의 경매 정보
+     */
+    List<AuctionResponse> findBestAuctions(Long userId);
 }

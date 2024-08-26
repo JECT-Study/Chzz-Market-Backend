@@ -4,6 +4,7 @@ import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.*;
 import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.PROCEEDING;
 import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.ENDED;
 import static org.chzz.market.domain.auction.entity.QAuction.auction;
+import static org.chzz.market.domain.auction.repository.AuctionRepositoryImpl.AuctionOrder.POPULARITY;
 import static org.chzz.market.domain.bid.entity.QBid.bid;
 import static org.chzz.market.domain.image.entity.QImage.image;
 import static org.chzz.market.domain.product.entity.QProduct.product;
@@ -151,6 +152,32 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                 .select(auction.count());
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchCount);
+    }
+
+    @Override
+    public List<AuctionResponse> findBestAuctions(Long userId) {
+        JPAQuery<?> baseQuery = jpaQueryFactory.from(auction)
+                .join(auction.product, product)
+                .join(product.user, user)
+                .where(auction.status.eq(PROCEEDING));
+
+        return baseQuery
+                .select(new QAuctionResponse(
+                        auction.id,
+                        product.name,
+                        image.cdnPath,
+                        timeRemaining().longValue(),
+                        product.minPrice.longValue(),
+                        bid.countDistinct(),
+                        isParticipating(userId)
+                ))
+                .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId())))
+                .leftJoin(bid).on(bid.auction.id.eq(auction.id))
+                .groupBy(auction.id, product.name, image.cdnPath, auction.createdAt, product.minPrice)
+                .orderBy(POPULARITY.getOrderSpecifier())
+                .offset(0)
+                .limit(10)
+                .fetch();
     }
 
     /**
