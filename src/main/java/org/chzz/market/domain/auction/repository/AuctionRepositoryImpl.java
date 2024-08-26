@@ -32,6 +32,7 @@ import org.chzz.market.domain.auction.dto.response.MyAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.QAuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.QAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.QMyAuctionResponse;
+import org.chzz.market.domain.bid.entity.Bid.BidStatus;
 import org.chzz.market.domain.image.entity.QImage;
 import org.chzz.market.domain.product.entity.Product.Category;
 import org.springframework.data.domain.Page;
@@ -158,7 +159,6 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
     public List<AuctionResponse> findBestAuctions(Long userId) {
         JPAQuery<?> baseQuery = jpaQueryFactory.from(auction)
                 .join(auction.product, product)
-                .join(product.user, user)
                 .where(auction.status.eq(PROCEEDING));
 
         return baseQuery
@@ -172,7 +172,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                         isParticipating(userId)
                 ))
                 .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId())))
-                .leftJoin(bid).on(bid.auction.id.eq(auction.id))
+                .leftJoin(bid).on(bid.auction.id.eq(auction.id).and(bid.status.ne(BidStatus.CANCELLED)))
                 .groupBy(auction.id, product.name, image.cdnPath, auction.createdAt, product.minPrice)
                 .orderBy(POPULARITY.getOrderSpecifier())
                 .offset(0)
