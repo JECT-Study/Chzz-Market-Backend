@@ -322,6 +322,7 @@ class AuctionRepositoryImplTest {
     }
 
     @Test
+    @DisplayName("베스트 입찰 조회")
     void testFindBestAuctions() {
         // given
         Long userId = user1.getId();
