@@ -121,7 +121,7 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
     }
 
     @Override
-    public Page<ProductResponse> findMyProductsByUserId(String nickname, Pageable pageable) {
+    public Page<ProductResponse> findProductsByNickname(String nickname, Pageable pageable) {
         QProduct product = QProduct.product;
         QImage image = QImage.image;
         QAuction auction = QAuction.auction;

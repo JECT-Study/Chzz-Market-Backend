@@ -259,7 +259,7 @@ class ProductRepositoryImplTest {
             Pageable pageable = PageRequest.of(0, 10, Sort.by("product-newest"));
 
             // when
-            Page<ProductResponse> result = productRepository.findMyProductsByUserId(user1.getNickname(), pageable);
+            Page<ProductResponse> result = productRepository.findProductsByNickname(user1.getNickname(), pageable);
 
             // then
             assertThat(result.getContent()).isNotEmpty();
@@ -277,7 +277,7 @@ class ProductRepositoryImplTest {
             User newUser = userRepository.save(User.builder().providerId("9999").nickname("새로운사용자").email("new@test.com").build());
 
             // when
-            Page<ProductResponse> result = productRepository.findMyProductsByUserId(newUser.getNickname(), pageable);
+            Page<ProductResponse> result = productRepository.findProductsByNickname(newUser.getNickname(), pageable);
 
             // then
             assertThat(result.getContent()).isEmpty();
@@ -310,8 +310,8 @@ class ProductRepositoryImplTest {
             Pageable expensivePageable = PageRequest.of(0, 10, Sort.by("product-expensive"));
 
             // when
-            Page<ProductResponse> newestResult = productRepository.findMyProductsByUserId(user1.getNickname(), newestPageable);
-            Page<ProductResponse> expensiveResult = productRepository.findMyProductsByUserId(user1.getNickname(), expensivePageable);
+            Page<ProductResponse> newestResult = productRepository.findProductsByNickname(user1.getNickname(), newestPageable);
+            Page<ProductResponse> expensiveResult = productRepository.findProductsByNickname(user1.getNickname(), expensivePageable);
 
             // then
             assertThat(newestResult.getContent()).extracting("name")
@@ -327,7 +327,7 @@ class ProductRepositoryImplTest {
             Pageable pageable = PageRequest.of(0, 10);
 
             // when
-            Page<ProductResponse> result = productRepository.findMyProductsByUserId(user1.getNickname(), pageable);
+            Page<ProductResponse> result = productRepository.findProductsByNickname(user1.getNickname(), pageable);
 
             // then
             assertThat(result.getContent()).hasSize(2);

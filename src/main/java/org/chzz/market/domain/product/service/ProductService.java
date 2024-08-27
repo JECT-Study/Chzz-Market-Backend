@@ -56,7 +56,7 @@ public class ProductService {
      * 나의 사전 등록 상품 목록 조회
      */
     public Page<ProductResponse> getMyProductList(String nickname, Pageable pageable) {
-        return productRepository.findMyProductsByUserId(nickname, pageable);
+        return productRepository.findProductsByNickname(nickname, pageable);
     }
 
     /*

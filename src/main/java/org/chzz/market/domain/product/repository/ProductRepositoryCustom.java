@@ -33,6 +33,6 @@ public interface ProductRepositoryCustom {
      * @param pageable    페이징 정보
      * @return            페이징된 사전 등록 상품 리스트
      */
-    Page<ProductResponse> findMyProductsByUserId(String nickname, Pageable pageable);
+    Page<ProductResponse> findProductsByNickname(String nickname, Pageable pageable);
 
 }
