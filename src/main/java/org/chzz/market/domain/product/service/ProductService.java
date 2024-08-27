@@ -20,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.chzz.market.domain.product.error.ProductErrorCode.*;
@@ -56,6 +57,15 @@ public class ProductService {
      */
     public Page<ProductResponse> getMyProductList(String nickname, Pageable pageable) {
         return productRepository.findMyProductsByUserId(nickname, pageable);
+    }
+
+    /*
+     * 상품 카테고리 목록 조회
+     */
+    public List<CategoryResponse> getCategories() {
+        return Arrays.stream(Product.Category.values())
+                .map(category -> new CategoryResponse(category.name(), category.getDisplayName()))
+                .toList();
     }
 
     /*
