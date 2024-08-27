@@ -11,12 +11,10 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.util.QuerydslOrder;
 import org.chzz.market.common.util.QuerydslOrderProvider;
-import org.chzz.market.domain.auction.entity.QAuction;
 import org.chzz.market.domain.image.entity.QImage;
 import org.chzz.market.domain.like.entity.QLike;
 import org.chzz.market.domain.product.dto.*;
 import org.chzz.market.domain.product.entity.QProduct;
-import org.chzz.market.domain.user.entity.QUser;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
@@ -29,6 +27,7 @@ import static org.chzz.market.domain.image.entity.QImage.image;
 import static org.chzz.market.domain.like.entity.QLike.like;
 import static org.chzz.market.domain.product.entity.Product.*;
 import static org.chzz.market.domain.product.entity.QProduct.product;
+import static org.chzz.market.domain.user.entity.QUser.user;
 
 @RequiredArgsConstructor
 public class ProductRepositoryImpl implements ProductRepositoryCustom {
@@ -82,16 +81,12 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
      */
     @Override
     public Optional<ProductDetailsResponse> findProductDetailsById(Long productId, Long userId) {
-        QProduct product = QProduct.product;
-        QUser seller = QUser.user;
-        QLike like = QLike.like;
-        QImage image = QImage.image;
 
         Optional<ProductDetailsResponse> result = Optional.ofNullable(jpaQueryFactory
                 .select(new QProductDetailsResponse(
                         product.id,
                         product.name,
-                        seller.nickname,
+                        user.nickname,
                         product.minPrice,
                         product.createdAt,
                         product.description,
@@ -104,7 +99,7 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
                                 .exists()
                 ))
                 .from(product)
-                .join(product.user, seller)
+                .join(product.user, user)
                 .where(product.id.eq(productId))
                 .fetchOne());
 
@@ -122,15 +117,12 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
 
     @Override
     public Page<ProductResponse> findProductsByNickname(String nickname, Pageable pageable) {
-        QProduct product = QProduct.product;
-        QImage image = QImage.image;
-        QAuction auction = QAuction.auction;
-        QUser user = QUser.user;
 
         JPAQuery<?> baseQuery = jpaQueryFactory.from(product)
                 .join(product.user, user)
                 .leftJoin(auction).on(auction.product.eq(product))
-                .where(auction.id.isNull().and(user.nickname.eq(nickname)));
+                .leftJoin(like).on(like.product.eq(product).and(like.user.nickname.eq(nickname)))
+                .where(auction.isNull().and(user.nickname.eq(nickname)));
 
         List<ProductResponse> content = baseQuery
                 .select(new QProductResponse(
@@ -139,11 +131,7 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
                         image.cdnPath,
                         product.minPrice,
                         getLikeCount(),
-                        JPAExpressions.selectOne()
-                                .from(like)
-                                .where(like.product.eq(product)
-                                        .and(like.user.nickname.eq(nickname)))
-                                .exists()
+                        like.isNotNull()
                 ))
                 .leftJoin(image).on(image.product.id.eq(product.id)
                         .and(image.id.eq(getFirstImageId())))
