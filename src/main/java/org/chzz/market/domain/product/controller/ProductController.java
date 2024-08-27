@@ -2,11 +2,7 @@ package org.chzz.market.domain.product.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.chzz.market.domain.product.dto.DeleteProductResponse;
-import org.chzz.market.domain.product.dto.ProductDetailsResponse;
-import org.chzz.market.domain.product.dto.ProductResponse;
-import org.chzz.market.domain.product.dto.UpdateProductRequest;
-import org.chzz.market.domain.product.dto.UpdateProductResponse;
+import org.chzz.market.domain.product.dto.*;
 import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.product.service.ProductService;
 import org.springframework.data.domain.Page;
@@ -32,12 +28,20 @@ public class ProductController {
      * 카테고리 별 사전 등록 상품 목록 조회
      */
     // TODO: 추후에 인증된 사용자 정보로 수정 필요
-    @GetMapping("/categories")
+    @GetMapping
     public ResponseEntity<Page<ProductResponse>> getProductList(
             @RequestParam Product.Category category,
             @RequestHeader("X-User-Agent") Long userId,
             Pageable pageable) {
         return ResponseEntity.ok(productService.getProductListByCategory(category, userId, pageable)); // 임의의 사용자 ID
+    }
+
+    /*
+     * 상품 카테고리 목록 조회
+     */
+    @GetMapping("/categories")
+    public ResponseEntity<List<CategoryResponse>> getCategoryList() {
+        return ResponseEntity.ok(productService.getCategories());
     }
 
     /*
@@ -56,9 +60,9 @@ public class ProductController {
      * 나의 사전 등록 상품 목록 조회
      */
     // TODO: 추후에 인증된 사용자 정보로 수정 필요
-    @GetMapping
+    @GetMapping("/user/{nickname}")
     public ResponseEntity<Page<ProductResponse>> getMyProductList(
-            @RequestParam("user") String nickname,
+            @PathVariable String nickname,
             Pageable pageable) {
         return ResponseEntity.ok(productService.getMyProductList(nickname, pageable));
     }
