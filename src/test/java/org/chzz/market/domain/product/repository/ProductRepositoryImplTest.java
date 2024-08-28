@@ -104,7 +104,7 @@ class ProductRepositoryImplTest {
         @DisplayName("1. 특정 카테고리 사전 등록 상품을 높은 가격순으로 조회")
         public void testFindProductsByCategoryExpensive() {
             // given
-            Pageable pageable = PageRequest.of(0, 10, Sort.by("product_expensive"));
+            Pageable pageable = PageRequest.of(0, 10, Sort.by("product-expensive"));
 
             // when
             Page<ProductResponse> result = productRepository.findProductsByCategory(ELECTRONICS, user1.getId(), pageable);
@@ -148,7 +148,7 @@ class ProductRepositoryImplTest {
         @DisplayName("3. 특정 카테고리 사전 등록 상품 최신순으로 조회")
         void findProductsByCategoryOrderByNewest() {
             // given
-            Pageable pageable = PageRequest.of(0, 10, Sort.by("product_newest"));
+            Pageable pageable = PageRequest.of(0, 10, Sort.by("product-newest"));
 
             // when
             Page<ProductResponse> result = productRepository.findProductsByCategory(ELECTRONICS, user1.getId(), pageable);
@@ -256,10 +256,10 @@ class ProductRepositoryImplTest {
         @DisplayName("1. 유효한 사용자의 사전 등록 상품 목록 조회")
         void findMyProductsByUserId() {
             // given
-            Pageable pageable = PageRequest.of(0, 10, Sort.by("product_newest"));
+            Pageable pageable = PageRequest.of(0, 10, Sort.by("product-newest"));
 
             // when
-            Page<ProductResponse> result = productRepository.findMyProductsByUserId(user1.getId(), pageable);
+            Page<ProductResponse> result = productRepository.findProductsByNickname(user1.getNickname(), pageable);
 
             // then
             assertThat(result.getContent()).isNotEmpty();
@@ -277,7 +277,7 @@ class ProductRepositoryImplTest {
             User newUser = userRepository.save(User.builder().providerId("9999").nickname("새로운사용자").email("new@test.com").build());
 
             // when
-            Page<ProductResponse> result = productRepository.findMyProductsByUserId(newUser.getId(), pageable);
+            Page<ProductResponse> result = productRepository.findProductsByNickname(newUser.getNickname(), pageable);
 
             // then
             assertThat(result.getContent()).isEmpty();
@@ -287,8 +287,8 @@ class ProductRepositoryImplTest {
         @DisplayName("3. 페이지네이션 동작 확인")
         public void testPagination() {
             // given
-            Pageable firstPage = PageRequest.of(0, 2, Sort.by("product_expensive"));
-            Pageable secondPage = PageRequest.of(1, 2, Sort.by("product_expensive"));
+            Pageable firstPage = PageRequest.of(0, 2, Sort.by("product-expensive"));
+            Pageable secondPage = PageRequest.of(1, 2, Sort.by("product-expensive"));
 
             // when
             Page<ProductResponse> firstResult = productRepository.findProductsByCategory(ELECTRONICS, user1.getId(), firstPage);
@@ -306,12 +306,12 @@ class ProductRepositoryImplTest {
         @DisplayName("4. 다양한 정렬 옵션이 정상적으로 적용")
         void sortingOptionsWorkCheck() {
             // given
-            Pageable newestPageable = PageRequest.of(0, 10, Sort.by("product_newest"));
-            Pageable expensivePageable = PageRequest.of(0, 10, Sort.by("product_expensive"));
+            Pageable newestPageable = PageRequest.of(0, 10, Sort.by("product-newest"));
+            Pageable expensivePageable = PageRequest.of(0, 10, Sort.by("product-expensive"));
 
             // when
-            Page<ProductResponse> newestResult = productRepository.findMyProductsByUserId(user1.getId(), newestPageable);
-            Page<ProductResponse> expensiveResult = productRepository.findMyProductsByUserId(user1.getId(), expensivePageable);
+            Page<ProductResponse> newestResult = productRepository.findProductsByNickname(user1.getNickname(), newestPageable);
+            Page<ProductResponse> expensiveResult = productRepository.findProductsByNickname(user1.getNickname(), expensivePageable);
 
             // then
             assertThat(newestResult.getContent()).extracting("name")
@@ -327,7 +327,7 @@ class ProductRepositoryImplTest {
             Pageable pageable = PageRequest.of(0, 10);
 
             // when
-            Page<ProductResponse> result = productRepository.findMyProductsByUserId(user1.getId(), pageable);
+            Page<ProductResponse> result = productRepository.findProductsByNickname(user1.getNickname(), pageable);
 
             // then
             assertThat(result.getContent()).hasSize(2);

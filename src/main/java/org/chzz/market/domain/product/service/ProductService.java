@@ -22,8 +22,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import static org.chzz.market.domain.product.error.ProductErrorCode.*;
 
@@ -49,15 +49,25 @@ public class ProductService {
     /*
      * 상품 상세 정보 조회
      */
-    public Optional<ProductDetailsResponse> getProductDetails(Long productId, Long userId) {
-        return productRepository.findProductDetailsById(productId, userId);
+    public ProductDetailsResponse getProductDetails(Long productId, Long userId) {
+        return productRepository.findProductDetailsById(productId, userId)
+                .orElseThrow(() -> new ProductException(PRODUCT_NOT_FOUND));
     }
 
     /*
      * 나의 사전 등록 상품 목록 조회
      */
-    public Page<ProductResponse> getMyProductList(Long userId, Pageable pageable) {
-        return productRepository.findMyProductsByUserId(userId, pageable);
+    public Page<ProductResponse> getMyProductList(String nickname, Pageable pageable) {
+        return productRepository.findProductsByNickname(nickname, pageable);
+    }
+
+    /*
+     * 상품 카테고리 목록 조회
+     */
+    public List<CategoryResponse> getCategories() {
+        return Arrays.stream(Product.Category.values())
+                .map(category -> new CategoryResponse(category.name(), category.getDisplayName()))
+                .toList();
     }
 
     /*
