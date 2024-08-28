@@ -1,6 +1,7 @@
 package org.chzz.market.domain.like.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.domain.like.dto.LikeResponse;
 import org.chzz.market.domain.like.entity.Like;
 import org.chzz.market.domain.like.error.LikeException;
@@ -60,8 +61,7 @@ public class LikeService {
         return response;
     }
 
-    @Transactional
-    public LikeResponse unlikeProduct(User user, Product product) {
+    private LikeResponse unlikeProduct(User user, Product product) {
         Like like = likeRepository.findByUserAndProduct(user, product)
                 .orElseThrow(() -> new LikeException(LIKE_NOT_FOUND));
         product.removeLike(like);
@@ -69,8 +69,7 @@ public class LikeService {
         return LikeResponse.of(false, product.getLikeCount());
     }
 
-    @Transactional
-    public LikeResponse likeProduct(User user, Product product) {
+    private LikeResponse likeProduct(User user, Product product) {
         Like newLike = Like.builder()
                 .user(user)
                 .product(product)
@@ -80,18 +79,18 @@ public class LikeService {
         return LikeResponse.of(true, product.getLikeCount());
     }
 
-    public Product findProductForLike(Long productId) {
+    private Product findProductForLike(Long productId) {
         logger.debug("상품 ID {}번의 상품 좋아요를 위한 상품 조회를 시작합니다.", productId);
         return productRepository.findProductForLike(productId)
                 .orElseThrow(() -> new ProductException(PRODUCT_NOT_FOUND_OR_IN_AUCTION));
     }
 
-    public User findUser(Long userId) {
+    private User findUser(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(USER_NOT_FOUND));
     }
 
-    public boolean checkLikeExists(Long userId, Long productId) {
+    private boolean checkLikeExists(Long userId, Long productId) {
         return likeRepository.existsByUserIdAndProductId(userId, productId);
     }
 }
