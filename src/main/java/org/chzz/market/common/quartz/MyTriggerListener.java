@@ -1,5 +1,8 @@
 package org.chzz.market.common.quartz;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.JobExecutionContext;
 import org.quartz.Trigger;
@@ -29,7 +32,13 @@ public class MyTriggerListener implements TriggerListener {
     @Override
     public void triggerMisfired(Trigger trigger) {
         // Trigger가 Misfired(제시간에 실행되지 못했을 때) 발생 시 호출됩니다.
-        log.warn("Trigger '{}'이(가) Misfired 되었습니다.", trigger.getKey().toString());
+        LocalDateTime scheduledFireTime = LocalDateTime.ofInstant(trigger.getNextFireTime().toInstant(), ZoneId.systemDefault());
+        Duration delay = Duration.between(scheduledFireTime, LocalDateTime.now());
+
+        log.warn("Trigger '{}' Misfired. 예정 실행 시간: {}, 지연 시간: {}초",
+                trigger.getKey(),
+                scheduledFireTime,
+                delay.getSeconds());
     }
 
     @Override
