@@ -13,7 +13,7 @@ public record UpdateProfileResponse (
                 user.getNickname(),
                 user.getDescription(),
                 user.getRegion(),
-                user.getUrl()
+                user.getLink()
         );
     }
 }
