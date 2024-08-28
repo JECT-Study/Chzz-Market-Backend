@@ -78,13 +78,13 @@ class AuctionRepositoryImplTest {
         product4 = Product.builder().user(user2).name("제품4").category(Category.FASHION_AND_CLOTHING).minPrice(40000).build();
         productRepository.saveAll(List.of(product1, product2, product3, product4));
 
-        auction1 = Auction.builder().product(product1).minPrice(1000).status(Auction.AuctionStatus.PROCEEDING)
+        auction1 = Auction.builder().product(product1).status(Auction.AuctionStatus.PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusDays(1)).build();
-        auction2 = Auction.builder().product(product2).minPrice(2000).status(Auction.AuctionStatus.PROCEEDING)
+        auction2 = Auction.builder().product(product2).status(Auction.AuctionStatus.PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusDays(1)).build();
-        auction3 = Auction.builder().product(product3).minPrice(3000).status(Auction.AuctionStatus.PROCEEDING)
+        auction3 = Auction.builder().product(product3).status(Auction.AuctionStatus.PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusDays(1)).build();
-        auction4 = Auction.builder().product(product4).minPrice(3000).status(Auction.AuctionStatus.CANCELLED)
+        auction4 = Auction.builder().product(product4).status(Auction.AuctionStatus.CANCELLED)
                 .endDateTime(LocalDateTime.now().plusDays(1)).build();
         auctionRepository.saveAll(List.of(auction1, auction2, auction3, auction4));
 

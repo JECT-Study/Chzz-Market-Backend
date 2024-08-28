@@ -5,7 +5,6 @@ import com.querydsl.core.annotations.QueryProjection;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Getter;
-import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.entity.Auction.AuctionStatus;
 
 @Getter
@@ -17,7 +16,7 @@ public class AuctionDetailsResponse {
     private String description;
     private Integer minPrice;
     private LocalDateTime endDateTime;
-    private Auction.AuctionStatus status;
+    private AuctionStatus status;
     private Boolean isSeller;
     private Long participantCount;
     private Boolean isParticipating;

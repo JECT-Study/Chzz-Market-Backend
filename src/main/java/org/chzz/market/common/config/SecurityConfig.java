@@ -19,9 +19,10 @@ public class SecurityConfig {
         return http.authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(ACTUATOR).permitAll()
                         .requestMatchers("/api/v1/auctions/**").permitAll()
-                        .requestMatchers("api/v1/bids/**").permitAll()
-                        .requestMatchers("api/v1/users/**").permitAll()
-                        .requestMatchers("api/v1/notifications/**").permitAll()
+                        .requestMatchers("/api/v1/products/**").permitAll()
+                        .requestMatchers("/api/v1/bids/**").permitAll()
+                        .requestMatchers("/api/v1/users/**").permitAll()
+                        .requestMatchers("/api/v1/notifications/**").permitAll()
                         .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
                 )
