@@ -27,9 +27,8 @@ import static org.chzz.market.domain.user.error.UserErrorCode.USER_NOT_FOUND;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
+@Slf4j
 public class LikeService {
-
-    private static final Logger logger = LoggerFactory.getLogger(LikeService.class);
 
     private final ProductRepository productRepository;
     private final LikeRepository likeRepository;
@@ -42,7 +41,7 @@ public class LikeService {
             backoff = @Backoff(delay = 1000)
     )
     public LikeResponse toggleLike(Long userId, Long productId) {
-        logger.info("상품 ID {}번 상품에 유저 ID {}번의 유저가 좋아요 토글 API를 호출합니다.", productId, userId);
+        log.info("상품 ID {}번 상품에 유저 ID {}번의 유저가 좋아요 토글 API를 호출합니다.", productId, userId);
         Product product = findProductForLike(productId);
         User user = findUser(userId);
 
@@ -51,13 +50,13 @@ public class LikeService {
         LikeResponse response;
         if (isLiked) {
             response = unlikeProduct(user, product);
-            logger.info("유저 ID {}번의 유저가 상품 ID {}번의 상품 좋아요를 취소했습니다.", userId, productId);
+            log.info("유저 ID {}번의 유저가 상품 ID {}번의 상품 좋아요를 취소했습니다.", userId, productId);
         } else {
             response = likeProduct(user, product);
-            logger.info("유저 ID {}번의 유저가 상품 ID {}번의 상품 좋아요를 눌렀습니다.", userId, productId);
+            log.info("유저 ID {}번의 유저가 상품 ID {}번의 상품 좋아요를 눌렀습니다.", userId, productId);
         }
 
-        logger.info("좋아요 토글 기능이 완료되었습니다. 좋아요: {}, 좋아요 개수: {}", response.isLiked(), product.getLikeCount());
+        log.info("좋아요 토글 기능이 완료되었습니다. 좋아요: {}, 좋아요 개수: {}", response.isLiked(), product.getLikeCount());
         return response;
     }
 
@@ -80,7 +79,7 @@ public class LikeService {
     }
 
     private Product findProductForLike(Long productId) {
-        logger.debug("상품 ID {}번의 상품 좋아요를 위한 상품 조회를 시작합니다.", productId);
+        log.debug("상품 ID {}번의 상품 좋아요를 위한 상품 조회를 시작합니다.", productId);
         return productRepository.findProductForLike(productId)
                 .orElseThrow(() -> new ProductException(PRODUCT_NOT_FOUND_OR_IN_AUCTION));
     }
