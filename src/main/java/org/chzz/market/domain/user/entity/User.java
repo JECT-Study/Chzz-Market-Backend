@@ -47,6 +47,11 @@ public class User extends BaseTimeEntity {
     @Email(message = "invalid type of email")
     private String email;
 
+    @Column(columnDefinition = "TEXT")
+    private String bio;
+
+    private String link;
+
     // 구현 방식에 따라 권한 설정이 달라질 수 있어 임의로 열거체 선언 하였습니다
     @Column(columnDefinition = "varchar(20)")
     @Enumerated(EnumType.STRING)
