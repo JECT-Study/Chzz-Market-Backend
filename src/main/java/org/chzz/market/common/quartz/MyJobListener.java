@@ -1,5 +1,6 @@
 package org.chzz.market.common.quartz;
 
+import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -31,11 +32,12 @@ public class MyJobListener implements JobListener {
     public void jobWasExecuted(JobExecutionContext context, JobExecutionException jobException) {
         // Job이 실행된 후 호출됩니다.
         String jobName = context.getJobDetail().getKey().toString();
-
         if (jobException != null) {
-            log.error("Job '{}' 실행 중 오류가 발생했습니다: {}", jobName, jobException.getMessage(), jobException);
+            log.error("Job '{}' 실행 중 오류가 발생했습니다: {} (실행 시간: {} seconds)",
+                    jobName, jobException.getMessage(), context.getJobRunTime() / 1000.0, jobException);
         } else {
-            log.info("Job '{}'이(가) 성공적으로 실행되었습니다.", jobName);
+            log.info("Job '{}'이(가) 성공적으로 실행되었습니다. (실행 시간: {} seconds)",
+                    jobName, context.getJobRunTime() / 1000.0);
         }
     }
 }
