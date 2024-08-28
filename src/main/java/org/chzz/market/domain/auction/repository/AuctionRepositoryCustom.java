@@ -5,6 +5,7 @@ import org.chzz.market.domain.auction.dto.response.AuctionResponse;
 import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.MyAuctionResponse;
 import org.chzz.market.domain.product.entity.Product.Category;
+import org.chzz.market.domain.user.dto.ParticipationCountsResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -36,4 +37,11 @@ public interface AuctionRepositoryCustom {
      * @return 페이징된 사용자 경매 응답 리스트
      */
     Page<MyAuctionResponse> findAuctionsByUserId(Long userId, Pageable pageable);
+
+    /**
+     * 사용자 ID에 따라 경매 관련 counting 값들을 조회합니다.
+     * @param userId 사용자 ID
+     * @return 사용자의 경매 관련 counting 값들
+     */
+    ParticipationCountsResponse getParticipationCounts(Long userId);
 }

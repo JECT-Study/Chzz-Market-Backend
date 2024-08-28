@@ -1,16 +1,16 @@
 package org.chzz.market.domain.auction.repository;
 
-import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.*;
-import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.PROCEEDING;
-import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.ENDED;
 import static org.chzz.market.domain.auction.entity.QAuction.auction;
+import static org.chzz.market.domain.auction.enums.AuctionStatus.*;
 import static org.chzz.market.domain.bid.entity.QBid.bid;
 import static org.chzz.market.domain.image.entity.QImage.image;
+import static org.chzz.market.domain.like.entity.QLike.like;
 import static org.chzz.market.domain.product.entity.QProduct.product;
 import static org.chzz.market.domain.user.entity.QUser.user;
 
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
@@ -33,6 +33,8 @@ import org.chzz.market.domain.auction.dto.response.QAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.QMyAuctionResponse;
 import org.chzz.market.domain.image.entity.QImage;
 import org.chzz.market.domain.product.entity.Product.Category;
+import org.chzz.market.domain.user.dto.ParticipationCountsResponse;
+import org.chzz.market.domain.user.dto.QParticipationCountsResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
@@ -151,6 +153,41 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                 .select(auction.count());
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchCount);
+    }
+
+    @Override
+    public ParticipationCountsResponse getParticipationCounts(Long userId) {
+        return jpaQueryFactory
+                .select(new QParticipationCountsResponse(
+                        new CaseBuilder()
+                                .when(like.user.id.eq(userId))
+                                .then(1L)
+                                .otherwise(0L).count(),
+                        new CaseBuilder()
+                                .when(auction.status.eq(ENDED)
+                                        .and(auction.winnerId.eq(userId)))
+                                .then(1L)
+                                .otherwise(0L).count(),
+                        new CaseBuilder()
+                                .when(auction.status.eq(ENDED)
+                                        .and(auction.winnerId.ne(userId))
+                                        .and(bid.bidder.id.eq(userId)))
+                                .then(1L)
+                                .otherwise(0L).count(),
+                        new CaseBuilder()
+                                .when(auction.status.eq(ENDED)
+                                        .and(bid.bidder.id.eq(userId)))
+                                .then(1L)
+                                .otherwise(0L).count()
+                ))
+                .from(auction)
+                .leftJoin(auction.product, product)
+                .leftJoin(product.likes, like)
+                .leftJoin(auction.bids, bid)
+                .where(product.user.id.eq(userId)
+                        .or(like.user.id.eq(userId))
+                        .or(bid.bidder.id.eq(userId)))
+                .fetchOne();
     }
 
     /**
