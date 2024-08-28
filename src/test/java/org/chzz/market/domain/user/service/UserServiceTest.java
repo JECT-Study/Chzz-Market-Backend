@@ -37,14 +37,14 @@ class UserServiceTest {
                 .nickname("오래된 닉네임")
                 .description("오래된 자기 소개")
                 .region("오래된 지역")
-                .url("오래된 URL")
+                .link("오래된 URL")
                 .build();
 
         updateUserProfileRequest = UpdateUserProfileRequest.builder()
                 .nickname("수정된 닉네임")
-                .description("수정된 자기 소개")
+                .bio("수정된 자기 소개")
                 .region("수정된 지역")
-                .url("수정된 URL")
+                .link("수정된 URL")
                 .build();
 
         System.setProperty("org.mockito.logging.verbosity", "all");
@@ -65,9 +65,9 @@ class UserServiceTest {
             // then
             assertNotNull(response);
             assertEquals(response.nickname(), updateUserProfileRequest.getNickname());
-            assertEquals(response.description(), updateUserProfileRequest.getDescription());
+            assertEquals(response.description(), updateUserProfileRequest.getBio());
             assertEquals(response.region(), updateUserProfileRequest.getRegion());
-            assertEquals(response.url(), updateUserProfileRequest.getUrl());
+            assertEquals(response.url(), updateUserProfileRequest.getLink());
 
             // verify
             verify(userRepository).findByNickname("오래된 닉네임");
@@ -75,7 +75,7 @@ class UserServiceTest {
             assertEquals("수정된 닉네임", user.getNickname());
             assertEquals("수정된 자기 소개", user.getDescription());
             assertEquals("수정된 지역", user.getRegion());
-            assertEquals("수정된 URL", user.getUrl());
+            assertEquals("수정된 URL", user.getLink());
         }
 
         @Test
