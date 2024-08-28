@@ -1,11 +1,9 @@
 package org.chzz.market.domain.auction.repository;
 
+import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.*;
 import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.PROCEEDING;
 import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.ENDED;
 import static org.chzz.market.domain.auction.entity.QAuction.auction;
-import static org.chzz.market.domain.auction.repository.AuctionRepositoryImpl.AuctionOrder.CHEAP;
-import static org.chzz.market.domain.auction.repository.AuctionRepositoryImpl.AuctionOrder.EXPENSIVE;
-import static org.chzz.market.domain.auction.repository.AuctionRepositoryImpl.AuctionOrder.NEWEST;
 import static org.chzz.market.domain.bid.entity.QBid.bid;
 import static org.chzz.market.domain.image.entity.QImage.image;
 import static org.chzz.market.domain.product.entity.QProduct.product;
@@ -13,7 +11,6 @@ import static org.chzz.market.domain.user.entity.QUser.user;
 
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
@@ -21,18 +18,19 @@ import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
 import org.chzz.market.common.util.QuerydslOrder;
 import org.chzz.market.common.util.QuerydslOrderProvider;
 import org.chzz.market.domain.auction.dto.response.AuctionResponse;
+import org.chzz.market.domain.auction.dto.response.MyAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.QAuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.QAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.QMyAuctionResponse;
 import org.chzz.market.domain.image.entity.QImage;
 import org.chzz.market.domain.product.entity.Product.Category;
 import org.springframework.data.domain.Page;
@@ -67,19 +65,19 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                         product.name,
                         image.cdnPath,
                         timeRemaining().longValue(),
-                        auction.minPrice.longValue(),
+                        product.minPrice.longValue(),
                         bid.countDistinct(),
                         isParticipating(userId)
                 ))
                 .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId())))
-                .groupBy(auction.id, product.name, image.cdnPath, auction.createdAt, auction.minPrice)
+                .groupBy(auction.id, product.name, image.cdnPath, auction.createdAt, product.minPrice)
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
         JPAQuery<Long> countQuery = baseQuery
-                .select(auction.id.count());
+                .select(auction.count());
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchCount);
     }
 
@@ -99,12 +97,13 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                         user.nickname,
                         product.name,
                         product.description,
-                        auction.minPrice,
+                        product.minPrice,
                         auction.endDateTime,
                         auction.status,
                         user.id.eq(userId),
-                        getBidCount(auctionId),
+                        getBidCount(),
                         bid.id.isNotNull(),
+                        bid.id,
                         bid.amount.coalesce(0L),
                         bid.count.coalesce(3)
                 ))
@@ -123,6 +122,36 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
         return auctionDetailsResponse;
     }
 
+    @Override
+    public Page<MyAuctionResponse> findAuctionsByUserId(Long userId, Pageable pageable) {
+        JPAQuery<?> baseQuery = jpaQueryFactory.from(auction)
+                .join(auction.product, product)
+                .join(product.user, user)
+                .where(auction.status.ne(CANCELLED)
+                        .and(user.id.eq(userId)));
+
+        List<MyAuctionResponse> content = baseQuery
+                .select(new QMyAuctionResponse(
+                        auction.id,
+                        product.name,
+                        image.cdnPath,
+                        timeRemaining().longValue(),
+                        product.minPrice.longValue(),
+                        getBidCount(),
+                        auction.status,
+                        auction.createdAt))
+                .leftJoin(image).on(image.product.id.eq(product.id)
+                        .and(image.id.eq(getFirstImageId())))
+                .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        JPAQuery<Long> countQuery = baseQuery
+                .select(auction.count());
+
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchCount);
+    }
 
     /**
      * 상품의 첫 번째 이미지를 조회합니다.
@@ -151,13 +180,13 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
     /**
      * 경매 참여자 수를 조회합니다.
      *
-     * @param auctionId 경매 ID
      * @return 참여자 수
      */
-    private JPQLQuery<Long> getBidCount(Long auctionId) {
-        return JPAExpressions.select(bid.count())
+    private JPQLQuery<Long> getBidCount() {
+        return JPAExpressions
+                .select(bid.count())
                 .from(bid)
-                .where(bid.auction.id.eq(auctionId));
+                .where(bid.auction.id.eq(auction.id));
     }
 
     /**
@@ -174,33 +203,16 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
     }
 
     private static NumberExpression<Integer> timeRemaining() {
-        NumberExpression<Integer> created = auction.createdAt.second();
-        NumberExpression<Integer> now = DateTimePath.currentDate().second();
-        return created.add(Expressions.asNumber(24 * 60 * 60)).subtract(now);
-    }
-
-    /**
-     * 정렬 조건에 따른 OrderSpecifier 반환
-     * @deprecated
-     * @return OrderSpecifier
-     */
-    @Deprecated
-    private OrderSpecifier<?> getOrderSpecifier(AuctionOrder auctionOrder) {
-        Map<AuctionOrder, OrderSpecifier<?>> orderSpecifierMap = Map.of(
-                AuctionOrder.POPULARITY, bid.countDistinct().desc(),
-                EXPENSIVE, auction.minPrice.desc(),
-                CHEAP, auction.minPrice.asc(),
-                NEWEST, auction.endDateTime.desc()
-        );
-        return orderSpecifierMap.getOrDefault(auctionOrder, auction.createdAt.desc());
+        return Expressions.numberTemplate(Integer.class, "TIMESTAMPDIFF(SECOND, CURRENT_TIMESTAMP, {0})",
+                auction.endDateTime);
     }
 
     @Getter
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public enum AuctionOrder implements QuerydslOrder {
         POPULARITY("popularity", auction.bids.size().desc()),
-        EXPENSIVE("expensive", auction.minPrice.desc()),
-        CHEAP("cheap", auction.minPrice.asc()),
+        EXPENSIVE("expensive", product.minPrice.desc()),
+        CHEAP("cheap", product.minPrice.asc()),
         NEWEST("newest", auction.createdAt.desc());
 
         private final String name;

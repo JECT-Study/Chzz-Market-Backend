@@ -1,4 +1,4 @@
-package org.chzz.market.common.confing.logging;
+package org.chzz.market.common.config.logging;
 
 import com.p6spy.engine.spy.P6SpyOptions;
 import jakarta.annotation.PostConstruct;

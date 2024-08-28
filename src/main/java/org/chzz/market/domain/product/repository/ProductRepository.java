@@ -10,4 +10,6 @@ import java.util.Optional;
 public interface ProductRepository extends JpaRepository<Product, Long>, ProductRepositoryCustom {
     @Query("SELECT p FROM Product p WHERE p.id = :id AND NOT EXISTS (SELECT a FROM Auction a WHERE a.product = p)")
     Optional<Product> findProductForLike(@Param("id") Long id);
+
+    Optional<Product> findByIdAndUserId(Long id, Long userId);
 }

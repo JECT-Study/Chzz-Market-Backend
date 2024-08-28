@@ -6,7 +6,6 @@ import static org.chzz.market.domain.image.entity.QImage.image;
 import static org.chzz.market.domain.product.entity.QProduct.product;
 
 import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
@@ -50,7 +49,7 @@ public class BidRepositoryCustomImpl implements BidRepositoryCustom {
         return jpaQueryFactory
                 .select(new QBiddingRecord(
                         product.name,
-                        auction.minPrice.longValue(),
+                        product.minPrice.longValue(),
                         bid.amount,
                         auction.bids.size().longValue(),
                         firstImage.cdnPath,
@@ -68,7 +67,7 @@ public class BidRepositoryCustomImpl implements BidRepositoryCustom {
                                 .where(image.product.eq(product))
                 )))
                 .groupBy(product.name,
-                        auction.minPrice,
+                        product.minPrice,
                         bid.amount,
                         auction.bids.size(),
                         firstImage.cdnPath,
@@ -86,9 +85,8 @@ public class BidRepositoryCustomImpl implements BidRepositoryCustom {
 
 
     private static NumberExpression<Integer> timeRemaining() {
-        NumberExpression<Integer> created = auction.createdAt.second();
-        NumberExpression<Integer> now = DateTimePath.currentDate().second();
-        return created.add(Expressions.asNumber(24 * 60 * 60)).subtract(now);
+        return Expressions.numberTemplate(Integer.class, "TIMESTAMPDIFF(SECOND, CURRENT_TIMESTAMP, {0})",
+                auction.endDateTime);
     }
 
     @Getter
