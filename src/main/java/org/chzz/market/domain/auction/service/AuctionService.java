@@ -13,12 +13,14 @@ import org.chzz.market.domain.auction.entity.Auction;
 
 import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
+import org.chzz.market.domain.auction.dto.response.StartAuctionResponse;
 import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.product.repository.ProductRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.chzz.market.domain.product.entity.Product.Category;
+
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

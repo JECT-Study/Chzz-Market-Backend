@@ -7,12 +7,16 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.chzz.market.common.validation.annotation.ThousandMultiple;
 import org.chzz.market.domain.auction.enums.AuctionRegisterType;
 
 import static org.chzz.market.domain.product.entity.Product.*;
 
 @Getter
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "auctionRegisterType", visible = true)
 @JsonSubTypes({
         @JsonSubTypes.Type(name = "PRE_REGISTER", value = PreRegisterRequest.class),

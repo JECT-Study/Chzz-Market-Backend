@@ -1,6 +1,7 @@
 package org.chzz.market.util;
 
 import org.chzz.market.domain.auction.dto.request.RegisterAuctionRequest;
+import org.chzz.market.domain.auction.dto.request.BaseRegisterRequest;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.product.entity.Product;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -11,7 +12,7 @@ import java.time.LocalDateTime;
 import static org.chzz.market.domain.auction.entity.Auction.*;
 
 public class AuctionTestFactory {
-    public static Auction createAuction(Product product, RegisterAuctionRequest request, AuctionStatus status) {
+    public static Auction createAuction(Product product, BaseRegisterRequest request, AuctionStatus status) {
         try {
             // 리플렉션을 사용하여 protected 생성자에 접근
             Constructor<Auction> constructor = Auction.class.getDeclaredConstructor();
