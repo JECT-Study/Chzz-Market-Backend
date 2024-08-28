@@ -1,5 +1,6 @@
 package org.chzz.market.domain.auction.entity;
 
+import static org.chzz.market.domain.auction.enums.AuctionStatus.PROCEEDING;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_ENDED;
 
 import jakarta.persistence.CascadeType;
@@ -23,13 +24,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.chzz.market.domain.auction.enums.AuctionStatus;
 import org.chzz.market.domain.auction.error.AuctionException;
 
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
 import org.chzz.market.domain.bid.entity.Bid;
 import org.chzz.market.domain.product.entity.Product;
-
-import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.*;
 
 @Getter
 @Entity
@@ -94,17 +94,6 @@ public class Auction extends BaseTimeEntity {
     public void removeBid(Bid bid) {
         bid.cancelBid();
         bids.remove(bid);
-    }
-
-    @Getter
-    @AllArgsConstructor
-    public enum AuctionStatus {
-        PENDING("대기 중"),
-        PROCEEDING("진행 중"),
-        ENDED("종료"),
-        CANCELLED("취소 됨");
-
-        private final String description;
     }
 
     public void start(LocalDateTime endDateTime) {

@@ -5,9 +5,11 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public enum AuctionRegisterType {
-    PRE_REGISTER("사전 등록"),
-    REGISTER("경매 등록");
+public enum AuctionStatus {
+    PENDING("대기 중"),
+    PROCEEDING("진행 중"),
+    ENDED("종료"),
+    CANCELLED("취소 됨");
 
     private final String description;
 }

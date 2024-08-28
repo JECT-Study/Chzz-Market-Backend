@@ -5,9 +5,7 @@ import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.ToString;
 import org.chzz.market.domain.auction.dto.BaseAuctionDTO;
-import org.chzz.market.domain.auction.entity.Auction;
-
-import static org.chzz.market.domain.auction.entity.Auction.*;
+import org.chzz.market.domain.auction.enums.AuctionStatus;
 
 /**
  * 나의 경매 목록 조회 DTO
