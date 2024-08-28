@@ -14,6 +14,8 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -40,21 +42,22 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false)
     private String providerId;
 
-    @Column(length = 25, nullable = false)
+    @Column(length = 25)
     private String nickname;
 
     @Column
     private String description;
 
-    @Column
-    private String region;
-
-    @Column
-    private String url;
-
     @Column(nullable = false)
     @Email(message = "invalid type of email")
     private String email;
+
+    @Column(columnDefinition = "TEXT")
+    private String bio;
+
+    private String region;
+
+    private String link;
 
     // 구현 방식에 따라 권한 설정이 달라질 수 있어 임의로 열거체 선언 하였습니다
     @Column(columnDefinition = "varchar(20)")
@@ -81,11 +84,11 @@ public class User extends BaseTimeEntity {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private List<BankAccount> bankAccounts = new ArrayList<>();
 
-    public void updateProfile(String nickname, String description, String region, String url) {
-        this.nickname = nickname;
+    public void updateProfile(String nickname, String description, String region, String link) {
+        this.nickname = Objects.requireNonNull(nickname, "닉네임은 필수 입력 항목입니다.");
         this.description = description;
         this.region = region;
-        this.url = url;
+        this.link = link;
     }
 
     public enum UserRole {
