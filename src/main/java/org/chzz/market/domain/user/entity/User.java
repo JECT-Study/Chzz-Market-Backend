@@ -102,7 +102,7 @@ public class User extends BaseTimeEntity {
     }
 
     public void updateProfile(String nickname, String bio, String link) {
-        this.nickname = Objects.requireNonNull(nickname, "닉네임은 필수 입력 항목입니다.");
+        this.nickname = nickname;
         this.bio = bio;
         this.link = link;
     }
