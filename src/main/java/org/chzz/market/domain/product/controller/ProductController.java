@@ -2,10 +2,10 @@ package org.chzz.market.domain.product.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.chzz.market.domain.like.dto.LikeResponse;
 import org.chzz.market.domain.like.service.LikeService;
 import org.chzz.market.domain.product.dto.*;
-import org.chzz.market.domain.product.entity.Product.Category;
+import org.chzz.market.domain.product.entity.Product;
+import org.chzz.market.domain.like.dto.LikeResponse;
 import org.chzz.market.domain.product.service.ProductService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -33,7 +33,7 @@ public class ProductController {
     // TODO: 추후에 인증된 사용자 정보로 수정 필요
     @GetMapping
     public ResponseEntity<Page<ProductResponse>> getProductList(
-            @RequestParam Category category,
+            @RequestParam Product.Category category,
             @RequestHeader("X-User-Agent") Long userId,
             Pageable pageable) {
         return ResponseEntity.ok(productService.getProductListByCategory(category, userId, pageable)); // 임의의 사용자 ID

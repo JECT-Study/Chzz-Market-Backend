@@ -18,7 +18,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     private final StringToEnumConverterFactory stringToEnumConverterFactory;
     private final CustomPageableHandlerMethodArgumentResolver customSortHandlerMethodArgumentResolver;
-
+    private final LoginUserArgumentResolver loginUserArgumentResolver;
 
     @Override
     public void addFormatters(final FormatterRegistry registry) {
@@ -28,6 +28,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
         argumentResolvers.add(customSortHandlerMethodArgumentResolver);
+        argumentResolvers.add(loginUserArgumentResolver);
     }
 
     @Override
