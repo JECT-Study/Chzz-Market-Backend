@@ -58,8 +58,9 @@ public class UserController {
     @PostMapping("/{nickname}")
     public ResponseEntity<UpdateProfileResponse> updateUserProfile(
             @PathVariable String nickname,
+            @LoginUser Long userId,
             @RequestBody @Valid UpdateUserProfileRequest request) {
-        UpdateProfileResponse response = userService.updateUserProfile(nickname, request);
+        UpdateProfileResponse response = userService.updateUserProfile(nickname, userId, request);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 

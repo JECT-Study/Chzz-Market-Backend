@@ -1,7 +1,5 @@
 package org.chzz.market.domain.user.service;
 
-import static org.chzz.market.domain.user.error.UserErrorCode.USER_NOT_FOUND;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.domain.user.dto.request.UserCreateRequest;
@@ -14,7 +12,7 @@ import org.chzz.market.domain.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.chzz.market.domain.user.error.UserErrorCode.NICKNAME_DUPLICATION;
+import static org.chzz.market.domain.user.error.UserErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -40,11 +38,16 @@ public class UserService {
     }
 
     @Transactional
-    public UpdateProfileResponse updateUserProfile(String nickname, UpdateUserProfileRequest request){
+    public UpdateProfileResponse updateUserProfile(String nickname, Long userId, UpdateUserProfileRequest request){
         log.info("유저 닉네임이 {}인 유저에 대한 프로필 정보 업데이트를 시작합니다.", nickname);
         // 유저 유효성 검사
         User existingUser = userRepository.findByNickname(nickname)
                 .orElseThrow(() -> new UserException(USER_NOT_FOUND));
+
+        // 로그인 유저와 프로필 소유자 같은지 유효성 검사
+        if (!existingUser.getId().equals(userId)) {
+            throw new UserException(UNAUTHORIZED_USER);
+        }
 
         // 닉네임 중복 검사
         if (!nickname.equals(request.getNickname())) {

@@ -44,6 +44,7 @@ class UserServiceTest {
     void setUp() {
         user1 = User.builder()
                 .nickname("오래된 닉네임")
+                .id(1L)
                 .bio("오래된 자기 소개")
                 .link("오래된 URL")
                 .build();
@@ -181,7 +182,7 @@ class UserServiceTest {
             when(userRepository.findByNickname("수정된 닉네임")).thenReturn(Optional.empty());
 
             // when
-            UpdateProfileResponse response = userService.updateUserProfile("오래된 닉네임", updateUserProfileRequest);
+            UpdateProfileResponse response = userService.updateUserProfile("오래된 닉네임", user1.getId(), updateUserProfileRequest);
 
             // then
             assertNotNull(response);
@@ -205,7 +206,7 @@ class UserServiceTest {
 
             // when, then
             assertThrows(UserException.class, () ->
-                    userService.updateUserProfile("존재하지 않는 유저", updateUserProfileRequest)
+                    userService.updateUserProfile("존재하지 않는 유저", user1.getId(), updateUserProfileRequest)
             );
 
             verify(userRepository).findByNickname("존재하지 않는 유저");

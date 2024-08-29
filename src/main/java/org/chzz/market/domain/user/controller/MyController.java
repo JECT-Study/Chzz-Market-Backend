@@ -1,16 +1,11 @@
 package org.chzz.market.domain.user.controller;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.domain.auction.dto.response.MyAuctionResponse;
 import org.chzz.market.domain.auction.service.AuctionService;
-import org.chzz.market.domain.user.dto.UpdateProfileResponse;
-import org.chzz.market.domain.user.dto.UpdateUserProfileRequest;
-import org.chzz.market.domain.user.service.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
