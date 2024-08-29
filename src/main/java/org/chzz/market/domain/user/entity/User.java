@@ -1,5 +1,6 @@
 package org.chzz.market.domain.user.entity;
 
+import com.nimbusds.oauth2.sdk.util.StringUtils;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -26,6 +27,7 @@ import org.chzz.market.domain.base.entity.BaseTimeEntity;
 import org.chzz.market.domain.like.entity.Like;
 import org.chzz.market.domain.payment.entity.Payment;
 import org.chzz.market.domain.product.entity.Product;
+import org.chzz.market.domain.user.dto.request.UserCreateRequest;
 
 @Getter
 @Entity
@@ -45,17 +47,12 @@ public class User extends BaseTimeEntity {
     @Column(length = 25)
     private String nickname;
 
-    @Column
-    private String description;
-
     @Column(nullable = false)
     @Email(message = "invalid type of email")
     private String email;
 
     @Column(columnDefinition = "TEXT")
     private String bio;
-
-    private String region;
 
     private String link;
 
@@ -81,21 +78,51 @@ public class User extends BaseTimeEntity {
     private List<Payment> payments = new ArrayList<>();
 
     @Builder.Default
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<BankAccount> bankAccounts = new ArrayList<>();
 
-    public void updateProfile(String nickname, String description, String region, String link) {
+    public void addBankAccount(BankAccount bankAccount) {
+        this.bankAccounts.add(bankAccount);
+        bankAccount.specifyUser(this);
+    }
+
+    public boolean isTempUser() {
+        return userRole == UserRole.TEMP_USER;
+    }
+
+    public void createUser(UserCreateRequest userCreateRequest) {
+        this.nickname = userCreateRequest.getNickname();
+        this.userRole = UserRole.USER;
+        if (!StringUtils.isBlank(userCreateRequest.getBio())) {
+            this.bio = userCreateRequest.getBio();
+        }
+        if (!StringUtils.isBlank(userCreateRequest.getLink())) {
+            this.link = userCreateRequest.getLink();
+        }
+    }
+
+    public void updateProfile(String nickname, String bio, String link) {
         this.nickname = Objects.requireNonNull(nickname, "닉네임은 필수 입력 항목입니다.");
-        this.description = description;
-        this.region = region;
+        this.bio = bio;
         this.link = link;
     }
 
+    @Getter
+    @AllArgsConstructor
     public enum UserRole {
-        USER, ADMIN, SELLER // Test 실행을 위해 임시 추가
+        TEMP_USER("ROLE_TEMP_USER"),
+        USER("ROLE_USER"),
+        ADMIN("ROLE_ADMIN");
+
+        private final String value;
     }
 
+    @Getter
+    @AllArgsConstructor
     public enum ProviderType {
-        LOCAL, NAVER, KAKAO // Test 실행을 위해 임시 추가
+        NAVER("naver"),
+        KAKAO("kakao");
+
+        private final String name;
     }
 }

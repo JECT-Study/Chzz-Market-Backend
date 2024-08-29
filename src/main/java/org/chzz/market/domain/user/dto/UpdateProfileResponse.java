@@ -4,15 +4,13 @@ import org.chzz.market.domain.user.entity.User;
 
 public record UpdateProfileResponse (
         String nickname,
-        String description,
-        String region,
+        String bio,
         String url
 ) {
     public static UpdateProfileResponse from(User user) {
         return new UpdateProfileResponse(
                 user.getNickname(),
-                user.getDescription(),
-                user.getRegion(),
+                user.getBio(),
                 user.getLink()
         );
     }

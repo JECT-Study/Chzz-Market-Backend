@@ -5,9 +5,7 @@ import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.image.repository.ImageRepository;
 import org.chzz.market.domain.image.service.ImageService;
-import org.chzz.market.domain.product.dto.DeleteProductResponse;
-import org.chzz.market.domain.product.dto.UpdateProductRequest;
-import org.chzz.market.domain.product.dto.UpdateProductResponse;
+import org.chzz.market.domain.product.dto.*;
 import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.product.error.ProductException;
 import org.chzz.market.domain.product.repository.ProductRepository;
@@ -17,9 +15,12 @@ import org.springframework.dao.TransientDataAccessException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.chzz.market.domain.product.error.ProductErrorCode.*;
@@ -35,6 +36,37 @@ public class ProductService {
     private final AuctionRepository auctionRepository;
     private final ImageService imageService;
     private final ImageRepository imageRepository;
+
+    /*
+     * 카테고리별 사전 등록 상품 목록 조회
+     */
+    public Page<ProductResponse> getProductListByCategory(Product.Category category, Long userId, Pageable pageable) {
+        return productRepository.findProductsByCategory(category, userId, pageable);
+    }
+
+    /*
+     * 상품 상세 정보 조회
+     */
+    public ProductDetailsResponse getProductDetails(Long productId, Long userId) {
+        return productRepository.findProductDetailsById(productId, userId)
+                .orElseThrow(() -> new ProductException(PRODUCT_NOT_FOUND));
+    }
+
+    /*
+     * 나의 사전 등록 상품 목록 조회
+     */
+    public Page<ProductResponse> getMyProductList(String nickname, Pageable pageable) {
+        return productRepository.findProductsByNickname(nickname, pageable);
+    }
+
+    /*
+     * 상품 카테고리 목록 조회
+     */
+    public List<CategoryResponse> getCategories() {
+        return Arrays.stream(Product.Category.values())
+                .map(category -> new CategoryResponse(category.name(), category.getDisplayName()))
+                .toList();
+    }
 
     /*
      * 사전 등록 상품 수정

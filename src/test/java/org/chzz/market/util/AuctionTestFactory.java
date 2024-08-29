@@ -1,6 +1,5 @@
 package org.chzz.market.util;
 
-import org.chzz.market.domain.auction.dto.request.RegisterAuctionRequest;
 import org.chzz.market.domain.auction.dto.request.BaseRegisterRequest;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.product.entity.Product;
