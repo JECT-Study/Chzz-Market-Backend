@@ -267,7 +267,7 @@ class AuctionRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("나의 경매 목록 조회 - 최신순")
+    @DisplayName("특정 유저의 경매 목록 조회 - 최신순")
     public void testFindMyAuctionsWithNewest() throws Exception {
         //given
         Pageable pageable = PageRequest.of(0, 10, Sort.by("newest"));
@@ -283,7 +283,7 @@ class AuctionRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("나의 경매 목록 조회 - 오래된순")
+    @DisplayName("특정 유저의 경매 목록 조회 - 오래된순")
     public void testFindMyAuctionsWithOldest() throws Exception {
         //given
         Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("newest")));
