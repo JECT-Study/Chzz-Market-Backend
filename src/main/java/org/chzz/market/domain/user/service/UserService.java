@@ -35,12 +35,14 @@ public class UserService {
         return user;
     }
 
+    /**
+     * 사용자 프로필 조회
+     * @param nickname 닉네임
+     * @return 사용자 프로필 응답
+     */
     public UserProfileResponse getUserProfile(String nickname) {
         User user = userRepository.findByNickname(nickname)
-                .orElseThrow(() -> {
-                    log.info("닉네임 {}에 해당하는 사용자를 찾을 수 없습니다.", nickname);
-                    return new UserException(USER_NOT_FOUND);
-                });
+                .orElseThrow(() -> new UserException(USER_NOT_FOUND));
 
         ParticipationCountsResponse counts = auctionRepository.getParticipationCounts(user.getId());
 

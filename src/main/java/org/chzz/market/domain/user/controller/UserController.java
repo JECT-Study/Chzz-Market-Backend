@@ -55,6 +55,9 @@ public class UserController {
         return ResponseEntity.ok((userService.checkNickname(nickname)));
     }
 
+    /*
+     * 사용자 프로필 조회
+     */
     @GetMapping("/{nickname}")
     public ResponseEntity<UserProfileResponse> getUserProfile(@PathVariable String nickname){
         UserProfileResponse response = userService.getUserProfile(nickname);
