@@ -1,4 +1,4 @@
-package org.chzz.market.domain.user.dto;
+package org.chzz.market.domain.user.dto.response;
 
 import org.chzz.market.domain.user.entity.User;
 

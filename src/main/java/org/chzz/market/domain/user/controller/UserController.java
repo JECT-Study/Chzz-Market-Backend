@@ -18,7 +18,7 @@ import org.chzz.market.domain.token.entity.TokenType;
 import org.chzz.market.domain.token.service.TokenService;
 import org.chzz.market.domain.user.dto.request.UserCreateRequest;
 import org.chzz.market.domain.user.entity.User;
-import org.chzz.market.domain.user.dto.UserProfileResponse;
+import org.chzz.market.domain.user.dto.response.UserProfileResponse;
 import org.chzz.market.domain.user.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

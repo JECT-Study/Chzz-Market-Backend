@@ -5,7 +5,7 @@ import org.chzz.market.domain.auction.dto.response.AuctionResponse;
 import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.MyAuctionResponse;
 import org.chzz.market.domain.product.entity.Product.Category;
-import org.chzz.market.domain.user.dto.ParticipationCountsResponse;
+import org.chzz.market.domain.user.dto.response.ParticipationCountsResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

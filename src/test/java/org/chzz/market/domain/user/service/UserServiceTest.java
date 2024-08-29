@@ -9,8 +9,8 @@ import java.util.Optional;
 
 import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.bank_account.entity.BankAccount;
-import org.chzz.market.domain.user.dto.ParticipationCountsResponse;
-import org.chzz.market.domain.user.dto.UserProfileResponse;
+import org.chzz.market.domain.user.dto.response.ParticipationCountsResponse;
+import org.chzz.market.domain.user.dto.response.UserProfileResponse;
 import org.chzz.market.domain.user.dto.request.UserCreateRequest;
 import org.chzz.market.domain.user.dto.response.NicknameAvailabilityResponse;
 import org.chzz.market.domain.user.entity.User;

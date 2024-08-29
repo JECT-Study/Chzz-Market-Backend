@@ -1,4 +1,4 @@
-package org.chzz.market.domain.user.dto;
+package org.chzz.market.domain.user.dto.response;
 
 import static org.chzz.market.domain.user.entity.User.UserRole.TEMP_USER;
 
