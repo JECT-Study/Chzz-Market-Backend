@@ -11,7 +11,7 @@ import java.util.Optional;
 import org.chzz.market.common.DatabaseTest;
 import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.AuctionResponse;
-import org.chzz.market.domain.auction.dto.response.MyAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.UserAuctionResponse;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.bid.entity.Bid;
 import org.chzz.market.domain.bid.repository.BidRepository;
@@ -271,11 +271,10 @@ class AuctionRepositoryImplTest {
     public void testFindMyAuctionsWithNewest() throws Exception {
         //given
         Pageable pageable = PageRequest.of(0, 10, Sort.by("newest"));
-        Long myId = user1.getId();
 
         //when
-        Page<MyAuctionResponse> result = auctionRepository.findAuctionsByUserId(
-                myId, pageable);
+        Page<UserAuctionResponse> result = auctionRepository.findAuctionsByNickname(
+                user1.getNickname(), pageable);
 
         //then
         assertThat(result).isNotNull();
@@ -288,11 +287,10 @@ class AuctionRepositoryImplTest {
     public void testFindMyAuctionsWithOldest() throws Exception {
         //given
         Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("newest")));
-        Long myId = user1.getId();
 
         //when
-        Page<MyAuctionResponse> result = auctionRepository.findAuctionsByUserId(
-                myId, pageable);
+        Page<UserAuctionResponse> result = auctionRepository.findAuctionsByNickname(
+                user1.getNickname(), pageable);
 
         //then
         assertThat(result).isNotNull();
@@ -306,11 +304,10 @@ class AuctionRepositoryImplTest {
     public void testFindMyAuctionsNotExist() throws Exception {
         //given
         Pageable pageable = PageRequest.of(0, 10, Sort.by("newest"));
-        Long myId = user4.getId();
 
         //when
-        Page<MyAuctionResponse> result = auctionRepository.findAuctionsByUserId(
-                myId, pageable);
+        Page<UserAuctionResponse> result = auctionRepository.findAuctionsByNickname(
+                user4.getNickname(), pageable);
 
         //then
         assertThat(result).isNotNull();

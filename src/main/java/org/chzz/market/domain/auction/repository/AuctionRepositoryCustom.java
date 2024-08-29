@@ -1,9 +1,9 @@
 package org.chzz.market.domain.auction.repository;
 
 import java.util.Optional;
-import org.chzz.market.domain.auction.dto.response.AuctionResponse;
 import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
-import org.chzz.market.domain.auction.dto.response.MyAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.AuctionResponse;
+import org.chzz.market.domain.auction.dto.response.UserAuctionResponse;
 import org.chzz.market.domain.product.entity.Product.Category;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,11 +29,11 @@ public interface AuctionRepositoryCustom {
     Optional<AuctionDetailsResponse> findAuctionDetailsById(Long auctionId, Long userId);
 
     /**
-     * 사용자 ID에 따라 경매 리스트를 조회합니다.
+     * 사용자 닉네임에 따라 경매 리스트를 조회합니다.
      *
-     * @param userId   사용자 ID
+     * @param nickname 사용자 닉네임
      * @param pageable 페이징 정보
      * @return 페이징된 사용자 경매 응답 리스트
      */
-    Page<MyAuctionResponse> findAuctionsByUserId(Long userId, Pageable pageable);
+    Page<UserAuctionResponse> findAuctionsByNickname(String nickname, Pageable pageable);
 }

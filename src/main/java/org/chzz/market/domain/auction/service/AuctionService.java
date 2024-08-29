@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.AuctionResponse;
 import org.chzz.market.domain.auction.dto.request.StartAuctionRequest;
-import org.chzz.market.domain.auction.dto.response.MyAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.UserAuctionResponse;
 import org.chzz.market.domain.auction.entity.Auction;
 
 import org.chzz.market.domain.auction.error.AuctionException;
@@ -54,8 +54,8 @@ public class AuctionService {
         return auctionDetails.orElseThrow(() -> new AuctionException(AUCTION_NOT_ACCESSIBLE));
     }
 
-    public Page<MyAuctionResponse> getAuctionListByUserId(Long userId, Pageable pageable) {
-        return auctionRepository.findAuctionsByUserId(userId, pageable);
+    public Page<UserAuctionResponse> getAuctionListByNickname(String nickname, Pageable pageable) {
+        return auctionRepository.findAuctionsByNickname(nickname, pageable);
     }
 
     /**
