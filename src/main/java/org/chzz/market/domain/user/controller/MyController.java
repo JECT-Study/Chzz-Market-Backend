@@ -19,21 +19,9 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/users/me")
 public class MyController {
     private final AuctionService auctionService;
-    private final UserService userService;
 
     @GetMapping("/auctions")
     public ResponseEntity<Page<MyAuctionResponse>> getMyAuctionList(@PageableDefault(sort = "newest") Pageable pageable) {
         return ResponseEntity.ok(auctionService.getAuctionListByUserId(1L, pageable)); // TODO: 추후에 인증된 사용자 정보로 수정 필요
-    }
-
-    /**
-     * 사용자 프로필 수정
-     */
-    @PostMapping("/{nickname}")
-    public ResponseEntity<UpdateProfileResponse> updateUserProfile(
-            @PathVariable String nickname,
-            @RequestBody @Valid UpdateUserProfileRequest request) {
-        UpdateProfileResponse response = userService.updateUserProfile(nickname, request);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
