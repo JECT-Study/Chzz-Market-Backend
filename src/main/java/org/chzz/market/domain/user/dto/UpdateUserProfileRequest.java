@@ -1,6 +1,7 @@
 package org.chzz.market.domain.user.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,9 +17,8 @@ public class UpdateUserProfileRequest {
     @Size(max = 15, message = "닉네임은 최대 15자까지 가능합니다.")
     private String nickname;
 
-    @Size(max = 150, message = "자기소개는 최대 500자까지 가능합니다.")
     private String bio;
 
-    @Size(max = 100, message = "URL 최대 100자까지 가능합니다.")
+    @Pattern(regexp = "^(http|https)://.*$|^$", message = "링크는 유효한 URL 형식이어야 합니다.")
     private String link;
 }
