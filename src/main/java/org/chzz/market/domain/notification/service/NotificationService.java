@@ -10,11 +10,16 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.domain.notification.dto.NotificationMessage;
+import org.chzz.market.domain.notification.dto.response.NotificationResponse;
 import org.chzz.market.domain.notification.entity.Notification;
+import org.chzz.market.domain.notification.error.NotificationErrorCode;
+import org.chzz.market.domain.notification.error.NotificationException;
 import org.chzz.market.domain.notification.repository.EmitterRepositoryImpl;
 import org.chzz.market.domain.notification.repository.NotificationRepository;
 import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -73,6 +78,22 @@ public class NotificationService {
                 log.error("Error sending SSE event to user {}", userId);
             }
         });
+    }
+
+    public Page<NotificationResponse> getNotifications(Long userId, Pageable pageable) {
+        return notificationRepository.findByUserId(userId, pageable);
+    }
+
+    @Transactional
+    public void readNotification(Long userId, Long notificationId) {
+        Notification notification = findNotificationByUserAndId(userId, notificationId);
+        notification.read();
+    }
+
+    @Transactional
+    public void deleteNotification(Long userId, Long notificationId) {
+        Notification notification = findNotificationByUserAndId(userId, notificationId);
+        notification.delete();
     }
 
     /**
@@ -143,7 +164,17 @@ public class NotificationService {
         return user != null ? Notification.builder()
                 .message(notificationMessage.getMessage())
                 .user(user)
+                .product(notificationMessage.getProduct())
                 .type(notificationMessage.getType())
                 .build() : null;
+    }
+
+    private Notification findNotificationByUserAndId(Long userId, Long notificationId) {
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new NotificationException(NotificationErrorCode.NOTIFICATION_NOT_FOUND));
+        if (notification.getUser().getId() != userId) {
+            throw new NotificationException(NotificationErrorCode.UNAUTHORIZED_ACCESS);
+        }
+        return notification;
     }
 }
