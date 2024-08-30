@@ -13,14 +13,18 @@ import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
+import java.util.Optional;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.util.QuerydslOrder;
 import org.chzz.market.common.util.QuerydslOrderProvider;
+import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.bid.dto.query.BiddingRecord;
 import org.chzz.market.domain.bid.dto.query.QBiddingRecord;
+import org.chzz.market.domain.bid.entity.Bid;
+import org.chzz.market.domain.bid.entity.Bid.BidStatus;
 import org.chzz.market.domain.image.entity.QImage;
 import org.chzz.market.domain.user.entity.User;
 import org.springframework.data.domain.Page;
@@ -43,6 +47,18 @@ public class BidRepositoryCustomImpl implements BidRepositoryCustom {
                 .fetch();
 
         return PageableExecutionUtils.getPage(content, pageable, getCount(user)::fetchOne);
+    }
+
+    @Override
+    public List<Bid> findAllBidsByAuction(Auction auction) {
+        return jpaQueryFactory
+                .selectFrom(bid)
+                .leftJoin(bid.bidder).fetchJoin()
+                .where(
+                        bid.auction.eq(auction).and(bid.status.eq(BidStatus.ACTIVE))
+                )
+                .orderBy(bid.amount.desc(), bid.updatedAt.asc())
+                .fetch();
     }
 
     private JPQLQuery<BiddingRecord> getBaseQuery(QImage firstImage, User user) {

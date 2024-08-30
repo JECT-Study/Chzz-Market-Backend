@@ -1,5 +1,6 @@
 package org.chzz.market.domain.user.entity;
 
+import com.nimbusds.oauth2.sdk.util.StringUtils;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -24,6 +25,7 @@ import org.chzz.market.domain.base.entity.BaseTimeEntity;
 import org.chzz.market.domain.like.entity.Like;
 import org.chzz.market.domain.payment.entity.Payment;
 import org.chzz.market.domain.product.entity.Product;
+import org.chzz.market.domain.user.dto.request.UserCreateRequest;
 
 @Getter
 @Entity
@@ -40,12 +42,17 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false)
     private String providerId;
 
-    @Column(length = 25, nullable = false)
+    @Column(length = 25)
     private String nickname;
 
     @Column(nullable = false)
     @Email(message = "invalid type of email")
     private String email;
+
+    @Column(columnDefinition = "TEXT")
+    private String bio;
+
+    private String link;
 
     // 구현 방식에 따라 권한 설정이 달라질 수 있어 임의로 열거체 선언 하였습니다
     @Column(columnDefinition = "varchar(20)")
@@ -69,14 +76,45 @@ public class User extends BaseTimeEntity {
     private List<Payment> payments = new ArrayList<>();
 
     @Builder.Default
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<BankAccount> bankAccounts = new ArrayList<>();
 
-    public enum UserRole {
-        USER, ADMIN, SELLER // Test 실행을 위해 임시 추가
+    public void addBankAccount(BankAccount bankAccount) {
+        this.bankAccounts.add(bankAccount);
+        bankAccount.specifyUser(this);
     }
 
+    public boolean isTempUser() {
+        return userRole == UserRole.TEMP_USER;
+    }
+
+    public void createUser(UserCreateRequest userCreateRequest) {
+        this.nickname = userCreateRequest.getNickname();
+        this.userRole = UserRole.USER;
+        if (!StringUtils.isBlank(userCreateRequest.getBio())) {
+            this.bio = userCreateRequest.getBio();
+        }
+        if (!StringUtils.isBlank(userCreateRequest.getLink())) {
+            this.link = userCreateRequest.getLink();
+        }
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public enum UserRole {
+        TEMP_USER("ROLE_TEMP_USER"),
+        USER("ROLE_USER"),
+        ADMIN("ROLE_ADMIN");
+
+        private final String value;
+    }
+
+    @Getter
+    @AllArgsConstructor
     public enum ProviderType {
-        LOCAL, NAVER, KAKAO // Test 실행을 위해 임시 추가
+        NAVER("naver"),
+        KAKAO("kakao");
+
+        private final String name;
     }
 }
