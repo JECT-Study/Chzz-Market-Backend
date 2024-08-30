@@ -1,11 +1,13 @@
 package org.chzz.market.domain.notification.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.chzz.market.domain.notification.entity.Notification.Type;
+import org.chzz.market.domain.product.entity.Product;
 
 @Getter
 @NoArgsConstructor
@@ -15,13 +17,32 @@ public class NotificationMessage {
     private String message;
     private Type type;
 
-    public NotificationMessage(List<Long> userIds, Type type, String productName) {
+    @JsonIgnore
+    private Product product;
+
+    public NotificationMessage(List<Long> userIds, Type type, Product product) {
+        this.userIds = userIds;
+        this.type = type;
+        this.product = product;
+        this.message = type.getMessage(product.getName());
+    }
+
+    public NotificationMessage(Long userId, Type type, Product product) {
+        this.userIds.add(userId);
+        this.type = type;
+        this.product = product;
+        this.message = type.getMessage(product.getName());
+    }
+
+    public NotificationMessage(List<Long> userIds, Type type,
+                               String productName) { // TODO: 사전등록 취소 알림을 위해 임시 작성 (소프트 딜리트로 변경시 삭제)
         this.userIds = userIds;
         this.type = type;
         this.message = type.getMessage(productName);
     }
 
-    public NotificationMessage(Long userId, Type type, String productName) {
+    public NotificationMessage(Long userId, Type type,
+                               String productName) { // TODO: 사전등록 취소 알림을 위해 임시 작성 (소프트 딜리트로 변경시 삭제)
         this.userIds.add(userId);
         this.type = type;
         this.message = type.getMessage(productName);

@@ -122,47 +122,46 @@ public class AuctionService {
     }
 
     private void processAuctionResults(Auction auction) {
-        String productName = auction.getProduct().getName();
         Long productUserId = auction.getProduct().getUser().getId();
         List<Bid> bids = bidService.findAllBidsByAuction(auction);
 
         if (bids.isEmpty()) { // 입찰이 없는 경우
-            notifyAuctionFailure(productUserId, productName);
+            notifyAuctionFailure(productUserId, auction.getProduct());
             return;
         }
-        notifyAuctionSuccess(productUserId, productName);
+        notifyAuctionSuccess(productUserId, auction.getProduct());
 
         log.info("경매 ID {}: 낙찰 계산", auction.getId());
         Bid winningBid = bids.get(0); // 첫 번째 입찰이 낙찰
         auction.assignWinner(winningBid.getBidder().getId());
 
-        notifyAuctionWinner(winningBid.getBidder().getId(), productName);
-        notifyNonWinners(bids, productName);
+        notifyAuctionWinner(winningBid.getBidder().getId(), auction.getProduct());
+        notifyNonWinners(bids, auction.getProduct());
     }
 
     // 판매자에게 미 낙찰 알림
-    private void notifyAuctionFailure(Long productUserId, String productName) {
+    private void notifyAuctionFailure(Long productUserId, Product product) {
         notificationService.sendNotification(
-                new NotificationMessage(productUserId, AUCTION_FAILURE, productName)
+                new NotificationMessage(productUserId, AUCTION_FAILURE, product)
         );
     }
 
     // 판매자에게 낙찰 알림
-    private void notifyAuctionSuccess(Long productUserId, String productName) {
+    private void notifyAuctionSuccess(Long productUserId, Product product) {
         notificationService.sendNotification(
-                new NotificationMessage(productUserId, AUCTION_SUCCESS, productName)
+                new NotificationMessage(productUserId, AUCTION_SUCCESS, product)
         );
     }
 
     // 낙찰자에게 알림
-    private void notifyAuctionWinner(Long winnerId, String productName) {
+    private void notifyAuctionWinner(Long winnerId, Product product) {
         notificationService.sendNotification(
-                new NotificationMessage(winnerId, AUCTION_WINNER, productName)
+                new NotificationMessage(winnerId, AUCTION_WINNER, product)
         );
     }
 
     // 미낙찰자들에게 알림
-    private void notifyNonWinners(List<Bid> bids, String productName) {
+    private void notifyNonWinners(List<Bid> bids, Product product) {
         List<Long> nonWinnerIds = bids.stream()
                 .skip(1) // 낙찰자를 제외한 나머지 입찰자들
                 .map(bid -> bid.getBidder().getId())
@@ -170,7 +169,7 @@ public class AuctionService {
 
         if (!nonWinnerIds.isEmpty()) {
             notificationService.sendNotification(
-                    new NotificationMessage(nonWinnerIds, AUCTION_NON_WINNER, productName)
+                    new NotificationMessage(nonWinnerIds, AUCTION_NON_WINNER, product)
             );
         }
     }
