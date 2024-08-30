@@ -1,6 +1,8 @@
 package org.chzz.market.domain.auction.repository;
 
-import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.*;
+import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.CANCELLED;
+import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.ENDED;
+import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.PROCEEDING;
 import static org.chzz.market.domain.auction.entity.QAuction.auction;
 import static org.chzz.market.domain.bid.entity.QBid.bid;
 import static org.chzz.market.domain.image.entity.QImage.image;
@@ -21,14 +23,15 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
 import org.chzz.market.common.util.QuerydslOrder;
 import org.chzz.market.common.util.QuerydslOrderProvider;
+import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.AuctionResponse;
 import org.chzz.market.domain.auction.dto.response.MyAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.QAuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.QAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.QMyAuctionResponse;
+import org.chzz.market.domain.bid.entity.Bid.BidStatus;
 import org.chzz.market.domain.image.entity.QImage;
 import org.chzz.market.domain.product.entity.Product.Category;
 import org.springframework.data.domain.Page;
@@ -93,7 +96,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                 .join(auction.bids, bid)
                 .join(auction.product, product)
                 .on(bid.bidder.id.eq(userId))
-                .where(auction.status.eq(PROCEEDING));
+                .where(bid.status.eq(BidStatus.ACTIVE));
 
         List<AuctionResponse> content = baseQuery
                 .select(new QAuctionResponse(
