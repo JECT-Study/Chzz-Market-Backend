@@ -53,7 +53,7 @@ public class Notification extends BaseTimeEntity {
 
     @Column(nullable = false, columnDefinition = "varchar(30)")
     @Enumerated(EnumType.STRING)
-    private Type type;
+    private NotificationType type;
 
     public void read() {
         if (this.isDeleted) {
@@ -72,19 +72,4 @@ public class Notification extends BaseTimeEntity {
         this.isDeleted = true;
     }
 
-    @AllArgsConstructor
-    public enum Type {
-        AUCTION_START("좋아요를 누르신 사전 등록 제품 '%s'의 경매가 시작되었습니다."),
-        AUCTION_SUCCESS("경매에 올린 '%s'가 낙찰되었습니다."),
-        AUCTION_FAILURE("경매에 올린 '%s'가 미낙찰되었습니다."),
-        AUCTION_WINNER("축하합니다! 입찰에 참여한 경매 '%s'의 낙찰자로 선정되었습니다."),
-        AUCTION_NON_WINNER("안타깝지만 입찰에 참여한 경매 '%s'에 낙찰되지 못했습니다."),
-        AUCTION_REGISTRATION_CANCELED("좋아요를 누른 사전 등록 제품 '%s'이(가) 판매자에 의해 취소되었습니다.");
-
-        private final String message;
-
-        public String getMessage(String productName) {
-            return String.format(message, productName);
-        }
-    }
 }

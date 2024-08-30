@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.chzz.market.common.DatabaseTest;
 import org.chzz.market.domain.notification.dto.response.NotificationResponse;
 import org.chzz.market.domain.notification.entity.Notification;
-import org.chzz.market.domain.notification.entity.Notification.Type;
+import org.chzz.market.domain.notification.entity.NotificationType;
 import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,19 +36,19 @@ class NotificationRepositoryImplTest {
         Notification notification1 = Notification.builder()
                 .user(user1)
                 .message("Test Notification 1")
-                .type(Type.AUCTION_START)
+                .type(NotificationType.AUCTION_START)
                 .build();
 
         Notification notification2 = Notification.builder()
                 .user(user1)
                 .message("Test Notification 2")
-                .type(Type.AUCTION_SUCCESS)
+                .type(NotificationType.AUCTION_SUCCESS)
                 .build();
 
         Notification notification3 = Notification.builder()
                 .user(user1)
                 .message("Test Notification 2")
-                .type(Type.AUCTION_SUCCESS)
+                .type(NotificationType.AUCTION_SUCCESS)
                 .isDeleted(true)
                 .build();
         notificationRepository.save(notification1);
