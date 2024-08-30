@@ -1,29 +1,38 @@
 package org.chzz.market.domain.product.service;
 
+import static org.chzz.market.domain.product.error.ProductErrorCode.ALREADY_IN_AUCTION;
+import static org.chzz.market.domain.product.error.ProductErrorCode.PRODUCT_ALREADY_AUCTIONED;
+import static org.chzz.market.domain.product.error.ProductErrorCode.PRODUCT_NOT_FOUND;
+
+import java.util.Arrays;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.image.repository.ImageRepository;
 import org.chzz.market.domain.image.service.ImageService;
-import org.chzz.market.domain.product.dto.*;
+import org.chzz.market.domain.notification.dto.NotificationMessage;
+import org.chzz.market.domain.notification.entity.NotificationType;
+import org.chzz.market.domain.notification.service.NotificationService;
+import org.chzz.market.domain.product.dto.CategoryResponse;
+import org.chzz.market.domain.product.dto.DeleteProductResponse;
+import org.chzz.market.domain.product.dto.ProductDetailsResponse;
+import org.chzz.market.domain.product.dto.ProductResponse;
+import org.chzz.market.domain.product.dto.UpdateProductRequest;
+import org.chzz.market.domain.product.dto.UpdateProductResponse;
 import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.product.error.ProductException;
 import org.chzz.market.domain.product.repository.ProductRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.TransientDataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.Arrays;
-import java.util.List;
-
-import static org.chzz.market.domain.product.error.ProductErrorCode.*;
 
 @Service
 @Transactional(readOnly = true)
@@ -32,9 +41,10 @@ public class ProductService {
 
     private static final Logger logger = LoggerFactory.getLogger(ProductService.class);
 
+    private final ImageService imageService;
+    private final NotificationService notificationService;
     private final ProductRepository productRepository;
     private final AuctionRepository auctionRepository;
-    private final ImageService imageService;
     private final ImageRepository imageRepository;
 
     /*
@@ -151,22 +161,19 @@ public class ProductService {
             throw new ProductException(PRODUCT_ALREADY_AUCTIONED);
         }
 
+        deleteProductImages(product);
+        productRepository.delete(product);
+
         // 좋아요 누른 사용자 ID 추출
         List<Long> likedUserIds = product.getLikes().stream()
                 .map(like -> like.getUser().getId())
                 .distinct()
                 .toList();
-
-        deleteProductImages(product);
-        productRepository.delete(product);
-
-        // 좋아요 누른 사용자들에게 알림 전송
-        // Notification notificationMessage = new Notification(
-        //        likedUserIds,
-        //        Notificationtype.PRE_REGISTER_DELETED,
-        //        product.getName()
-        // );
-        // notificationService.sendNotification(notificationMessage);
+        if (!likedUserIds.isEmpty()) {
+            notificationService.sendNotification(
+                    new NotificationMessage(likedUserIds, NotificationType.AUCTION_REGISTRATION_CANCELED,
+                            product.getName()));
+        }
 
         logger.info("사전 등록 상품 ID{}번에 해당하는 상품을 성공적으로 삭제하였습니다. (좋아요 누른 사용자 수: {})", productId, likedUserIds.size());
 
