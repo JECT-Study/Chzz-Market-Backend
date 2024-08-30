@@ -4,10 +4,10 @@ import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_ALRE
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_ACCESSIBLE;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_FOUND;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.UNAUTHORIZED_AUCTION;
-import static org.chzz.market.domain.notification.entity.Notification.Type.AUCTION_FAILURE;
-import static org.chzz.market.domain.notification.entity.Notification.Type.AUCTION_NON_WINNER;
-import static org.chzz.market.domain.notification.entity.Notification.Type.AUCTION_SUCCESS;
-import static org.chzz.market.domain.notification.entity.Notification.Type.AUCTION_WINNER;
+import static org.chzz.market.domain.notification.entity.NotificationType.AUCTION_FAILURE;
+import static org.chzz.market.domain.notification.entity.NotificationType.AUCTION_NON_WINNER;
+import static org.chzz.market.domain.notification.entity.NotificationType.AUCTION_SUCCESS;
+import static org.chzz.market.domain.notification.entity.NotificationType.AUCTION_WINNER;
 
 import java.util.List;
 import java.util.Optional;
