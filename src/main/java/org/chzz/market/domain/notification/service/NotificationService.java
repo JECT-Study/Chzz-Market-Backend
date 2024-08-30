@@ -1,18 +1,20 @@
 package org.chzz.market.domain.notification.service;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.chzz.market.domain.notification.dto.NotificationEvent;
 import org.chzz.market.domain.notification.dto.NotificationMessage;
 import org.chzz.market.domain.notification.entity.Notification;
 import org.chzz.market.domain.notification.repository.EmitterRepositoryImpl;
 import org.chzz.market.domain.notification.repository.NotificationRepository;
 import org.chzz.market.domain.user.entity.User;
-import org.springframework.context.ApplicationEventPublisher;
+import org.chzz.market.domain.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -22,9 +24,10 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @Transactional(readOnly = true)
 @Slf4j
 public class NotificationService {
+    private final RedisPublisher redisPublisher;
     private final NotificationRepository notificationRepository;
     private final EmitterRepositoryImpl emitterRepository;
-    private final ApplicationEventPublisher eventPublisher;
+    private final UserRepository userRepository;
 
     /**
      * 사용자 ID로 SSE 연결을 생성하고 구독을 처리합니다.
@@ -40,17 +43,36 @@ public class NotificationService {
         return emitter;
     }
 
-    /**
-     * 알림 메시지를 처리하고 알림을 저장한 후 이벤트를 발행합니다.
-     *
-     * @param notificationMessage 알림 메시지 데이터
-     * @param userMap             사용자 ID와 사용자 객체의 매핑
-     */
     @Transactional
-    public void processNotification(NotificationMessage notificationMessage, Map<Long, User> userMap) {
+    public void sendNotification(NotificationMessage notificationMessage) {
+        // 1. 알림 메시지 저장
+        List<User> users = userRepository.findAllById(notificationMessage.getUserIds());
+        Map<Long, User> userMap = users.stream().collect(Collectors.toMap(User::getId, user -> user));
         List<Notification> notifications = createNotifications(notificationMessage, userMap);
         notificationRepository.saveAll(notifications);
-        eventPublisher.publishEvent(new NotificationEvent(notificationMessage, userMap));
+
+        // 2. Redis에 메시지 발행
+        redisPublisher.publish(notificationMessage);
+    }
+
+    /**
+     * 실시간으로 SSE를 통해 사용자에게 알림을 전송합니다.
+     *
+     * @param message 전송할 알림 메시지
+     * @param userId  사용자 ID
+     */
+    public void sendRealTimeNotification(String message, Long userId) {
+        Optional<SseEmitter> findEmitter = emitterRepository.findById(userId);
+        findEmitter.ifPresent(emitter -> {
+            try {
+                emitter.send(SseEmitter.event()
+                        .id(userId + "_" + Instant.now().toEpochMilli())
+                        .name("notification")
+                        .data(message));
+            } catch (IOException e) {
+                log.error("Error sending SSE event to user {}", userId);
+            }
+        });
     }
 
     /**

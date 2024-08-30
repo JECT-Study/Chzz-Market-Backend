@@ -1,15 +1,19 @@
 package org.chzz.market.domain.bid.service;
 
+import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_FOUND;
 import static org.chzz.market.domain.bid.error.BidErrorCode.BID_BELOW_MIN_PRICE;
 import static org.chzz.market.domain.bid.error.BidErrorCode.BID_BY_OWNER;
 import static org.chzz.market.domain.bid.error.BidErrorCode.BID_NOT_ACCESSIBLE;
 import static org.chzz.market.domain.bid.error.BidErrorCode.BID_NOT_FOUND;
 import static org.chzz.market.domain.user.error.UserErrorCode.USER_NOT_FOUND;
 
+import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.domain.auction.entity.Auction;
-import org.chzz.market.domain.auction.service.AuctionService;
+import org.chzz.market.domain.auction.error.AuctionException;
+import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.bid.dto.BidCreateRequest;
 import org.chzz.market.domain.bid.dto.query.BiddingRecord;
 import org.chzz.market.domain.bid.entity.Bid;
@@ -28,7 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 @Slf4j
 public class BidService {
-    private final AuctionService auctionService;
+    private final AuctionRepository auctionRepository;
     private final BidRepository bidRepository;
     private final UserRepository userRepository;//TODO 2024 08 04 14:54:26 : to be removed
 
@@ -41,7 +45,8 @@ public class BidService {
     @Transactional
     public void createBid(final BidCreateRequest bidCreateRequest, Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(USER_NOT_FOUND));
-        Auction auction = auctionService.getAuction(bidCreateRequest.getAuctionId());
+        Auction auction = auctionRepository.findById(bidCreateRequest.getAuctionId())
+                .orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
         validateBidConditions(bidCreateRequest, user.getId(), auction);
         bidRepository.findByAuctionAndBidder(auction, user)
                 .ifPresentOrElse(
@@ -61,6 +66,10 @@ public class BidService {
         auction.validateAuctionEndTime();
         auction.removeBid(bid);
         log.info("입찰이 취소되었습니다. 입찰 ID: {}, 사용자 ID: {}, 경매 ID: {}", bid.getId(), user.getId(), auction.getId());
+    }
+
+    public List<Bid> findAllBidsByAuction(Auction auction) {
+        return bidRepository.findAllBidsByAuction(auction);
     }
 
     private void validateBidConditions(BidCreateRequest bidCreateRequest, Long userId, Auction auction) {
