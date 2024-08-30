@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Profile;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({QuerydslConfig.class,  AuditingConfig.class, QuerydslOrderConfig.class})
+@Import({QuerydslConfig.class,  AuditingConfig.class, QuerydslOrderConfig.class, QuartzConfig.class})
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented

@@ -1,11 +1,12 @@
 package org.chzz.market.domain.auction.entity;
 
-import static org.chzz.market.domain.auction.enums.AuctionStatus.PROCEEDING;
+import static org.chzz.market.domain.auction.enums.AuctionStatus.*;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_ENDED;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
@@ -24,9 +25,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.chzz.market.domain.auction.enums.AuctionStatus;
+import org.chzz.market.domain.auction.entity.listener.AuctionEntityListener;
 import org.chzz.market.domain.auction.error.AuctionException;
-
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
 import org.chzz.market.domain.bid.entity.Bid;
 import org.chzz.market.domain.product.entity.Product;
@@ -37,6 +37,7 @@ import org.chzz.market.domain.product.entity.Product;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EntityListeners(value = AuctionEntityListener.class)
 public class Auction extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -55,7 +56,7 @@ public class Auction extends BaseTimeEntity {
 
     @Column(columnDefinition = "varchar(20)")
     @Enumerated(EnumType.STRING)
-    private AuctionStatus status;
+    private org.chzz.market.domain.auction.enums.AuctionStatus status;
 
     public Integer getMinPrice() {
         return product.getMinPrice();
@@ -75,7 +76,7 @@ public class Auction extends BaseTimeEntity {
 
     public void validateAuctionEndTime() {
         // 경매가 진행중이 아닐 때
-        if (status != AuctionStatus.PROCEEDING || LocalDateTime.now().isAfter(endDateTime)) {
+        if (status != PROCEEDING || LocalDateTime.now().isAfter(endDateTime)) {
             throw new AuctionException(AUCTION_ENDED);
         }
     }
@@ -85,7 +86,6 @@ public class Auction extends BaseTimeEntity {
         return amount >= getMinPrice();
     }
 
-
     public void registerBid(Bid bid) {
         bid.specifyAuction(this);
         bids.add(bid);
@@ -94,6 +94,25 @@ public class Auction extends BaseTimeEntity {
     public void removeBid(Bid bid) {
         bid.cancelBid();
         bids.remove(bid);
+    }
+
+    public void endAuction() {
+        this.status = ENDED;
+    }
+
+    public void assignWinner(Long winnerId) {
+        this.winnerId = winnerId;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public enum AuctionStatus {
+        PENDING("대기 중"),
+        PROCEEDING("진행 중"),
+        ENDED("종료"),
+        CANCELLED("취소 됨");
+
+        private final String description;
     }
 
     public void start(LocalDateTime endDateTime) {
