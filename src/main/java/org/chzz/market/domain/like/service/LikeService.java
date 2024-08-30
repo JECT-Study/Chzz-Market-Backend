@@ -80,7 +80,7 @@ public class LikeService {
 
     private Product findProductForLike(Long productId) {
         log.debug("상품 ID {}번의 상품 좋아요를 위한 상품 조회를 시작합니다.", productId);
-        return productRepository.findProductForLike(productId)
+        return productRepository.findPreOrder(productId)
                 .orElseThrow(() -> new ProductException(PRODUCT_NOT_FOUND_OR_IN_AUCTION));
     }
 

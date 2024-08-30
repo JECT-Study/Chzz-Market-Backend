@@ -72,7 +72,7 @@ class LikeServiceTest {
         void createNewLikeWhenNotExists() {
             // given
             when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-            when(productRepository.findProductForLike(1L)).thenReturn(Optional.of(product));
+            when(productRepository.findPreOrder(1L)).thenReturn(Optional.of(product));
             when(likeRepository.existsByUserIdAndProductId(1L, 1L)).thenReturn(false);
 
             // when
@@ -89,7 +89,7 @@ class LikeServiceTest {
         void removeLikeWhenExists() {
             // then
             when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-            when(productRepository.findProductForLike(1L)).thenReturn(Optional.of(product));
+            when(productRepository.findPreOrder(1L)).thenReturn(Optional.of(product));
             when(likeRepository.existsByUserIdAndProductId(1L, 1L)).thenReturn(true);
             when(likeRepository.findByUserAndProduct(user, product)).thenReturn(Optional.of(like));
 
@@ -107,7 +107,7 @@ class LikeServiceTest {
         void increaseLikeCountWhenMultipleUsersLike() {
             // given
             when(userRepository.findById(anyLong())).thenReturn(Optional.of(user), Optional.of(user2));
-            when(productRepository.findProductForLike(1L)).thenReturn(Optional.of(product));
+            when(productRepository.findPreOrder(1L)).thenReturn(Optional.of(product));
             when(likeRepository.existsByUserIdAndProductId(anyLong(), anyLong())).thenReturn(false);
 
             // when
