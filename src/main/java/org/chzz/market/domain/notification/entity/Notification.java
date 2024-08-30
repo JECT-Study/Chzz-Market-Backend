@@ -56,11 +56,11 @@ public class Notification extends BaseTimeEntity {
     private Type type;
 
     public void read() {
-        if(this.isRead) {
-            throw new NotificationException(NotificationErrorCode.ALREADY_READ_NOTIFICATION);
-        }
         if (this.isDeleted) {
             throw new NotificationException(NotificationErrorCode.DELETED_NOTIFICATION);
+        }
+        if(this.isRead) {
+            throw new NotificationException(NotificationErrorCode.ALREADY_READ_NOTIFICATION);
         }
         this.isRead = true;
     }
