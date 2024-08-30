@@ -5,7 +5,7 @@ import static org.chzz.market.domain.notification.error.NotificationErrorCode.RE
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.chzz.market.domain.notification.dto.NotificationMessage;
+import org.chzz.market.domain.notification.dto.NotificationRealMessage;
 import org.chzz.market.domain.notification.error.NotificationException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
@@ -21,9 +21,9 @@ public class RedisPublisher {
     private final ChannelTopic topic;
     private final ObjectMapper objectMapper;
 
-    public void publish(NotificationMessage notificationMessage) {
+    public void publish(NotificationRealMessage notificationRealMessage) {
         try {
-            redisTemplate.convertAndSend(topic.getTopic(), objectMapper.writeValueAsString(notificationMessage));
+            redisTemplate.convertAndSend(topic.getTopic(), objectMapper.writeValueAsString(notificationRealMessage));
         } catch (Exception e) {
             throw new NotificationException(REDIS_MESSAGE_SEND_FAILURE);
         }

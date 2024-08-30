@@ -1,16 +1,20 @@
 package org.chzz.market.domain.notification.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.domain.notification.dto.NotificationMessage;
+import org.chzz.market.domain.notification.dto.NotificationRealMessage;
 import org.chzz.market.domain.notification.dto.response.NotificationResponse;
+import org.chzz.market.domain.notification.dto.response.NotificationSseResponse;
 import org.chzz.market.domain.notification.entity.Notification;
 import org.chzz.market.domain.notification.error.NotificationErrorCode;
 import org.chzz.market.domain.notification.error.NotificationException;
@@ -33,6 +37,7 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final EmitterRepositoryImpl emitterRepository;
     private final UserRepository userRepository;
+    private final ObjectMapper objectMapper;
 
     /**
      * 사용자 ID로 SSE 연결을 생성하고 구독을 처리합니다.
@@ -51,29 +56,35 @@ public class NotificationService {
     @Transactional
     public void sendNotification(NotificationMessage notificationMessage) {
         // 1. 알림 메시지 저장
-        List<User> users = userRepository.findAllById(notificationMessage.getUserIds());
-        Map<Long, User> userMap = users.stream().collect(Collectors.toMap(User::getId, user -> user));
+        Map<Long, User> userMap = userRepository.findAllById(notificationMessage.getUserIds())
+                .stream()
+                .collect(Collectors.toMap(User::getId, Function.identity()));
         List<Notification> notifications = createNotifications(notificationMessage, userMap);
         notificationRepository.saveAll(notifications);
 
-        // 2. Redis에 메시지 발행
-        redisPublisher.publish(notificationMessage);
+        // 2. 사용자 ID와 알림 ID를 매핑하는 맵 생성과 메시지 발행
+        Map<Long, Long> userNotificationMap = notifications.stream()
+                .collect(Collectors.toMap(n -> n.getUser().getId(), Notification::getId));
+
+        // 3. Redis에 메시지 발행
+        redisPublisher.publish(new NotificationRealMessage(userNotificationMap, notificationMessage.getMessage(),
+                notificationMessage.getType()));
     }
 
     /**
      * 실시간으로 SSE를 통해 사용자에게 알림을 전송합니다.
      *
-     * @param message 전송할 알림 메시지
-     * @param userId  사용자 ID
+     * @param sseResponse 전송할 알림 메시지 객체
+     * @param userId      사용자 ID
      */
-    public void sendRealTimeNotification(String message, Long userId) {
+    public void sendRealTimeNotification(Long userId, NotificationSseResponse sseResponse) {
         Optional<SseEmitter> findEmitter = emitterRepository.findById(userId);
         findEmitter.ifPresent(emitter -> {
             try {
                 emitter.send(SseEmitter.event()
                         .id(userId + "_" + Instant.now().toEpochMilli())
                         .name("notification")
-                        .data(message));
+                        .data(objectMapper.writeValueAsString(sseResponse)));
             } catch (IOException e) {
                 log.error("Error sending SSE event to user {}", userId);
             }
