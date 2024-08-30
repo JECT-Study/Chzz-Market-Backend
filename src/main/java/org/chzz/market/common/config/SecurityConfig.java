@@ -43,11 +43,14 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(final HttpSecurity http) throws Exception {
+        // TODO: 추후에 실제 API 권한에 맞게 수정 필요
         return http.authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(ACTUATOR).permitAll()
                         .requestMatchers("/api/v1/auctions/**").permitAll()
                         .requestMatchers("/api/v1/products/**").permitAll()
-                        .requestMatchers("/api/v1/bids/**").permitAll()
+                        .requestMatchers("api/v1/bids/**").permitAll()
+                        .requestMatchers("api/v1/users/**").permitAll()
+                        .requestMatchers("/api/v1/notifications/**").permitAll()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/tokens/reissue").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/users").hasRole("TEMP_USER")
