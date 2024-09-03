@@ -11,4 +11,11 @@ public record ErrorResponse(String message,
                 .message(errorCode.getMessage())
                 .build();
     }
+
+    public static ErrorResponse from(final ErrorCode errorCode, final String detailedErrorMessage) {
+        return ErrorResponse.builder()
+                .status(errorCode.getHttpStatus().value())
+                .message(detailedErrorMessage)
+                .build();
+    }
 }
