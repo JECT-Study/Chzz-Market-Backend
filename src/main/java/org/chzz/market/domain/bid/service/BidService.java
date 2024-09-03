@@ -1,6 +1,7 @@
 package org.chzz.market.domain.bid.service;
 
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_FOUND;
+import static org.chzz.market.domain.auction.error.AuctionErrorCode.FORBIDDEN_AUCTION_ACCESS;
 import static org.chzz.market.domain.bid.error.BidErrorCode.BID_BELOW_MIN_PRICE;
 import static org.chzz.market.domain.bid.error.BidErrorCode.BID_BY_OWNER;
 import static org.chzz.market.domain.bid.error.BidErrorCode.BID_NOT_ACCESSIBLE;
@@ -8,7 +9,6 @@ import static org.chzz.market.domain.bid.error.BidErrorCode.BID_NOT_FOUND;
 import static org.chzz.market.domain.user.error.UserErrorCode.USER_NOT_FOUND;
 
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.domain.auction.entity.Auction;
@@ -16,6 +16,7 @@ import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.bid.dto.BidCreateRequest;
 import org.chzz.market.domain.bid.dto.query.BiddingRecord;
+import org.chzz.market.domain.bid.dto.response.BidInfoResponse;
 import org.chzz.market.domain.bid.entity.Bid;
 import org.chzz.market.domain.bid.error.BidException;
 import org.chzz.market.domain.bid.repository.BidRepository;
@@ -70,6 +71,16 @@ public class BidService {
 
     public List<Bid> findAllBidsByAuction(Auction auction) {
         return bidRepository.findAllBidsByAuction(auction);
+    }
+
+    public Page<BidInfoResponse> getBidsByAuctionId(Long userId, Long auctionId, Pageable pageable) {
+        Auction auction = auctionRepository.findById(auctionId)
+                .orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
+        if (!auction.getProduct().getUser().getId().equals(userId)) {
+            throw new AuctionException(FORBIDDEN_AUCTION_ACCESS);
+        }
+        auction.validateAuctionEnded();
+        return bidRepository.findBidsByAuctionId(auctionId, pageable);
     }
 
     private void validateBidConditions(BidCreateRequest bidCreateRequest, Long userId, Auction auction) {
