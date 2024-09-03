@@ -29,7 +29,6 @@ import org.chzz.market.domain.bid.dto.response.QBidInfoResponse;
 import org.chzz.market.domain.bid.entity.Bid;
 import org.chzz.market.domain.bid.entity.Bid.BidStatus;
 import org.chzz.market.domain.image.entity.QImage;
-import org.chzz.market.domain.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
@@ -39,17 +38,17 @@ public class BidRepositoryCustomImpl implements BidRepositoryCustom {
     private final JPAQueryFactory jpaQueryFactory;
     private final QuerydslOrderProvider querydslOrderProvider;
 
-    public Page<BiddingRecord> findUsersBidHistory(User user, Pageable pageable) {
+    public Page<BiddingRecord> findUsersBidHistory(Long userId, Pageable pageable) {
         QImage firstImage = new QImage("firstImage");
 
-        JPQLQuery<BiddingRecord> baseQuery = getBaseQuery(firstImage, user);
+        JPQLQuery<BiddingRecord> baseQuery = getBaseQuery(firstImage, userId);
         List<BiddingRecord> content = baseQuery
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        return PageableExecutionUtils.getPage(content, pageable, getCount(user)::fetchOne);
+        return PageableExecutionUtils.getPage(content, pageable, getCount(userId)::fetchOne);
     }
 
     @Override
@@ -88,7 +87,7 @@ public class BidRepositoryCustomImpl implements BidRepositoryCustom {
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchCount);
     }
 
-    private JPQLQuery<BiddingRecord> getBaseQuery(QImage firstImage, User user) {
+    private JPQLQuery<BiddingRecord> getBaseQuery(QImage firstImage, Long userId) {
         return jpaQueryFactory
                 .select(new QBiddingRecord(
                         product.name,
@@ -100,7 +99,7 @@ public class BidRepositoryCustomImpl implements BidRepositoryCustom {
                 ))
                 .from(bid)
                 .join(bid.auction, auction)
-                .on(bid.bidder.eq(user))
+                .on(bid.bidder.id.eq(userId).and(bid.status.eq(BidStatus.ACTIVE)))
                 .leftJoin(auction.product, product)
                 .leftJoin(firstImage)
                 .on(firstImage.product.eq(product).and(firstImage.id.eq(
@@ -118,12 +117,12 @@ public class BidRepositoryCustomImpl implements BidRepositoryCustom {
                         auction.id);
     }
 
-    private JPAQuery<Long> getCount(User user) {
+    private JPAQuery<Long> getCount(Long userId) {
         return jpaQueryFactory
                 .select(bid.count())
                 .from(bid)
                 .join(bid.auction, auction)
-                .on(bid.bidder.eq(user));
+                .on(bid.bidder.id.eq(userId).and(bid.status.eq(BidStatus.ACTIVE)));
     }
 
     private static NumberExpression<Integer> timeRemaining() {

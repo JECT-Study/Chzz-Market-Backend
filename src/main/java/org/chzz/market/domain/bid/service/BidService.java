@@ -35,12 +35,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class BidService {
     private final AuctionRepository auctionRepository;
     private final BidRepository bidRepository;
-    private final UserRepository userRepository;//TODO 2024 08 04 14:54:26 : to be removed
+    private final UserRepository userRepository;
 
 
-    public Page<BiddingRecord> inquireBidHistory(Pageable pageable) {
-        User user = userRepository.findById(1L).orElseThrow();//TODO 2024 08 04 15:29:29 : to be removed
-        return bidRepository.findUsersBidHistory(user, pageable);
+    public Page<BiddingRecord> inquireBidHistory(Long userId, Pageable pageable) {
+        return bidRepository.findUsersBidHistory(userId, pageable);
     }
 
     @Transactional
