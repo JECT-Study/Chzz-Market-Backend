@@ -3,6 +3,7 @@ package org.chzz.market.domain.bid.controller;
 import static org.springframework.http.HttpStatus.CREATED;
 
 import lombok.RequiredArgsConstructor;
+import org.chzz.market.common.config.LoginUser;
 import org.chzz.market.domain.bid.dto.BidCreateRequest;
 import org.chzz.market.domain.bid.dto.query.BiddingRecord;
 import org.chzz.market.domain.bid.service.BidService;
@@ -25,26 +26,25 @@ public class BidController {
     private final BidService bidService;
 
     @PostMapping
-    public ResponseEntity<?> createBid(@RequestBody BidCreateRequest bidCreateRequest) {
-//                                       @AuthenticationPrincipal CustomUserDetails customUserDetails) // TODO: 추후에 인증된 사용자 정보로 수정 필요
-        bidService.createBid(bidCreateRequest, 1L);
+    public ResponseEntity<?> createBid(@RequestBody BidCreateRequest bidCreateRequest,
+                                       @LoginUser Long userId) {
+        bidService.createBid(bidCreateRequest, userId);
         return ResponseEntity.status(CREATED).build();
     }
 
     @GetMapping
     public ResponseEntity<?> findUsersBidHistory(
-//            @AuthenticationPrincipal UserDetailsImpl UserDetailsImpl,
-//            @RequestParam
+            @LoginUser Long userId,
             @PageableDefault
             Pageable pageable) {
-        Page<BiddingRecord> records = bidService.inquireBidHistory(pageable);
+        Page<BiddingRecord> records = bidService.inquireBidHistory(userId, pageable);
         return ResponseEntity.ok(records);
     }
 
     @PatchMapping("/{bidId}/cancel")
-    public ResponseEntity<?> cancelBid(@PathVariable Long bidId) {
-        //                                       @AuthenticationPrincipal CustomUserDetails customUserDetails) // TODO: 추후에 인증된 사용자 정보로 수정 필요
-        bidService.cancelBid(bidId, 2L); // TODO: 추후에 인증된 사용자 정보로 수정 필요
+    public ResponseEntity<?> cancelBid(@PathVariable Long bidId,
+                                       @LoginUser Long userId) {
+        bidService.cancelBid(bidId, userId);
         return ResponseEntity.ok().build();
     }
 }
