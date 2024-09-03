@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.entity.Auction.AuctionStatus;
+import org.chzz.market.domain.auction.error.AuctionErrorCode;
 import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.bid.dto.BidCreateRequest;
@@ -34,6 +35,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @ExtendWith(MockitoExtension.class)
 class BidServiceTest {
@@ -61,9 +64,12 @@ class BidServiceTest {
         user = User.builder().id(1L).providerId("1234").nickname("닉네임1").email("asd@naver.com").build();
         user2 = User.builder().id(2L).providerId("12345").nickname("닉네임2").email("asd@naver.com").build();
         user3 = User.builder().id(3L).providerId("123").nickname("닉네임").email("as@naver.com").build();
-        product = Product.builder().user(user).name("제품1").category(Category.FASHION_AND_CLOTHING).minPrice(1000).build();
-        product2 = Product.builder().user(user).name("제품2").category(Category.FASHION_AND_CLOTHING).minPrice(1000).build();
-        product3 = Product.builder().user(user).name("제품3").category(Category.FASHION_AND_CLOTHING).minPrice(1000).build();
+        product = Product.builder().user(user).name("제품1").category(Category.FASHION_AND_CLOTHING).minPrice(1000)
+                .build();
+        product2 = Product.builder().user(user).name("제품2").category(Category.FASHION_AND_CLOTHING).minPrice(1000)
+                .build();
+        product3 = Product.builder().user(user).name("제품3").category(Category.FASHION_AND_CLOTHING).minPrice(1000)
+                .build();
         auction = Auction.builder().id(1L).product(product).status(AuctionStatus.PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusDays(1)).build();
         completeAuction = Auction.builder().id(2L).product(product2).status(AuctionStatus.ENDED)
@@ -267,5 +273,52 @@ class BidServiceTest {
                 .extracting(ERROR_CODE)
                 .isEqualTo(BID_ALREADY_CANCELLED);
     }
+
+    @Test
+    @DisplayName("실패 - 사용자가 경매 소유자가 아닌 경우 예외 발생")
+    void getBidsByAuctionId_ThrowsForbiddenAuctionAccessException() {
+        // given
+        Long auctionId = 1L;
+        Long userId = 2L; // 경매 소유자와 다른 사용자 ID
+        Pageable pageable = PageRequest.of(0, 10);
+        Auction auction = Auction.builder()
+                .id(auctionId)
+                .product(product)
+                .status(AuctionStatus.ENDED)
+                .endDateTime(LocalDateTime.now().minusDays(1))
+                .build();
+
+        when(auctionRepository.findById(auctionId)).thenReturn(Optional.of(auction));
+
+        // when & then
+        assertThatThrownBy(() -> bidService.getBidsByAuctionId(userId, auctionId, pageable))
+                .isInstanceOf(AuctionException.class)
+                .extracting(ERROR_CODE)
+                .isEqualTo(AuctionErrorCode.FORBIDDEN_AUCTION_ACCESS);
+    }
+
+    @Test
+    @DisplayName("실패 - 경매가 종료되지 않은 경우 예외 발생")
+    void getBidsByAuctionId_ThrowsAuctionNotEndedException() {
+        // given
+        Long auctionId = 1L;
+        Long userId = 1L;
+        Pageable pageable = PageRequest.of(0, 10);
+        Auction auction = Auction.builder()
+                .id(auctionId)
+                .product(product)
+                .status(AuctionStatus.PROCEEDING) // 경매 진행 중
+                .endDateTime(LocalDateTime.now().plusDays(1))
+                .build();
+
+        when(auctionRepository.findById(auctionId)).thenReturn(Optional.of(auction));
+
+        // when & then
+        assertThatThrownBy(() -> bidService.getBidsByAuctionId(userId, auctionId, pageable))
+                .isInstanceOf(AuctionException.class)
+                .extracting(ERROR_CODE)
+                .isEqualTo(AuctionErrorCode.AUCTION_NOT_ENDED);
+    }
+
 
 }
