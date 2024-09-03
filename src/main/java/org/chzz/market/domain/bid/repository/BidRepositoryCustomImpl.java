@@ -4,8 +4,10 @@ import static org.chzz.market.domain.auction.entity.QAuction.auction;
 import static org.chzz.market.domain.bid.entity.QBid.bid;
 import static org.chzz.market.domain.image.entity.QImage.image;
 import static org.chzz.market.domain.product.entity.QProduct.product;
+import static org.chzz.market.domain.user.entity.QUser.user;
 
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
@@ -13,7 +15,6 @@ import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
-import java.util.Optional;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,6 +24,8 @@ import org.chzz.market.common.util.QuerydslOrderProvider;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.bid.dto.query.BiddingRecord;
 import org.chzz.market.domain.bid.dto.query.QBiddingRecord;
+import org.chzz.market.domain.bid.dto.response.BidInfoResponse;
+import org.chzz.market.domain.bid.dto.response.QBidInfoResponse;
 import org.chzz.market.domain.bid.entity.Bid;
 import org.chzz.market.domain.bid.entity.Bid.BidStatus;
 import org.chzz.market.domain.image.entity.QImage;
@@ -59,6 +62,30 @@ public class BidRepositoryCustomImpl implements BidRepositoryCustom {
                 )
                 .orderBy(bid.amount.desc(), bid.updatedAt.asc())
                 .fetch();
+    }
+
+    @Override
+    public Page<BidInfoResponse> findBidsByAuctionId(Long auctionId, Pageable pageable) {
+        BooleanExpression isWinner = auction.winnerId.isNotNull().and(auction.winnerId.eq(user.id)).or(auction.winnerId.isNull().and(Expressions.FALSE));
+
+        JPAQuery<?> baseQuery = jpaQueryFactory.from(bid)
+                .join(bid.auction, auction).on(auction.id.eq(auctionId).and(bid.status.eq(BidStatus.ACTIVE)));
+
+        List<BidInfoResponse> content = baseQuery.select(new QBidInfoResponse(
+                        bid.amount,
+                        user.nickname,
+                        isWinner
+                ))
+                .join(bid.bidder, user)
+                .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        JPAQuery<Long> countQuery = baseQuery.
+                select(bid.count());
+
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchCount);
     }
 
     private JPQLQuery<BiddingRecord> getBaseQuery(QImage firstImage, User user) {
@@ -98,7 +125,6 @@ public class BidRepositoryCustomImpl implements BidRepositoryCustom {
                 .join(bid.auction, auction)
                 .on(bid.bidder.eq(user));
     }
-
 
     private static NumberExpression<Integer> timeRemaining() {
         return Expressions.numberTemplate(Integer.class, "TIMESTAMPDIFF(SECOND, CURRENT_TIMESTAMP, {0})",
