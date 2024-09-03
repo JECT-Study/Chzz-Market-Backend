@@ -3,7 +3,7 @@ package org.chzz.market.domain.auction.service;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_ALREADY_REGISTERED;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_ACCESSIBLE;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_FOUND;
-import static org.chzz.market.domain.auction.error.AuctionErrorCode.UNAUTHORIZED_AUCTION;
+import static org.chzz.market.domain.auction.error.AuctionErrorCode.FORBIDDEN_AUCTION_ACCESS;
 import static org.chzz.market.domain.notification.entity.Notification.Type.AUCTION_FAILURE;
 import static org.chzz.market.domain.notification.entity.Notification.Type.AUCTION_NON_WINNER;
 import static org.chzz.market.domain.notification.entity.Notification.Type.AUCTION_SUCCESS;
@@ -85,7 +85,7 @@ public class AuctionService {
 
         // 등록된 상품의 사용자 정보와 전환 요청한 사용자 정보 유효성 검사
         if (!product.getUser().getId().equals(userId)) {
-            throw new AuctionException(UNAUTHORIZED_AUCTION);
+            throw new AuctionException(FORBIDDEN_AUCTION_ACCESS);
         }
 
         // 이미 경매로 등록된 상품인지 유효성 검사
