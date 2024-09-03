@@ -204,8 +204,8 @@ class BidRepositoryCustomImplTest {
     void testFindBidHistory() {
         // given
         Pageable pageable = PageRequest.of(0, 10, Sort.by("amount"));
-        Page<BiddingRecord> usersBidHistory1 = bidRepository.findUsersBidHistory(bidder1, pageable);
-        Page<BiddingRecord> usersBidHistory2 = bidRepository.findUsersBidHistory(bidder2, pageable);
+        Page<BiddingRecord> usersBidHistory1 = bidRepository.findUsersBidHistory(bidder1.getId(), pageable);
+        Page<BiddingRecord> usersBidHistory2 = bidRepository.findUsersBidHistory(bidder2.getId(), pageable);
 
         // when
 
@@ -228,8 +228,8 @@ class BidRepositoryCustomImplTest {
     void testFindBidHistoryOrderByTimeRemaining() {
         // given
         Pageable pageable = PageRequest.of(0, 10, Sort.by("time-remaining"));
-        Page<BiddingRecord> usersBidHistory1 = bidRepository.findUsersBidHistory(bidder1, pageable);
-        Page<BiddingRecord> usersBidHistory2 = bidRepository.findUsersBidHistory(bidder2, pageable);
+        Page<BiddingRecord> usersBidHistory1 = bidRepository.findUsersBidHistory(bidder1.getId(), pageable);
+        Page<BiddingRecord> usersBidHistory2 = bidRepository.findUsersBidHistory(bidder2.getId(), pageable);
         // when
 
         // then
@@ -275,7 +275,7 @@ class BidRepositoryCustomImplTest {
                 .description("product3")
                 .name("product3")
                 .minPrice(100000)
-                .user(userRepository.findById(1L).orElseThrow())
+                .user(bidder1)
                 .build();
 
         Auction auction3 = Auction.builder()
