@@ -215,7 +215,6 @@ class BidServiceTest {
         auction.registerBid(bid);
 
         //when
-        when(userRepository.findById(2L)).thenReturn(Optional.of(user2));
         when(bidRepository.findById(1L)).thenReturn(Optional.of(bid));
         bidService.cancelBid(bid.getId(), user2.getId());
         //then
@@ -230,7 +229,6 @@ class BidServiceTest {
         Bid bid = Bid.builder().id(1L).auction(auction).bidder(user2).amount(1000L).count(3).build();
 
         //when
-        when(userRepository.findById(3L)).thenReturn(Optional.of(user3));
         when(bidRepository.findById(1L)).thenReturn(Optional.of(bid));
 
         //then
@@ -247,7 +245,6 @@ class BidServiceTest {
         Bid bid = Bid.builder().id(3L).auction(endAuction).bidder(user2).amount(1000L).count(3).build();
 
         //when
-        when(userRepository.findById(2L)).thenReturn(Optional.of(user2));
         when(bidRepository.findById(3L)).thenReturn(Optional.of(bid));
 
         //then
@@ -264,7 +261,6 @@ class BidServiceTest {
         Bid bid = Bid.builder().id(1L).auction(auction).bidder(user2).amount(1000L).count(3).status(CANCELLED).build();
 
         //when
-        when(userRepository.findById(2L)).thenReturn(Optional.of(user2));
         when(bidRepository.findById(1L)).thenReturn(Optional.of(bid));
 
         //then
