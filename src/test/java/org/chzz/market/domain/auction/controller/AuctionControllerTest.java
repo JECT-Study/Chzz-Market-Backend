@@ -42,15 +42,15 @@ import static org.chzz.market.domain.auction.enums.AuctionRegisterType.REGISTER;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.*;
 import static org.chzz.market.domain.product.entity.Product.Category.*;
 import static org.chzz.market.domain.user.error.UserErrorCode.USER_NOT_FOUND;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -143,10 +143,10 @@ public class AuctionControllerTest {
             MockMultipartFile requestPart = new MockMultipartFile("request", "", "application/json", requestJson.getBytes());
 
             mockMvc.perform(multipart("/api/v1/auctions")
-                            .file(requestPart)
-                            .file(image1).file(image2).file(image3)
-                            .with(csrf())
-                            .contentType(MediaType.MULTIPART_FORM_DATA))
+                    .file(requestPart)
+                    .file(image1).file(image2).file(image3)
+                    .with(csrf())
+                    .contentType(MediaType.MULTIPART_FORM_DATA))
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.productId").value(1))
                     .andExpect(jsonPath("$.auctionId").value(1))
@@ -172,10 +172,10 @@ public class AuctionControllerTest {
             MockMultipartFile requestPart = new MockMultipartFile("request", "", "application/json", requestJson.getBytes());
 
             mockMvc.perform(multipart("/api/v1/auctions")
-                            .file(requestPart)
-                            .file(image1).file(image2).file(image3)
-                            .with(csrf())
-                            .contentType(MediaType.MULTIPART_FORM_DATA))
+                    .file(requestPart)
+                    .file(image1).file(image2).file(image3)
+                    .with(csrf())
+                    .contentType(MediaType.MULTIPART_FORM_DATA))
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.productId").value(1))
                     .andExpect(jsonPath("$.auctionId").doesNotExist())
@@ -209,10 +209,10 @@ public class AuctionControllerTest {
             MockMultipartFile requestPart = new MockMultipartFile("request", "", "application/json", requestJson.getBytes());
 
             mockMvc.perform(multipart("/api/v1/auctions")
-                            .file(requestPart)
-                            .file(image1).file(image2).file(image3)
-                            .with(csrf())
-                            .contentType(MediaType.MULTIPART_FORM_DATA))
+                    .file(requestPart)
+                    .file(image1).file(image2).file(image3)
+                    .with(csrf())
+                    .contentType(MediaType.MULTIPART_FORM_DATA))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.message").value("사용자를 찾을 수 없습니다."));
         }
@@ -232,8 +232,8 @@ public class AuctionControllerTest {
             when(auctionService.startAuction(any(StartAuctionRequest.class))).thenReturn(response);
 
             mockMvc.perform(post("/api/v1/auctions/start")
-                            .content(requestJson)
-                            .contentType(MediaType.APPLICATION_JSON))
+                    .content(requestJson)
+                    .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.auctionId").value(1))
                     .andExpect(jsonPath("$.productId").value(1))
@@ -254,8 +254,8 @@ public class AuctionControllerTest {
                     .thenThrow(new AuctionException(AUCTION_NOT_FOUND));
 
             mockMvc.perform(post("/api/v1/auctions/start")
-                            .content(requestJson)
-                            .contentType(MediaType.APPLICATION_JSON_VALUE))
+                    .content(requestJson)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.message").value("경매를 찾을 수 없습니다."));
         }
@@ -270,8 +270,8 @@ public class AuctionControllerTest {
                     .thenThrow(new AuctionException(AUCTION_ALREADY_REGISTERED));
 
             mockMvc.perform(post("/api/v1/auctions/start")
-                            .content(requestJson)
-                            .contentType(MediaType.APPLICATION_JSON_VALUE))
+                    .content(requestJson)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.message").value("이미 등록된 경매입니다."));
         }
@@ -290,8 +290,8 @@ public class AuctionControllerTest {
         String requestJson = objectMapper.writeValueAsString(validStartAuctionRequest);
 
         MvcResult result = mockMvc.perform(post("/api/v1/auctions/start")
-                        .content(requestJson)
-                        .contentType(MediaType.APPLICATION_JSON))
+                .content(requestJson)
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.auctionId").value(1))
                 .andExpect(jsonPath("$.productId").value(productId))
