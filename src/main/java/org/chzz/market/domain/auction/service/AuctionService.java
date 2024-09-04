@@ -117,8 +117,12 @@ public class AuctionService {
     }
 
 
-    public List<AuctionResponse> getBestAuctionList(Long userId) {
-        return auctionRepository.findBestAuctions(userId);
+    public List<AuctionResponse> getBestAuctionList() {
+        return auctionRepository.findBestAuctions();
+    }
+
+    public List<AuctionResponse> getImminentAuctionList() {
+        return auctionRepository.findImminentAuctions();
     }
 
 

@@ -94,7 +94,13 @@ public class AuctionController {
 
     @GetMapping("/best")
     public ResponseEntity<?> bestAuctionList() {
-        List<AuctionResponse> bestAuctionList=auctionService.getBestAuctionList(1L);//TODO 2024 08 26 13:59:54 : 인증된 사용자 정보로 수정
+        List<AuctionResponse> bestAuctionList=auctionService.getBestAuctionList();
         return ResponseEntity.ok(bestAuctionList);
+    }
+
+    @GetMapping("/imminent")
+    public ResponseEntity<?> imminentAuctionList() {
+        List<AuctionResponse> imminentAuctionList = auctionService.getImminentAuctionList();
+        return ResponseEntity.ok(imminentAuctionList);
     }
 }
