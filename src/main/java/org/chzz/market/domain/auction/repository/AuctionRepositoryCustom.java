@@ -5,8 +5,6 @@ import java.util.Optional;
 import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.AuctionResponse;
 import org.chzz.market.domain.auction.dto.response.UserAuctionResponse;
-import org.chzz.market.domain.auction.dto.response.AuctionResponse;
-import org.chzz.market.domain.auction.dto.response.MyAuctionResponse;
 import org.chzz.market.domain.product.entity.Product.Category;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -47,7 +45,6 @@ public interface AuctionRepositoryCustom {
      * @return 페이징된 사용자 경매 응답 리스트
      */
     Page<UserAuctionResponse> findAuctionsByNickname(String nickname, Pageable pageable);
-    Page<MyAuctionResponse> findAuctionsByUserId(Long userId, Pageable pageable);
 
 
     /**
