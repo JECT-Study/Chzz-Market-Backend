@@ -50,8 +50,8 @@ class AuctionRepositoryImplTest {
     UserRepository userRepository;
 
     private static User user1, user2, user3, user4;
-    private static Product product1, product2, product3, product4;
-    private static Auction auction1, auction2, auction3, auction4;
+    private static Product product1, product2, product3, product4, product5, product6, product7;
+    private static Auction auction1, auction2, auction3, auction4, auction5, auction6, auction7;
     private static Image image1, image2, image3, image4;
     private static Bid bid1, bid2, bid3, bid4, bid5, bid6;
 
@@ -67,11 +67,20 @@ class AuctionRepositoryImplTest {
         user4 = User.builder().providerId("1234567").nickname("닉네임4").email("asd123@naver.com").build();
         userRepository.saveAll(List.of(user1, user2, user3, user4));
 
-        product1 = Product.builder().user(user1).name("제품1").category(Category.FASHION_AND_CLOTHING).minPrice(10000).build();
+        product1 = Product.builder().user(user1).name("제품1").category(Category.FASHION_AND_CLOTHING).minPrice(10000)
+                .build();
         product2 = Product.builder().user(user1).name("제품2").category(Category.BOOKS_AND_MEDIA).minPrice(20000).build();
-        product3 = Product.builder().user(user2).name("제품3").category(Category.FASHION_AND_CLOTHING).minPrice(30000).build();
-        product4 = Product.builder().user(user2).name("제품4").category(Category.FASHION_AND_CLOTHING).minPrice(40000).build();
-        productRepository.saveAll(List.of(product1, product2, product3, product4));
+        product3 = Product.builder().user(user2).name("제품3").category(Category.FASHION_AND_CLOTHING).minPrice(30000)
+                .build();
+        product4 = Product.builder().user(user2).name("제품4").category(Category.FASHION_AND_CLOTHING).minPrice(40000)
+                .build();
+        product5 = Product.builder().user(user2).name("제품5").category(Category.ELECTRONICS).minPrice(50000)
+                .build();
+        product6 = Product.builder().user(user2).name("제품6").category(Category.FURNITURE_AND_INTERIOR).minPrice(60000)
+                .build();
+        product7 = Product.builder().user(user2).name("제품7").category(Category.SPORTS_AND_LEISURE).minPrice(70000)
+                .build();
+        productRepository.saveAll(List.of(product1, product2, product3, product4, product5, product6, product7));
 
         auction1 = Auction.builder().product(product1).status(Auction.AuctionStatus.PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusDays(1)).build();
@@ -81,7 +90,13 @@ class AuctionRepositoryImplTest {
                 .endDateTime(LocalDateTime.now().plusDays(1)).build();
         auction4 = Auction.builder().product(product4).status(Auction.AuctionStatus.CANCELLED)
                 .endDateTime(LocalDateTime.now().plusDays(1)).build();
-        auctionRepository.saveAll(List.of(auction1, auction2, auction3, auction4));
+        auction5 = Auction.builder().product(product5).status(Auction.AuctionStatus.PROCEEDING)
+                .endDateTime(LocalDateTime.now().plusHours(1)).build();
+        auction6 = Auction.builder().product(product6).status(Auction.AuctionStatus.PROCEEDING)
+                .endDateTime(LocalDateTime.now().plusSeconds(3000)).build();
+        auction7 = Auction.builder().product(product7).status(Auction.AuctionStatus.PROCEEDING)
+                .endDateTime(LocalDateTime.now().plusSeconds(700)).build();
+        auctionRepository.saveAll(List.of(auction1, auction2, auction3, auction4, auction5, auction6, auction7));
 
         image1 = Image.builder().product(product1).cdnPath("path/to/image1_1.jpg").build();
         image2 = Image.builder().product(product1).cdnPath("path/to/image1_2.jpg").build();
@@ -92,10 +107,10 @@ class AuctionRepositoryImplTest {
         bid1 = Bid.builder().bidder(user2).auction(auction1).amount(2000L).build();
         bid2 = Bid.builder().bidder(user2).auction(auction2).amount(4000L).build();
         bid3 = Bid.builder().bidder(user1).auction(auction3).amount(5000L).build();
-        bid4 = Bid.builder().bidder(user3).auction(auction2).amount(6000L).build();
-        bid5 = Bid.builder().bidder(user1).auction(auction2).amount(7000L).build();
-        bid6 = Bid.builder().bidder(user2).auction(auction1).amount(8000L).build();
-        bidRepository.saveAll(List.of(bid1, bid2, bid3, bid4,bid5,bid6));
+        bid4 = Bid.builder().bidder(user3).auction(auction4).amount(6000L).build();
+        bid5 = Bid.builder().bidder(user1).auction(auction5).amount(7000L).build();
+        bid6 = Bid.builder().bidder(user2).auction(auction6).amount(8000L).build();
+        bidRepository.saveAll(List.of(bid1, bid2, bid3, bid4, bid5, bid6));
 
         auction1.registerBid(bid1);
         auction1.registerBid(bid2);
@@ -314,18 +329,30 @@ class AuctionRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("베스트 입찰 조회")
+    @DisplayName("베스트 경매 조회")
     void testFindBestAuctions() {
         // given
-        Long userId = user1.getId();
-        List<AuctionResponse> bestAuctions = auctionRepository.findBestAuctions(userId);
+        List<AuctionResponse> bestAuctions = auctionRepository.findBestAuctions();
         // when
 
         // then
-        assertThat(bestAuctions).isSortedAccordingTo(Comparator.comparingLong(AuctionResponse::getParticipantCount).reversed());
+        assertThat(bestAuctions).isSortedAccordingTo(
+                Comparator.comparingLong(AuctionResponse::getParticipantCount).reversed());
     }
 
+    @Test
+    @DisplayName("마감 임박 경매 조회")
+    void testImminentAuctions() {
+        // given
+        List<AuctionResponse> imminentAuctions = auctionRepository.findImminentAuctions();
+        // then
+        assertThat(imminentAuctions).isNotEmpty();
+        assertThat(imminentAuctions).isSortedAccordingTo(
+                Comparator.comparing(BaseAuctionDTO::getTimeRemaining));
 
+    }
+
+    @Test
     @DisplayName("내가 참여한 경매 목록 조회 -  가격순")
     void testFindParticipatingAuctionRecordWithExpensive() {
         // given
@@ -346,7 +373,8 @@ class AuctionRepositoryImplTest {
         // when
 
         // then
-        assertThat(responses.getContent()).isSortedAccordingTo(Comparator.comparingLong(BaseAuctionDTO::getParticipantCount).reversed());
+        assertThat(responses.getContent()).isSortedAccordingTo(
+                Comparator.comparingLong(BaseAuctionDTO::getParticipantCount).reversed());
     }
 
     @Test
@@ -358,6 +386,7 @@ class AuctionRepositoryImplTest {
         // when
 
         // then
-        assertThat(responses.getContent()).isSortedAccordingTo(Comparator.comparingLong(BaseAuctionDTO::getTimeRemaining));
+        assertThat(responses.getContent()).isSortedAccordingTo(
+                Comparator.comparingLong(BaseAuctionDTO::getTimeRemaining));
     }
 }

@@ -1,8 +1,8 @@
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
 INSERT INTO `users` VALUES
-('2024-08-18 01:20:13.000000','2023-08-19 16:09:18.000000',1,'Quon Valdez','faucibus.orci@outlook.ca','1666439','NAVER','USER'),
-('2025-06-27 04:17:16.000000','2024-11-06 22:09:09.000000',2,'Amethyst Shannon','leo@hotmail.net','1678792','KAKAO','USER');
+('2024-08-18 01:20:13.000000','2023-08-19 16:09:18.000000',1,'Quon Valdez','faucibus.orci@outlook.ca','1666439','NAVER','USER','',''),
+('2025-06-27 04:17:16.000000','2024-11-06 22:09:09.000000',2,'Amethyst Shannon','leo@hotmail.net','1678792','KAKAO','USER','','');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -25,7 +25,7 @@ INSERT INTO `product` VALUES
 (1000,'2023-12-26 02:28:22.000000',14,'2025-07-16 03:41:12.000000',1,'nunc risus varius orci, in consequat enim diam vel arcu.','Fredericka Weeks','SPORTS_AND_LEISURE'),
 (1000,'2023-12-26 05:59:33.000000',15,'2023-09-15 19:54:56.000000',1,'erat eget ipsum. Suspendisse sagittis. Nullam vitae diam. Proin dolor.','Tara Dunlap','SPORT'),
 (1000,'2024-10-27 10:19:06.000000',16,'2024-01-10 11:43:52.000000',1,'enim, sit amet ornare lectus justo eu arcu. Morbi sit','Signe Lyons','TOYS_AND_HOBBIES'),
-(1000,'2025-01-24 02:05:55.000000',17,'2024-08-18 02:50:45.000000',1,'commodo at, libero. Morbi accumsan laoreet ipsum. Curabitur consequat, lectus','Indira Stanton','OTHER'),
+(1000,'2025-01-24 02:05:55.000000',17,'2024-01-24 02:50:45.000000',1,'commodo at, libero. Morbi accumsan laoreet ipsum. Curabitur consequat, lectus','Indira Stanton','OTHER'),
 (1000,'2025-03-08 04:57:15.000000',18,'2023-11-19 01:45:26.000000',2,'eu, eleifend nec, malesuada ut, sem. Nulla interdum. Curabitur dictum.','Willa Noel','DEFAULT '),
 (1000,'2024-05-02 19:43:49.000000',19,'2023-08-30 07:24:10.000000',1,'rhoncus. Donec est. Nunc ullamcorper, velit in aliquet lobortis, nisi','Jameson Fuller','ELECTRONICS'),
 (1000,'2023-09-06 20:14:25.000000',20,'2024-03-19 11:07:55.000000',2,'ac mi eleifend egestas. Sed pharetra, felis eget varius ultrices,','Noah Hopkins','HOME_APPLIANCES'),
@@ -42,10 +42,10 @@ INSERT INTO `product` VALUES
 (1000,'2023-12-06 02:58:40.000000',31,'2025-05-09 16:12:52.000000',1,'tellus. Phasellus elit pede, malesuada vel, venenatis vel, faucibus id,','Hector Garcia','FURNITURE_AND_INTERIOR'),
 (1000,'2024-12-17 08:02:58.000000',32,'2025-06-27 09:01:53.000000',2,'nec quam. Curabitur vel lectus. Cum sociis natoque penatibus et','Joseph Bennett','SPORTS_AND_LEISURE'),
 (1000,'2024-09-15 21:01:30.000000',33,'2024-09-19 10:43:34.000000',1,'lacus. Aliquam rutrum lorem ac risus. Morbi metus. Vivamus euismod','Germaine Guy','SPORT'),
-(1000,'2025-04-24 19:21:22.000000',34,'2025-04-29 00:57:22.000000',2,'lorem fringilla ornare placerat, orci lacus vestibulum lorem, sit amet','Kevyn Hansen','TOYS_AND_HOBBIES'),
+(1000,'2025-04-24 00:21:22.000000',34,'2025-04-24 00:27:22.000000',2,'lorem fringilla ornare placerat, orci lacus vestibulum lorem, sit amet','Kevyn Hansen','TOYS_AND_HOBBIES'),
 (1000,'2024-07-10 20:15:54.000000',35,'2024-09-11 15:53:51.000000',1,'velit in aliquet lobortis, nisi nibh lacinia orci, consectetuer euismod','Kiayada Hart','OTHER'),
 (1000,'2025-07-03 01:23:24.000000',36,'2025-01-03 23:52:26.000000',1,'et, lacinia vitae, sodales at, velit. Pellentesque ultricies dignissim lacus.','Keane Paul','DEFAULT '),
-(1000,'2024-01-17 23:17:34.000000',37,'2025-04-12 05:45:34.000000',2,'adipiscing lobortis risus. In mi pede, nonummy ut, molestie in,','Quamar Dejesus','ELECTRONICS'),
+(1000,'2025-01-17 23:45:34.000000',37,'2024-01-17 23:17:34.000000',2,'adipiscing lobortis risus. In mi pede, nonummy ut, molestie in,','Quamar Dejesus','ELECTRONICS'),
 (1000,'2025-07-05 16:05:48.000000',38,'2025-01-28 03:53:23.000000',1,'odio sagittis semper. Nam tempor diam dictum sapien. Aenean massa.','Malcolm Hicks','HOME_APPLIANCES'),
 (1000,'2025-01-30 21:55:06.000000',39,'2025-07-09 10:39:54.000000',2,'Nam tempor diam dictum sapien. Aenean massa. Integer vitae nibh.','Adam Barnett','FASHION_AND_CLOTHING'),
 (1000,'2024-12-06 06:16:27.000000',40,'2025-07-02 21:21:40.000000',1,'sollicitudin adipiscing ligula. Aenean gravida nunc sed pede. Cum sociis','Kiara Cameron','FURNITURE_AND_INTERIOR'),
@@ -79,7 +79,7 @@ INSERT INTO `auction` ( `auction_id`, `created_at`, `end_date_time`, `product_id
 (6, '2025-06-10 14:12:52.000000', '2025-06-11 14:12:52.000000', 45, '2025-08-02 01:23:46.000000', 2, 'COMPLETE'),
 (7, '2025-06-27 02:33:25.000000', '2025-06-28 02:33:25.000000', 41, '2024-05-30 18:40:12.000000', 2, 'CANCEL'),
 (8, '2024-07-11 06:23:55.000000', '2024-07-12 06:23:55.000000', 33, '2024-01-26 23:40:54.000000', 2, 'DEFAULT'),
-(9, '2024-05-06 11:43:00.000000', '2024-05-07 11:43:00.000000', 17, '2025-07-29 15:27:47.000000', 2, 'PROCEEDING'),
+(9, '2024-05-06 11:43:00.000000', '2024-01-24 02:43:00.000000', 17, '2025-07-29 15:27:47.000000', 2, 'PROCEEDING'),
 (10, '2025-03-03 13:11:17.000000', '2025-03-04 13:11:17.000000', 31, '2025-05-01 21:45:06.000000', 1, 'COMPLETE'),
 (11, '2024-11-22 03:17:24.000000', '2024-11-23 03:17:24.000000', 30, '2025-03-25 08:59:10.000000', 1, 'CANCEL'),
 (12, '2023-09-07 11:42:24.000000', '2023-09-08 11:42:24.000000', 8, '2024-08-18 06:36:55.000000', 1, 'DEFAULT'),
