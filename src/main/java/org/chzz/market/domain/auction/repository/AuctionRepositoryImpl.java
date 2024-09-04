@@ -1,8 +1,8 @@
 package org.chzz.market.domain.auction.repository;
 
-import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.*;
-import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.PROCEEDING;
+import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.CANCELLED;
 import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.ENDED;
+import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.PROCEEDING;
 import static org.chzz.market.domain.auction.entity.QAuction.auction;
 import static org.chzz.market.domain.auction.repository.AuctionRepositoryImpl.AuctionOrder.POPULARITY;
 import static org.chzz.market.domain.bid.entity.QBid.bid;
@@ -24,9 +24,9 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
 import org.chzz.market.common.util.QuerydslOrder;
 import org.chzz.market.common.util.QuerydslOrderProvider;
+import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.AuctionResponse;
 import org.chzz.market.domain.auction.dto.response.MyAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.QAuctionDetailsResponse;
@@ -80,6 +80,43 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
 
         JPAQuery<Long> countQuery = baseQuery
                 .select(auction.count());
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchCount);
+    }
+
+    /**
+     * 사용자의 경매 참여 기록을 조회합니다
+     *
+     * @param userId   사용자 ID
+     * @param pageable 페이징 정보
+     * @return 회원의 경매 참여 기록
+     */
+    @Override
+    public Page<AuctionResponse> findParticipatingAuctionRecord(Long userId, Pageable pageable) {
+        JPAQuery<?> baseQuery = jpaQueryFactory
+                .from(auction)
+                .join(auction.bids, bid)
+                .join(auction.product, product)
+                .on(bid.bidder.id.eq(userId))
+                .where(bid.status.eq(BidStatus.ACTIVE));
+
+        List<AuctionResponse> content = baseQuery
+                .select(new QAuctionResponse(
+                        auction.id,
+                        product.name,
+                        image.cdnPath,
+                        timeRemaining().longValue(),
+                        auction.product.minPrice.longValue(),
+                        getBidCount()
+                ))
+                .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId())))
+                .groupBy(auction.id, product.name, image.cdnPath)
+                .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        JPAQuery<Long> countQuery = baseQuery
+                .select(auction.id.countDistinct());
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchCount);
     }
 

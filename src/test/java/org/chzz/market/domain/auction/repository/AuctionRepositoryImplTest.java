@@ -2,13 +2,12 @@ package org.chzz.market.domain.auction.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import org.chzz.market.common.DatabaseTest;
+import org.chzz.market.domain.auction.dto.BaseAuctionDTO;
 import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.AuctionResponse;
 import org.chzz.market.domain.auction.dto.response.MyAuctionResponse;
@@ -31,10 +30,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.transaction.annotation.Transactional;
 
 @DatabaseTest
-@Transactional
 class AuctionRepositoryImplTest {
 
     @Autowired
@@ -51,8 +48,6 @@ class AuctionRepositoryImplTest {
 
     @Autowired
     UserRepository userRepository;
-    @PersistenceContext
-    EntityManager entityManager;
 
     private static User user1, user2, user3, user4;
     private static Product product1, product2, product3, product4;
@@ -333,4 +328,39 @@ class AuctionRepositoryImplTest {
         assertThat(bestAuctions).isSortedAccordingTo(Comparator.comparingLong(AuctionResponse::getParticipantCount).reversed());
     }
 
+
+    @DisplayName("내가 참여한 경매 목록 조회 -  가격순")
+    void testFindParticipatingAuctionRecordWithExpensive() {
+        // given
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("expensive"));
+        Page<AuctionResponse> responses = auctionRepository.findParticipatingAuctionRecord(user1.getId(), pageable);
+        // when
+
+        // then
+        assertThat(responses.getContent()).isSortedAccordingTo(Comparator.comparingLong(BaseAuctionDTO::getMinPrice));
+    }
+
+    @Test
+    @DisplayName("내가 참여한 경매 목록 조회 -  인기순")
+    void testFindParticipatingAuctionRecordWithPopularity() {
+        // given
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("popularity"));
+        Page<AuctionResponse> responses = auctionRepository.findParticipatingAuctionRecord(user1.getId(), pageable);
+        // when
+
+        // then
+        assertThat(responses.getContent()).isSortedAccordingTo(Comparator.comparingLong(BaseAuctionDTO::getParticipantCount));
+    }
+
+    @Test
+    @DisplayName("내가 참여한 경매 목록 조회 -  남은 시간순")
+    void testFindParticipatingAuctionRecordWithTime() {
+        // given
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("newest"));
+        Page<AuctionResponse> responses = auctionRepository.findParticipatingAuctionRecord(user1.getId(), pageable);
+        // when
+
+        // then
+        assertThat(responses.getContent()).isSortedAccordingTo(Comparator.comparingLong(BaseAuctionDTO::getTimeRemaining));
+    }
 }

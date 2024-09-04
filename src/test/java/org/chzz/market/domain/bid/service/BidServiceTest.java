@@ -18,7 +18,7 @@ import java.util.Optional;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.entity.Auction.AuctionStatus;
 import org.chzz.market.domain.auction.error.AuctionException;
-import org.chzz.market.domain.auction.service.AuctionService;
+import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.bid.dto.BidCreateRequest;
 import org.chzz.market.domain.bid.entity.Bid;
 import org.chzz.market.domain.bid.error.BidException;
@@ -40,7 +40,7 @@ class BidServiceTest {
     private static final String ERROR_CODE = "errorCode";
 
     @Mock
-    private AuctionService auctionService;
+    private AuctionRepository auctionRepository;
 
     @Mock
     private BidRepository bidRepository;
@@ -78,7 +78,7 @@ class BidServiceTest {
         //given
         bidCreateRequest = BidCreateRequest.builder().auctionId(1L).amount(1000L).build();
         when(userRepository.findById(2L)).thenReturn(Optional.of(user2));
-        when(auctionService.getAuction(bidCreateRequest.getAuctionId())).thenReturn(auction);
+        when(auctionRepository.findById(bidCreateRequest.getAuctionId())).thenReturn(Optional.ofNullable(auction));
         when(bidRepository.findByAuctionAndBidder(auction, user2)).thenReturn(Optional.empty());
 
         //when & then
@@ -93,7 +93,7 @@ class BidServiceTest {
         bidCreateRequest = BidCreateRequest.builder().auctionId(1L).amount(2000L).build();
         Bid bid = Bid.builder().id(1L).auction(auction).bidder(user2).amount(1000L).build();
         when(userRepository.findById(2L)).thenReturn(Optional.of(user2));
-        when(auctionService.getAuction(bidCreateRequest.getAuctionId())).thenReturn(auction);
+        when(auctionRepository.findById(bidCreateRequest.getAuctionId())).thenReturn(Optional.ofNullable(auction));
         when(bidRepository.findByAuctionAndBidder(auction, user2)).thenReturn(Optional.of(bid));
 
         //when
@@ -111,7 +111,7 @@ class BidServiceTest {
         // given
         bidCreateRequest = BidCreateRequest.builder().auctionId(1L).amount(1000L).build();
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(auctionService.getAuction(bidCreateRequest.getAuctionId())).thenReturn(auction);
+        when(auctionRepository.findById(bidCreateRequest.getAuctionId())).thenReturn(Optional.ofNullable(auction));
 
         // when & then
         assertThatThrownBy(() -> bidService.createBid(bidCreateRequest, 1L))
@@ -126,7 +126,8 @@ class BidServiceTest {
         //given
         bidCreateRequest = BidCreateRequest.builder().auctionId(2L).amount(1000L).build();
         when(userRepository.findById(2L)).thenReturn(Optional.of(user2));
-        when(auctionService.getAuction(bidCreateRequest.getAuctionId())).thenReturn(completeAuction);
+        when(auctionRepository.findById(bidCreateRequest.getAuctionId())).thenReturn(
+                Optional.ofNullable(completeAuction));
 
         //when & then
         assertThatThrownBy(() -> bidService.createBid(bidCreateRequest, 2L))
@@ -142,7 +143,7 @@ class BidServiceTest {
         //given
         bidCreateRequest = BidCreateRequest.builder().auctionId(3L).amount(1000L).build();
         when(userRepository.findById(2L)).thenReturn(Optional.of(user2));
-        when(auctionService.getAuction(bidCreateRequest.getAuctionId())).thenReturn(endAuction);
+        when(auctionRepository.findById(bidCreateRequest.getAuctionId())).thenReturn(Optional.ofNullable(endAuction));
 
         //when & then
         assertThatThrownBy(() -> bidService.createBid(bidCreateRequest, 2L))
@@ -157,7 +158,7 @@ class BidServiceTest {
         //given
         bidCreateRequest = BidCreateRequest.builder().auctionId(1L).amount(500L).build();
         when(userRepository.findById(2L)).thenReturn(Optional.of(user2));
-        when(auctionService.getAuction(bidCreateRequest.getAuctionId())).thenReturn(auction);
+        when(auctionRepository.findById(bidCreateRequest.getAuctionId())).thenReturn(Optional.ofNullable(auction));
 
         //when & then
         assertThatThrownBy(() -> bidService.createBid(bidCreateRequest, 2L))
@@ -173,7 +174,7 @@ class BidServiceTest {
         Bid bid = Bid.builder().id(1L).auction(auction).bidder(user2).amount(1000L).count(0).build();
         bidCreateRequest = BidCreateRequest.builder().auctionId(1L).amount(5000L).build();
         when(userRepository.findById(2L)).thenReturn(Optional.of(user2));
-        when(auctionService.getAuction(bidCreateRequest.getAuctionId())).thenReturn(auction);
+        when(auctionRepository.findById(bidCreateRequest.getAuctionId())).thenReturn(Optional.ofNullable(auction));
         when(bidRepository.findByAuctionAndBidder(auction, user2)).thenReturn(Optional.of(bid));
 
         //when & then
@@ -190,7 +191,7 @@ class BidServiceTest {
         bidCreateRequest = BidCreateRequest.builder().auctionId(1L).amount(1000L).build();
         Bid bid = Bid.builder().id(1L).auction(auction).bidder(user2).amount(1000L).build();
         when(userRepository.findById(2L)).thenReturn(Optional.of(user2));
-        when(auctionService.getAuction(bidCreateRequest.getAuctionId())).thenReturn(auction);
+        when(auctionRepository.findById(bidCreateRequest.getAuctionId())).thenReturn(Optional.ofNullable(auction));
         when(bidRepository.findByAuctionAndBidder(auction, user2)).thenReturn(Optional.of(bid));
 
         //when & then

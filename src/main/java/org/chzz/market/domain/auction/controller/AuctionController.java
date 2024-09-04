@@ -4,13 +4,16 @@ import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.domain.auction.dto.request.BaseRegisterRequest;
-import org.chzz.market.domain.auction.dto.request.StartAuctionRequest;
 import org.chzz.market.domain.auction.dto.response.AuctionResponse;
 import org.chzz.market.domain.auction.dto.response.RegisterResponse;
 import org.chzz.market.domain.auction.dto.response.StartAuctionResponse;
 import org.chzz.market.domain.auction.service.AuctionRegistrationServiceFactory;
 import org.chzz.market.domain.auction.service.AuctionService;
 import org.chzz.market.domain.auction.service.register.AuctionRegistrationService;
+import org.chzz.market.domain.auction.dto.request.StartAuctionRequest;
+import org.chzz.market.domain.auction.dto.response.RegisterAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.StartAuctionResponse;
+import org.chzz.market.domain.auction.service.AuctionService;
 import org.chzz.market.domain.product.entity.Product.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +50,15 @@ public class AuctionController {
     @GetMapping("/{auctionId}")
     public ResponseEntity<?> getAuctionDetails(@PathVariable Long auctionId) {
         return ResponseEntity.ok(auctionService.getAuctionDetails(auctionId, 1L)); // TODO: 추후에 인증된 사용자 정보로 수정 필요
+    }
+
+
+    @GetMapping("/history")
+    public ResponseEntity<?> getAuctionHistory(
+            //                                            @AuthenticationPrincipal CustomUserDetails customUserDetails, // TODO: 추후에 인증된 사용자 정보로 수정 필요
+            Pageable pageable
+    ) {
+        return ResponseEntity.ok(auctionService.getAuctionHistory(1L, pageable));
     }
 
     /**

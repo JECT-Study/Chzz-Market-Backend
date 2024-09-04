@@ -1,16 +1,11 @@
 package org.chzz.market.domain.notification.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.domain.notification.dto.NotificationMessage;
-import org.chzz.market.domain.user.entity.User;
-import org.chzz.market.domain.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +17,6 @@ public class RedisSubscriber {
 
     private final NotificationService notificationService;
     private final ExecutorService executor = Executors.newCachedThreadPool();
-    private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
 
     /**
@@ -34,9 +28,10 @@ public class RedisSubscriber {
         executor.execute(() -> {
             try {
                 NotificationMessage notificationMessage = objectMapper.readValue(message, NotificationMessage.class);
-                List<User> users = userRepository.findAllById(notificationMessage.getUserIds());
-                Map<Long, User> userMap = users.stream().collect(Collectors.toMap(User::getId, user -> user));
-                notificationService.processNotification(notificationMessage, userMap);
+                notificationMessage.getUserIds()
+                        .forEach(
+                                userId -> notificationService.sendRealTimeNotification(notificationMessage.getMessage(),
+                                        userId));
             } catch (Exception e) {
                 log.error("Error handling message");
             }
