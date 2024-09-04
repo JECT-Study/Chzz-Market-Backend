@@ -347,6 +347,7 @@ class AuctionRepositoryImplTest {
         List<AuctionResponse> imminentAuctions = auctionRepository.findImminentAuctions();
         // then
         assertThat(imminentAuctions).isNotEmpty();
+        assertThat(imminentAuctions.size()).isEqualTo(3);
         assertThat(imminentAuctions).allMatch(auctionResponse ->auctionResponse.getTimeRemaining()<=3600);
         assertThat(imminentAuctions).isSortedAccordingTo(
                 Comparator.comparing(BaseAuctionDTO::getTimeRemaining));
