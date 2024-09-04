@@ -53,6 +53,7 @@ class BidRepositoryCustomImplTest {
 
     private User bidder1;
     private User bidder2;
+    private Auction auction1, auction2;
 
     @BeforeEach
     void setUp() {
@@ -102,14 +103,14 @@ class BidRepositoryCustomImplTest {
                 .product(product1)
                 .cdnPath("rrreww4")
                 .build();
-        Auction auction1 = Auction.builder()
+        auction1 = Auction.builder()
                 .product(product1)
                 .endDateTime(LocalDateTime.now().plusDays(2))
                 .status(PROCEEDING)
                 .winnerId(2L)
                 .build();
 
-        Auction auction2 = Auction.builder()
+        auction2 = Auction.builder()
                 .product(product2)
                 .endDateTime(LocalDateTime.now().plusDays(1))
                 .status(PROCEEDING)
@@ -192,4 +193,52 @@ class BidRepositoryCustomImplTest {
                 Comparator.comparing(BiddingRecord::getTimeRemaining).reversed());
 
     }
+
+    @Test
+    @DisplayName("경매와 관련된 모든 입찰을 금액 내림차순으로 조회할 수 있다")
+    void testFindAllBidsByAuction() {
+        // given & when
+        List<Bid> bidsForAuction1 = bidRepository.findAllBidsByAuction(auction1);
+        List<Bid> bidsForAuction2 = bidRepository.findAllBidsByAuction(auction2);
+
+        // then
+        // Auction 1 테스트
+        assertThat(bidsForAuction1).hasSize(2);
+        assertThat(bidsForAuction1.get(0).getAmount()).isEqualTo(300000L);
+        assertThat(bidsForAuction1.get(1).getAmount()).isEqualTo(1000L);
+
+        // Auction 2 테스트
+        assertThat(bidsForAuction2).hasSize(2);
+        assertThat(bidsForAuction2.get(0).getAmount()).isEqualTo(10000000L);
+        assertThat(bidsForAuction2.get(1).getAmount()).isEqualTo(2000L);
+    }
+
+    @Test
+    @DisplayName("경매에 입찰이 없을 경우 빈 리스트를 반환한다")
+    void testFindAllBidsByAuctionNoBids() {
+        // given
+        Product product3 = Product.builder()
+                .category(Category.OTHER)
+                .description("product3")
+                .name("product3")
+                .minPrice(100000)
+                .user(userRepository.findById(1L).orElseThrow())
+                .build();
+
+        Auction auction3 = Auction.builder()
+                .product(product3)
+                .status(PROCEEDING)
+                .endDateTime(LocalDateTime.now().plusDays(2))
+                .build();
+
+        productRepository.save(product3);
+        auctionRepository.save(auction3);
+
+        // when
+        List<Bid> bidsForAuction3 = bidRepository.findAllBidsByAuction(auction3);
+
+        // then
+        assertThat(bidsForAuction3).isEmpty();
+    }
+
 }

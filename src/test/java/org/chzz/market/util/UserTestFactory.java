@@ -1,6 +1,7 @@
 package org.chzz.market.util;
 
 import org.chzz.market.domain.user.entity.User;
+import org.chzz.market.domain.user.entity.User.ProviderType;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.lang.reflect.Constructor;
@@ -17,7 +18,7 @@ public class UserTestFactory {
             ReflectionTestUtils.setField(user, "email", email);
             ReflectionTestUtils.setField(user, "providerId", "testProviderId");
             ReflectionTestUtils.setField(user, "userRole", User.UserRole.USER);
-            ReflectionTestUtils.setField(user, "providerType", User.ProviderType.LOCAL);
+            ReflectionTestUtils.setField(user, "providerType", ProviderType.KAKAO);
 
             return user;
         } catch (Exception e) {
