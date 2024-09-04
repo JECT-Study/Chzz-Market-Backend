@@ -51,6 +51,14 @@ public class AuctionController {
         return ResponseEntity.ok(auctionService.getAuctionDetails(auctionId, 1L)); // TODO: 추후에 인증된 사용자 정보로 수정 필요
     }
 
+    @GetMapping("/history")
+    public ResponseEntity<?> getAuctionHistory(
+            //                                            @AuthenticationPrincipal CustomUserDetails customUserDetails, // TODO: 추후에 인증된 사용자 정보로 수정 필요
+            Pageable pageable
+    ) {
+        return ResponseEntity.ok(auctionService.getAuctionHistory(1L, pageable));
+    }
+
     /**
      * 상품 등록
      */
