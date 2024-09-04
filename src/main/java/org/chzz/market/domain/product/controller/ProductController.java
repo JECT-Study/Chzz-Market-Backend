@@ -2,8 +2,10 @@ package org.chzz.market.domain.product.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.chzz.market.domain.like.service.LikeService;
 import org.chzz.market.domain.product.dto.*;
 import org.chzz.market.domain.product.entity.Product;
+import org.chzz.market.domain.like.dto.LikeResponse;
 import org.chzz.market.domain.product.service.ProductService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,6 +25,7 @@ public class ProductController {
     private static final Logger logger = LoggerFactory.getLogger(ProductController.class);
 
     private final ProductService productService;
+    private final LikeService likeService;
 
     /*
      * 카테고리 별 사전 등록 상품 목록 조회
@@ -91,4 +94,14 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    /**
+     * 상품 좋아요 토글
+     */
+    @PostMapping("/{productId}/likes")
+    public ResponseEntity<LikeResponse> toggleProductLike(
+            @PathVariable Long productId,
+            @RequestHeader("X-User-Agent") Long userId) {
+        LikeResponse response = likeService.toggleLike(userId, productId);
+        return ResponseEntity.ok(response);
+    }
 }
