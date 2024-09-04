@@ -349,7 +349,7 @@ class AuctionRepositoryImplTest {
         // when
 
         // then
-        assertThat(responses.getContent()).isSortedAccordingTo(Comparator.comparingLong(BaseAuctionDTO::getParticipantCount));
+        assertThat(responses.getContent()).isSortedAccordingTo(Comparator.comparingLong(BaseAuctionDTO::getParticipantCount).reversed());
     }
 
     @Test
