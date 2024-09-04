@@ -97,7 +97,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .collect(Collectors.joining("; "));
         logException(ex, errorCode, detailedErrorMessage);
 
-        ErrorResponse errorResponse = ErrorResponse.from(errorCode, detailedErrorMessage);
+        ErrorResponse errorResponse = ErrorResponse.of(errorCode, detailedErrorMessage);
         return ResponseEntity
                 .status(errorCode.getHttpStatus())
                 .body(errorResponse);

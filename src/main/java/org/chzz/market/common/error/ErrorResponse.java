@@ -12,7 +12,7 @@ public record ErrorResponse(String message,
                 .build();
     }
 
-    public static ErrorResponse from(final ErrorCode errorCode, final String detailedErrorMessage) {
+    public static ErrorResponse of(final ErrorCode errorCode, final String detailedErrorMessage) {
         return ErrorResponse.builder()
                 .status(errorCode.getHttpStatus().value())
                 .message(detailedErrorMessage)
