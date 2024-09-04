@@ -51,5 +51,7 @@ public interface AuctionRepositoryCustom {
      * 홈 화면의 베스트 경매 조회
      * @return 입찰 기록이 많은 10개의 경매 정보
      */
-    List<AuctionResponse> findBestAuctions(Long userId);
+    List<AuctionResponse> findBestAuctions();
+
+    List<AuctionResponse> findImminentAuctions();
 }

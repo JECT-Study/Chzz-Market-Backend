@@ -193,25 +193,49 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
     }
 
     @Override
-    public List<AuctionResponse> findBestAuctions(Long userId) {
+    public List<AuctionResponse> findBestAuctions() {
         JPAQuery<?> baseQuery = jpaQueryFactory.from(auction)
                 .join(auction.product, product)
-                .where(auction.status.eq(PROCEEDING));
+                .where(auction.status.eq(PROCEEDING))
+                .orderBy(POPULARITY.getOrderSpecifier());
 
-        return baseQuery
-                .select(new QAuctionResponse(
+        return baseQuery.select(new QAuctionResponse(
                         auction.id,
                         product.name,
                         image.cdnPath,
                         timeRemaining().longValue(),
                         product.minPrice.longValue(),
-                        bid.countDistinct(),
-                        isParticipating(userId)
-                ))
+                        bid.countDistinct())
+                )
                 .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId())))
                 .leftJoin(bid).on(bid.auction.id.eq(auction.id).and(bid.status.ne(BidStatus.CANCELLED)))
                 .groupBy(auction.id, product.name, image.cdnPath, auction.createdAt, product.minPrice)
-                .orderBy(POPULARITY.getOrderSpecifier())
+                .offset(0)
+                .limit(10)
+                .fetch();
+    }
+
+    @Override
+    public List<AuctionResponse> findImminentAuctions() {
+        JPAQuery<?> baseQuery = jpaQueryFactory
+                .from(auction)
+                .join(auction.product, product)
+                .where(
+                        timeRemaining().between(0, 3600)
+                        .and(auction.status.eq(PROCEEDING)))
+                .orderBy(timeRemaining().asc(),POPULARITY.getOrderSpecifier());
+
+        return baseQuery.select(new QAuctionResponse(
+                        auction.id,
+                        product.name,
+                        image.cdnPath,
+                        timeRemaining().longValue(),
+                        product.minPrice.longValue(),
+                        bid.countDistinct())
+                )
+                .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId())))
+                .leftJoin(bid).on(bid.auction.id.eq(auction.id).and(bid.status.ne(BidStatus.CANCELLED)))
+                .groupBy(auction.id, product.name, image.cdnPath)
                 .offset(0)
                 .limit(10)
                 .fetch();
