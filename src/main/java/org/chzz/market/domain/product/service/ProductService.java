@@ -1,6 +1,7 @@
 package org.chzz.market.domain.product.service;
 
 import lombok.RequiredArgsConstructor;
+import org.chzz.market.common.config.LoginUser;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.image.repository.ImageRepository;
@@ -57,6 +58,13 @@ public class ProductService {
      */
     public Page<ProductResponse> getMyProductList(String nickname, Pageable pageable) {
         return productRepository.findProductsByNickname(nickname, pageable);
+    }
+
+    /*
+     * 내가 참여한 사전경매 조회
+     */
+    public Page<ProductResponse> getLikedProductList(Long userId, Pageable pageable) {
+        return productRepository.findLikedProductsByUserId(userId, pageable);
     }
 
     /*
