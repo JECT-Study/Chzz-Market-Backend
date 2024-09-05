@@ -25,7 +25,7 @@ public class UserService {
     @Transactional
     public User completeUserRegistration(Long userId, UserCreateRequest userCreateRequest) {
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(USER_NOT_FOUND));
-        if (userRepository.existsByNickname(userCreateRequest.getNickname())) {
+        if (userRepository.findByNickname(userCreateRequest.getNickname()).isPresent()) {
             throw new UserException(NICKNAME_DUPLICATION);
         }
         user.createUser(userCreateRequest);
@@ -34,7 +34,7 @@ public class UserService {
     }
 
     public NicknameAvailabilityResponse checkNickname(String nickname) {
-        return new NicknameAvailabilityResponse(!userRepository.existsByNickname(nickname));
+        return new NicknameAvailabilityResponse(userRepository.findByNickname(nickname).isEmpty());
     }
 
     @Transactional
