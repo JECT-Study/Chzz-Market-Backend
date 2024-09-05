@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.AuctionResponse;
 import org.chzz.market.domain.auction.dto.response.UserAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.WonAuctionResponse;
 import org.chzz.market.domain.product.entity.Product.Category;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,7 +25,7 @@ public interface AuctionRepositoryCustom {
      * 사용자가 참여한(입찰한) 경매 상세 정보를 조회합니다.
      * @param userId - 사용자 ID
      * @param pageable - 페이징 정보
-     * @return
+     * @return - 페이징된 경매 응답 리스트
      */
     Page<AuctionResponse> findParticipatingAuctionRecord(Long userId, Pageable pageable);
 
@@ -52,4 +53,12 @@ public interface AuctionRepositoryCustom {
      * @return 입찰 기록이 많은 10개의 경매 정보
      */
     List<AuctionResponse> findBestAuctions(Long userId);
+
+    /**
+     * 사용자가 낙찰한 경매 이력을 조회합니다.
+     * @param userId    사용자 ID
+     * @param pageable  페이징 정보
+     * @return          페이징된 낙찰 경매 응답 리스트
+     */
+    Page<WonAuctionResponse> findWonAuctionHistoryByUserId(Long userId, Pageable pageable);
 }

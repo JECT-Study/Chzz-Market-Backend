@@ -26,12 +26,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.util.QuerydslOrder;
 import org.chzz.market.common.util.QuerydslOrderProvider;
-import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
-import org.chzz.market.domain.auction.dto.response.AuctionResponse;
-import org.chzz.market.domain.auction.dto.response.QAuctionDetailsResponse;
-import org.chzz.market.domain.auction.dto.response.QAuctionResponse;
-import org.chzz.market.domain.auction.dto.response.QUserAuctionResponse;
-import org.chzz.market.domain.auction.dto.response.UserAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.*;
 import org.chzz.market.domain.bid.entity.Bid.BidStatus;
 import org.chzz.market.domain.image.entity.QImage;
 import org.chzz.market.domain.product.entity.Product.Category;
@@ -161,6 +156,12 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
         return auctionDetailsResponse;
     }
 
+    /**
+     * 사용자 닉네임에 따라 경매 리스트를 조회합니다.
+     * @param nickname 사용자 닉네임
+     * @param pageable 페이징 정보
+     * @return 페이징된 사용자 경매 응답 리스트
+     */
     @Override
     public Page<UserAuctionResponse> findAuctionsByNickname(String nickname, Pageable pageable) {
         JPAQuery<?> baseQuery = jpaQueryFactory.from(auction)
@@ -192,6 +193,11 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchCount);
     }
 
+    /**
+     * 홈 화면의 베스트 경매 조회
+     * @param userId 사용자 ID
+     * @return 입찰 기록이 많은 10개의 경매 정보
+     */
     @Override
     public List<AuctionResponse> findBestAuctions(Long userId) {
         JPAQuery<?> baseQuery = jpaQueryFactory.from(auction)
@@ -215,6 +221,44 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                 .offset(0)
                 .limit(10)
                 .fetch();
+    }
+
+    /**
+     * 사용자가 낙찰한 경매 이력을 조회합니다.
+     * @param userId    사용자 ID
+     * @param pageable  페이징 정보
+     * @return          페이징된 낙찰 경매 응답 리스트
+     */
+    @Override
+    public Page<WonAuctionResponse> findWonAuctionHistoryByUserId(Long userId, Pageable pageable) {
+        JPAQuery<?> baseQuery = jpaQueryFactory
+                .from(auction)
+                .join(auction.product, product)
+                .join(product.user, user)
+                .leftJoin(bid).on(bid.auction.eq(auction))
+                .where(auction.winnerId.eq(userId)
+                        .and(auction.status.eq(ENDED)));
+
+        List<WonAuctionResponse> content = baseQuery
+                .select(new QWonAuctionResponse(
+                        auction.id,
+                        product.name,
+                        image.cdnPath,
+                        product.minPrice,
+                        auction.endDateTime,
+                        bid.amount.max()
+                ))
+                .leftJoin(image).on(image.product.eq(product).and(image.id.eq(getFirstImageId())))
+                .groupBy(auction.id, product.name, image.cdnPath, product.minPrice, auction.endDateTime)
+                .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        JPAQuery<Long> countQuery = baseQuery
+                .select(auction.count());
+
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchCount);
     }
 
     /**
