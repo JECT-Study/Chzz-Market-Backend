@@ -1,6 +1,6 @@
 package org.chzz.market.domain.auction.dto.response;
 
-import org.chzz.market.domain.auction.enums.AuctionStatus;
+import org.chzz.market.domain.auction.type.AuctionStatus;
 
 /**
  * 경매 등록 DTO

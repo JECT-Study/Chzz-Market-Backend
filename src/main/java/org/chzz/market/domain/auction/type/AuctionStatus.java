@@ -1,4 +1,4 @@
-package org.chzz.market.domain.auction.enums;
+package org.chzz.market.domain.auction.type;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

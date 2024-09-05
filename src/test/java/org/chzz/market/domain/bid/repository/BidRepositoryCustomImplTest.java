@@ -1,7 +1,7 @@
 package org.chzz.market.domain.bid.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.chzz.market.domain.auction.enums.AuctionStatus.PROCEEDING;
+import static org.chzz.market.domain.auction.type.AuctionStatus.PROCEEDING;
 
 import jakarta.persistence.EntityManagerFactory;
 import java.time.LocalDateTime;

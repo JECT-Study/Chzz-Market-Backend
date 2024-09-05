@@ -1,6 +1,6 @@
 package org.chzz.market.domain.auction.entity;
 
-import static org.chzz.market.domain.auction.enums.AuctionStatus.PROCEEDING;
+import static org.chzz.market.domain.auction.type.AuctionStatus.PROCEEDING;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_ENDED;
 
 import jakarta.persistence.*;
@@ -15,7 +15,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.chzz.market.domain.auction.entity.listener.AuctionEntityListener;
-import org.chzz.market.domain.auction.enums.AuctionStatus;
+import org.chzz.market.domain.auction.type.AuctionStatus;
 import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
 import org.chzz.market.domain.bid.entity.Bid;

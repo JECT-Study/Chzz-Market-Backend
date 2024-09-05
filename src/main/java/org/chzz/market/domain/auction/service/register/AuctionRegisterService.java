@@ -20,7 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.chzz.market.domain.auction.enums.AuctionStatus.PROCEEDING;
+import static org.chzz.market.domain.auction.type.AuctionStatus.PROCEEDING;
 
 @Service
 @RequiredArgsConstructor

@@ -16,7 +16,7 @@ import static org.mockito.Mockito.when;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import org.chzz.market.domain.auction.entity.Auction;
-import org.chzz.market.domain.auction.enums.AuctionStatus;
+import org.chzz.market.domain.auction.type.AuctionStatus;
 import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.bid.dto.BidCreateRequest;

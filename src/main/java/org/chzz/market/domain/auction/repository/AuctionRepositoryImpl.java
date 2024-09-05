@@ -1,6 +1,6 @@
 package org.chzz.market.domain.auction.repository;
 
-import static org.chzz.market.domain.auction.enums.AuctionStatus.*;
+import static org.chzz.market.domain.auction.type.AuctionStatus.*;
 import static org.chzz.market.domain.auction.entity.QAuction.auction;
 import static org.chzz.market.domain.auction.repository.AuctionRepositoryImpl.AuctionOrder.POPULARITY;
 import static org.chzz.market.domain.bid.entity.QBid.bid;

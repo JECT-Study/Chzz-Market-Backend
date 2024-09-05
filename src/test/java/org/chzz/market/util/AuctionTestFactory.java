@@ -2,7 +2,7 @@ package org.chzz.market.util;
 
 import org.chzz.market.domain.auction.dto.request.BaseRegisterRequest;
 import org.chzz.market.domain.auction.entity.Auction;
-import org.chzz.market.domain.auction.enums.AuctionStatus;
+import org.chzz.market.domain.auction.type.AuctionStatus;
 import org.chzz.market.domain.product.entity.Product;
 import org.springframework.test.util.ReflectionTestUtils;
 
