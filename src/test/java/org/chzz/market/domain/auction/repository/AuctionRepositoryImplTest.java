@@ -2,16 +2,15 @@ package org.chzz.market.domain.auction.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-
 import org.chzz.market.common.DatabaseTest;
+import org.chzz.market.domain.auction.dto.BaseAuctionDTO;
 import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.AuctionResponse;
-import org.chzz.market.domain.auction.dto.response.MyAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.UserAuctionResponse;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.bid.entity.Bid;
 import org.chzz.market.domain.bid.repository.BidRepository;
@@ -31,10 +30,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.transaction.annotation.Transactional;
 
 @DatabaseTest
-@Transactional
 class AuctionRepositoryImplTest {
 
     @Autowired
@@ -51,14 +48,12 @@ class AuctionRepositoryImplTest {
 
     @Autowired
     UserRepository userRepository;
-    @PersistenceContext
-    EntityManager entityManager;
 
     private static User user1, user2, user3, user4;
     private static Product product1, product2, product3, product4;
     private static Auction auction1, auction2, auction3, auction4;
     private static Image image1, image2, image3, image4;
-    private static Bid bid1, bid2, bid3, bid4;
+    private static Bid bid1, bid2, bid3, bid4, bid5, bid6;
 
     @BeforeAll
     static void setUpOnce(@Autowired UserRepository userRepository,
@@ -98,12 +93,16 @@ class AuctionRepositoryImplTest {
         bid2 = Bid.builder().bidder(user2).auction(auction2).amount(4000L).build();
         bid3 = Bid.builder().bidder(user1).auction(auction3).amount(5000L).build();
         bid4 = Bid.builder().bidder(user3).auction(auction2).amount(6000L).build();
-        bidRepository.saveAll(List.of(bid1, bid2, bid3, bid4));
+        bid5 = Bid.builder().bidder(user1).auction(auction2).amount(7000L).build();
+        bid6 = Bid.builder().bidder(user2).auction(auction1).amount(8000L).build();
+        bidRepository.saveAll(List.of(bid1, bid2, bid3, bid4,bid5,bid6));
 
         auction1.registerBid(bid1);
         auction1.registerBid(bid2);
         auction2.registerBid(bid3);
         auction3.registerBid(bid4);
+        auction2.registerBid(bid5);
+        auction1.registerBid(bid6);
     }
 
     @AfterEach
@@ -134,7 +133,7 @@ class AuctionRepositoryImplTest {
         assertThat(result.getContent().get(0).getCdnPath()).isEqualTo("path/to/image3.jpg");
         assertThat(result.getContent().get(1).getName()).isEqualTo("제품1");
         assertThat(result.getContent().get(1).getIsParticipating()).isFalse();
-        assertThat(result.getContent().get(1).getParticipantCount()).isEqualTo(1);
+        assertThat(result.getContent().get(1).getParticipantCount()).isEqualTo(2);
         assertThat(result.getContent().get(1).getCdnPath()).isEqualTo("path/to/image1_1.jpg");
     }
 
@@ -153,7 +152,7 @@ class AuctionRepositoryImplTest {
         assertThat(result.getContent()).hasSize(2);
         assertThat(result.getContent().get(0).getName()).isEqualTo("제품1");
         assertThat(result.getContent().get(0).getIsParticipating()).isTrue();
-        assertThat(result.getContent().get(0).getParticipantCount()).isEqualTo(1);
+        assertThat(result.getContent().get(0).getParticipantCount()).isEqualTo(2);
         assertThat(result.getContent().get(0).getCdnPath()).isEqualTo("path/to/image1_1.jpg");
         assertThat(result.getContent().get(1).getName()).isEqualTo("제품3");
         assertThat(result.getContent().get(1).getIsParticipating()).isFalse();
@@ -267,15 +266,14 @@ class AuctionRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("나의 경매 목록 조회 - 최신순")
+    @DisplayName("특정 유저의 경매 목록 조회 - 최신순")
     public void testFindMyAuctionsWithNewest() throws Exception {
         //given
         Pageable pageable = PageRequest.of(0, 10, Sort.by("newest"));
-        Long myId = user1.getId();
 
         //when
-        Page<MyAuctionResponse> result = auctionRepository.findAuctionsByUserId(
-                myId, pageable);
+        Page<UserAuctionResponse> result = auctionRepository.findAuctionsByNickname(
+                user1.getNickname(), pageable);
 
         //then
         assertThat(result).isNotNull();
@@ -284,15 +282,14 @@ class AuctionRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("나의 경매 목록 조회 - 오래된순")
+    @DisplayName("특정 유저의 경매 목록 조회 - 오래된순")
     public void testFindMyAuctionsWithOldest() throws Exception {
         //given
         Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("newest")));
-        Long myId = user1.getId();
 
         //when
-        Page<MyAuctionResponse> result = auctionRepository.findAuctionsByUserId(
-                myId, pageable);
+        Page<UserAuctionResponse> result = auctionRepository.findAuctionsByNickname(
+                user1.getNickname(), pageable);
 
         //then
         assertThat(result).isNotNull();
@@ -306,15 +303,61 @@ class AuctionRepositoryImplTest {
     public void testFindMyAuctionsNotExist() throws Exception {
         //given
         Pageable pageable = PageRequest.of(0, 10, Sort.by("newest"));
-        Long myId = user4.getId();
 
         //when
-        Page<MyAuctionResponse> result = auctionRepository.findAuctionsByUserId(
-                myId, pageable);
+        Page<UserAuctionResponse> result = auctionRepository.findAuctionsByNickname(
+                user4.getNickname(), pageable);
 
         //then
         assertThat(result).isNotNull();
         assertThat(result.getContent()).hasSize(0);
     }
 
+    @Test
+    @DisplayName("베스트 입찰 조회")
+    void testFindBestAuctions() {
+        // given
+        Long userId = user1.getId();
+        List<AuctionResponse> bestAuctions = auctionRepository.findBestAuctions(userId);
+        // when
+
+        // then
+        assertThat(bestAuctions).isSortedAccordingTo(Comparator.comparingLong(AuctionResponse::getParticipantCount).reversed());
+    }
+
+
+    @DisplayName("내가 참여한 경매 목록 조회 -  가격순")
+    void testFindParticipatingAuctionRecordWithExpensive() {
+        // given
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("expensive"));
+        Page<AuctionResponse> responses = auctionRepository.findParticipatingAuctionRecord(user1.getId(), pageable);
+        // when
+
+        // then
+        assertThat(responses.getContent()).isSortedAccordingTo(Comparator.comparingLong(BaseAuctionDTO::getMinPrice));
+    }
+
+    @Test
+    @DisplayName("내가 참여한 경매 목록 조회 -  인기순")
+    void testFindParticipatingAuctionRecordWithPopularity() {
+        // given
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("popularity"));
+        Page<AuctionResponse> responses = auctionRepository.findParticipatingAuctionRecord(user1.getId(), pageable);
+        // when
+
+        // then
+        assertThat(responses.getContent()).isSortedAccordingTo(Comparator.comparingLong(BaseAuctionDTO::getParticipantCount).reversed());
+    }
+
+    @Test
+    @DisplayName("내가 참여한 경매 목록 조회 -  남은 시간순")
+    void testFindParticipatingAuctionRecordWithTime() {
+        // given
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("newest"));
+        Page<AuctionResponse> responses = auctionRepository.findParticipatingAuctionRecord(user1.getId(), pageable);
+        // when
+
+        // then
+        assertThat(responses.getContent()).isSortedAccordingTo(Comparator.comparingLong(BaseAuctionDTO::getTimeRemaining));
+    }
 }

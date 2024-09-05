@@ -115,6 +115,12 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
         });
     }
 
+    /**
+     * 사용자 ID에 따라 사용자가 등록한 사전 등록 상품 리스트를 조회합니다.
+     * @param nickname 사용자 닉네임
+     * @param pageable 페이징 정보
+     * @return 페이징된 사전 등록 상품 리스트
+     */
     @Override
     public Page<ProductResponse> findProductsByNickname(String nickname, Pageable pageable) {
 
