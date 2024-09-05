@@ -2,10 +2,8 @@ package org.chzz.market.domain.auction.repository;
 
 import java.util.List;
 import java.util.Optional;
-import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
-import org.chzz.market.domain.auction.dto.response.AuctionResponse;
-import org.chzz.market.domain.auction.dto.response.UserAuctionResponse;
-import org.chzz.market.domain.auction.dto.response.WonAuctionResponse;
+
+import org.chzz.market.domain.auction.dto.response.*;
 import org.chzz.market.domain.product.entity.Product.Category;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -61,4 +59,12 @@ public interface AuctionRepositoryCustom {
      * @return          페이징된 낙찰 경매 응답 리스트
      */
     Page<WonAuctionResponse> findWonAuctionHistoryByUserId(Long userId, Pageable pageable);
+
+    /**
+     * 사용자가 낙찰하지 못한 경매 이력을 조회합니다.
+     * @param userId   사용자 ID
+     * @param pageable 페이징 정보
+     * @return         페이징된 낙찰 실패 경매 응답 리스트
+     */
+    Page<LostAuctionResponse> findLostAuctionHistoryByUserId(Long userId, Pageable pageable);
 }

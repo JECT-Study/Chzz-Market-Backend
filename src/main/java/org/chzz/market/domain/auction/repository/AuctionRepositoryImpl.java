@@ -262,6 +262,43 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
     }
 
     /**
+     * 사용자가 낙찰하지 못한 경매 이력을 조회합니다.
+     * @param userId   사용자 ID
+     * @param pageable 페이징 정보
+     * @return         페이징된 낙찰 경매 응답 리스트
+     */
+    @Override
+    public Page<LostAuctionResponse> findLostAuctionHistoryByUserId(Long userId, Pageable pageable) {
+        JPAQuery<?> baseQuery = jpaQueryFactory
+                .from(auction)
+                .join(auction.product, product)
+                .join(bid).on(bid.auction.eq(auction).and(bid.bidder.id.eq(userId)))
+                .where(auction.winnerId.ne(userId).or(auction.winnerId.isNull())
+                        .and(auction.status.eq(ENDED)));
+
+        List<LostAuctionResponse> content = baseQuery
+                .select(new QLostAuctionResponse(
+                        auction.id,
+                        product.name,
+                        image.cdnPath,
+                        product.minPrice,
+                        auction.endDateTime,
+                        bid.amount.max()
+                ))
+                .leftJoin(image).on(image.product.eq(product).and(image.id.eq(getFirstImageId())))
+                .groupBy(auction.id, product.name, image.cdnPath, product.minPrice, auction.endDateTime)
+                .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        JPAQuery<Long> countQuery = baseQuery
+                .select(auction.count());
+
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchCount);
+    }
+
+    /**
      * 상품의 첫 번째 이미지를 조회합니다.
      *
      * @return 첫 번째 이미지 ID
