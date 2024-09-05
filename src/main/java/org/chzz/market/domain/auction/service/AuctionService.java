@@ -72,6 +72,10 @@ public class AuctionService {
         return auctionRepository.findWonAuctionHistoryByUserId(userId, pageable);
     }
 
+    public Page<LostAuctionResponse> getLostAuctionHistory(Long userId, Pageable pageable) {
+        return auctionRepository.findLostAuctionHistoryByUserId(userId, pageable);
+    }
+
     /**
      * 사전 등록 상품 경매 전환 처리
      * TODO: 추후에 인증된 사용자 정보로 수정 필요
