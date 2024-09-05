@@ -71,7 +71,7 @@ class UserServiceTest {
                 .providerType(ProviderType.KAKAO)
                 .build();
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(userRepository.existsByNickname(userCreateRequest.getNickname())).thenReturn(false);
+        when(userRepository.findByNickname(userCreateRequest.getNickname())).thenReturn(Optional.empty());
         // when
         userService.completeUserRegistration(userId, userCreateRequest);
         // then
@@ -87,7 +87,7 @@ class UserServiceTest {
     public void createUser_WhenBioAndLinkAreEmptyStrings_ThenFieldsAreSetToNull() throws Exception {
         // given
         Long userId = 1L;
-        UserCreateRequest userCreateRequest = new UserCreateRequest("nickname", BankAccount.BankName.KB, "1234567890",
+        UserCreateRequest userCreateRequest = new UserCreateRequest("newNickname", BankAccount.BankName.KB, "1234567890",
                 "", "");
         User user = User.builder()
                 .email("test@gmail.com")
@@ -95,7 +95,7 @@ class UserServiceTest {
                 .providerType(ProviderType.KAKAO)
                 .build();
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(userRepository.existsByNickname(userCreateRequest.getNickname())).thenReturn(false);
+        when(userRepository.findByNickname(userCreateRequest.getNickname())).thenReturn(Optional.empty());
 
         // when
         userService.completeUserRegistration(userId, userCreateRequest);
@@ -132,7 +132,7 @@ class UserServiceTest {
         User user = mock(User.class);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(userRepository.existsByNickname(userCreateRequest.getNickname())).thenReturn(true);
+        when(userRepository.findByNickname(userCreateRequest.getNickname())).thenReturn(Optional.of(user));
 
         // when & then
         assertThatThrownBy(() -> userService.completeUserRegistration(userId, userCreateRequest))
@@ -145,12 +145,12 @@ class UserServiceTest {
     @DisplayName("닉네임이 사용 가능한 경우")
     public void checkNickname_Available() throws Exception {
         // given
-        String nickname = "availableNickname";
+        String availableNickname = "availableNickname";
 
-        when(userRepository.existsByNickname(nickname)).thenReturn(false);
+        when(userRepository.findByNickname(availableNickname)).thenReturn(Optional.empty());
 
         // when
-        NicknameAvailabilityResponse response = userService.checkNickname(nickname);
+        NicknameAvailabilityResponse response = userService.checkNickname(availableNickname);
 
         // then
         assertThat(response.isAvailable()).isTrue();
@@ -160,12 +160,12 @@ class UserServiceTest {
     @DisplayName("닉네임이 이미 사용 중인 경우")
     public void checkNickname_NotAvailable() throws Exception {
         // given
-        String nickname = "unavailableNickname";
+        String unavailableNickname = "unavailableNickname";
 
-        when(userRepository.existsByNickname(nickname)).thenReturn(true);
+        when(userRepository.findByNickname(unavailableNickname)).thenReturn(Optional.of(user1));
 
         // when
-        NicknameAvailabilityResponse response = userService.checkNickname(nickname);
+        NicknameAvailabilityResponse response = userService.checkNickname(unavailableNickname);
 
         // then
         assertThat(response.isAvailable()).isFalse();
