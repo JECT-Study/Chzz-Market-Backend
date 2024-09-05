@@ -6,6 +6,7 @@ import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.image.repository.ImageRepository;
 import org.chzz.market.domain.image.service.ImageService;
 import org.chzz.market.domain.product.dto.DeleteProductResponse;
+import org.chzz.market.domain.product.dto.ProductResponse;
 import org.chzz.market.domain.product.dto.UpdateProductRequest;
 import org.chzz.market.domain.product.dto.UpdateProductResponse;
 import org.chzz.market.domain.product.entity.Product;
@@ -23,18 +24,18 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.*;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.chzz.market.domain.product.entity.Product.*;
 import static org.chzz.market.domain.product.entity.Product.Category.*;
 import static org.chzz.market.domain.product.entity.Product.Category.ELECTRONICS;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
@@ -262,6 +263,94 @@ public class ProductServiceTest {
             assertThatThrownBy(() -> productService.deleteProduct(1L, 1L))
                     .isInstanceOf(ProductException.class)
                     .hasMessage("상품을 찾을 수 없습니다.");
+        }
+    }
+
+    @Nested
+    @DisplayName("내가 참여한 사전경매 조회 테스트")
+    class GetLikedProductListTest {
+        @Test
+        @DisplayName("1. 유효한 요청으로 좋아요한 사전 경매 상품 목록 조회 성공")
+        void getLikedProductList_Success() {
+            // given
+            Long userId = 1L;
+            Pageable pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+            List<ProductResponse> mockProducts = Arrays.asList(
+                    new ProductResponse(1L, "Product 1", "image1.jpg", 10000, 5L, true),
+                    new ProductResponse(2L, "Product 2", "image2.jpg", 20000, 10L, true)
+            );
+
+            Page<ProductResponse> mockPage = new PageImpl<>(mockProducts, pageable, mockProducts.size());
+
+            when(productRepository.findLikedProductsByUserId(userId, pageable)).thenReturn(mockPage);
+
+            // when
+            Page<ProductResponse> result = productService.getLikedProductList(userId, pageable);
+
+            // then
+            assertNotNull(result);
+            assertEquals(2, result.getContent().size());
+            assertEquals("Product 1", result.getContent().get(0).getName());
+            assertEquals("Product 2", result.getContent().get(1).getName());
+            assertTrue(result.getContent().get(0).getIsLiked());
+            assertTrue(result.getContent().get(1).getIsLiked());
+
+            verify(productRepository, times(1)).findLikedProductsByUserId(userId, pageable);
+        }
+
+        @Test
+        @DisplayName("2. 좋아요 한 사전경매 상품이 없는 경우 빈 목록 반환")
+        void getLikedProductList_EmptyList() {
+            // given
+            Long userId = 1L;
+            Pageable pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+            Page<ProductResponse> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
+            when(productRepository.findLikedProductsByUserId(userId, pageable)).thenReturn(emptyPage);
+
+            // when
+            Page<ProductResponse> result = productService.getLikedProductList(userId, pageable);
+
+            // then
+            assertNotNull(result);
+            assertTrue(result.getContent().isEmpty());
+            assertEquals(0, result.getTotalElements());
+
+            verify(productRepository, times(1)).findLikedProductsByUserId(userId, pageable);
+        }
+
+        @Test
+        @DisplayName("3. 페이지네이션 동작 확인")
+        void getLikedProductList_Pagination() {
+            // given
+            Long userId = 1L;
+            Pageable firstPageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "createdAt"));
+            Pageable secondPageable = PageRequest.of(1, 1, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+            List<ProductResponse> allProducts = Arrays.asList(
+                    new ProductResponse(1L, "Product 1", "image1.jpg", 10000, 5L, true),
+                    new ProductResponse(2L, "Product 2", "image2.jpg", 20000, 3L, true)
+            );
+
+            Page<ProductResponse> firstPage = new PageImpl<>(allProducts.subList(0, 1), firstPageable, allProducts.size());
+            Page<ProductResponse> secondPage = new PageImpl<>(allProducts.subList(1, 2), secondPageable, allProducts.size());
+
+            when(productRepository.findLikedProductsByUserId(userId, firstPageable)).thenReturn(firstPage);
+            when(productRepository.findLikedProductsByUserId(userId, secondPageable)).thenReturn(secondPage);
+
+            // when
+            Page<ProductResponse> firstResult = productService.getLikedProductList(userId, firstPageable);
+            Page<ProductResponse> secondResult = productService.getLikedProductList(userId, secondPageable);
+
+            // then
+            assertEquals(1, firstResult.getContent().size());
+            assertEquals("Product 1", firstResult.getContent().get(0).getName());
+            assertEquals(1, secondResult.getContent().size());
+            assertEquals("Product 2", secondResult.getContent().get(0).getName());
+
+            verify(productRepository, times(1)).findLikedProductsByUserId(userId, firstPageable);
+            verify(productRepository, times(1)).findLikedProductsByUserId(userId, secondPageable);
         }
     }
 
