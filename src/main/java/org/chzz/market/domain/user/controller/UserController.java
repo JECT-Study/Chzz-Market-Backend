@@ -60,8 +60,15 @@ public class UserController {
      */
     @GetMapping("/{nickname}")
     public ResponseEntity<UserProfileResponse> getUserProfile(@PathVariable String nickname){
-        UserProfileResponse response = userService.getUserProfile(nickname);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(userService.getUserProfile(nickname));
+    }
+
+    /*
+     * 내 프로필 조회
+     */
+    @GetMapping("/me")
+    public ResponseEntity<UserProfileResponse> getMyProfile(@LoginUser Long userId) {
+        return ResponseEntity.ok(userService.getMyProfile(userId));
     }
 
     @PostMapping("/tokens/reissue")
