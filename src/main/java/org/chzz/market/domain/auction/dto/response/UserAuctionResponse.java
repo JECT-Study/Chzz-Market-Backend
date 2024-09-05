@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.ToString;
 import org.chzz.market.domain.auction.dto.BaseAuctionDTO;
+
 import org.chzz.market.domain.auction.enums.AuctionStatus;
 
 /**
@@ -12,14 +13,14 @@ import org.chzz.market.domain.auction.enums.AuctionStatus;
  */
 @Getter
 @ToString
-public class MyAuctionResponse extends BaseAuctionDTO {
+public class UserAuctionResponse extends BaseAuctionDTO {
     private Long id;
     private AuctionStatus status;
     private LocalDateTime createdAt;
 
     @QueryProjection
-    public MyAuctionResponse(Long id, String name, String cdnPath, Long timeRemaining, Long minPrice,
-                             Long participantCount, AuctionStatus status, LocalDateTime createdAt) {
+    public UserAuctionResponse(Long id, String name, String cdnPath, Long timeRemaining, Long minPrice,
+                               Long participantCount, AuctionStatus status, LocalDateTime createdAt) {
         super(name, cdnPath, timeRemaining, minPrice, participantCount);
         this.id = id;
         this.status = status;

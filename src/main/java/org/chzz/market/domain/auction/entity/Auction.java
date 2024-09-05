@@ -1,31 +1,21 @@
 package org.chzz.market.domain.auction.entity;
 
-import static org.chzz.market.domain.auction.enums.AuctionStatus.*;
+import static org.chzz.market.domain.auction.enums.AuctionStatus.PROCEEDING;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_ENDED;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
+import jakarta.persistence.Index;
 import java.util.ArrayList;
 import java.util.List;
-
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.chzz.market.domain.auction.entity.listener.AuctionEntityListener;
+import org.chzz.market.domain.auction.enums.AuctionStatus;
 import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
 import org.chzz.market.domain.bid.entity.Bid;
@@ -33,7 +23,9 @@ import org.chzz.market.domain.product.entity.Product;
 
 @Getter
 @Entity
-@Table
+@Table(indexes = {
+        @Index(name = "idx_auction_end_date_time",columnList = "end_date_time")
+})
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -56,7 +48,7 @@ public class Auction extends BaseTimeEntity {
 
     @Column(columnDefinition = "varchar(20)")
     @Enumerated(EnumType.STRING)
-    private org.chzz.market.domain.auction.enums.AuctionStatus status;
+    private AuctionStatus status;
 
     public Integer getMinPrice() {
         return product.getMinPrice();
@@ -97,22 +89,11 @@ public class Auction extends BaseTimeEntity {
     }
 
     public void endAuction() {
-        this.status = ENDED;
+        this.status = AuctionStatus.ENDED;
     }
 
     public void assignWinner(Long winnerId) {
         this.winnerId = winnerId;
-    }
-
-    @Getter
-    @AllArgsConstructor
-    public enum AuctionStatus {
-        PENDING("대기 중"),
-        PROCEEDING("진행 중"),
-        ENDED("종료"),
-        CANCELLED("취소 됨");
-
-        private final String description;
     }
 
     public void start(LocalDateTime endDateTime) {
