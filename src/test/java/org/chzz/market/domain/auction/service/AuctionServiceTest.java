@@ -18,16 +18,13 @@ import java.util.List;
 import java.util.Optional;
 
 import org.chzz.market.domain.auction.dto.request.BaseRegisterRequest;
-import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
+import org.chzz.market.domain.auction.dto.response.*;
 
 import org.chzz.market.domain.auction.dto.request.PreRegisterRequest;
 import org.chzz.market.domain.auction.dto.request.RegisterAuctionRequest;
 import org.chzz.market.domain.auction.dto.request.StartAuctionRequest;
-import org.chzz.market.domain.auction.dto.response.RegisterResponse;
-import org.chzz.market.domain.auction.dto.response.StartAuctionResponse;
 
 
-import org.chzz.market.domain.auction.dto.response.WonAuctionResponse;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
@@ -487,6 +484,151 @@ class AuctionServiceTest {
             );
 
             verify(auctionRepository, times(1)).findWonAuctionHistoryByUserId(userId, pageable);
+        }
+    }
+
+    @Nested
+    @DisplayName("내가 실패한 경매 조회 테스트")
+    class GetLostAuctionHistoryTest {
+        @Test
+        @DisplayName("1. 유효한 요청으로 낙찰하지 못한 경매 조회 성공")
+        void getLostAuctionHistory_Success() {
+            // given
+            Long userId = 1L;
+            Pageable pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "endDateTime"));
+
+            List<LostAuctionResponse> LostAuctions = List.of(
+                    new LostAuctionResponse(1L, "Product 1", "image1.jpg", 10000, LocalDateTime.now(), 15000L),
+                    new LostAuctionResponse(2L, "Product 2", "image2.jpg", 20000, LocalDateTime.now(), 25000L)
+            );
+
+            Page<LostAuctionResponse> mockPage = new PageImpl<>(LostAuctions, pageable, LostAuctions.size());
+
+            when(auctionRepository.findLostAuctionHistoryByUserId(userId, pageable)).thenReturn(mockPage);
+
+            // when
+            Page<LostAuctionResponse> resultPage = auctionService.getLostAuctionHistory(userId, pageable);
+
+            // then
+            assertThat(resultPage).isNotNull();
+            assertThat(resultPage.getContent()).hasSize(2);
+            assertThat(resultPage.getContent().get(0).id()).isEqualTo(1L);
+            assertThat(resultPage.getContent().get(0).name()).isEqualTo("Product 1");
+            assertThat(resultPage.getContent().get(1).id()).isEqualTo(2L);
+            assertThat(resultPage.getContent().get(1).name()).isEqualTo("Product 2");
+
+            verify(auctionRepository, times(1)).findLostAuctionHistoryByUserId(userId, pageable);
+        }
+
+        @Test
+        @DisplayName("2. 낙찰하지 못한 경매가 없는 경우 빈 목록 반환")
+        void getLostAuctionHistory_EmptyList() {
+            // given
+            Long userId = 1L;
+            Pageable pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "endDateTime"));
+            Page<LostAuctionResponse> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
+
+            when(auctionRepository.findLostAuctionHistoryByUserId(userId, pageable)).thenReturn(emptyPage);
+
+            // when
+            Page<LostAuctionResponse> resultPage = auctionService.getLostAuctionHistory(userId, pageable);
+
+            // then
+            assertThat(resultPage).isNotNull();
+            assertThat(resultPage.getContent()).isEmpty();
+            assertThat(resultPage.getTotalElements()).isZero();
+
+            verify(auctionRepository, times(1)).findLostAuctionHistoryByUserId(userId, pageable);
+        }
+
+        @Test
+        @DisplayName("3. 페이지네이션 동작 확인")
+        void getLostAuctionHistory_Pagination() {
+            // given
+            Long userId = 1L;
+            Pageable firstPageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "endDateTime"));
+            Pageable secondPageable = PageRequest.of(1, 1, Sort.by(Sort.Direction.DESC, "endDateTime"));
+
+            List<LostAuctionResponse> allAuctions = List.of(
+                    new LostAuctionResponse(1L, "Product 1", "image1.jpg", 10000, LocalDateTime.now(), 15000L),
+                    new LostAuctionResponse(2L, "Product 2", "image2.jpg", 20000, LocalDateTime.now(), 25000L)
+            );
+
+            Page<LostAuctionResponse> firstPage = new PageImpl<>(allAuctions.subList(0, 1), firstPageable, allAuctions.size());
+            Page<LostAuctionResponse> secondPage = new PageImpl<>(allAuctions.subList(1, 2), secondPageable, allAuctions.size());
+
+            when(auctionRepository.findLostAuctionHistoryByUserId(userId, firstPageable)).thenReturn(firstPage);
+            when(auctionRepository.findLostAuctionHistoryByUserId(userId, secondPageable)).thenReturn(secondPage);
+
+            // when
+            Page<LostAuctionResponse> firstResultPage = auctionService.getLostAuctionHistory(userId, firstPageable);
+            Page<LostAuctionResponse> secondResultPage = auctionService.getLostAuctionHistory(userId, secondPageable);
+
+            // then
+            assertThat(firstResultPage.getContent()).hasSize(1);
+            assertThat(firstResultPage.getContent().get(0).id()).isEqualTo(1L);
+            assertThat(secondResultPage.getContent()).hasSize(1);
+            assertThat(secondResultPage.getContent().get(0).id()).isEqualTo(2L);
+
+            verify(auctionRepository, times(1)).findLostAuctionHistoryByUserId(userId, firstPageable);
+            verify(auctionRepository, times(1)).findLostAuctionHistoryByUserId(userId, secondPageable);
+        }
+
+        @Test
+        @DisplayName("4. 정렬 순서 확인 (경매 종료 시간 내림차순)")
+        void getLostAuctionHistory_SortOrder() {
+            // given
+            Long userId = 1L;
+            Pageable pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "endDateTime"));
+
+            LocalDateTime now  = LocalDateTime.now();
+            List<LostAuctionResponse> lostAuctions = List.of(
+                    new LostAuctionResponse(1L, "Product 1", "image1.jpg", 10000, now, 15000L),
+                    new LostAuctionResponse(2L, "Product 2", "image2.jpg", 20000, now.minusHours(1), 25000L),
+                    new LostAuctionResponse(3L, "Product 3", "image3.jpg", 30000, now.minusHours(2), 35000L)
+            );
+
+            Page<LostAuctionResponse> mockPage = new PageImpl<>(lostAuctions, pageable, lostAuctions.size());
+
+            when(auctionRepository.findLostAuctionHistoryByUserId(userId, pageable)).thenReturn(mockPage);
+
+            // when
+            Page<LostAuctionResponse> resultPage = auctionService.getLostAuctionHistory(userId, pageable);
+
+            // then
+            assertThat(resultPage.getContent()).hasSize(3);
+            assertThat(resultPage.getContent()).isSortedAccordingTo(
+                    Comparator.comparing(LostAuctionResponse::endDateTime).reversed()
+            );
+
+            verify(auctionRepository, times(1)).findLostAuctionHistoryByUserId(userId, pageable);
+        }
+
+        @Test
+        @DisplayName("5. 최고 입찰가 확인")
+        void getLostAuctionHistory_HighestBid() {
+            // given
+            Long userId = 1L;
+            Pageable pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "endDateTime"));
+
+            List<LostAuctionResponse> lostAuctions = List.of(
+                    new LostAuctionResponse(1L, "Product 1", "image1.jpg", 10000, LocalDateTime.now(), 15000L),
+                    new LostAuctionResponse(2L, "Product 2", "image2.jpg", 20000, LocalDateTime.now(), 25000L)
+            );
+
+            Page<LostAuctionResponse> mockPage = new PageImpl<>(lostAuctions, pageable, lostAuctions.size());
+
+            when(auctionRepository.findLostAuctionHistoryByUserId(userId, pageable)).thenReturn(mockPage);
+
+            // when
+            Page<LostAuctionResponse> resultPage = auctionService.getLostAuctionHistory(userId, pageable);
+
+            // then
+            assertThat(resultPage.getContent()).hasSize(2);
+            assertThat(resultPage.getContent().get(0).highestBid()).isEqualTo(15000L);
+            assertThat(resultPage.getContent().get(1).highestBid()).isEqualTo(25000L);
+
+            verify(auctionRepository, times(1)).findLostAuctionHistoryByUserId(userId, pageable);
         }
     }
 
