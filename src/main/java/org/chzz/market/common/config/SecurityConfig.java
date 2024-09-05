@@ -51,6 +51,7 @@ public class SecurityConfig {
                         .requestMatchers("api/v1/bids/**").permitAll()
                         .requestMatchers("api/v1/users/**").permitAll()
                         .requestMatchers("/api/v1/notifications/**").permitAll()
+                        .requestMatchers("/api/v1/likes/**").permitAll()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/tokens/reissue").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/users").hasRole("TEMP_USER")
