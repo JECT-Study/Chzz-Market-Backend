@@ -49,6 +49,15 @@ public class UserService {
         return UserProfileResponse.of(user, counts);
     }
 
+    public UserProfileResponse getMyProfile(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserException(USER_NOT_FOUND));
+
+        ParticipationCountsResponse counts = auctionRepository.getParticipationCounts(user.getId());
+
+        return UserProfileResponse.of(user, counts);
+    }
+
     public NicknameAvailabilityResponse checkNickname(String nickname) {
         return new NicknameAvailabilityResponse(!userRepository.existsByNickname(nickname));
     }
