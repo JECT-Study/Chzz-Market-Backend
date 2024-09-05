@@ -70,6 +70,16 @@ public class AuctionController {
         return ResponseEntity.ok(auctionService.getWonAuctionHistory(userId, pageable));
     }
 
+    /*
+     * 내가 실패한 경매 조회
+     */
+    @GetMapping("/lost")
+    public ResponseEntity<Page<LostAuctionResponse>> getLostAuctionHistory(
+            @LoginUser Long userId,
+            @PageableDefault(size = 20, sort = "endDateTime", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(auctionService.getLostAuctionHistory(userId, pageable));
+    }
+
     /**
      * 상품 등록
      */
