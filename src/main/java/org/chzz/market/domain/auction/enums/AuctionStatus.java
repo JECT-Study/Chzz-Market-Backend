@@ -6,7 +6,6 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum AuctionStatus {
-    PENDING("대기 중"),
     PROCEEDING("진행 중"),
     ENDED("종료"),
     CANCELLED("취소 됨");
