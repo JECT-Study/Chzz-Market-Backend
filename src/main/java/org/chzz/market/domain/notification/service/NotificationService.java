@@ -10,13 +10,13 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.chzz.market.domain.notification.dto.NotificationMessage;
 import org.chzz.market.domain.notification.dto.NotificationRealMessage;
 import org.chzz.market.domain.notification.dto.response.NotificationResponse;
 import org.chzz.market.domain.notification.dto.response.NotificationSseResponse;
 import org.chzz.market.domain.notification.entity.Notification;
 import org.chzz.market.domain.notification.error.NotificationErrorCode;
 import org.chzz.market.domain.notification.error.NotificationException;
+import org.chzz.market.domain.notification.event.NotificationEvent;
 import org.chzz.market.domain.notification.repository.EmitterRepositoryImpl;
 import org.chzz.market.domain.notification.repository.NotificationRepository;
 import org.chzz.market.domain.user.entity.User;
@@ -24,7 +24,9 @@ import org.chzz.market.domain.user.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @Service
@@ -52,13 +54,20 @@ public class NotificationService {
         return emitter;
     }
 
-    @Transactional
-    public void sendNotification(NotificationMessage notificationMessage) {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @TransactionalEventListener
+    public void sendNotification(final NotificationEvent notificationEvent) {
+        // 이벤트 수신 로그
+        log.info("알림 이벤트 수신 - Type: {}, Message: '{}', User IDs: {}, Image: {}",
+                notificationEvent.type(),
+                notificationEvent.message(),
+                notificationEvent.userIds(),
+                notificationEvent.image() != null ? notificationEvent.image().getId() : "No Image");
         // 1. 알림 메시지 저장
-        Map<Long, User> userMap = userRepository.findAllById(notificationMessage.getUserIds())
+        Map<Long, User> userMap = userRepository.findAllById(notificationEvent.userIds())
                 .stream()
                 .collect(Collectors.toMap(User::getId, Function.identity()));
-        List<Notification> notifications = createNotifications(notificationMessage, userMap);
+        List<Notification> notifications = createNotifications(notificationEvent, userMap);
         notificationRepository.saveAll(notifications);
 
         // 2. 사용자 ID와 알림 ID를 매핑하는 맵 생성과 메시지 발행
@@ -66,8 +75,8 @@ public class NotificationService {
                 .collect(Collectors.toMap(n -> n.getUser().getId(), Notification::getId));
 
         // 3. Redis에 메시지 발행
-        redisPublisher.publish(new NotificationRealMessage(userNotificationMap, notificationMessage.getMessage(),
-                notificationMessage.getType()));
+        redisPublisher.publish(new NotificationRealMessage(userNotificationMap, notificationEvent.message(),
+                notificationEvent.type()));
     }
 
     /**
@@ -148,14 +157,14 @@ public class NotificationService {
     /**
      * 알림 객체 목록을 생성합니다.
      *
-     * @param notificationMessage 알림 메시지 데이터
-     * @param userMap             사용자 ID와 사용자 객체의 매핑
+     * @param notificationEvent 알림 이벤트 데이터
+     * @param userMap           사용자 ID와 사용자 객체의 매핑
      * @return 생성된 알림 객체 목록
      */
-    private List<Notification> createNotifications(NotificationMessage notificationMessage,
+    private List<Notification> createNotifications(NotificationEvent notificationEvent,
                                                    Map<Long, User> userMap) {
-        return notificationMessage.getUserIds().stream()
-                .map(userId -> createNotification(notificationMessage, userMap.get(userId)))
+        return notificationEvent.userIds().stream()
+                .map(userId -> createNotification(notificationEvent, userMap.get(userId)))
                 .flatMap(Optional::stream)
                 .toList();
     }
@@ -163,20 +172,20 @@ public class NotificationService {
     /**
      * 알림 객체를 생성합니다.
      *
-     * @param notificationMessage 알림 메시지 데이터
-     * @param user                사용자 객체
+     * @param notificationEvent 알림 이벤트 데이터
+     * @param user              사용자 객체
      * @return Optional로 감싼 알림 객체
      */
-    private Optional<Notification> createNotification(NotificationMessage notificationMessage, User user) {
+    private Optional<Notification> createNotification(NotificationEvent notificationEvent, User user) {
         if (user == null) {
             return Optional.empty();
         }
 
         return Optional.of(Notification.builder()
-                .message(notificationMessage.getMessage())
+                .message(notificationEvent.message())
                 .user(user)
-                .image(notificationMessage.getImage())
-                .type(notificationMessage.getType())
+                .image(notificationEvent.image())
+                .type(notificationEvent.type())
                 .build());
     }
 
