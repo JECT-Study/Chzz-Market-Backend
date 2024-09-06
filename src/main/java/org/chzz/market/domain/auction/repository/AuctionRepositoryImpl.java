@@ -9,9 +9,9 @@ import static org.chzz.market.domain.like.entity.QLike.like;
 import static org.chzz.market.domain.product.entity.QProduct.product;
 import static org.chzz.market.domain.user.entity.QUser.user;
 
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
@@ -20,6 +20,7 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import java.util.Optional;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -32,11 +33,11 @@ import org.chzz.market.domain.auction.dto.response.QAuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.QAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.QUserAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.UserAuctionResponse;
+import org.chzz.market.domain.auction.type.AuctionStatus;
 import org.chzz.market.domain.bid.entity.Bid.BidStatus;
 import org.chzz.market.domain.image.entity.QImage;
 import org.chzz.market.domain.product.entity.Product.Category;
 import org.chzz.market.domain.user.dto.response.ParticipationCountsResponse;
-import org.chzz.market.domain.user.dto.response.QParticipationCountsResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
@@ -221,38 +222,85 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
 
     @Override
     public ParticipationCountsResponse getParticipationCounts(Long userId) {
-        return jpaQueryFactory
-                .select(new QParticipationCountsResponse(
-                        new CaseBuilder()
-                                .when(like.user.id.eq(userId))
-                                .then(1L)
-                                .otherwise(0L).count(),
-                        new CaseBuilder()
-                                .when(auction.status.eq(ENDED)
-                                        .and(auction.winnerId.eq(userId)))
-                                .then(1L)
-                                .otherwise(0L).count(),
-                        new CaseBuilder()
-                                .when(auction.status.eq(ENDED)
-                                        .and(auction.winnerId.ne(userId))
-                                        .and(bid.bidder.id.eq(userId)))
-                                .then(1L)
-                                .otherwise(0L).count(),
-                        new CaseBuilder()
-                                .when(auction.status.eq(ENDED)
-                                        .and(bid.bidder.id.eq(userId)))
-                                .then(1L)
-                                .otherwise(0L).count()
-                ))
+        List<Tuple> results = jpaQueryFactory
+                .select(
+                        auction.status,
+                        auction.winnerId,
+                        auction.id.countDistinct()
+                )
                 .from(auction)
-                .leftJoin(auction.product, product)
-                .leftJoin(product.likes, like)
-                .leftJoin(auction.bids, bid)
-                .where(product.user.id.eq(userId)
-                        .or(like.user.id.eq(userId))
-                        .or(bid.bidder.id.eq(userId)))
-                .fetchOne();
+                .join(auction.bids, bid)
+                .where(bid.bidder.id.eq(userId))
+                .groupBy(auction.status, auction.winnerId)
+                .fetch();
+
+        long ongoingAuctionCount = 0L;
+        long successfulAuctionCount = 0L;
+        long failedAuctionCount = 0L;
+        long unsuccessfulAuctionCount = 0L;
+
+        for (Tuple result : results) {
+            AuctionStatus status = result.get(auction.status);
+            Long winnerId = result.get(auction.winnerId);
+            long count = Optional.ofNullable(result.get(2, Long.class)).orElse(0L);
+
+            if (status == PROCEEDING) {
+                ongoingAuctionCount += count;
+            } else if (status == ENDED) {
+                if (winnerId != null && winnerId.equals(userId)) {
+                    successfulAuctionCount += count;
+                } else if (winnerId != null) {
+                    failedAuctionCount += count;
+                } else {
+                    unsuccessfulAuctionCount += count;
+                }
+            }
+        }
+
+        return new ParticipationCountsResponse(
+                ongoingAuctionCount,
+                successfulAuctionCount,
+                failedAuctionCount,
+                unsuccessfulAuctionCount
+        );
     }
+
+//    @Override
+//    public ParticipationCountsResponse getParticipationCounts(Long userId) {
+//        return jpaQueryFactory
+//                .select(new QParticipationCountsResponse(
+//                        new CaseBuilder()
+//                                .when(like.user.id.eq(userId))
+//                                .then(1L)
+//                                .otherwise(0L).count(),
+//                        new CaseBuilder()
+//                                .when(auction.status.eq(ENDED)
+//                                        .and(auction.winnerId.eq(userId)))
+//                                .then(1L)
+//                                .otherwise(0L).count(),
+//                        new CaseBuilder()
+//                                .when(auction.status.eq(ENDED)
+//                                        .and(auction.winnerId.ne(userId))
+//                                        .and(bid.bidder.id.eq(userId)))
+//                                .then(1L)
+//                                .otherwise(0L).count(),
+//                        new CaseBuilder()
+//                                .when(auction.status.eq(ENDED)
+//                                        .and(bid.bidder.id.eq(userId)))
+//                                .then(1L)
+//                                .otherwise(0L).count()
+//                ))
+//                .from(auction)
+//                .leftJoin(auction.product, product)
+//                .leftJoin(product.likes, like)
+//                .leftJoin(auction.bids, bid)
+//                .where(product.user.id.eq(userId)
+//                        .or(like.user.id.eq(userId))
+//                        .or(bid.bidder.id.eq(userId)))
+//                .fetchOne();
+//    }
+
+
 
     /**
      * 상품의 첫 번째 이미지를 조회합니다.
