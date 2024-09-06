@@ -4,14 +4,13 @@ import static org.chzz.market.domain.notification.error.NotificationErrorCode.RE
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.lettuce.core.RedisException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.domain.notification.dto.NotificationRealMessage;
 import org.chzz.market.domain.notification.error.NotificationException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
-import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
@@ -23,10 +22,11 @@ public class RedisPublisher {
     private final ChannelTopic topic;
     private final ObjectMapper objectMapper;
 
+    @Retryable(exclude = {JsonProcessingException.class})
     public void publish(NotificationRealMessage notificationRealMessage) {
         try {
             String message = objectMapper.writeValueAsString(notificationRealMessage);
-            sendMessageToRedis(message, notificationRealMessage);
+            redisTemplate.convertAndSend(topic.getTopic(), message);
         } catch (JsonProcessingException e) {
             log.error("Failed to serialize NotificationRealMessage to JSON. NotificationRealMessage: {}. Error: {}",
                     notificationRealMessage, e.getMessage(), e);
@@ -34,17 +34,9 @@ public class RedisPublisher {
         }
     }
 
-    @Retryable(
-            retryFor = {RedisException.class},
-            maxAttempts = 3,
-            backoff = @Backoff(delay = 1000)
-    )
-    private void sendMessageToRedis(String message, NotificationRealMessage notificationRealMessage) {
-        try {
-            redisTemplate.convertAndSend(topic.getTopic(), message);
-        } catch (RedisException e) {
-            log.error("Failed to send message to Redis. NotificationRealMessage: {}. Error: {}",
-                    notificationRealMessage, e.getMessage(), e); //예외를 던지지 않음으로 Redis 메세지 발행에 실패해도 알림 저장을 가능하게 함
-        }
+    @Recover
+    public void recover(Exception e, NotificationRealMessage notificationRealMessage) {
+        log.error("Failed to send message to Redis after retries. Notification Message: {}. Error: {}",
+                notificationRealMessage, e.getMessage(), e);
     }
 }
