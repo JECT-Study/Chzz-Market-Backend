@@ -5,7 +5,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.chzz.market.domain.notification.dto.NotificationMessage;
+import org.chzz.market.domain.notification.dto.NotificationRealMessage;
+import org.chzz.market.domain.notification.dto.response.NotificationSseResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,11 +28,13 @@ public class RedisSubscriber {
     public void onMessage(String message) {
         executor.execute(() -> {
             try {
-                NotificationMessage notificationMessage = objectMapper.readValue(message, NotificationMessage.class);
-                notificationMessage.getUserIds()
-                        .forEach(
-                                userId -> notificationService.sendRealTimeNotification(notificationMessage.getMessage(),
-                                        userId));
+                NotificationRealMessage notificationRealMessage = objectMapper.readValue(message,
+                        NotificationRealMessage.class);
+                notificationRealMessage.notificationIds().forEach((userId, notificationId) -> {
+                    NotificationSseResponse sseResponse = new NotificationSseResponse(notificationId,
+                            notificationRealMessage.type().getName(), notificationRealMessage.message());
+                    notificationService.sendRealTimeNotification(userId, sseResponse);
+                });
             } catch (Exception e) {
                 log.error("Error handling message");
             }
