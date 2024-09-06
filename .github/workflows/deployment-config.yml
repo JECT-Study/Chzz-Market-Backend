@@ -89,6 +89,8 @@ jobs:
             export AWS_REGION=${{ env.AWS_REGION }}
             export ECR_IMAGE=${{ steps.build-image.outputs.image }}
             
+            aws ecr get-login-password --region $AWS_REGION | sudo docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}
+            
             # 기존 컨테이너 정지 및 삭제
             sudo docker-compose down
             
