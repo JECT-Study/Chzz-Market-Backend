@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -156,8 +155,8 @@ public class NotificationService {
     private List<Notification> createNotifications(NotificationMessage notificationMessage,
                                                    Map<Long, User> userMap) {
         return notificationMessage.getUserIds().stream()
-                .map(userId -> createNotification(notificationMessage, userMap, userId))
-                .filter(Objects::nonNull)
+                .map(userId -> createNotification(notificationMessage, userMap.get(userId)))
+                .flatMap(Optional::stream)
                 .toList();
     }
 
@@ -165,19 +164,20 @@ public class NotificationService {
      * 알림 객체를 생성합니다.
      *
      * @param notificationMessage 알림 메시지 데이터
-     * @param userMap             사용자 ID와 사용자 객체의 매핑
-     * @param userId              사용자 ID
-     * @return 생성된 알림 객체, 사용자 존재 시
+     * @param user                사용자 객체
+     * @return Optional로 감싼 알림 객체
      */
-    private Notification createNotification(NotificationMessage notificationMessage, Map<Long, User> userMap,
-                                            Long userId) {
-        User user = userMap.get(userId);
-        return user != null ? Notification.builder()
+    private Optional<Notification> createNotification(NotificationMessage notificationMessage, User user) {
+        if (user == null) {
+            return Optional.empty();
+        }
+
+        return Optional.of(Notification.builder()
                 .message(notificationMessage.getMessage())
                 .user(user)
-                .product(notificationMessage.getProduct())
+                .image(notificationMessage.getImage())
                 .type(notificationMessage.getType())
-                .build() : null;
+                .build());
     }
 
     private Notification findNotificationByUserAndId(Long userId, Long notificationId) {
