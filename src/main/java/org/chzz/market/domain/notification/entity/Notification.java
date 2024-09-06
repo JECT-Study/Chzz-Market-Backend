@@ -17,9 +17,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
+import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.notification.error.NotificationErrorCode;
 import org.chzz.market.domain.notification.error.NotificationException;
-import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.user.entity.User;
 
 @Getter
@@ -39,8 +39,8 @@ public class Notification extends BaseTimeEntity {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
-    private Product product;
+    @JoinColumn(name = "image_id")
+    private Image image;
 
     @Column(nullable = false)
     private String message;
@@ -59,8 +59,8 @@ public class Notification extends BaseTimeEntity {
         if (this.isDeleted) {
             throw new NotificationException(NotificationErrorCode.DELETED_NOTIFICATION);
         }
-        if(this.isRead) {
-            throw new NotificationException(NotificationErrorCode.ALREADY_READ_NOTIFICATION);
+        if (this.isRead) {
+            return;
         }
         this.isRead = true;
     }
