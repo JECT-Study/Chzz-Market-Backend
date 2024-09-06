@@ -88,10 +88,10 @@ jobs:
             # ECR에서 새 이미지를 EC2로 가져오기
             export AWS_REGION=${{ env.AWS_REGION }}
             export ECR_IMAGE=${{ steps.build-image.outputs.image }}
-            export ECR_REGISTRY=$(echo $ECR_IMAGE | cut -d'/' -f1)
+            export ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
             
             # ECR 레지스트리에 로그인
-            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
+            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
             
             # 기존 컨테이너 정지 및 삭제
             sudo docker-compose down
