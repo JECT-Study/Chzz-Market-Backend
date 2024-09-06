@@ -25,13 +25,13 @@ import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.bid.entity.Bid;
 import org.chzz.market.domain.bid.service.BidService;
 import org.chzz.market.domain.image.entity.Image;
-import org.chzz.market.domain.notification.dto.NotificationMessage;
-import org.chzz.market.domain.notification.service.NotificationService;
+import org.chzz.market.domain.notification.event.NotificationEvent;
 import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.product.entity.Product.Category;
 import org.chzz.market.domain.product.repository.ProductRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -46,17 +46,15 @@ public class AuctionService {
     private static final Logger logger = LoggerFactory.getLogger(AuctionService.class);
 
     private final BidService bidService;
-    private final NotificationService notificationService;
     private final AuctionRepository auctionRepository;
     private final ProductRepository productRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     public Auction getAuction(Long auctionId) {
-        return auctionRepository.findById(auctionId)
-                .orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
+        return auctionRepository.findById(auctionId).orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
     }
 
-    public Page<AuctionResponse> getAuctionListByCategory(Category category, Long userId,
-                                                          Pageable pageable) {
+    public Page<AuctionResponse> getAuctionListByCategory(Category category, Long userId, Pageable pageable) {
         return auctionRepository.findAuctionsByCategory(category, userId, pageable);
     }
 
@@ -106,12 +104,8 @@ public class AuctionService {
         auction = auctionRepository.save(auction);
         logger.info("경매가 시작되었습니다. 등록된 경매 마감 시간 : {}", auction.getEndDateTime());
 
-        return StartAuctionResponse.of(
-                auction.getId(),
-                auction.getProduct().getId(),
-                auction.getStatus(),
-                auction.getEndDateTime()
-        );
+        return StartAuctionResponse.of(auction.getId(), auction.getProduct().getId(), auction.getStatus(),
+                auction.getEndDateTime());
     }
 
     @Transactional
@@ -128,14 +122,14 @@ public class AuctionService {
         Image firstImage = auction.getProduct().getFirstImage().orElse(null);
         List<Bid> bids = bidService.findAllBidsByAuction(auction);
         if (bids.isEmpty()) { // 입찰이 없는 경우
-            notificationService.sendNotification(
-                    new NotificationMessage(productUserId, AUCTION_FAILURE, AUCTION_FAILURE.getMessage(productName),
-                            firstImage)); // 낙찰 실패 알림
+            eventPublisher.publishEvent(
+                    NotificationEvent.of(productUserId, AUCTION_FAILURE, AUCTION_FAILURE.getMessage(productName),
+                            firstImage)); // 낙찰 실패 알림 이벤트
             return;
         }
-        notificationService.sendNotification(
-                new NotificationMessage(productUserId, AUCTION_SUCCESS, AUCTION_SUCCESS.getMessage(productName),
-                        firstImage)); // 낙찰 성공 알림
+        eventPublisher.publishEvent(
+                NotificationEvent.of(productUserId, AUCTION_SUCCESS, AUCTION_SUCCESS.getMessage(productName),
+                        firstImage)); // 낙찰 성공 알림 이벤트
         processWinningBid(auction, bids.get(0), productName, firstImage); // 첫 번째 입찰이 낙찰
         processNonWinningBids(bids, productName, firstImage);
 
@@ -144,27 +138,19 @@ public class AuctionService {
     // 낙찰자 처리
     private void processWinningBid(Auction auction, Bid winningBid, String productName, Image firstImage) {
         auction.assignWinner(winningBid.getBidder().getId());
-        notificationService.sendNotification(new NotificationMessage(
-                winningBid.getBidder().getId(),
-                AUCTION_WINNER,
-                AUCTION_WINNER.getMessage(productName),
-                firstImage));
+        eventPublisher.publishEvent(NotificationEvent.of(winningBid.getBidder().getId(), AUCTION_WINNER,
+                AUCTION_WINNER.getMessage(productName), firstImage)); // 낙찰자 알림 이벤트
         log.info("경매 ID {}: 낙찰자 처리 완료", auction.getId());
     }
 
     // 미낙찰자 처리
     private void processNonWinningBids(List<Bid> bids, String productName, Image firstImage) {
-        List<Long> nonWinnerIds = bids.stream()
-                .skip(1) // 낙찰자를 제외한 나머지 입찰자들
-                .map(bid -> bid.getBidder().getId())
-                .collect(Collectors.toList());
+        List<Long> nonWinnerIds = bids.stream().skip(1) // 낙찰자를 제외한 나머지 입찰자들
+                .map(bid -> bid.getBidder().getId()).collect(Collectors.toList());
 
         if (!nonWinnerIds.isEmpty()) {
-            notificationService.sendNotification(new NotificationMessage(
-                    nonWinnerIds,
-                    AUCTION_NON_WINNER,
-                    AUCTION_NON_WINNER.getMessage(productName),
-                    firstImage));
+            eventPublisher.publishEvent(NotificationEvent.of(nonWinnerIds, AUCTION_NON_WINNER,
+                    AUCTION_NON_WINNER.getMessage(productName), firstImage)); // 미낙찰자 알림 이벤트
         }
     }
 }

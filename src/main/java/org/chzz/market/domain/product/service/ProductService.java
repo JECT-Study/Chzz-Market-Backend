@@ -12,8 +12,7 @@ import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.image.repository.ImageRepository;
 import org.chzz.market.domain.image.service.ImageService;
-import org.chzz.market.domain.notification.dto.NotificationMessage;
-import org.chzz.market.domain.notification.service.NotificationService;
+import org.chzz.market.domain.notification.event.NotificationEvent;
 import org.chzz.market.domain.product.dto.CategoryResponse;
 import org.chzz.market.domain.product.dto.DeleteProductResponse;
 import org.chzz.market.domain.product.dto.ProductDetailsResponse;
@@ -25,6 +24,7 @@ import org.chzz.market.domain.product.error.ProductException;
 import org.chzz.market.domain.product.repository.ProductRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.TransientDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,10 +42,10 @@ public class ProductService {
     private static final Logger logger = LoggerFactory.getLogger(ProductService.class);
 
     private final ImageService imageService;
-    private final NotificationService notificationService;
     private final ProductRepository productRepository;
     private final AuctionRepository auctionRepository;
     private final ImageRepository imageRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     /*
      * 카테고리별 사전 등록 상품 목록 조회
@@ -172,9 +172,9 @@ public class ProductService {
                 .distinct()
                 .toList();
         if (!likedUserIds.isEmpty()) {
-            notificationService.sendNotification(new NotificationMessage(likedUserIds, AUCTION_REGISTRATION_CANCELED,
-                    AUCTION_REGISTRATION_CANCELED.getMessage(
-                            product.getName()), null)); // TODO: 사전 등록 취소 (soft delete 로 변경시 이미지 추가)
+            eventPublisher.publishEvent(NotificationEvent.of(likedUserIds, AUCTION_REGISTRATION_CANCELED,
+                    AUCTION_REGISTRATION_CANCELED.getMessage(product.getName()),
+                    null)); // TODO: 사전 등록 취소 (soft delete 로 변경시 이미지 추가)
         }
 
         logger.info("사전 등록 상품 ID{}번에 해당하는 상품을 성공적으로 삭제하였습니다. (좋아요 누른 사용자 수: {})", productId, likedUserIds.size());
