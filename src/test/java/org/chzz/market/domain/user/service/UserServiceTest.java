@@ -48,7 +48,7 @@ class UserServiceTest {
                 .bio("자기소개 1")
                 .build();
 
-        counts = new ParticipationCountsResponse(1L, 2L, 3L, 4L);
+        counts = new ParticipationCountsResponse(5L, 2L, 3L, 1L);
 
         MockitoAnnotations.openMocks(this);
         System.setProperty("org.mockito.logging.verbosity", "all");
@@ -189,10 +189,10 @@ class UserServiceTest {
             assertEquals("닉네임 1", response.nickname());
             assertEquals("자기소개 1", response.bio());
             assertNotNull(response.participationCount());
-            assertEquals(1L, response.participationCount().preRegistrationCount());
-            assertEquals(2L, response.participationCount().successfulBidCount());
-            assertEquals(3L, response.participationCount().failedBidCount());
-            assertEquals(4L, response.participationCount().endedAuctionCount());
+            assertEquals(5L, response.participationCount().ongoingAuctionCount());
+            assertEquals(2L, response.participationCount().successfulAuctionCount());
+            assertEquals(3L, response.participationCount().failedAuctionCount());
+            assertEquals(1L, response.participationCount().unsuccessfulAuctionCount());
 
             verify(userRepository).findByNickname(user1.getNickname());
             verify(auctionRepository).getParticipationCounts(user1.getId());
@@ -208,6 +208,32 @@ class UserServiceTest {
             assertThrows(UserException.class, () -> userService.getUserProfile("존재하지 않는 닉네임"));
             verify(userRepository).findByNickname("존재하지 않는 닉네임");
             verifyNoInteractions(auctionRepository);
+        }
+
+        @Test
+        @DisplayName("사용자의 경매 참여 카운트가 모두 0인 경우")
+        public void getUserProfile_ZeroCounts() {
+            // given
+            ParticipationCountsResponse zeroCounts = new ParticipationCountsResponse(0L, 0L, 0L, 0L);
+
+            when(userRepository.findByNickname("닉네임 1")).thenReturn(Optional.of(user1));
+            when(auctionRepository.getParticipationCounts(1L)).thenReturn(zeroCounts);
+
+            // when
+            UserProfileResponse response = userService.getUserProfile("닉네임 1");
+
+            // then
+            assertNotNull(response);
+            assertEquals("닉네임 1", response.nickname());
+            assertEquals("자기소개 1", response.bio());
+            assertNotNull(response.participationCount());
+            assertEquals(0L, response.participationCount().ongoingAuctionCount());
+            assertEquals(0L, response.participationCount().successfulAuctionCount());
+            assertEquals(0L, response.participationCount().failedAuctionCount());
+            assertEquals(0L, response.participationCount().unsuccessfulAuctionCount());
+
+            verify(userRepository).findByNickname(user1.getNickname());
+            verify(auctionRepository).getParticipationCounts(user1.getId());
         }
     }
 }
