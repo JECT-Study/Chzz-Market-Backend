@@ -104,7 +104,7 @@ class ProductRepositoryImplTest {
         @DisplayName("1. 특정 카테고리 사전 등록 상품을 높은 가격순으로 조회")
         public void testFindProductsByCategoryExpensive() {
             // given
-            Pageable pageable = PageRequest.of(0, 10, Sort.by("product-expensive"));
+            Pageable pageable = PageRequest.of(0, 10, Sort.by("expensive"));
 
             // when
             Page<ProductResponse> result = productRepository.findProductsByCategory(ELECTRONICS, user1.getId(), pageable);
@@ -127,7 +127,7 @@ class ProductRepositoryImplTest {
         @DisplayName("2. 특정 카테고리 사전 등록 상품을 좋아요 많은 순으로 조회")
         void findProductsByCategoryOrderByMostLikes() {
             // given
-            Pageable pageable = PageRequest.of(0, 10, Sort.by("product_popularity"));
+            Pageable pageable = PageRequest.of(0, 10, Sort.by("like"));
 
             // when
             Page<ProductResponse> result = productRepository.findProductsByCategory(ELECTRONICS, user1.getId(), pageable);
@@ -181,7 +181,7 @@ class ProductRepositoryImplTest {
             assertThat(result.get().getProductName()).isEqualTo("사전등록상품1");
             assertThat(result.get().getMinPrice()).isEqualTo(10000);
             assertThat(result.get().getLikeCount()).isEqualTo(2);
-            assertThat(result.get().isLiked()).isTrue(); // user2가 좋아요 한 상품
+            assertThat(result.get().getIsLiked()).isTrue(); // user2가 좋아요 한 상품
             assertThat(result.get().getImageUrls()).contains("path/to/image1.jpg");
         }
 
@@ -203,7 +203,7 @@ class ProductRepositoryImplTest {
 
             // then
             assertThat(result).isPresent();
-            assertThat(result.get().isLiked()).isFalse();
+            assertThat(result.get().getIsLiked()).isFalse();
         }
 
         @Test
@@ -287,8 +287,8 @@ class ProductRepositoryImplTest {
         @DisplayName("3. 페이지네이션 동작 확인")
         public void testPagination() {
             // given
-            Pageable firstPage = PageRequest.of(0, 2, Sort.by("product-expensive"));
-            Pageable secondPage = PageRequest.of(1, 2, Sort.by("product-expensive"));
+            Pageable firstPage = PageRequest.of(0, 2, Sort.by("expensive"));
+            Pageable secondPage = PageRequest.of(1, 2, Sort.by("expensive"));
 
             // when
             Page<ProductResponse> firstResult = productRepository.findProductsByCategory(ELECTRONICS, user1.getId(), firstPage);
@@ -307,7 +307,7 @@ class ProductRepositoryImplTest {
         void sortingOptionsWorkCheck() {
             // given
             Pageable newestPageable = PageRequest.of(0, 10, Sort.by("product-newest"));
-            Pageable expensivePageable = PageRequest.of(0, 10, Sort.by("product-expensive"));
+            Pageable expensivePageable = PageRequest.of(0, 10, Sort.by("expensive"));
 
             // when
             Page<ProductResponse> newestResult = productRepository.findProductsByNickname(user1.getNickname(), newestPageable);
