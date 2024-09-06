@@ -1,14 +1,17 @@
 package org.chzz.market.domain.auction.repository;
 
-import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.ENDED;
+import static org.chzz.market.common.util.QuerydslUtil.nullSafeBuilder;
 import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.PROCEEDING;
 import static org.chzz.market.domain.auction.entity.QAuction.auction;
 import static org.chzz.market.domain.auction.repository.AuctionRepositoryImpl.AuctionOrder.POPULARITY;
+import static org.chzz.market.domain.bid.entity.Bid.BidStatus.ACTIVE;
+import static org.chzz.market.domain.bid.entity.Bid.BidStatus.CANCELLED;
 import static org.chzz.market.domain.bid.entity.QBid.bid;
 import static org.chzz.market.domain.image.entity.QImage.image;
 import static org.chzz.market.domain.product.entity.QProduct.product;
 import static org.chzz.market.domain.user.entity.QUser.user;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
@@ -31,7 +34,6 @@ import org.chzz.market.domain.auction.dto.response.QAuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.QAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.QUserAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.UserAuctionResponse;
-import org.chzz.market.domain.bid.entity.Bid.BidStatus;
 import org.chzz.market.domain.image.entity.QImage;
 import org.chzz.market.domain.product.entity.Product.Category;
 import org.springframework.data.domain.Page;
@@ -56,9 +58,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                                                         Pageable pageable) {
         JPAQuery<?> baseQuery = jpaQueryFactory.from(auction)
                 .join(auction.product, product)
-                .leftJoin(bid).on(bid.auction.id.eq(auction.id))
-                .where(auction.product.category.eq(category))
-                .where(auction.status.eq(PROCEEDING));
+                .where(auction.product.category.eq(category).and(auction.status.eq(PROCEEDING)));
 
         List<AuctionResponse> content = baseQuery
                 .select(new QAuctionResponse(
@@ -70,6 +70,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                         bid.countDistinct(),
                         isParticipating(userId)
                 ))
+                .leftJoin(bid).on(bid.auction.id.eq(auction.id).and(bid.status.eq(ACTIVE)))
                 .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId())))
                 .groupBy(auction.id, product.name, image.cdnPath, auction.createdAt, product.minPrice)
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
@@ -96,7 +97,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                 .join(auction.bids, bid)
                 .join(auction.product, product)
                 .on(bid.bidder.id.eq(userId))
-                .where(bid.status.eq(BidStatus.ACTIVE));
+                .where(bid.status.eq(ACTIVE));
 
         List<AuctionResponse> content = baseQuery
                 .select(new QAuctionResponse(
@@ -137,7 +138,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                         product.minPrice,
                         auction.endDateTime,
                         auction.status,
-                        user.id.eq(userId),
+                        userIdEq(userId),
                         getBidCount(),
                         bid.id.isNotNull(),
                         bid.id,
@@ -147,11 +148,8 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                 .from(auction)
                 .join(auction.product, product)
                 .join(product.user, user)
-                .leftJoin(bid).on(bid.auction.id.eq(auctionId).and(bid.bidder.id.eq(userId)))
-                .where(
-                        auction.id.eq(auctionId)
-                                .and(auction.status.eq(PROCEEDING).or(auction.status.eq(ENDED)))
-                )
+                .leftJoin(bid).on(bid.auction.id.eq(auctionId).and(bid.status.eq(ACTIVE)).and(bidderIdEq(userId)))
+                .where(auction.id.eq(auctionId))  // TODO: 종료된 경우 조회 불가능 시 조건 추가
                 .fetchOne());
 
         auctionDetailsResponse.ifPresent(response -> response.addImageList(getImageList(response.getProductId())));
@@ -206,7 +204,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                         isParticipating(userId)
                 ))
                 .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId())))
-                .leftJoin(bid).on(bid.auction.id.eq(auction.id).and(bid.status.ne(BidStatus.CANCELLED)))
+                .leftJoin(bid).on(bid.auction.id.eq(auction.id).and(bid.status.ne(CANCELLED)))
                 .groupBy(auction.id, product.name, image.cdnPath, auction.createdAt, product.minPrice)
                 .orderBy(POPULARITY.getOrderSpecifier())
                 .offset(0)
@@ -233,8 +231,9 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
      * @return 사용자가 참여 중인 경우 true, 그렇지 않으면 false
      */
     private BooleanExpression isParticipating(Long userId) {
-        return JPAExpressions.selectFrom(bid)
-                .where(bid.auction.id.eq(auction.id).and(bid.bidder.id.eq(userId)))
+        return JPAExpressions.selectOne()
+                .from(bid)
+                .where(bid.auction.id.eq(auction.id).and(bid.status.eq(ACTIVE).and(bidderIdEq(userId))))
                 .exists();
     }
 
@@ -247,7 +246,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
         return JPAExpressions
                 .select(bid.count())
                 .from(bid)
-                .where(bid.auction.id.eq(auction.id));
+                .where(bid.auction.id.eq(auction.id).and(bid.status.eq(ACTIVE)));
     }
 
     /**
@@ -264,8 +263,16 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
     }
 
     private static NumberExpression<Integer> timeRemaining() {
-        return Expressions.numberTemplate(Integer.class, "TIMESTAMPDIFF(SECOND, CURRENT_TIMESTAMP, {0})",
-                auction.endDateTime);
+        return Expressions.numberTemplate(Integer.class,
+                "GREATEST(0, TIMESTAMPDIFF(SECOND, CURRENT_TIMESTAMP, {0}))", auction.endDateTime); // 음수면 0으로 처리
+    }
+
+    private BooleanBuilder userIdEq(Long userId) {
+        return nullSafeBuilder(() -> user.id.eq(userId));
+    }
+
+    private BooleanBuilder bidderIdEq(Long userId) {
+        return nullSafeBuilder(() -> bid.bidder.id.eq(userId));
     }
 
     @Getter
