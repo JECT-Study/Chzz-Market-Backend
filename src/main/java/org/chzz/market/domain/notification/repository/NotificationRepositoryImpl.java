@@ -2,15 +2,11 @@ package org.chzz.market.domain.notification.repository;
 
 import static org.chzz.market.domain.image.entity.QImage.image;
 import static org.chzz.market.domain.notification.entity.QNotification.notification;
-import static org.chzz.market.domain.product.entity.QProduct.product;
 
-import com.querydsl.jpa.JPAExpressions;
-import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.chzz.market.domain.image.entity.QImage;
 import org.chzz.market.domain.notification.dto.response.NotificationResponse;
 import org.chzz.market.domain.notification.dto.response.QNotificationResponse;
 import org.springframework.data.domain.Page;
@@ -35,8 +31,7 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom 
                         image.cdnPath,
                         notification.createdAt
                 ))
-                .leftJoin(notification.product, product)
-                .leftJoin(image).on(image.id.eq(getFirstImageId()))
+                .leftJoin(notification.image, image)
                 .where(notification.isDeleted.eq(false))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -48,17 +43,5 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom 
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchCount);
 
-    }
-
-    /**
-     * 상품의 첫 번째 이미지를 조회합니다.
-     *
-     * @return 첫 번째 이미지 ID
-     */
-    private JPQLQuery<Long> getFirstImageId() {
-        QImage imageSub = new QImage("imageSub");
-        return JPAExpressions.select(imageSub.id.min())
-                .from(imageSub)
-                .where(imageSub.product.id.eq(product.id));
     }
 }
