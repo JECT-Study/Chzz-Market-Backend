@@ -14,6 +14,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -95,6 +96,10 @@ public class Product extends BaseTimeEntity {
 
     public void addImages(List<Image> images) {
         this.images.addAll(images);
+    }
+
+    public Optional<Image> getFirstImage() {
+        return images.stream().findFirst();
     }
 
 }
