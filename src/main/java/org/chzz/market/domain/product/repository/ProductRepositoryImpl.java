@@ -162,8 +162,8 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
     @Override
     public Page<ProductResponse> findLikedProductsByUserId(Long userId, Pageable pageable) {
 
-        JPAQuery<?> baseQuery = jpaQueryFactory.from(like)
-                .join(like.product, product)
+        JPAQuery<?> baseQuery = jpaQueryFactory.from(product)
+                .join(product.likes, like)
                 .join(like.user, user)
                 .leftJoin(auction).on(auction.product.eq(product))
                 .where(user.id.eq(userId).and(auction.isNull()));
@@ -174,7 +174,7 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
                         product.name,
                         image.cdnPath,
                         product.minPrice,
-                        getLikeCount(),
+                        product.likes.size().longValue(),
                         Expressions.constant(true)
                 ))
                 .leftJoin(image).on(image.product.id.eq(product.id)
