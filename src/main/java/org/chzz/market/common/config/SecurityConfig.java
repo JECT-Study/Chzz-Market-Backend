@@ -60,7 +60,7 @@ public class SecurityConfig {
                                 "/api/v1/users/tokens/reissue",
                                 "/api/v1/users/logout").permitAll()
                         .requestMatchers(POST, "/api/v1/users").hasRole("TEMP_USER")
-                        .anyRequest().authenticated()
+                        .anyRequest().hasRole("USER")
                 )
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .headers(header -> header.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable).disable())
