@@ -4,6 +4,7 @@ import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.CANCEL
 import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.ENDED;
 import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.PROCEEDING;
 import static org.chzz.market.domain.auction.entity.QAuction.auction;
+import static org.chzz.market.domain.auction.repository.AuctionRepositoryImpl.AuctionOrder.POPULARITY;
 import static org.chzz.market.domain.bid.entity.QBid.bid;
 import static org.chzz.market.domain.image.entity.QImage.image;
 import static org.chzz.market.domain.product.entity.QProduct.product;
@@ -27,10 +28,11 @@ import org.chzz.market.common.util.QuerydslOrder;
 import org.chzz.market.common.util.QuerydslOrderProvider;
 import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.AuctionResponse;
-import org.chzz.market.domain.auction.dto.response.MyAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.QAuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.QAuctionResponse;
-import org.chzz.market.domain.auction.dto.response.QMyAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.QUserAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.UserAuctionResponse;
+import org.chzz.market.domain.bid.entity.Bid.BidStatus;
 import org.chzz.market.domain.image.entity.QImage;
 import org.chzz.market.domain.product.entity.Product.Category;
 import org.springframework.data.domain.Page;
@@ -82,6 +84,43 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
     }
 
     /**
+     * 사용자의 경매 참여 기록을 조회합니다
+     *
+     * @param userId   사용자 ID
+     * @param pageable 페이징 정보
+     * @return 회원의 경매 참여 기록
+     */
+    @Override
+    public Page<AuctionResponse> findParticipatingAuctionRecord(Long userId, Pageable pageable) {
+        JPAQuery<?> baseQuery = jpaQueryFactory
+                .from(auction)
+                .join(auction.bids, bid)
+                .join(auction.product, product)
+                .on(bid.bidder.id.eq(userId))
+                .where(bid.status.eq(BidStatus.ACTIVE));
+
+        List<AuctionResponse> content = baseQuery
+                .select(new QAuctionResponse(
+                        auction.id,
+                        product.name,
+                        image.cdnPath,
+                        timeRemaining().longValue(),
+                        auction.product.minPrice.longValue(),
+                        getBidCount()
+                ))
+                .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId())))
+                .groupBy(auction.id, product.name, image.cdnPath)
+                .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        JPAQuery<Long> countQuery = baseQuery
+                .select(auction.id.countDistinct());
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchCount);
+    }
+
+    /**
      * 경매 ID와 사용자 ID로 경매 상세 정보를 조회합니다.
      *
      * @param auctionId 경매 ID
@@ -122,15 +161,15 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
     }
 
     @Override
-    public Page<MyAuctionResponse> findAuctionsByUserId(Long userId, Pageable pageable) {
+    public Page<UserAuctionResponse> findAuctionsByNickname(String nickname, Pageable pageable) {
         JPAQuery<?> baseQuery = jpaQueryFactory.from(auction)
                 .join(auction.product, product)
                 .join(product.user, user)
                 .where(auction.status.ne(CANCELLED)
-                        .and(user.id.eq(userId)));
+                        .and(user.nickname.eq(nickname)));
 
-        List<MyAuctionResponse> content = baseQuery
-                .select(new QMyAuctionResponse(
+        List<UserAuctionResponse> content = baseQuery
+                .select(new QUserAuctionResponse(
                         auction.id,
                         product.name,
                         image.cdnPath,
@@ -150,6 +189,31 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                 .select(auction.count());
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchCount);
+    }
+
+    @Override
+    public List<AuctionResponse> findBestAuctions(Long userId) {
+        JPAQuery<?> baseQuery = jpaQueryFactory.from(auction)
+                .join(auction.product, product)
+                .where(auction.status.eq(PROCEEDING));
+
+        return baseQuery
+                .select(new QAuctionResponse(
+                        auction.id,
+                        product.name,
+                        image.cdnPath,
+                        timeRemaining().longValue(),
+                        product.minPrice.longValue(),
+                        bid.countDistinct(),
+                        isParticipating(userId)
+                ))
+                .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId())))
+                .leftJoin(bid).on(bid.auction.id.eq(auction.id).and(bid.status.ne(BidStatus.CANCELLED)))
+                .groupBy(auction.id, product.name, image.cdnPath, auction.createdAt, product.minPrice)
+                .orderBy(POPULARITY.getOrderSpecifier())
+                .offset(0)
+                .limit(10)
+                .fetch();
     }
 
     /**

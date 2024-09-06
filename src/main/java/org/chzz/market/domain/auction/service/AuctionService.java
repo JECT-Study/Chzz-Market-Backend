@@ -17,8 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.domain.auction.dto.request.StartAuctionRequest;
 import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.AuctionResponse;
-import org.chzz.market.domain.auction.dto.response.MyAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.StartAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.UserAuctionResponse;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
@@ -51,10 +51,12 @@ public class AuctionService {
     private final ApplicationEventPublisher eventPublisher;
 
     public Auction getAuction(Long auctionId) {
-        return auctionRepository.findById(auctionId).orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
+        return auctionRepository.findById(auctionId)
+                .orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
     }
 
-    public Page<AuctionResponse> getAuctionListByCategory(Category category, Long userId, Pageable pageable) {
+    public Page<AuctionResponse> getAuctionListByCategory(Category category, Long userId,
+                                                          Pageable pageable) {
         return auctionRepository.findAuctionsByCategory(category, userId, pageable);
     }
 
@@ -63,8 +65,12 @@ public class AuctionService {
         return auctionDetails.orElseThrow(() -> new AuctionException(AUCTION_NOT_ACCESSIBLE));
     }
 
-    public Page<MyAuctionResponse> getAuctionListByUserId(Long userId, Pageable pageable) {
-        return auctionRepository.findAuctionsByUserId(userId, pageable);
+    public Page<UserAuctionResponse> getAuctionListByNickname(String nickname, Pageable pageable) {
+        return auctionRepository.findAuctionsByNickname(nickname, pageable);
+    }
+
+    public Page<AuctionResponse> getAuctionHistory(Long userId, Pageable pageable) {
+        return auctionRepository.findParticipatingAuctionRecord(userId, pageable);
     }
 
     /**
@@ -104,8 +110,16 @@ public class AuctionService {
         auction = auctionRepository.save(auction);
         logger.info("경매가 시작되었습니다. 등록된 경매 마감 시간 : {}", auction.getEndDateTime());
 
-        return StartAuctionResponse.of(auction.getId(), auction.getProduct().getId(), auction.getStatus(),
-                auction.getEndDateTime());
+        return StartAuctionResponse.of(
+                auction.getId(),
+                auction.getProduct().getId(),
+                auction.getStatus(),
+                auction.getEndDateTime()
+        );
+    }
+
+    public List<AuctionResponse> getBestAuctionList(Long userId) {
+        return auctionRepository.findBestAuctions(userId);
     }
 
     @Transactional
