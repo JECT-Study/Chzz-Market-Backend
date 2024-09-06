@@ -93,7 +93,6 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
         Optional<AuctionDetailsResponse> auctionDetailsResponse = Optional.ofNullable(jpaQueryFactory
                 .select(new QAuctionDetailsResponse(
                         product.id,
-                        user.id,
                         user.nickname,
                         product.name,
                         product.description,
@@ -105,7 +104,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                         bid.id.isNotNull(),
                         bid.id,
                         bid.amount.coalesce(0L),
-                        bid.count.coalesce(3)
+                        bid.count.coalesce(0)
                 ))
                 .from(auction)
                 .join(auction.product, product)
