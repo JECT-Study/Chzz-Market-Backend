@@ -94,9 +94,5 @@ logging:
   level:
     org.springframework.security: trace
 
-oauth2:
-  redirect-url: http://test
-  additional-info-url: http://test
-
 client:
   url: "http://test"

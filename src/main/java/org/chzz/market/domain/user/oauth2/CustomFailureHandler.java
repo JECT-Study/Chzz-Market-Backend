@@ -12,14 +12,15 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationFa
 @Slf4j
 @Configuration
 public class CustomFailureHandler extends SimpleUrlAuthenticationFailureHandler {
-    @Value("${oauth2.redirect-url}")
-    private String oauth2RedirectUrl;
+    private static final String REDIRECT_URL_FAILURE = "/login?status=failure";
+
+    @Value("${client.url}")
+    private String clientUrl;
 
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
                                         AuthenticationException exception) throws IOException {
-        String redirectUrl = oauth2RedirectUrl + "?status=failure";
-        response.sendRedirect(redirectUrl);
+        response.sendRedirect(clientUrl + REDIRECT_URL_FAILURE);
         log.info("social login failure");
     }
 }
