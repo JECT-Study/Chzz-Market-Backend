@@ -1,5 +1,6 @@
 package org.chzz.market.domain.product.service;
 
+import static org.chzz.market.domain.notification.entity.NotificationType.AUCTION_REGISTRATION_CANCELED;
 import static org.chzz.market.domain.product.error.ProductErrorCode.ALREADY_IN_AUCTION;
 import static org.chzz.market.domain.product.error.ProductErrorCode.PRODUCT_ALREADY_AUCTIONED;
 import static org.chzz.market.domain.product.error.ProductErrorCode.PRODUCT_NOT_FOUND;
@@ -12,7 +13,6 @@ import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.image.repository.ImageRepository;
 import org.chzz.market.domain.image.service.ImageService;
 import org.chzz.market.domain.notification.dto.NotificationMessage;
-import org.chzz.market.domain.notification.entity.NotificationType;
 import org.chzz.market.domain.notification.service.NotificationService;
 import org.chzz.market.domain.product.dto.CategoryResponse;
 import org.chzz.market.domain.product.dto.DeleteProductResponse;
@@ -82,12 +82,14 @@ public class ProductService {
      * 사전 등록 상품 수정
      */
     @Transactional
-    public UpdateProductResponse updateProduct(Long productId, UpdateProductRequest request, List<MultipartFile> images) {
+    public UpdateProductResponse updateProduct(Long productId, UpdateProductRequest request,
+                                               List<MultipartFile> images) {
         logger.info("상품 ID {}번에 대한 사전 등록 정보를 업데이트를 시작합니다.", productId);
         // 상품 유효성 검사
         Product existingProduct = productRepository.findByIdAndUserId(productId, request.getUserId())
                 .orElseThrow(() -> {
-                    logger.info("유저 ID {}번 유저가 등록한 상품 ID {}번에 해당하는 사전 등록 상품을 찾을 수 없습니다.", request.getUserId(), productId);
+                    logger.info("유저 ID {}번 유저가 등록한 상품 ID {}번에 해당하는 사전 등록 상품을 찾을 수 없습니다.", request.getUserId(),
+                            productId);
                     return new ProductException(PRODUCT_NOT_FOUND);
                 });
 
@@ -170,9 +172,9 @@ public class ProductService {
                 .distinct()
                 .toList();
         if (!likedUserIds.isEmpty()) {
-            notificationService.sendNotification(
-                    new NotificationMessage(likedUserIds, NotificationType.AUCTION_REGISTRATION_CANCELED,
-                            product.getName()));
+            notificationService.sendNotification(new NotificationMessage(likedUserIds, AUCTION_REGISTRATION_CANCELED,
+                    AUCTION_REGISTRATION_CANCELED.getMessage(
+                            product.getName()), null)); // TODO: 사전 등록 취소 (soft delete 로 변경시 이미지 추가)
         }
 
         logger.info("사전 등록 상품 ID{}번에 해당하는 상품을 성공적으로 삭제하였습니다. (좋아요 누른 사용자 수: {})", productId, likedUserIds.size());

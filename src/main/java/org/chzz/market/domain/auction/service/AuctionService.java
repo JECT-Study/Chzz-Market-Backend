@@ -24,6 +24,7 @@ import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.bid.entity.Bid;
 import org.chzz.market.domain.bid.service.BidService;
+import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.notification.dto.NotificationMessage;
 import org.chzz.market.domain.notification.service.NotificationService;
 import org.chzz.market.domain.product.entity.Product;
@@ -123,54 +124,47 @@ public class AuctionService {
 
     private void processAuctionResults(Auction auction) {
         Long productUserId = auction.getProduct().getUser().getId();
+        String productName = auction.getProduct().getName();
+        Image firstImage = auction.getProduct().getFirstImage().orElse(null);
         List<Bid> bids = bidService.findAllBidsByAuction(auction);
-
         if (bids.isEmpty()) { // 입찰이 없는 경우
-            notifyAuctionFailure(productUserId, auction.getProduct());
+            notificationService.sendNotification(
+                    new NotificationMessage(productUserId, AUCTION_FAILURE, AUCTION_FAILURE.getMessage(productName),
+                            firstImage)); // 낙찰 실패 알림
             return;
         }
-        notifyAuctionSuccess(productUserId, auction.getProduct());
+        notificationService.sendNotification(
+                new NotificationMessage(productUserId, AUCTION_SUCCESS, AUCTION_SUCCESS.getMessage(productName),
+                        firstImage)); // 낙찰 성공 알림
+        processWinningBid(auction, bids.get(0), productName, firstImage); // 첫 번째 입찰이 낙찰
+        processNonWinningBids(bids, productName, firstImage);
 
-        log.info("경매 ID {}: 낙찰 계산", auction.getId());
-        Bid winningBid = bids.get(0); // 첫 번째 입찰이 낙찰
+    }
+
+    // 낙찰자 처리
+    private void processWinningBid(Auction auction, Bid winningBid, String productName, Image firstImage) {
         auction.assignWinner(winningBid.getBidder().getId());
-
-        notifyAuctionWinner(winningBid.getBidder().getId(), auction.getProduct());
-        notifyNonWinners(bids, auction.getProduct());
+        notificationService.sendNotification(new NotificationMessage(
+                winningBid.getBidder().getId(),
+                AUCTION_WINNER,
+                AUCTION_WINNER.getMessage(productName),
+                firstImage));
+        log.info("경매 ID {}: 낙찰자 처리 완료", auction.getId());
     }
 
-    // 판매자에게 미 낙찰 알림
-    private void notifyAuctionFailure(Long productUserId, Product product) {
-        notificationService.sendNotification(
-                new NotificationMessage(productUserId, AUCTION_FAILURE, product)
-        );
-    }
-
-    // 판매자에게 낙찰 알림
-    private void notifyAuctionSuccess(Long productUserId, Product product) {
-        notificationService.sendNotification(
-                new NotificationMessage(productUserId, AUCTION_SUCCESS, product)
-        );
-    }
-
-    // 낙찰자에게 알림
-    private void notifyAuctionWinner(Long winnerId, Product product) {
-        notificationService.sendNotification(
-                new NotificationMessage(winnerId, AUCTION_WINNER, product)
-        );
-    }
-
-    // 미낙찰자들에게 알림
-    private void notifyNonWinners(List<Bid> bids, Product product) {
+    // 미낙찰자 처리
+    private void processNonWinningBids(List<Bid> bids, String productName, Image firstImage) {
         List<Long> nonWinnerIds = bids.stream()
                 .skip(1) // 낙찰자를 제외한 나머지 입찰자들
                 .map(bid -> bid.getBidder().getId())
                 .collect(Collectors.toList());
 
         if (!nonWinnerIds.isEmpty()) {
-            notificationService.sendNotification(
-                    new NotificationMessage(nonWinnerIds, AUCTION_NON_WINNER, product)
-            );
+            notificationService.sendNotification(new NotificationMessage(
+                    nonWinnerIds,
+                    AUCTION_NON_WINNER,
+                    AUCTION_NON_WINNER.getMessage(productName),
+                    firstImage));
         }
     }
 }
