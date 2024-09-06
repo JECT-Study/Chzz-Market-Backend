@@ -27,7 +27,7 @@ public class NotificationEventListener {
     private final UserRepository userRepository;
     private final NotificationRepository notificationRepository;
 
-    @Async
+    @Async("threadPoolTaskExecutor")
     @TransactionalEventListener // default 인 phase = TransactionPhase.AFTER_COMMIT 사용
     public void sendNotification(final NotificationEvent notificationEvent) {
         log.info("알림 이벤트 수신 - Type: {}, Message: '{}', User IDs: {}, Image: {}",
