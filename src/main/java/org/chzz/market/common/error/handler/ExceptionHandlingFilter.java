@@ -35,6 +35,7 @@ public class ExceptionHandlingFilter extends OncePerRequestFilter {
         } catch (GlobalException e) {
             handleErrorResponse(e, response, e.getErrorCode());
         } catch (Exception e) {
+            log.error("Unexpected error occurred while processing request: {}", e.getMessage(), e);
             handleErrorResponse(e, response, GlobalErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
