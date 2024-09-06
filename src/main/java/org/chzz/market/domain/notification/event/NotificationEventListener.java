@@ -13,20 +13,21 @@ import org.chzz.market.domain.notification.repository.NotificationRepository;
 import org.chzz.market.domain.notification.service.RedisPublisher;
 import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.repository.UserRepository;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 @RequiredArgsConstructor
 @Component
+@Transactional
 @Slf4j
 public class NotificationEventListener {
     private final RedisPublisher redisPublisher;
     private final UserRepository userRepository;
     private final NotificationRepository notificationRepository;
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Async
     @TransactionalEventListener // default 인 phase = TransactionPhase.AFTER_COMMIT 사용
     public void sendNotification(final NotificationEvent notificationEvent) {
         log.info("알림 이벤트 수신 - Type: {}, Message: '{}', User IDs: {}, Image: {}",
