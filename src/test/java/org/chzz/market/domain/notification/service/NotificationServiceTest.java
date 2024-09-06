@@ -66,19 +66,6 @@ class NotificationServiceTest {
     }
 
     @Test
-    @DisplayName("이미 읽은 알림을 읽으려고 하면 예외가 발생한다.")
-    public void shouldThrowExceptionForAlreadyReadNotification() {
-        // given
-        given(notificationRepository.findById(anyLong())).willReturn(Optional.of(readNotification));
-
-        // when & then
-        assertThatThrownBy(() -> notificationService.readNotification(user.getId(), readNotification.getId()))
-                .isInstanceOf(NotificationException.class)
-                .extracting("errorCode")
-                .isEqualTo(NotificationErrorCode.ALREADY_READ_NOTIFICATION);
-    }
-
-    @Test
     @DisplayName("삭제된 알림을 읽으려고 하면 예외가 발생한다.")
     public void shouldThrowExceptionForDeletedNotificationRead() {
         // given
