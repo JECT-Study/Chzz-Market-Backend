@@ -80,6 +80,10 @@ jobs:
 
       - name: EC2에서 Docker Compose를 통한 애플리케이션 실행
         uses: appleboy/ssh-action@master
+        env:
+          AWS_REGION: ${{ env.AWS_REGION }}
+          ECR_IMAGE: ${{ steps.build-image.outputs.image }}
+          ECR_URI: ${{ secrets.ECR_URI }}
         with:
           host: ${{ secrets.EC2_IP }}
           username: ${{ secrets.EC2_USERNAME }}
