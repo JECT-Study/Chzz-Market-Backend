@@ -1,6 +1,5 @@
 package org.chzz.market.domain.auction.repository;
 
-import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.CANCELLED;
 import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.ENDED;
 import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.PROCEEDING;
 import static org.chzz.market.domain.auction.entity.QAuction.auction;
@@ -132,7 +131,6 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
         Optional<AuctionDetailsResponse> auctionDetailsResponse = Optional.ofNullable(jpaQueryFactory
                 .select(new QAuctionDetailsResponse(
                         product.id,
-                        user.id,
                         user.nickname,
                         product.name,
                         product.description,
@@ -144,7 +142,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                         bid.id.isNotNull(),
                         bid.id,
                         bid.amount.coalesce(0L),
-                        bid.count.coalesce(3)
+                        bid.count.coalesce(0)
                 ))
                 .from(auction)
                 .join(auction.product, product)
@@ -166,8 +164,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
         JPAQuery<?> baseQuery = jpaQueryFactory.from(auction)
                 .join(auction.product, product)
                 .join(product.user, user)
-                .where(auction.status.ne(CANCELLED)
-                        .and(user.nickname.eq(nickname)));
+                .where(user.nickname.eq(nickname));
 
         List<UserAuctionResponse> content = baseQuery
                 .select(new QUserAuctionResponse(
