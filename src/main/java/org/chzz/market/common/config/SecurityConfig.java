@@ -52,9 +52,12 @@ public class SecurityConfig {
                                 "/api/v1/auctions/{auctionId}",
                                 "/api/v1/auctions/best",
                                 "/api/v1/auctions/imminent",
-                                "/api/v1/auctions/history",
+                                "/api/v1/auctions/user/{nickname}",
                                 "/api/v1/products",
+                                "/api/v1/products/categories",
                                 "/api/v1/products/{productId}",
+                                "/api/v1/products/user/{nickname}",
+                                "/api/v1/users/{nickname}",
                                 "/api/v1/check/nickname/*").permitAll()
                         .requestMatchers(POST,
                                 "/api/v1/users/tokens/reissue",
