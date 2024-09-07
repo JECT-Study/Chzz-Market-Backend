@@ -98,6 +98,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             source /home/ec2-user/.env
+            ./init-letsencrypt.sh
             
             # ECR 레지스트리에 로그인
             aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_URI
@@ -109,5 +110,4 @@ jobs:
             sudo docker compose --env-file /home/ec2-user/.env pull
             
             # Docker Compose로 애플리케이션 실행
-            ./init-letsencrypt.sh
             sudo docker compose --env-file /home/ec2-user/.env up -d
