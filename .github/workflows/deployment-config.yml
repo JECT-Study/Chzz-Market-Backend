@@ -89,11 +89,6 @@ jobs:
           ECR_IMAGE: ${{ steps.build-image.outputs.image }}
           ECR_URI: ${{ secrets.ECR_URI }}
           script: |
-            echo "export AWS_REGION=$AWS_REGION" >> ~/.bashrc
-            echo "export ECR_URI=$ECR_URI" >> ~/.bashrc
-            
-            source ~/.bashrc
-          
             # ECR 레지스트리에 로그인
             aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_URI
             
@@ -104,4 +99,4 @@ jobs:
             sudo docker-compose pull
             
             # Docker Compose로 여러 애플리케이션 및 nginx 실행
-            sudo ECR_IMAGE=$ECR_IMAGE docker-compose -f /home/ec2-user/compose.yaml up -d
+            sudo ECR_IMAGE=$ECR_IMAGE docker-compose up -d
