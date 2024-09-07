@@ -80,10 +80,6 @@ jobs:
 
       - name: EC2에서 Docker Compose를 통한 애플리케이션 실행
         uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_IP }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
         env:
           AWS_REGION: ${{ env.AWS_REGION }}
           ECR_IMAGE: ${{ steps.build-image.outputs.image }}
@@ -100,3 +96,8 @@ jobs:
             
             # Docker Compose로 여러 애플리케이션 및 nginx 실행
             sudo ECR_IMAGE=$ECR_IMAGE docker compose up -d
+        with:
+          host: ${{ secrets.EC2_IP }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: AWS_REGION,ECR_IMAGE,ECR_URI
