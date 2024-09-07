@@ -99,4 +99,4 @@ jobs:
             sudo docker-compose pull
             
             # Docker Compose로 여러 애플리케이션 및 nginx 실행
-            sudo ECR_IMAGE=$ECR_IMAGE docker-compose up -d
+            sudo ECR_IMAGE=$ECR_IMAGE docker-compose -f /home/ec2-user/compose.yaml up -d
