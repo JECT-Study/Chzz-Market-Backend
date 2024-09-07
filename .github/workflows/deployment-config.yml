@@ -99,7 +99,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             # ECR 레지스트리에 로그인
-            aws ecr get-login-password --region $(grep AWS_REGION /home/ec2-user/.env | cut -d '=' -f2) | docker login --username AWS --password-stdin $(grep ECR_URI /home/ec2-user/.env | cut -d '=' -f2)
+            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_URI
             
             # 기존 컨테이너 정지 및 삭제
             sudo docker compose down
