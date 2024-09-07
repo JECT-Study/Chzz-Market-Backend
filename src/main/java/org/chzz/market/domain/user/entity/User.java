@@ -15,6 +15,8 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -97,6 +99,12 @@ public class User extends BaseTimeEntity {
         if (!StringUtils.isBlank(userCreateRequest.getLink())) {
             this.link = userCreateRequest.getLink();
         }
+    }
+
+    public void updateProfile(String nickname, String bio, String link) {
+        this.nickname = nickname;
+        this.bio = bio;
+        this.link = link;
     }
 
     @Getter

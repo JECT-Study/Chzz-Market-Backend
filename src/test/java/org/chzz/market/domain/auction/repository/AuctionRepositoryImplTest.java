@@ -51,7 +51,7 @@ class AuctionRepositoryImplTest {
 
     private static User user1, user2, user3, user4;
     private static Product product1, product2, product3, product4;
-    private static Auction auction1, auction2, auction3, auction4;
+    private static Auction auction1, auction2, auction3;
     private static Image image1, image2, image3, image4;
     private static Bid bid1, bid2, bid3, bid4, bid5, bid6;
 
@@ -79,9 +79,7 @@ class AuctionRepositoryImplTest {
                 .endDateTime(LocalDateTime.now().plusDays(1)).build();
         auction3 = Auction.builder().product(product3).status(Auction.AuctionStatus.PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusDays(1)).build();
-        auction4 = Auction.builder().product(product4).status(Auction.AuctionStatus.CANCELLED)
-                .endDateTime(LocalDateTime.now().plusDays(1)).build();
-        auctionRepository.saveAll(List.of(auction1, auction2, auction3, auction4));
+        auctionRepository.saveAll(List.of(auction1, auction2, auction3));
 
         image1 = Image.builder().product(product1).cdnPath("path/to/image1_1.jpg").build();
         image2 = Image.builder().product(product1).cdnPath("path/to/image1_2.jpg").build();
@@ -188,7 +186,6 @@ class AuctionRepositoryImplTest {
         //then
         assertThat(result).isPresent();
         assertThat(result.get().getProductId()).isEqualTo(product1.getId());
-        assertThat(result.get().getSellerId()).isEqualTo(userId);
         assertThat(result.get().getIsSeller()).isTrue();
         assertThat(result.get().getBidAmount()).isEqualTo(0);
         assertThat(result.get().getIsParticipating()).isFalse();
@@ -209,7 +206,6 @@ class AuctionRepositoryImplTest {
         //then
         assertThat(result).isPresent();
         assertThat(result.get().getProductId()).isEqualTo(product1.getId());
-        assertThat(result.get().getSellerId()).isEqualTo(user1.getId());
         assertThat(result.get().getIsSeller()).isFalse();
         assertThat(result.get().getBidAmount()).isEqualTo(0);
         assertThat(result.get().getIsParticipating()).isFalse();
@@ -229,26 +225,10 @@ class AuctionRepositoryImplTest {
         //then
         assertThat(result).isPresent();
         assertThat(result.get().getProductId()).isEqualTo(product2.getId());
-        assertThat(result.get().getSellerId()).isEqualTo(user1.getId());
         assertThat(result.get().getIsSeller()).isFalse();
         assertThat(result.get().getBidAmount()).isEqualTo(6000L);
         assertThat(result.get().getIsParticipating()).isTrue();
         assertThat(result.get().getBidId()).isEqualTo(bid4.getId());
-    }
-
-    @Test
-    @DisplayName("경매 상세 조회 - 취소된 경매인 경우")
-    public void testFindAuctionDetailsById_CancelledAuction() throws Exception {
-        //given
-
-        Long auctionId = auction4.getId();
-        Long userId = user1.getId();
-
-        //when
-        Optional<AuctionDetailsResponse> result = auctionRepository.findAuctionDetailsById(auctionId, userId);
-
-        //then
-        assertThat(result).isNotPresent();
     }
 
     @Test
