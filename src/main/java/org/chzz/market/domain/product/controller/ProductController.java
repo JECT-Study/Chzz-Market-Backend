@@ -79,7 +79,7 @@ public class ProductController {
     @GetMapping("/history")
     public ResponseEntity<Page<ProductResponse>> getLikedProductList(
             @LoginUser Long userId,
-            @PageableDefault(size=20, sort="createdAt", direction = Direction.DESC) Pageable pageable
+            @PageableDefault(size=20, sort="product-newest") Pageable pageable
     ) {
         return ResponseEntity.ok(productService.getLikedProductList(userId, pageable));
     }

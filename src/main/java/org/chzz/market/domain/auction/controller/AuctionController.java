@@ -16,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -65,7 +64,7 @@ public class AuctionController {
     @GetMapping("/won")
     public ResponseEntity<Page<WonAuctionResponse>> getWonAuctionHistory(
             @LoginUser Long userId,
-            @PageableDefault(size = 20, sort = "endDateTime", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(size = 20, sort = "newest") Pageable pageable) {
         return ResponseEntity.ok(auctionService.getWonAuctionHistory(userId, pageable));
     }
 
@@ -75,7 +74,7 @@ public class AuctionController {
     @GetMapping("/lost")
     public ResponseEntity<Page<LostAuctionResponse>> getLostAuctionHistory(
             @LoginUser Long userId,
-            @PageableDefault(size = 20, sort = "endDateTime", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(size = 20, sort = "newest") Pageable pageable) {
         return ResponseEntity.ok(auctionService.getLostAuctionHistory(userId, pageable));
     }
 
