@@ -25,6 +25,7 @@ import org.chzz.market.domain.base.entity.BaseTimeEntity;
 import org.chzz.market.domain.bid.error.BidException;
 import org.chzz.market.domain.user.entity.User;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.DynamicUpdate;
 
 /**
  * bid 생성시 해당 경매에 입찰 기록을 통해 entity를 가져와 dirty checking 가능하도록 구현 예정
@@ -34,6 +35,7 @@ import org.hibernate.annotations.ColumnDefault;
 @Table
 @Builder
 @AllArgsConstructor
+@DynamicUpdate
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Bid extends BaseTimeEntity {
     @Id
