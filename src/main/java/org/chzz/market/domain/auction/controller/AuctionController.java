@@ -3,15 +3,14 @@ package org.chzz.market.domain.auction.controller;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.chzz.market.common.config.LoginUser;
 import org.chzz.market.domain.auction.dto.request.BaseRegisterRequest;
 import org.chzz.market.domain.auction.dto.request.StartAuctionRequest;
-import org.chzz.market.domain.auction.dto.response.AuctionResponse;
-import org.chzz.market.domain.auction.dto.response.RegisterResponse;
-import org.chzz.market.domain.auction.dto.response.StartAuctionResponse;
-import org.chzz.market.domain.auction.dto.response.UserAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.*;
 import org.chzz.market.domain.auction.service.AuctionRegistrationServiceFactory;
 import org.chzz.market.domain.auction.service.AuctionService;
 import org.chzz.market.domain.auction.service.register.AuctionRegistrationService;
+import org.chzz.market.domain.bid.service.BidService;
 import org.chzz.market.domain.product.entity.Product.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,27 +37,45 @@ public class AuctionController {
     private static final Logger logger = LoggerFactory.getLogger(AuctionController.class);
 
     private final AuctionService auctionService;
+    private final BidService bidService;
     private final AuctionRegistrationServiceFactory registrationServiceFactory;
 
     @GetMapping
     public ResponseEntity<?> getAuctionList(@RequestParam Category category,
-//                                            @AuthenticationPrincipal CustomUserDetails customUserDetails, // TODO: 추후에 인증된 사용자 정보로 수정 필요
+                                            @LoginUser Long userId,
                                             Pageable pageable) {
-        return ResponseEntity.ok(auctionService.getAuctionListByCategory(category, 1L, pageable)); // 임의의 사용자 ID
+        return ResponseEntity.ok(auctionService.getAuctionListByCategory(category, userId, pageable));
     }
 
     @GetMapping("/{auctionId}")
-    public ResponseEntity<?> getAuctionDetails(@PathVariable Long auctionId) {
-        return ResponseEntity.ok(auctionService.getAuctionDetails(auctionId, 1L)); // TODO: 추후에 인증된 사용자 정보로 수정 필요
+    public ResponseEntity<?> getAuctionDetails(@PathVariable Long auctionId, @LoginUser Long userId) {
+        return ResponseEntity.ok(auctionService.getAuctionDetails(auctionId, userId));
     }
 
 
     @GetMapping("/history")
-    public ResponseEntity<?> getAuctionHistory(
-            //                                            @AuthenticationPrincipal CustomUserDetails customUserDetails, // TODO: 추후에 인증된 사용자 정보로 수정 필요
-            Pageable pageable
-    ) {
-        return ResponseEntity.ok(auctionService.getAuctionHistory(1L, pageable));
+    public ResponseEntity<?> getAuctionHistory(@LoginUser Long userId, Pageable pageable) {
+        return ResponseEntity.ok(auctionService.getAuctionHistory(userId, pageable));
+    }
+
+    /*
+     * 내가 성공한 경매 조회
+     */
+    @GetMapping("/won")
+    public ResponseEntity<Page<WonAuctionResponse>> getWonAuctionHistory(
+            @LoginUser Long userId,
+            @PageableDefault(size = 20, sort = "newest") Pageable pageable) {
+        return ResponseEntity.ok(auctionService.getWonAuctionHistory(userId, pageable));
+    }
+
+    /*
+     * 내가 실패한 경매 조회
+     */
+    @GetMapping("/lost")
+    public ResponseEntity<Page<LostAuctionResponse>> getLostAuctionHistory(
+            @LoginUser Long userId,
+            @PageableDefault(size = 20, sort = "newest") Pageable pageable) {
+        return ResponseEntity.ok(auctionService.getLostAuctionHistory(userId, pageable));
     }
 
     /**
@@ -86,12 +103,18 @@ public class AuctionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    /*
+     * 사용자 경매 상품 목록 조회
+     */
     @GetMapping("/users/{nickname}")
     public ResponseEntity<Page<UserAuctionResponse>> getUserAuctionList(@PathVariable String nickname,
                                                                         @PageableDefault(sort = "newest") Pageable pageable) {
         return ResponseEntity.ok(auctionService.getAuctionListByNickname(nickname, pageable));
     }
 
+    /*
+     * Best 경매 상품 목록 조회~
+     */
     @GetMapping("/best")
     public ResponseEntity<?> bestAuctionList() {
         List<AuctionResponse> bestAuctionList=auctionService.getBestAuctionList();

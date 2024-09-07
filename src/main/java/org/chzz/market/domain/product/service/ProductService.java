@@ -1,18 +1,31 @@
 package org.chzz.market.domain.product.service;
 
+import static org.chzz.market.domain.notification.entity.NotificationType.AUCTION_REGISTRATION_CANCELED;
+import static org.chzz.market.domain.product.error.ProductErrorCode.ALREADY_IN_AUCTION;
+import static org.chzz.market.domain.product.error.ProductErrorCode.PRODUCT_ALREADY_AUCTIONED;
+import static org.chzz.market.domain.product.error.ProductErrorCode.PRODUCT_NOT_FOUND;
+
+import java.util.Arrays;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.chzz.market.common.config.LoginUser;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.image.repository.ImageRepository;
 import org.chzz.market.domain.image.service.ImageService;
-import org.chzz.market.domain.product.dto.*;
-import org.chzz.market.domain.product.entity.Product;
-import org.chzz.market.domain.product.error.ProductException;
+import org.chzz.market.domain.notification.event.NotificationEvent;
+import org.chzz.market.domain.product.dto.CategoryResponse;
+import org.chzz.market.domain.product.dto.DeleteProductResponse;
 import org.chzz.market.domain.product.dto.ProductDetailsResponse;
 import org.chzz.market.domain.product.dto.ProductResponse;
+import org.chzz.market.domain.product.dto.UpdateProductRequest;
+import org.chzz.market.domain.product.dto.UpdateProductResponse;
+import org.chzz.market.domain.product.entity.Product;
+import org.chzz.market.domain.product.error.ProductException;
 import org.chzz.market.domain.product.repository.ProductRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.TransientDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,11 +35,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Arrays;
-import java.util.List;
-
-import static org.chzz.market.domain.product.error.ProductErrorCode.*;
-
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -34,10 +42,11 @@ public class ProductService {
 
     private static final Logger logger = LoggerFactory.getLogger(ProductService.class);
 
+    private final ImageService imageService;
     private final ProductRepository productRepository;
     private final AuctionRepository auctionRepository;
-    private final ImageService imageService;
     private final ImageRepository imageRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     /*
      * 카테고리별 사전 등록 상품 목록 조회
@@ -62,6 +71,13 @@ public class ProductService {
     }
 
     /*
+     * 내가 참여한 사전경매 조회
+     */
+    public Page<ProductResponse> getLikedProductList(Long userId, Pageable pageable) {
+        return productRepository.findLikedProductsByUserId(userId, pageable);
+    }
+
+    /*
      * 상품 카테고리 목록 조회
      */
     public List<CategoryResponse> getCategories() {
@@ -74,18 +90,15 @@ public class ProductService {
      * 사전 등록 상품 수정
      */
     @Transactional
-    public UpdateProductResponse updateProduct(Long productId, UpdateProductRequest request, List<MultipartFile> images) {
+    public UpdateProductResponse updateProduct(Long productId, UpdateProductRequest request,
+                                               List<MultipartFile> images) {
         logger.info("상품 ID {}번에 대한 사전 등록 정보를 업데이트를 시작합니다.", productId);
         // 상품 유효성 검사
         Product existingProduct = productRepository.findByIdAndUserId(productId, request.getUserId())
-                .orElseThrow(() -> {
-                    logger.info("유저 ID {}번 유저가 등록한 상품 ID {}번에 해당하는 사전 등록 상품을 찾을 수 없습니다.", request.getUserId(), productId);
-                    return new ProductException(PRODUCT_NOT_FOUND);
-                });
+                .orElseThrow(() -> new ProductException(PRODUCT_NOT_FOUND));
 
         // 경매 등록 상태 유무 유효성 검사
         if (auctionRepository.existsByProductId(productId)) {
-            logger.info("상품 ID {}번에 해당하는 상품은 이미 경매 등록 상태입니다.", productId);
             throw new ProductException(ALREADY_IN_AUCTION);
         }
 
@@ -153,22 +166,19 @@ public class ProductService {
             throw new ProductException(PRODUCT_ALREADY_AUCTIONED);
         }
 
+        deleteProductImages(product);
+        productRepository.delete(product);
+
         // 좋아요 누른 사용자 ID 추출
         List<Long> likedUserIds = product.getLikes().stream()
                 .map(like -> like.getUser().getId())
                 .distinct()
                 .toList();
-
-        deleteProductImages(product);
-        productRepository.delete(product);
-
-        // 좋아요 누른 사용자들에게 알림 전송
-        // Notification notificationMessage = new Notification(
-        //        likedUserIds,
-        //        Notificationtype.PRE_REGISTER_DELETED,
-        //        product.getName()
-        // );
-        // notificationService.sendNotification(notificationMessage);
+        if (!likedUserIds.isEmpty()) {
+            eventPublisher.publishEvent(NotificationEvent.of(likedUserIds, AUCTION_REGISTRATION_CANCELED,
+                    AUCTION_REGISTRATION_CANCELED.getMessage(product.getName()),
+                    null)); // TODO: 사전 등록 취소 (soft delete 로 변경시 이미지 추가)
+        }
 
         logger.info("사전 등록 상품 ID{}번에 해당하는 상품을 성공적으로 삭제하였습니다. (좋아요 누른 사용자 수: {})", productId, likedUserIds.size());
 

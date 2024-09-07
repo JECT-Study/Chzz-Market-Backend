@@ -35,4 +35,11 @@ public interface ProductRepositoryCustom {
      */
     Page<ProductResponse> findProductsByNickname(String nickname, Pageable pageable);
 
+    /**
+     * 사용자 ID에 따라 사용자가 참여한 사전 경매 리스트를 조회합니다.
+     * @param userId   사용자 ID
+     * @param pageable 페이징 정보
+     * @return         페이징된 사전 경매 리스트
+     */
+    Page<ProductResponse> findLikedProductsByUserId(Long userId, Pageable pageable);
 }

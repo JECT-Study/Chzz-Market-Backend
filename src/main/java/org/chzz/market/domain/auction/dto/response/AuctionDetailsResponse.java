@@ -5,12 +5,11 @@ import com.querydsl.core.annotations.QueryProjection;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Getter;
-import org.chzz.market.domain.auction.entity.Auction.AuctionStatus;
+import org.chzz.market.domain.auction.type.AuctionStatus;
 
 @Getter
 public class AuctionDetailsResponse {
     private Long productId;
-    private Long sellerId;
     private String sellerName;
     private String title;
     private String description;
@@ -26,13 +25,12 @@ public class AuctionDetailsResponse {
     private List<String> imageList;
 
     @QueryProjection
-    public AuctionDetailsResponse(Long productId, Long sellerId, String sellerName, String title, String description,
+    public AuctionDetailsResponse(Long productId, String sellerName, String title, String description,
                                   Integer minPrice, LocalDateTime endDateTime, AuctionStatus status,
                                   Boolean isSeller,
                                   Long participantCount, Boolean isParticipating, Long bidId, Long bidAmount,
                                   int remainingBidCount) {
         this.productId = productId;
-        this.sellerId = sellerId;
         this.sellerName = sellerName;
         this.title = title;
         this.description = description;

@@ -1,5 +1,6 @@
 package org.chzz.market.domain.product.repository;
 
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
@@ -116,10 +117,10 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
     }
 
     /**
-     * 사용자 ID에 따라 사용자가 등록한 사전 등록 상품 리스트를 조회합니다.
-     * @param nickname 사용자 닉네임
-     * @param pageable 페이징 정보
-     * @return 페이징된 사전 등록 상품 리스트
+     * 사용자 닉네임에 따라 사용자가 등록한 사전 등록 상품 리스트를 조회합니다.
+     * @param nickname    사용자 닉네임
+     * @param pageable    페이징 정보
+     * @return            페이징된 사전 등록 상품 리스트
      */
     @Override
     public Page<ProductResponse> findProductsByNickname(String nickname, Pageable pageable) {
@@ -148,6 +149,42 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
 
         JPAQuery<Long> countQuery = baseQuery
                 .select(product.count());
+
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+    }
+
+    /**
+     * 사용자 ID에 따라 사용자가 참여한 사전 경매 리스트를 조회합니다.
+     * @param userId   사용자 ID
+     * @param pageable 페이징 정보
+     * @return         페이징된 사전 경매 리스트
+     */
+    @Override
+    public Page<ProductResponse> findLikedProductsByUserId(Long userId, Pageable pageable) {
+
+        JPAQuery<?> baseQuery = jpaQueryFactory.from(product)
+                .join(product.likes, like)
+                .join(like.user, user)
+                .leftJoin(auction).on(auction.product.eq(product))
+                .where(user.id.eq(userId).and(auction.isNull()));
+
+        List<ProductResponse> content = baseQuery
+                .select(new QProductResponse(
+                        product.id,
+                        product.name,
+                        image.cdnPath,
+                        product.minPrice,
+                        product.likes.size().longValue()
+                ))
+                .leftJoin(image).on(image.product.id.eq(product.id)
+                        .and(image.id.eq(getFirstImageId())))
+                .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        JPAQuery<Long> countQuery = baseQuery
+                .select(like.count());
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
