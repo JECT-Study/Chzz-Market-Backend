@@ -80,6 +80,8 @@ jobs:
 
       - name: EC2에서 Docker Compose를 통한 애플리케이션 실행
         uses: appleboy/ssh-action@master
+        env:
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
         with:
           host: ${{ secrets.EC2_IP }}
           username: ${{ secrets.EC2_USERNAME }}

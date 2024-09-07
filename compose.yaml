@@ -14,6 +14,19 @@ services:
     image: "${ECR_IMAGE}"
     ports:
       - "8082:8080"
+
+  ecr_renew:
+    image: amazonlinux:latest
+    container_name: ecr_renew
+    environment:
+      - AWS_REGION=${AWS_REGION}
+      - ACCOUNT_ID=${ACCOUNT_ID}
+    command: >
+      sh -c 'while :; do
+        aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com;
+        sleep 43200;
+      done'
+
   certbot:
     container_name: certbot
     image: certbot/certbot
@@ -22,7 +35,6 @@ services:
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
-
 
   nginx:
     image: nginx:latest
