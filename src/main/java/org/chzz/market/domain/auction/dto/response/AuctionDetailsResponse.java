@@ -1,8 +1,6 @@
 package org.chzz.market.domain.auction.dto.response;
 
 import com.querydsl.core.annotations.QueryProjection;
-
-import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Getter;
 import org.chzz.market.domain.auction.entity.Auction.AuctionStatus;
@@ -11,10 +9,10 @@ import org.chzz.market.domain.auction.entity.Auction.AuctionStatus;
 public class AuctionDetailsResponse {
     private Long productId;
     private String sellerName;
-    private String title;
+    private String name;
     private String description;
     private Integer minPrice;
-    private LocalDateTime endDateTime;
+    private Long timeRemaining;
     private AuctionStatus status;
     private Boolean isSeller;
     private Long participantCount;
@@ -25,17 +23,17 @@ public class AuctionDetailsResponse {
     private List<String> imageList;
 
     @QueryProjection
-    public AuctionDetailsResponse(Long productId, String sellerName, String title, String description,
-                                  Integer minPrice, LocalDateTime endDateTime, AuctionStatus status,
+    public AuctionDetailsResponse(Long productId, String sellerName, String name, String description,
+                                  Integer minPrice, Long timeRemaining, AuctionStatus status,
                                   Boolean isSeller,
                                   Long participantCount, Boolean isParticipating, Long bidId, Long bidAmount,
                                   int remainingBidCount) {
         this.productId = productId;
         this.sellerName = sellerName;
-        this.title = title;
+        this.name = name;
         this.description = description;
         this.minPrice = minPrice;
-        this.endDateTime = endDateTime;
+        this.timeRemaining = timeRemaining;
         this.status = status;
         this.isSeller = isSeller;
         this.participantCount = participantCount;

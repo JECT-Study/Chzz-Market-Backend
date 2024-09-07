@@ -136,7 +136,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                         product.name,
                         product.description,
                         product.minPrice,
-                        auction.endDateTime,
+                        timeRemaining().longValue(),
                         auction.status,
                         userIdEq(userId),
                         getBidCount(),
