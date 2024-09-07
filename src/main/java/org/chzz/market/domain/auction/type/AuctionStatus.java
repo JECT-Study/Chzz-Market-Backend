@@ -7,8 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum AuctionStatus {
     PROCEEDING("진행 중"),
-    ENDED("종료"),
-    CANCELLED("취소 됨");
+    ENDED("종료");
 
     private final String description;
 }

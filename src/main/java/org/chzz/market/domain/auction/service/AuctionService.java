@@ -3,11 +3,11 @@ package org.chzz.market.domain.auction.service;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_ALREADY_REGISTERED;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_ACCESSIBLE;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_FOUND;
-import static org.chzz.market.domain.auction.error.AuctionErrorCode.UNAUTHORIZED_AUCTION;
 import static org.chzz.market.domain.notification.entity.NotificationType.AUCTION_FAILURE;
 import static org.chzz.market.domain.notification.entity.NotificationType.AUCTION_NON_WINNER;
 import static org.chzz.market.domain.notification.entity.NotificationType.AUCTION_SUCCESS;
 import static org.chzz.market.domain.notification.entity.NotificationType.AUCTION_WINNER;
+import static org.chzz.market.domain.product.error.ProductErrorCode.FORBIDDEN_PRODUCT_ACCESS;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +28,7 @@ import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.notification.event.NotificationEvent;
 import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.product.entity.Product.Category;
+import org.chzz.market.domain.product.error.ProductException;
 import org.chzz.market.domain.product.repository.ProductRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,8 +90,8 @@ public class AuctionService {
                 .orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
 
         // 등록된 상품의 사용자 정보와 전환 요청한 사용자 정보 유효성 검사
-        if (!product.getUser().getId().equals(userId)) {
-            throw new AuctionException(UNAUTHORIZED_AUCTION);
+        if (!product.isOwner(userId)) {
+            throw new ProductException(FORBIDDEN_PRODUCT_ACCESS);
         }
 
         // 이미 경매로 등록된 상품인지 유효성 검사

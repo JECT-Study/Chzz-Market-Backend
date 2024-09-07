@@ -3,6 +3,7 @@ package org.chzz.market.domain.auction.controller;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.chzz.market.common.config.LoginUser;
 import org.chzz.market.domain.auction.dto.request.BaseRegisterRequest;
 import org.chzz.market.domain.auction.dto.request.StartAuctionRequest;
 import org.chzz.market.domain.auction.dto.response.AuctionResponse;
@@ -12,6 +13,7 @@ import org.chzz.market.domain.auction.dto.response.UserAuctionResponse;
 import org.chzz.market.domain.auction.service.AuctionRegistrationServiceFactory;
 import org.chzz.market.domain.auction.service.AuctionService;
 import org.chzz.market.domain.auction.service.register.AuctionRegistrationService;
+import org.chzz.market.domain.bid.service.BidService;
 import org.chzz.market.domain.product.entity.Product.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,27 +40,25 @@ public class AuctionController {
     private static final Logger logger = LoggerFactory.getLogger(AuctionController.class);
 
     private final AuctionService auctionService;
+    private final BidService bidService;
     private final AuctionRegistrationServiceFactory registrationServiceFactory;
 
     @GetMapping
     public ResponseEntity<?> getAuctionList(@RequestParam Category category,
-//                                            @AuthenticationPrincipal CustomUserDetails customUserDetails, // TODO: 추후에 인증된 사용자 정보로 수정 필요
+                                            @LoginUser Long userId,
                                             Pageable pageable) {
-        return ResponseEntity.ok(auctionService.getAuctionListByCategory(category, 1L, pageable)); // 임의의 사용자 ID
+        return ResponseEntity.ok(auctionService.getAuctionListByCategory(category, userId, pageable));
     }
 
     @GetMapping("/{auctionId}")
-    public ResponseEntity<?> getAuctionDetails(@PathVariable Long auctionId) {
-        return ResponseEntity.ok(auctionService.getAuctionDetails(auctionId, 1L)); // TODO: 추후에 인증된 사용자 정보로 수정 필요
+    public ResponseEntity<?> getAuctionDetails(@PathVariable Long auctionId, @LoginUser Long userId) {
+        return ResponseEntity.ok(auctionService.getAuctionDetails(auctionId, userId));
     }
 
 
     @GetMapping("/history")
-    public ResponseEntity<?> getAuctionHistory(
-            //                                            @AuthenticationPrincipal CustomUserDetails customUserDetails, // TODO: 추후에 인증된 사용자 정보로 수정 필요
-            Pageable pageable
-    ) {
-        return ResponseEntity.ok(auctionService.getAuctionHistory(1L, pageable));
+    public ResponseEntity<?> getAuctionHistory(@LoginUser Long userId, Pageable pageable) {
+        return ResponseEntity.ok(auctionService.getAuctionHistory(userId, pageable));
     }
 
     /**
@@ -93,8 +93,14 @@ public class AuctionController {
     }
 
     @GetMapping("/best")
-    public ResponseEntity<?> bestAuctionList() {
-        List<AuctionResponse> bestAuctionList=auctionService.getBestAuctionList(1L);//TODO 2024 08 26 13:59:54 : 인증된 사용자 정보로 수정
+    public ResponseEntity<?> bestAuctionList(@LoginUser Long userId) {
+        List<AuctionResponse> bestAuctionList = auctionService.getBestAuctionList(
+                userId);
         return ResponseEntity.ok(bestAuctionList);
+    }
+
+    @GetMapping("/{auctionId}/bids")
+    public ResponseEntity<?> getBids(@LoginUser Long userId, @PathVariable Long auctionId, Pageable pageable) {
+        return ResponseEntity.ok(bidService.getBidsByAuctionId(userId, auctionId, pageable));
     }
 }
