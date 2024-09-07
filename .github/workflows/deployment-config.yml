@@ -99,5 +99,11 @@ jobs:
             docker compose pull
             
             # Docker Compose로 여러 애플리케이션 및 nginx 실행
-            export ECR_IMAGE=$ECR_IMAGE
-            docker compose up -d
+            if ECR_IMAGE=$ECR_IMAGE docker compose up -d; then
+              echo "Docker Compose services started successfully"
+            else
+              echo "Failed to start Docker Compose services" >&2
+              exit 1
+            fi
+
+            echo "Docker Compose deployment completed successfully"
