@@ -78,6 +78,15 @@ jobs:
           source: './compose.yaml'
           target: '/home/ec2-user'
 
+      - name: EC2로 `nginx.conf` 파일 복사
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.EC2_IP }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: './nginx.conf'
+          target: '/home/ec2-user'
+
       - name: EC2에서 .env 파일 생성
         uses: appleboy/ssh-action@master
         with:
