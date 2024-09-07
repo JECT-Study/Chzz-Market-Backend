@@ -1,7 +1,7 @@
 package org.chzz.market.domain.auction.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.chzz.market.domain.auction.type.AuctionStatus.*;
+import static org.chzz.market.domain.auction.type.AuctionStatus.PROCEEDING;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -13,6 +13,7 @@ import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.AuctionResponse;
 import org.chzz.market.domain.auction.dto.response.UserAuctionResponse;
 import org.chzz.market.domain.auction.entity.Auction;
+import org.chzz.market.domain.auction.type.AuctionStatus;
 import org.chzz.market.domain.bid.entity.Bid;
 import org.chzz.market.domain.bid.repository.BidRepository;
 import org.chzz.market.domain.image.entity.Image;
@@ -91,13 +92,13 @@ class AuctionRepositoryImplTest {
                 .endDateTime(LocalDateTime.now().plusDays(1)).build();
         auction3 = Auction.builder().product(product3).status(PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusDays(1)).build();
-        auction4 = Auction.builder().product(product4).status(Auction.AuctionStatus.CANCELLED)
+        auction4 = Auction.builder().product(product4).status(AuctionStatus.ENDED)
                 .endDateTime(LocalDateTime.now().plusDays(1)).build();
-        auction5 = Auction.builder().product(product5).status(Auction.AuctionStatus.PROCEEDING)
+        auction5 = Auction.builder().product(product5).status(AuctionStatus.PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusHours(1)).build();
-        auction6 = Auction.builder().product(product6).status(Auction.AuctionStatus.PROCEEDING)
+        auction6 = Auction.builder().product(product6).status(AuctionStatus.PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusSeconds(3000)).build();
-        auction7 = Auction.builder().product(product7).status(Auction.AuctionStatus.PROCEEDING)
+        auction7 = Auction.builder().product(product7).status(AuctionStatus.PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusSeconds(700)).build();
         auctionRepository.saveAll(List.of(auction1, auction2, auction3, auction4, auction5, auction6, auction7));
 
