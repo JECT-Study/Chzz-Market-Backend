@@ -2,6 +2,7 @@ package org.chzz.market.domain.auction.entity;
 
 import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.PROCEEDING;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_ENDED;
+import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_ENDED;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -104,6 +105,12 @@ public class Auction extends BaseTimeEntity {
 
     public void assignWinner(Long winnerId) {
         this.winnerId = winnerId;
+    }
+
+    public void validateAuctionEnded() {
+        if (!this.status.equals(AuctionStatus.ENDED)) {
+            throw new AuctionException(AUCTION_NOT_ENDED);
+        }
     }
 
     @Getter

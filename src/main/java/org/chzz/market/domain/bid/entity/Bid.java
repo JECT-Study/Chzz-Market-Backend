@@ -83,6 +83,10 @@ public class Bid extends BaseTimeEntity {
         this.status = BidStatus.CANCELLED;
     }
 
+    public boolean isOwner(Long userId) {
+        return this.bidder.getId().equals(userId);
+    }
+
     private void validateActiveStatus() {
         if (!this.status.equals(BidStatus.ACTIVE)) {
             throw new BidException(BID_ALREADY_CANCELLED);

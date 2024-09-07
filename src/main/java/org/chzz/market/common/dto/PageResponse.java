@@ -17,7 +17,6 @@ public final class PageResponse<E> {
     private final long totalElements;
     private final boolean isLast;
 
-
     public static <E> PageResponse<E> from(final Page<E> page) {
         return new PageResponse<>(page.hasNext(), page.getContent(), page.getNumber(), page.getSize(), page.getTotalPages(), page.getTotalElements(), page.isLast());
     }
