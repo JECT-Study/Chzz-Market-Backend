@@ -89,10 +89,6 @@ jobs:
           ECR_IMAGE: ${{ steps.build-image.outputs.image }}
           ECR_URI: ${{ secrets.ECR_URI }}
           script: |
-            echo "AWS_REGION: $AWS_REGION"
-            echo "ECR_IMAGE: $ECR_IMAGE"
-            echo "ECR_URI: $ECR_URI"
-            
             # ECR 레지스트리에 로그인
             aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_URI
             
