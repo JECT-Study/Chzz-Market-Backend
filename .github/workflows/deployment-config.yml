@@ -89,17 +89,27 @@ jobs:
           ECR_URI: ${{ secrets.ECR_URI }}
           IMAGE_TAG: ${{ github.sha }}
           script: |
-            # ECR 레지스트리에 로그인
-            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_URI
+            # 로그 파일 경로
+            LOG_FILE="/home/ec2-user/deployment.log"
             
-            docker --version
-            docker compose version
+            # ECR 레지스트리에 로그인
+            echo "Logging into ECR..." | tee -a $LOG_FILE
+            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_URI | tee -a $LOG_FILE
+            
+            # Docker 및 Compose 버전 확인
+            docker --version | tee -a $LOG_FILE
+            docker compose version | tee -a $LOG_FILE
             
             # 기존 컨테이너 정지 및 삭제
-            docker compose down
+            echo "Stopping and removing existing containers..." | tee -a $LOG_FILE
+            docker compose down 2>&1 | tee -a $LOG_FILE
             
-            # 최신 이미지를 가져와서 환경 변수로 전달
-            docker compose pull
+            # 최신 이미지 pull
+            echo "Pulling latest images..." | tee -a $LOG_FILE
+            docker compose pull 2>&1 | tee -a $LOG_FILE
             
             # Docker Compose로 여러 애플리케이션 및 nginx 실행
-            ECR_URI=$ECR_URI IMAGE_TAG=$IMAGE_TAG docker compose up -d
+            echo "Starting Docker Compose services..." | tee -a $LOG_FILE
+            ECR_URI=$ECR_URI IMAGE_TAG=$IMAGE_TAG docker compose up -d 2>&1 | tee -a $LOG_FILE
+            
+            echo "Deployment finished successfully" | tee -a $LOG_FILE
