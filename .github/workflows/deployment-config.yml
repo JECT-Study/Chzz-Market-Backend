@@ -84,10 +84,9 @@ jobs:
           host: ${{ secrets.EC2_IP }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-        env:
-          AWS_REGION: ${{ env.AWS_REGION }}
-          ECR_IMAGE: ${{ steps.build-image.outputs.image }}
-          ECR_URI: ${{ secrets.ECR_URI }}
+          envs: AWS_REGION,ECR_IMAGE,ECR_URI
           script: |
-            source ~/env.sh
-            sudo /home/ec2-user/deploy.sh $AWS_REGION $ECR_IMAGE $ECR_URI
+            export AWS_REGION=$AWS_REGION
+            export ECR_IMAGE=$ECR_IMAGE
+            export ECR_URI=$ECR_URI
+            sudo /home/ec2-user/deploy.sh
