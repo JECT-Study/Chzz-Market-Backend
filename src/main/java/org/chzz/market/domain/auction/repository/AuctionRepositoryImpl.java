@@ -232,7 +232,8 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                 .from(auction)
                 .join(auction.product, product)
                 .join(product.user, user)
-                .leftJoin(bid).on(bid.auction.eq(auction))
+                .leftJoin(bid).on(bid.auction.eq(auction)
+                        .and(bid.status.ne(BidStatus.CANCELLED)))
                 .where(auction.winnerId.eq(userId)
                         .and(auction.status.eq(ENDED)));
 
@@ -243,7 +244,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                         image.cdnPath,
                         product.minPrice,
                         auction.endDateTime,
-                        bid.amount.max()
+                        bid.amount
                 ))
                 .leftJoin(image).on(image.product.eq(product).and(image.id.eq(getFirstImageId())))
                 .groupBy(auction.id, product.name, image.cdnPath, product.minPrice)
@@ -269,7 +270,9 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
         JPAQuery<?> baseQuery = jpaQueryFactory
                 .from(auction)
                 .join(auction.product, product)
-                .join(bid).on(bid.auction.eq(auction).and(bid.bidder.id.eq(userId)))
+                .join(bid).on(bid.auction.eq(auction)
+                        .and(bid.bidder.id.eq(userId))
+                        .and(bid.status.ne(BidStatus.CANCELLED)))
                 .where(auction.winnerId.ne(userId).or(auction.winnerId.isNull())
                         .and(auction.status.eq(ENDED)));
 
@@ -280,7 +283,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                         image.cdnPath,
                         product.minPrice,
                         auction.endDateTime,
-                        bid.amount.max()
+                        bid.amount
                 ))
                 .leftJoin(image).on(image.product.eq(product).and(image.id.eq(getFirstImageId())))
                 .groupBy(auction.id, product.name, image.cdnPath, product.minPrice)

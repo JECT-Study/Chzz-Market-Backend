@@ -174,8 +174,7 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
                         product.name,
                         image.cdnPath,
                         product.minPrice,
-                        product.likes.size().longValue(),
-                        Expressions.constant(true)
+                        product.likes.size().longValue()
                 ))
                 .leftJoin(image).on(image.product.id.eq(product.id)
                         .and(image.id.eq(getFirstImageId())))

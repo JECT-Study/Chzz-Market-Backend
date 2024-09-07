@@ -10,13 +10,11 @@ public abstract class BaseProductDTO {
     protected String cdnPath;
     protected Long likeCount;
     protected Integer minPrice;
-    protected Boolean isLiked;
 
-    public BaseProductDTO(String name, String cdnPath, Long likeCount, Integer minPrice, Boolean isLiked) {
+    public BaseProductDTO(String name, String cdnPath, Long likeCount, Integer minPrice) {
         this.name = name;
         this.cdnPath = cdnPath;
         this.likeCount = likeCount;
         this.minPrice = minPrice;
-        this.isLiked = isLiked;
     }
 }
