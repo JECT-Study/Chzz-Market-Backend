@@ -220,7 +220,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
 
     @Override
     public ParticipationCountsResponse getParticipationCounts(Long userId) {
-        List<Tuple> results = jpaQueryFactory
+        List<Tuple> result = jpaQueryFactory
                 .select(
                         auction.status,
                         auction.winnerId,
@@ -228,77 +228,102 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                 )
                 .from(auction)
                 .join(auction.bids, bid)
-                .where(bid.bidder.id.eq(userId))
+                .where(bid.bidder.id.eq(userId).and(bid.status.ne(BidStatus.CANCELLED)))
                 .groupBy(auction.status, auction.winnerId)
                 .fetch();
 
-        long ongoingAuctionCount = 0L;
-        long successfulAuctionCount = 0L;
-        long failedAuctionCount = 0L;
-        long unsuccessfulAuctionCount = 0L;
+        long ongoingAuctionCount = 0;
+        long successfulBidCount = 0;
+        long failedBidCount = 0;
+        long endedAuctionCount = 0;
 
-        for (Tuple result : results) {
-            AuctionStatus status = result.get(auction.status);
-            Long winnerId = result.get(auction.winnerId);
-            long count = Optional.ofNullable(result.get(2, Long.class)).orElse(0L);
+        for (Tuple tuple : result) {
+            AuctionStatus status = tuple.get(auction.status);
+            Long winnerId = tuple.get(auction.winnerId);
+            Long count = tuple.get(2, Long.class);
 
-            if (status == PROCEEDING) {
+            if (status == AuctionStatus.PROCEEDING) {
                 ongoingAuctionCount += count;
-            } else if (status == ENDED) {
-                if (winnerId != null && winnerId.equals(userId)) {
-                    successfulAuctionCount += count;
-                } else if (winnerId != null) {
-                    failedAuctionCount += count;
+            } else {
+                endedAuctionCount += count;
+                if (userId.equals(winnerId)) {
+                    successfulBidCount += count;
                 } else {
-                    unsuccessfulAuctionCount += count;
+                    failedBidCount += count;
                 }
             }
         }
 
         return new ParticipationCountsResponse(
                 ongoingAuctionCount,
-                successfulAuctionCount,
-                failedAuctionCount,
-                unsuccessfulAuctionCount
+                successfulBidCount,
+                failedBidCount,
+                endedAuctionCount
         );
     }
 
-//    @Override
-//    public ParticipationCountsResponse getParticipationCounts(Long userId) {
-//        return jpaQueryFactory
-//                .select(new QParticipationCountsResponse(
-//                        new CaseBuilder()
-//                                .when(like.user.id.eq(userId))
-//                                .then(1L)
-//                                .otherwise(0L).count(),
-//                        new CaseBuilder()
-//                                .when(auction.status.eq(ENDED)
-//                                        .and(auction.winnerId.eq(userId)))
-//                                .then(1L)
-//                                .otherwise(0L).count(),
-//                        new CaseBuilder()
-//                                .when(auction.status.eq(ENDED)
-//                                        .and(auction.winnerId.ne(userId))
-//                                        .and(bid.bidder.id.eq(userId)))
-//                                .then(1L)
-//                                .otherwise(0L).count(),
-//                        new CaseBuilder()
-//                                .when(auction.status.eq(ENDED)
-//                                        .and(bid.bidder.id.eq(userId)))
-//                                .then(1L)
-//                                .otherwise(0L).count()
-//                ))
+    /**
+     * 사용자가 참여 중인 경매 수를 조회합니다.
+     *
+     * @param userId 사용자 ID
+     * @return 참여 중인 경매 수
+     */
+//    private JPQLQuery<Long> getOngoingAuctionCount(Long userId) {
+//        return JPAExpressions
+//                .select(auction.id.count())
 //                .from(auction)
-//                .leftJoin(auction.product, product)
-//                .leftJoin(product.likes, like)
-//                .leftJoin(auction.bids, bid)
-//                .where(product.user.id.eq(userId)
-//                        .or(like.user.id.eq(userId))
-//                        .or(bid.bidder.id.eq(userId)))
-//                .fetchOne();
+//                .join(auction.bids, bid)
+//                .where(auction.status.eq(PROCEEDING)
+//                        .and(bid.bidder.id.eq(userId))
+//                        .and(bid.status.ne(BidStatus.CANCELLED)));
 //    }
 
+    /**
+     * 사용자의 낙찰 성공 경매 수를 조회합니다.
+     *
+     * @param userId 사용자 ID
+     * @return 낙찰 경매 수
+     */
+//    private JPQLQuery<Long> getSuccessfulAuctionCount(Long userId) {
+//        return JPAExpressions
+//                .select(auction.id.count())
+//                .from(auction)
+//                .where(auction.status.eq(ENDED)
+//                        .and(auction.winnerId.eq(userId)));
+//    }
 
+    /**
+     * 사용자의 낙찰 실패 경매 수를 조회합니다.
+     *
+     * @param userId 사용자 ID
+     * @return 낙찰 실패 경매 수
+     */
+//    private JPQLQuery<Long> getFailedAuctionCount(Long userId) {
+//        return JPAExpressions
+//                .select(auction.id.count())
+//                .from(auction)
+//                .join(auction.bids, bid)
+//                .where(auction.status.eq(ENDED)
+//                        .and(auction.winnerId.ne(userId))
+//                        .and(bid.bidder.id.eq(userId))
+//                        .and(bid.status.ne(BidStatus.CANCELLED)));
+//    }
+
+    /**
+     * 사용자의 낙찰 취소 경매 수를 조회합니다.
+     *
+     * @param userId 사용자 ID
+     * @return 낙찰 취소 경매 수
+     */
+//    private JPQLQuery<Long> getEndedAuctionCount(Long userId) {
+//        return JPAExpressions
+//                .select(auction.countDistinct())
+//                .from(auction)
+//                .join(auction.bids, bid)
+//                .where(auction.status.eq(ENDED)
+//                        .and(bid.bidder.id.eq(userId))
+//                        .and(bid.status.ne(BidStatus.CANCELLED)));
+//    }
 
     /**
      * 상품의 첫 번째 이미지를 조회합니다.
