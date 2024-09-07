@@ -1,24 +1,13 @@
 package org.chzz.market.domain.auction.entity;
 
-import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.PROCEEDING;
+import static org.chzz.market.domain.auction.type.AuctionStatus.PROCEEDING;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_ENDED;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_ENDED;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Index;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
+import jakarta.persistence.Index;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
@@ -27,6 +16,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.chzz.market.domain.auction.entity.listener.AuctionEntityListener;
+import org.chzz.market.domain.auction.type.AuctionStatus;
 import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
 import org.chzz.market.domain.bid.entity.Bid;
@@ -79,7 +69,7 @@ public class Auction extends BaseTimeEntity {
 
     public void validateAuctionEndTime() {
         // 경매가 진행중이 아닐 때
-        if (status != AuctionStatus.PROCEEDING || LocalDateTime.now().isAfter(endDateTime)) {
+        if (status != PROCEEDING || LocalDateTime.now().isAfter(endDateTime)) {
             throw new AuctionException(AUCTION_ENDED);
         }
     }
@@ -111,17 +101,6 @@ public class Auction extends BaseTimeEntity {
         if (!this.status.equals(AuctionStatus.ENDED)) {
             throw new AuctionException(AUCTION_NOT_ENDED);
         }
-    }
-
-    @Getter
-    @AllArgsConstructor
-    public enum AuctionStatus {
-        PENDING("대기 중"),
-        PROCEEDING("진행 중"),
-        ENDED("종료"),
-        CANCELLED("취소 됨");
-
-        private final String description;
     }
 
     public void start(LocalDateTime endDateTime) {

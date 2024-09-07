@@ -36,9 +36,9 @@ import java.time.temporal.ChronoUnit;
 
 import static java.time.LocalDateTime.now;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.*;
-import static org.chzz.market.domain.auction.enums.AuctionRegisterType.*;
-import static org.chzz.market.domain.auction.enums.AuctionRegisterType.REGISTER;
+import static org.chzz.market.domain.auction.type.AuctionRegisterType.*;
+import static org.chzz.market.domain.auction.type.AuctionRegisterType.REGISTER;
+import static org.chzz.market.domain.auction.type.AuctionStatus.PROCEEDING;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.*;
 import static org.chzz.market.domain.product.entity.Product.Category.*;
 import static org.chzz.market.domain.user.error.UserErrorCode.USER_NOT_FOUND;

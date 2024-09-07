@@ -1,6 +1,7 @@
 package org.chzz.market.domain.auction.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.chzz.market.domain.auction.type.AuctionStatus.*;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -73,11 +74,11 @@ class AuctionRepositoryImplTest {
         product4 = Product.builder().user(user2).name("제품4").category(Category.FASHION_AND_CLOTHING).minPrice(40000).build();
         productRepository.saveAll(List.of(product1, product2, product3, product4));
 
-        auction1 = Auction.builder().product(product1).status(Auction.AuctionStatus.PROCEEDING)
+        auction1 = Auction.builder().product(product1).status(PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusDays(1)).build();
-        auction2 = Auction.builder().product(product2).status(Auction.AuctionStatus.PROCEEDING)
+        auction2 = Auction.builder().product(product2).status(PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusDays(1)).build();
-        auction3 = Auction.builder().product(product3).status(Auction.AuctionStatus.PROCEEDING)
+        auction3 = Auction.builder().product(product3).status(PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusDays(1)).build();
         auctionRepository.saveAll(List.of(auction1, auction2, auction3));
 

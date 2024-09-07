@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.chzz.market.domain.auction.dto.response.*;
 import org.chzz.market.domain.product.entity.Product.Category;
+import org.chzz.market.domain.user.dto.response.ParticipationCountsResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -51,6 +52,13 @@ public interface AuctionRepositoryCustom {
      * @return 입찰 기록이 많은 10개의 경매 정보
      */
     List<AuctionResponse> findBestAuctions(Long userId);
+
+    /**
+     * 사용자 ID에 따라 경매 관련 counting 값들을 조회합니다.
+     * @param userId 사용자 ID
+     * @return 사용자의 경매 관련 counting 값들
+     */
+    ParticipationCountsResponse getParticipationCounts(Long userId);
 
     /**
      * 사용자가 낙찰한 경매 이력을 조회합니다.

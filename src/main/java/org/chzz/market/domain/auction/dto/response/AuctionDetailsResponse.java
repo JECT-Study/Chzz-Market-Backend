@@ -5,7 +5,7 @@ import com.querydsl.core.annotations.QueryProjection;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Getter;
-import org.chzz.market.domain.auction.entity.Auction.AuctionStatus;
+import org.chzz.market.domain.auction.type.AuctionStatus;
 
 @Getter
 public class AuctionDetailsResponse {

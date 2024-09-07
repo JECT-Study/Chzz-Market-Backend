@@ -1,13 +1,13 @@
 package org.chzz.market.domain.auction.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.*;
+import static org.chzz.market.domain.auction.type.AuctionStatus.PROCEEDING;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.*;
 import static org.chzz.market.domain.product.entity.Product.Category.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.chzz.market.domain.auction.enums.AuctionRegisterType.PRE_REGISTER;
-import static org.chzz.market.domain.auction.enums.AuctionRegisterType.REGISTER;
+import static org.chzz.market.domain.auction.type.AuctionRegisterType.PRE_REGISTER;
+import static org.chzz.market.domain.auction.type.AuctionRegisterType.REGISTER;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 

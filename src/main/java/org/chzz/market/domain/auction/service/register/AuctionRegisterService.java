@@ -20,6 +20,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static org.chzz.market.domain.auction.type.AuctionStatus.PROCEEDING;
+
 @Service
 @RequiredArgsConstructor
 public class AuctionRegisterService implements AuctionRegistrationService {
@@ -61,7 +63,7 @@ public class AuctionRegisterService implements AuctionRegistrationService {
     private Auction createAuction(Product product, BaseRegisterRequest request) {
         return Auction.builder()
                 .product(product)
-                .status(Auction.AuctionStatus.PROCEEDING)
+                .status(PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusHours(24))
                 .build();
     }

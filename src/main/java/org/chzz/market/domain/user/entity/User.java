@@ -15,7 +15,6 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

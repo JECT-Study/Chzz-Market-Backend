@@ -20,6 +20,7 @@ import org.chzz.market.domain.user.dto.UpdateProfileResponse;
 import org.chzz.market.domain.user.dto.UpdateUserProfileRequest;
 import org.chzz.market.domain.user.dto.request.UserCreateRequest;
 import org.chzz.market.domain.user.entity.User;
+import org.chzz.market.domain.user.dto.response.UserProfileResponse;
 import org.chzz.market.domain.user.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -67,6 +68,22 @@ public class UserController {
     @GetMapping("/check/nickname/{nickname}")
     public ResponseEntity<?> checkNickname(@NotBlank @Size(max = 15) @PathVariable String nickname) {
         return ResponseEntity.ok((userService.checkNickname(nickname)));
+    }
+
+    /*
+     * 사용자 프로필 조회
+     */
+    @GetMapping("/{nickname}")
+    public ResponseEntity<UserProfileResponse> getUserProfile(@PathVariable String nickname){
+        return ResponseEntity.ok(userService.getUserProfile(nickname));
+    }
+
+    /*
+     * 내 프로필 조회
+     */
+    @GetMapping("/me")
+    public ResponseEntity<UserProfileResponse> getMyProfile(@LoginUser Long userId) {
+        return ResponseEntity.ok(userService.getMyProfile(userId));
     }
 
     @PostMapping("/tokens/reissue")
