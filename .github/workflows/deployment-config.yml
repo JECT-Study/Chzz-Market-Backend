@@ -88,9 +88,7 @@ jobs:
           AWS_REGION: ${{ env.AWS_REGION }}
           ECR_IMAGE: ${{ steps.build-image.outputs.image }}
           ECR_URI: ${{ secrets.ECR_URI }}
-          script: |
-            echo "ECR_IMAGE=$ECR_IMAGE"
-            
+          script: |            
             # ECR 레지스트리에 로그인
             aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_URI
             
@@ -101,4 +99,5 @@ jobs:
             sudo docker-compose pull
             
             # Docker Compose로 여러 애플리케이션 및 nginx 실행
-            sudo ECR_IMAGE=$ECR_IMAGE docker-compose up -d
+            export ECR_IMAGE=$ECR_IMAGE
+            sudo docker-compose up -d
