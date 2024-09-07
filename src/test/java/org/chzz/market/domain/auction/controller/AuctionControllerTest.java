@@ -2,11 +2,11 @@ package org.chzz.market.domain.auction.controller;
 
 import static java.time.LocalDateTime.now;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.chzz.market.domain.auction.entity.Auction.AuctionStatus.PROCEEDING;
-import static org.chzz.market.domain.auction.enums.AuctionRegisterType.PRE_REGISTER;
-import static org.chzz.market.domain.auction.enums.AuctionRegisterType.REGISTER;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_ALREADY_REGISTERED;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_FOUND;
+import static org.chzz.market.domain.auction.type.AuctionRegisterType.PRE_REGISTER;
+import static org.chzz.market.domain.auction.type.AuctionRegisterType.REGISTER;
+import static org.chzz.market.domain.auction.type.AuctionStatus.PROCEEDING;
 import static org.chzz.market.domain.product.entity.Product.Category.ELECTRONICS;
 import static org.chzz.market.domain.user.error.UserErrorCode.USER_NOT_FOUND;
 import static org.mockito.ArgumentMatchers.any;
@@ -54,7 +54,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import({AWSConfig.class})
+@Import(AWSConfig.class)
 public class AuctionControllerTest {
 
     @Autowired

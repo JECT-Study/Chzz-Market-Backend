@@ -3,12 +3,15 @@ package org.chzz.market.domain.product.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.domain.like.service.LikeService;
+import org.chzz.market.common.config.LoginUser;
 import org.chzz.market.domain.product.dto.*;
 import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.like.dto.LikeResponse;
 import org.chzz.market.domain.product.service.ProductService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -68,6 +71,17 @@ public class ProductController {
             @PathVariable String nickname,
             Pageable pageable) {
         return ResponseEntity.ok(productService.getMyProductList(nickname, pageable));
+    }
+
+    /*
+     * 내가 참여한 사전경매 조회
+     */
+    @GetMapping("/history")
+    public ResponseEntity<Page<ProductResponse>> getLikedProductList(
+            @LoginUser Long userId,
+            @PageableDefault(size=20, sort="product-newest") Pageable pageable
+    ) {
+        return ResponseEntity.ok(productService.getLikedProductList(userId, pageable));
     }
 
     /**

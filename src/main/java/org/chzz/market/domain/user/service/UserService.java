@@ -6,6 +6,9 @@ import org.chzz.market.domain.user.dto.request.UserCreateRequest;
 import org.chzz.market.domain.user.dto.response.NicknameAvailabilityResponse;
 import org.chzz.market.domain.user.dto.UpdateProfileResponse;
 import org.chzz.market.domain.user.dto.UpdateUserProfileRequest;
+import org.chzz.market.domain.auction.repository.AuctionRepository;
+import org.chzz.market.domain.user.dto.response.ParticipationCountsResponse;
+import org.chzz.market.domain.user.dto.response.UserProfileResponse;
 import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.error.exception.UserException;
 import org.chzz.market.domain.user.repository.UserRepository;
@@ -14,13 +17,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static org.chzz.market.domain.user.error.UserErrorCode.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-@Slf4j
 public class UserService {
-
     private final UserRepository userRepository;
+    private final AuctionRepository auctionRepository;
 
     @Transactional
     public User completeUserRegistration(Long userId, UserCreateRequest userCreateRequest) {
@@ -31,6 +34,28 @@ public class UserService {
         user.createUser(userCreateRequest);
         user.addBankAccount(userCreateRequest.toBankAccount());
         return user;
+    }
+
+    /**
+     * 사용자 프로필 조회
+     * @param nickname 닉네임
+     * @return 사용자 프로필 응답
+     */
+    public UserProfileResponse getUserProfile(String nickname) {
+        User user = userRepository.findByNickname(nickname).orElseThrow(() -> new UserException(USER_NOT_FOUND));
+
+        ParticipationCountsResponse counts = auctionRepository.getParticipationCounts(user.getId());
+
+        return UserProfileResponse.of(user, counts);
+    }
+
+    public UserProfileResponse getMyProfile(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserException(USER_NOT_FOUND));
+
+        ParticipationCountsResponse counts = auctionRepository.getParticipationCounts(user.getId());
+
+        return UserProfileResponse.of(user, counts);
     }
 
     public NicknameAvailabilityResponse checkNickname(String nickname) {

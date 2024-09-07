@@ -3,7 +3,7 @@ package org.chzz.market.domain.auction.dto.response;
 import com.querydsl.core.annotations.QueryProjection;
 import java.util.List;
 import lombok.Getter;
-import org.chzz.market.domain.auction.entity.Auction.AuctionStatus;
+import org.chzz.market.domain.auction.type.AuctionStatus;
 
 @Getter
 public class AuctionDetailsResponse {

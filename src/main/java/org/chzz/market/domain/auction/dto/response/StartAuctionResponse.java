@@ -1,10 +1,8 @@
 package org.chzz.market.domain.auction.dto.response;
 
-import org.chzz.market.domain.auction.entity.Auction;
+import org.chzz.market.domain.auction.type.AuctionStatus;
 
 import java.time.LocalDateTime;
-
-import static org.chzz.market.domain.auction.entity.Auction.*;
 
 /**
  * 경매 시작 (사전 등록 -> 경매 등록 전환) DTO

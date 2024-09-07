@@ -1,7 +1,7 @@
 package org.chzz.market.domain.auction.service;
 
 import lombok.RequiredArgsConstructor;
-import org.chzz.market.domain.auction.enums.AuctionRegisterType;
+import org.chzz.market.domain.auction.type.AuctionRegisterType;
 import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.auction.service.register.AuctionRegisterService;
 import org.chzz.market.domain.auction.service.register.AuctionRegistrationService;

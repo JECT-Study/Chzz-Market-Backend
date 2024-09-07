@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.chzz.market.common.validation.annotation.ThousandMultiple;
-import org.chzz.market.domain.auction.enums.AuctionRegisterType;
+import org.chzz.market.domain.auction.type.AuctionRegisterType;
 
 import static org.chzz.market.domain.product.entity.Product.*;
 

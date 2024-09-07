@@ -1,21 +1,21 @@
-package org.chzz.market.domain.user.dto;
+package org.chzz.market.domain.user.dto.response;
 
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.domain.user.entity.User.ProviderType;
 
 @Slf4j
-public class KaKaoResponse implements OAuth2Response {
+public class NaverResponse implements OAuth2Response {
 
     private final Map<String, Object> attribute;
 
-    public KaKaoResponse(Map<String, Object> attribute) {
-        this.attribute = attribute;
+    public NaverResponse(Map<String, Object> attribute) {
+        this.attribute = (Map<String, Object>) attribute.get("response");
     }
 
     @Override
     public ProviderType getProvider() {
-        return ProviderType.KAKAO;
+        return ProviderType.NAVER;
     }
 
     @Override
@@ -25,7 +25,7 @@ public class KaKaoResponse implements OAuth2Response {
 
     @Override
     public String getEmail() {
-        return ((Map<String, Object>) attribute.get("kakao_account")).get("email").toString();
+        return attribute.get("email").toString();
     }
 
 }
