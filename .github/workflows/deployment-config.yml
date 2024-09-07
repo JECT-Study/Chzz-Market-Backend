@@ -88,7 +88,8 @@ jobs:
           AWS_REGION: ${{ env.AWS_REGION }}
           ECR_IMAGE: ${{ steps.build-image.outputs.image }}
           ECR_URI: ${{ secrets.ECR_URI }}
-          script: |            
+          script: |
+            set -x
             # ECR 레지스트리에 로그인
             aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_URI
             
@@ -99,11 +100,4 @@ jobs:
             docker compose pull
             
             # Docker Compose로 여러 애플리케이션 및 nginx 실행
-            if ECR_IMAGE=$ECR_IMAGE docker compose up -d; then
-              echo "Docker Compose services started successfully"
-            else
-              echo "Failed to start Docker Compose services" >&2
-              exit 1
-            fi
-
-            echo "Docker Compose deployment completed successfully"
+            ECR_IMAGE=$ECR_IMAGE docker compose up -d
