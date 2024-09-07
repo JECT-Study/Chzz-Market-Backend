@@ -93,11 +93,11 @@ jobs:
             aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_URI
             
             # 기존 컨테이너 정지 및 삭제
-            sudo docker-compose down
+            docker compose down
             
             # 최신 이미지를 가져와서 환경 변수로 전달
-            sudo docker-compose pull
+            docker compose pull
             
             # Docker Compose로 여러 애플리케이션 및 nginx 실행
             export ECR_IMAGE=$ECR_IMAGE
-            sudo docker-compose up -d
+            docker compose up -d
