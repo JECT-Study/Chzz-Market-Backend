@@ -52,7 +52,6 @@ public class AuctionController {
         return ResponseEntity.ok(auctionService.getAuctionDetails(auctionId, userId));
     }
 
-
     @GetMapping("/history")
     public ResponseEntity<?> getAuctionHistory(@LoginUser Long userId, Pageable pageable) {
         return ResponseEntity.ok(auctionService.getAuctionHistory(userId, pageable));
@@ -83,12 +82,13 @@ public class AuctionController {
      */
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<RegisterResponse> registerAuction(
+            @LoginUser Long userId,
             @RequestPart("request") @Valid BaseRegisterRequest request,
             @RequestPart(value = "images", required = true) List<MultipartFile> images) {
 
         AuctionRegistrationService auctionRegistrationService = registrationServiceFactory.getService(
                 request.getAuctionRegisterType());
-        RegisterResponse response = auctionRegistrationService.register(request, images);
+        RegisterResponse response = auctionRegistrationService.register(userId, request, images);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -97,8 +97,8 @@ public class AuctionController {
      * 경매 상품으로 전환
      */
     @PostMapping("/start")
-    public ResponseEntity<StartAuctionResponse> startAuction(@RequestBody @Valid StartAuctionRequest request) {
-        StartAuctionResponse response = auctionService.startAuction(request);
+    public ResponseEntity<StartAuctionResponse> startAuction(@LoginUser Long userId, @RequestBody @Valid StartAuctionRequest request) {
+        StartAuctionResponse response = auctionService.startAuction(userId, request);
         logger.info("경매 상품으로 성공적으로 전환되었습니다. 상품 ID: {}", response.productId());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -113,7 +113,7 @@ public class AuctionController {
     }
 
     /*
-     * Best 경매 상품 목록 조회~
+     * Best 경매 상품 목록 조회
      */
     @GetMapping("/best")
     public ResponseEntity<?> bestAuctionList() {
@@ -125,5 +125,10 @@ public class AuctionController {
     public ResponseEntity<?> imminentAuctionList() {
         List<AuctionResponse> imminentAuctionList = auctionService.getImminentAuctionList();
         return ResponseEntity.ok(imminentAuctionList);
+    }
+
+    @GetMapping("/{auctionId}/bids")
+    public ResponseEntity<?> getBids(@LoginUser Long userId, @PathVariable Long auctionId, Pageable pageable) {
+        return ResponseEntity.ok(bidService.getBidsByAuctionId(userId, auctionId, pageable));
     }
 }
