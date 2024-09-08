@@ -19,8 +19,8 @@ import org.chzz.market.domain.token.service.TokenService;
 import org.chzz.market.domain.user.dto.UpdateProfileResponse;
 import org.chzz.market.domain.user.dto.UpdateUserProfileRequest;
 import org.chzz.market.domain.user.dto.request.UserCreateRequest;
-import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.dto.response.UserProfileResponse;
+import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,8 +40,9 @@ public class UserController {
     private final TokenService tokenService;
 
     @PostMapping
-    public ResponseEntity<?> completeRegistration(@LoginUser Long userId, @Valid @RequestBody UserCreateRequest userCreateRequest,
-                                        HttpServletResponse response) {
+    public ResponseEntity<?> completeRegistration(@LoginUser Long userId,
+                                                  @Valid @RequestBody UserCreateRequest userCreateRequest,
+                                                  HttpServletResponse response) {
         User user = userService.completeUserRegistration(userId, userCreateRequest);
         // 임시토큰 만료
         response.addCookie(CookieUtil.expireCookie(TokenType.TEMP.name()));
@@ -53,37 +54,36 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    /**
-     * 사용자 프로필 수정
-     */
-    @PostMapping("/{nickname}")
-    public ResponseEntity<UpdateProfileResponse> updateUserProfile(
-            @PathVariable String nickname,
-            @LoginUser Long userId,
-            @RequestBody @Valid UpdateUserProfileRequest request) {
-        UpdateProfileResponse response = userService.updateUserProfile(nickname, userId, request);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
-    }
-
-    @GetMapping("/check/nickname/{nickname}")
-    public ResponseEntity<?> checkNickname(@NotBlank @Size(max = 15) @PathVariable String nickname) {
-        return ResponseEntity.ok((userService.checkNickname(nickname)));
-    }
-
-    /*
-     * 사용자 프로필 조회
-     */
-    @GetMapping("/{nickname}")
-    public ResponseEntity<UserProfileResponse> getUserProfile(@PathVariable String nickname){
-        return ResponseEntity.ok(userService.getUserProfile(nickname));
-    }
-
     /*
      * 내 프로필 조회
      */
     @GetMapping("/me")
     public ResponseEntity<UserProfileResponse> getMyProfile(@LoginUser Long userId) {
         return ResponseEntity.ok(userService.getMyProfile(userId));
+    }
+
+    /**
+     * 내 프로필 수정
+     */
+    @PostMapping("/me")
+    public ResponseEntity<UpdateProfileResponse> updateUserProfile(
+            @LoginUser Long userId,
+            @RequestBody @Valid UpdateUserProfileRequest request) {
+        UpdateProfileResponse response = userService.updateUserProfile(userId, request);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    /*
+     * 사용자 프로필 조회
+     */
+    @GetMapping("/{nickname}")
+    public ResponseEntity<UserProfileResponse> getUserProfile(@PathVariable String nickname) {
+        return ResponseEntity.ok(userService.getUserProfile(nickname));
+    }
+
+    @GetMapping("/check/nickname/{nickname}")
+    public ResponseEntity<?> checkNickname(@NotBlank @Size(max = 15) @PathVariable String nickname) {
+        return ResponseEntity.ok((userService.checkNickname(nickname)));
     }
 
     @PostMapping("/tokens/reissue")
