@@ -27,12 +27,14 @@ import org.chzz.market.domain.like.entity.Like;
 import org.chzz.market.domain.payment.entity.Payment;
 import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.user.dto.request.UserCreateRequest;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Getter
 @Entity
 @Builder
 @Table(name = "users")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@DynamicUpdate
 @AllArgsConstructor
 public class User extends BaseTimeEntity {
     @Id
