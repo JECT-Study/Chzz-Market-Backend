@@ -58,10 +58,9 @@ public class SecurityConfig {
                                 "/api/v1/products/{productId:\\d+}",
                                 "/api/v1/products/users/*",
                                 "/api/v1/users/*",
-                                "/api/v1/check/nickname/*").permitAll()
+                                "/api/v1/users/check/nickname/*").permitAll()
                         .requestMatchers(POST,
-                                "/api/v1/users/tokens/reissue",
-                                "/api/v1/users/logout").permitAll()
+                                "/api/v1/users/tokens/reissue").permitAll()
                         .requestMatchers(POST, "/api/v1/users").hasRole("TEMP_USER")
                         .anyRequest().hasRole("USER")
                 )
