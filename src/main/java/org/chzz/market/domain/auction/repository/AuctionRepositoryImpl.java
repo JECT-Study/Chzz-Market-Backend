@@ -269,8 +269,8 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                 .from(auction)
                 .join(auction.product, product)
                 .join(product.user, user)
-                .leftJoin(bid).on(bid.auction.eq(auction)
-                        .and(bid.status.ne(CANCELLED)))
+                .join(bid).on(bid.auction.eq(auction)
+                        .and(bid.status.ne(CANCELLED).and(bid.bidder.id.eq(userId))))
                 .where(auction.winnerId.eq(userId)
                         .and(auction.status.eq(ENDED)));
 
@@ -284,7 +284,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                         bid.amount
                 ))
                 .leftJoin(image).on(image.product.eq(product).and(image.id.eq(getFirstImageId())))
-                .groupBy(auction.id, product.name, image.cdnPath, product.minPrice)
+                .groupBy(auction.id, product.name, image.cdnPath, product.minPrice, bid.amount)
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -324,7 +324,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                         bid.amount
                 ))
                 .leftJoin(image).on(image.product.eq(product).and(image.id.eq(getFirstImageId())))
-                .groupBy(auction.id, product.name, image.cdnPath, product.minPrice)
+                .groupBy(auction.id, product.name, image.cdnPath, product.minPrice, bid.amount)
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
