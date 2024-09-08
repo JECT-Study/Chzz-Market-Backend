@@ -70,7 +70,9 @@ public class UserService {
         User existingUser = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(USER_NOT_FOUND));
         userRepository.findByNickname(request.getNickname()).ifPresent(user -> {
-            throw new UserException(NICKNAME_DUPLICATION);
+            if(!existingUser.equals(user)) { // 본인 닉네일시
+                throw new UserException(NICKNAME_DUPLICATION);
+            }
         });
 
         // 프로필 정보 업데이트
