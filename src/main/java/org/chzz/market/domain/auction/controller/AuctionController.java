@@ -78,7 +78,7 @@ public class AuctionController {
     }
 
     /**
-     * 상품 등록
+     * 경매 등록
      */
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<RegisterResponse> registerAuction(
