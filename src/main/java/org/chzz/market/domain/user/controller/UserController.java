@@ -57,7 +57,7 @@ public class UserController {
     /*
      * 내 프로필 조회
      */
-    @GetMapping("/me")
+    @GetMapping
     public ResponseEntity<UserProfileResponse> getMyProfile(@LoginUser Long userId) {
         return ResponseEntity.ok(userService.getMyProfile(userId));
     }
@@ -65,7 +65,7 @@ public class UserController {
     /**
      * 내 프로필 수정
      */
-    @PostMapping("/me")
+    @PostMapping("/profile")
     public ResponseEntity<UpdateProfileResponse> updateUserProfile(
             @LoginUser Long userId,
             @RequestBody @Valid UpdateUserProfileRequest request) {
