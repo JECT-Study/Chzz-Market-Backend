@@ -63,7 +63,7 @@ public class Auction extends BaseTimeEntity {
                 .build();
     }
 
-    @OneToMany(mappedBy = "auction", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "auction", cascade = CascadeType.PERSIST)
     @Builder.Default
     private List<Bid> bids = new ArrayList<>();
 
