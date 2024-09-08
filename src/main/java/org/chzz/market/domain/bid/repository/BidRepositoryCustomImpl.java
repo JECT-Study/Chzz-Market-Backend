@@ -126,8 +126,8 @@ public class BidRepositoryCustomImpl implements BidRepositoryCustom {
     }
 
     private static NumberExpression<Integer> timeRemaining() {
-        return Expressions.numberTemplate(Integer.class, "TIMESTAMPDIFF(SECOND, CURRENT_TIMESTAMP, {0})",
-                auction.endDateTime);
+        return Expressions.numberTemplate(Integer.class,
+                "GREATEST(0, TIMESTAMPDIFF(SECOND, CURRENT_TIMESTAMP, {0}))", auction.endDateTime); // 음수면 0으로 처리
     }
 
     @Getter
