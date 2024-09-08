@@ -193,11 +193,11 @@ class UserServiceTest {
         @DisplayName("1. 유저 프로필 수정 성공")
         void updateUserProfile_Success() {
             // given
-            when(userRepository.findByNickname("오래된 닉네임")).thenReturn(java.util.Optional.of(user1));
-            when(userRepository.findByNickname("수정된 닉네임")).thenReturn(Optional.empty());
+            when(userRepository.findById(any())).thenReturn(Optional.of(user1));
+            when(userRepository.findByNickname(any())).thenReturn(Optional.empty());
 
             // when
-            UpdateProfileResponse response = userService.updateUserProfile("오래된 닉네임", user1.getId(), updateUserProfileRequest);
+            UpdateProfileResponse response = userService.updateUserProfile(user1.getId(), updateUserProfileRequest);
 
             // then
             assertNotNull(response);
@@ -208,23 +208,16 @@ class UserServiceTest {
             assertEquals("수정된 닉네임", user1.getNickname());
             assertEquals("수정된 자기 소개", user1.getBio());
             assertEquals("수정된 URL", user1.getLink());
-
-            verify(userRepository).findByNickname("오래된 닉네임");
-            verify(userRepository).findByNickname("수정된 닉네임");
         }
 
         @Test
         @DisplayName("2. 유저 프로필 수정 실패 - 유저를 찾을 수 없음")
         void updateUserProfile_Fail_UserNotFound() {
             // given
-            when(userRepository.findByNickname("존재하지 않는 유저")).thenReturn(Optional.empty());
-
             // when, then
             assertThrows(UserException.class, () ->
-                    userService.updateUserProfile("존재하지 않는 유저", user1.getId(), updateUserProfileRequest)
+                    userService.updateUserProfile(999L, updateUserProfileRequest)
             );
-
-            verify(userRepository).findByNickname("존재하지 않는 유저");
         }
     }
 
