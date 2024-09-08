@@ -110,7 +110,7 @@ jobs:
             ./init-letsencrypt.sh
             
             # ECR 레지스트리에 로그인
-            aws ecr get-login-password --no-include-email --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin $ECR_URI/chzz-rep
+            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_URI/chzz-rep
             
             # 기존 컨테이너 정지 및 삭제
             sudo docker compose down
