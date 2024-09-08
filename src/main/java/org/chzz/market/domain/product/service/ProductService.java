@@ -90,11 +90,11 @@ public class ProductService {
      * 사전 등록 상품 수정
      */
     @Transactional
-    public UpdateProductResponse updateProduct(Long productId, UpdateProductRequest request,
+    public UpdateProductResponse updateProduct(Long userId, Long productId, UpdateProductRequest request,
                                                List<MultipartFile> images) {
         logger.info("상품 ID {}번에 대한 사전 등록 정보를 업데이트를 시작합니다.", productId);
         // 상품 유효성 검사
-        Product existingProduct = productRepository.findByIdAndUserId(productId, request.getUserId())
+        Product existingProduct = productRepository.findByIdAndUserId(productId, userId)
                 .orElseThrow(() -> new ProductException(PRODUCT_NOT_FOUND));
 
         // 경매 등록 상태 유무 유효성 검사
