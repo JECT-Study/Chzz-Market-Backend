@@ -104,7 +104,6 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            ./init-letsencrypt.sh
             export AWS_REGION=${{ env.AWS_REGION }}
             export ECR_URI=${{ secrets.ECR_URI }}
             
