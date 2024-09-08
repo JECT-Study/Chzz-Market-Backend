@@ -4,6 +4,8 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.domain.auction.entity.Auction;
+import org.chzz.market.domain.auction.error.AuctionErrorCode;
+import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.payment.dto.request.ApprovalRequest;
 import org.chzz.market.domain.payment.dto.response.ApprovalResponse;
@@ -12,6 +14,10 @@ import org.chzz.market.domain.payment.entity.Payment;
 import org.chzz.market.domain.payment.error.PaymentErrorCode;
 import org.chzz.market.domain.payment.error.PaymentException;
 import org.chzz.market.domain.payment.repository.PaymentRepository;
+import org.chzz.market.domain.user.entity.User;
+import org.chzz.market.domain.user.error.UserErrorCode;
+import org.chzz.market.domain.user.error.exception.UserException;
+import org.chzz.market.domain.user.repository.UserRepository;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
@@ -27,34 +33,35 @@ public class PaymentService {
     private final PaymentClient paymentClient;
     private final PaymentRepository paymentRepository;
     private final AuctionRepository auctionRepository;
+    private final UserRepository userRepository;
 
-    public ApprovalResponse approval(ApprovalRequest request) {
+    public ApprovalResponse approval(Long userId, ApprovalRequest request) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
         validateOrderId(request.orderId());
         TossPaymentResponse tossPaymentResponse = paymentClient.confirmPayment(request);
-        Auction auction =getAuction(request.auctionId());
-
-        savaPayment(tossPaymentResponse,auction);
+        Auction auction = getAuction(request.auctionId());
+        if (auction.getWinnerId() == null || !userId.equals(auction.getWinnerId())) {
+            throw new AuctionException(AuctionErrorCode.NOT_WINNER);
+        }
+        savaPayment(user, tossPaymentResponse, auction);
         return ApprovalResponse.of(tossPaymentResponse);
     }
 
-
     @Transactional
-    public void savaPayment(TossPaymentResponse tossPaymentResponse, Auction auction) {
-        Payment payment = Payment.of(tossPaymentResponse, auction);
+    public void savaPayment(User payer, TossPaymentResponse tossPaymentResponse, Auction auction) {
+        Payment payment = Payment.of(payer, tossPaymentResponse, auction);
         paymentRepository.save(payment);
     }
 
     @Transactional(readOnly = true)
     public Auction getAuction(Long auctionId) {
         return auctionRepository.findById(auctionId)
-                .orElseThrow();
+                .orElseThrow(() -> new AuctionException(AuctionErrorCode.AUCTION_NOT_FOUND));
     }
-
 
     @Transactional(readOnly = true)
     public void validateOrderId(String orderId) {
-        if (!(!paymentRepository.existsByOrderId(orderId)
-                &&paymentClient.isValidOrderId(orderId))) {
+        if (paymentRepository.existsByOrderId(orderId) || paymentClient.isValidOrderId(orderId)) {
             throw new PaymentException(PaymentErrorCode.ALREADY_EXIST);
         }
     }
@@ -76,7 +83,7 @@ public class PaymentService {
     }
 
     @Recover
-    private void throwException(){
+    private void throwException() {
         throw new PaymentException(PaymentErrorCode.CREATION_FAILURE);
     }
 }
