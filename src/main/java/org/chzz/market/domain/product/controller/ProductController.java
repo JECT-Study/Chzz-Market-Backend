@@ -1,25 +1,36 @@
 package org.chzz.market.domain.product.controller;
 
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.chzz.market.domain.like.service.LikeService;
 import org.chzz.market.common.config.LoginUser;
-import org.chzz.market.domain.product.dto.*;
-import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.like.dto.LikeResponse;
+import org.chzz.market.domain.like.service.LikeService;
+import org.chzz.market.domain.product.dto.CategoryResponse;
+import org.chzz.market.domain.product.dto.DeleteProductResponse;
+import org.chzz.market.domain.product.dto.ProductDetailsResponse;
+import org.chzz.market.domain.product.dto.ProductResponse;
+import org.chzz.market.domain.product.dto.UpdateProductRequest;
+import org.chzz.market.domain.product.dto.UpdateProductResponse;
+import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.product.service.ProductService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -33,13 +44,12 @@ public class ProductController {
     /*
      * 카테고리 별 사전 등록 상품 목록 조회
      */
-    // TODO: 추후에 인증된 사용자 정보로 수정 필요
     @GetMapping
     public ResponseEntity<Page<ProductResponse>> getProductList(
             @RequestParam Product.Category category,
-            @RequestHeader("X-User-Agent") Long userId,
+            @LoginUser Long userId,
             Pageable pageable) {
-        return ResponseEntity.ok(productService.getProductListByCategory(category, userId, pageable)); // 임의의 사용자 ID
+        return ResponseEntity.ok(productService.getProductListByCategory(category, userId, pageable));
     }
 
     /*
@@ -53,11 +63,10 @@ public class ProductController {
     /*
      * 사전 등록 상품 상세 정보 조회
      */
-    // TODO: 추후에 인증된 사용자 정보로 수정 필요
     @GetMapping("/{productId}")
     public ResponseEntity<ProductDetailsResponse> getProductDetails(
             @PathVariable Long productId,
-            @RequestHeader("X-User-Agent") Long userId) {
+            @LoginUser Long userId) {
         ProductDetailsResponse response = productService.getProductDetails(productId, userId);
         return ResponseEntity.ok(response);
     }
@@ -65,8 +74,7 @@ public class ProductController {
     /*
      * 나의 사전 등록 상품 목록 조회
      */
-    // TODO: 추후에 인증된 사용자 정보로 수정 필요
-    @GetMapping("/user/{nickname}")
+    @GetMapping("/users/{nickname}")
     public ResponseEntity<Page<ProductResponse>> getMyProductList(
             @PathVariable String nickname,
             Pageable pageable) {
@@ -79,8 +87,7 @@ public class ProductController {
     @GetMapping("/history")
     public ResponseEntity<Page<ProductResponse>> getLikedProductList(
             @LoginUser Long userId,
-            @PageableDefault(size=20, sort="product-newest") Pageable pageable
-    ) {
+            @PageableDefault(size = 20, sort = "product-newest") Pageable pageable) {
         return ResponseEntity.ok(productService.getLikedProductList(userId, pageable));
     }
 
@@ -89,10 +96,11 @@ public class ProductController {
      */
     @PatchMapping("/{productId}")
     public ResponseEntity<UpdateProductResponse> updateProduct(
+            @LoginUser Long userId,
             @PathVariable Long productId,
             @RequestPart("request") @Valid UpdateProductRequest request,
             @RequestPart(value = "images", required = false) List<MultipartFile> images) {
-        UpdateProductResponse response = productService.updateProduct(productId, request, images);
+        UpdateProductResponse response = productService.updateProduct(userId, productId, request, images);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
@@ -102,7 +110,7 @@ public class ProductController {
     @DeleteMapping("/{productId}")
     public ResponseEntity<DeleteProductResponse> deleteProduct(
             @PathVariable Long productId,
-            @RequestHeader("X-User-Agent") Long userId) {
+            @LoginUser Long userId) {
         DeleteProductResponse response = productService.deleteProduct(productId, userId);
         logger.info("상품이 성공적으로 삭제되었습니다. 상품 ID: {}", productId);
         return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -114,7 +122,7 @@ public class ProductController {
     @PostMapping("/{productId}/likes")
     public ResponseEntity<LikeResponse> toggleProductLike(
             @PathVariable Long productId,
-            @RequestHeader("X-User-Agent") Long userId) {
+            @LoginUser Long userId) {
         LikeResponse response = likeService.toggleLike(userId, productId);
         return ResponseEntity.ok(response);
     }
