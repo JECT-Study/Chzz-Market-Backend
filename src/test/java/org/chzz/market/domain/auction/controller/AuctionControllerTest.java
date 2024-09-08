@@ -86,7 +86,6 @@ public class AuctionControllerTest {
                 .build();
 
         registerAuctionRequest = RegisterAuctionRequest.builder()
-                .userId(1L)
                 .productName("경매 등록 테스트 상품 이름")
                 .description("경매 등록 테스트 상품 설명")
                 .category(ELECTRONICS)
@@ -95,7 +94,6 @@ public class AuctionControllerTest {
                 .build();
 
         preRegisterRequest = PreRegisterRequest.builder()
-                .userId(1L)
                 .productName("사전 등록 테스트 상품 이름")
                 .description("사전 등록 테스트 상품 설명")
                 .category(ELECTRONICS)
@@ -105,12 +103,10 @@ public class AuctionControllerTest {
 
         validStartAuctionRequest = StartAuctionRequest.builder()
                 .productId(1L)
-                .userId(1L)
                 .build();
 
         invalidStartAuctionRequest = StartAuctionRequest.builder()
                 .productId(999L)
-                .userId(1L)
                 .build();
 
         image1 = new MockMultipartFile("images", "image1.jpg", "image/jpg", "image1".getBytes());
@@ -133,7 +129,7 @@ public class AuctionControllerTest {
             RegisterAuctionResponse response = RegisterAuctionResponse.of(1L, 1L, PROCEEDING);
 
             AuctionRegisterService mockService = mock(AuctionRegisterService.class);
-            when(mockService.register(any(RegisterAuctionRequest.class), anyList())).thenReturn(response);
+            when(mockService.register(any(), any(RegisterAuctionRequest.class), anyList())).thenReturn(response);
             when(registrationServiceFactory.getService(REGISTER)).thenReturn(mockService);
 
             MockMultipartFile requestPart = new MockMultipartFile("request", "", "application/json",
@@ -150,7 +146,7 @@ public class AuctionControllerTest {
                     .andExpect(jsonPath("$.status").value("PROCEEDING"))
                     .andExpect(jsonPath("$.message").value("상품이 성공적으로 경매 등록되었습니다."));
 
-            verify(mockService).register(any(RegisterAuctionRequest.class), anyList());
+            verify(mockService).register(any(), any(RegisterAuctionRequest.class), anyList());
         }
 
         @Test
@@ -163,7 +159,7 @@ public class AuctionControllerTest {
             PreRegisterResponse response = PreRegisterResponse.of(1L);
 
             PreRegisterService mockService = mock(PreRegisterService.class);
-            when(mockService.register(any(PreRegisterRequest.class), anyList())).thenReturn(response);
+            when(mockService.register(any(), any(PreRegisterRequest.class), anyList())).thenReturn(response);
             when(registrationServiceFactory.getService(PRE_REGISTER)).thenReturn(mockService);
 
             MockMultipartFile requestPart = new MockMultipartFile("request", "", "application/json",
@@ -180,7 +176,7 @@ public class AuctionControllerTest {
                     .andExpect(jsonPath("$.status").doesNotExist())
                     .andExpect(jsonPath("$.message").value("상품이 성공적으로 사전 등록되었습니다."));
 
-            verify(mockService).register(any(PreRegisterRequest.class), anyList());
+            verify(mockService).register(any(), any(PreRegisterRequest.class), anyList());
         }
 
         @Test
@@ -190,7 +186,6 @@ public class AuctionControllerTest {
 
             Long userId = 999L;
             RegisterAuctionRequest invalidRegisterAuctionRequest = RegisterAuctionRequest.builder()
-                    .userId(userId)
                     .productName("경매 등록 테스트 상품 이름")
                     .description("경매 등록 테스트 상품 설명")
                     .category(ELECTRONICS)
@@ -201,7 +196,7 @@ public class AuctionControllerTest {
             String requestJson = objectMapper.writeValueAsString(invalidRegisterAuctionRequest);
 
             AuctionRegisterService mockService = mock(AuctionRegisterService.class);
-            when(mockService.register(any(RegisterAuctionRequest.class), anyList()))
+            when(mockService.register(any(), any(RegisterAuctionRequest.class), anyList()))
                     .thenThrow(new UserException(USER_NOT_FOUND));
             when(registrationServiceFactory.getService(REGISTER)).thenReturn(mockService);
 
@@ -231,7 +226,7 @@ public class AuctionControllerTest {
 
             StartAuctionResponse response = StartAuctionResponse.of(1L, 1L, PROCEEDING,
                     LocalDateTime.now().plusDays(1));
-            when(auctionService.startAuction(any(StartAuctionRequest.class))).thenReturn(response);
+            when(auctionService.startAuction(any(), any(StartAuctionRequest.class))).thenReturn(response);
 
             mockMvc.perform(post("/api/v1/auctions/start")
                             .content(requestJson)
@@ -243,7 +238,7 @@ public class AuctionControllerTest {
                     .andExpect(jsonPath("$.endTime").isNotEmpty())
                     .andExpect(jsonPath("$.message").value("경매가 성공적으로 시작되었습니다."));
 
-            verify(auctionService).startAuction(any(StartAuctionRequest.class));
+            verify(auctionService).startAuction(any(), any(StartAuctionRequest.class));
         }
 
         @Test
@@ -253,7 +248,7 @@ public class AuctionControllerTest {
 
             String requestJson = objectMapper.writeValueAsString(invalidStartAuctionRequest);
 
-            when(auctionService.startAuction(any(StartAuctionRequest.class)))
+            when(auctionService.startAuction(any(), any(StartAuctionRequest.class)))
                     .thenThrow(new AuctionException(AUCTION_NOT_FOUND));
 
             mockMvc.perform(post("/api/v1/auctions/start")
@@ -270,7 +265,7 @@ public class AuctionControllerTest {
 
             String requestJson = objectMapper.writeValueAsString(validStartAuctionRequest);
 
-            when(auctionService.startAuction(any(StartAuctionRequest.class)))
+            when(auctionService.startAuction(any(), any(StartAuctionRequest.class)))
                     .thenThrow(new AuctionException(AUCTION_ALREADY_REGISTERED));
 
             mockMvc.perform(post("/api/v1/auctions/start")
@@ -290,7 +285,7 @@ public class AuctionControllerTest {
         LocalDateTime endTime = startTime.plusHours(24);
 
         StartAuctionResponse response = StartAuctionResponse.of(1L, productId, PROCEEDING, endTime);
-        when(auctionService.startAuction(any(StartAuctionRequest.class))).thenReturn(response);
+        when(auctionService.startAuction(any(), any(StartAuctionRequest.class))).thenReturn(response);
 
         String requestJson = objectMapper.writeValueAsString(validStartAuctionRequest);
 
