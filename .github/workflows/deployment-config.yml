@@ -111,8 +111,9 @@ jobs:
             aws sts get-caller-identity
             
             # ECR 레지스트리에 로그인
-            docker logout $ECR_URI/chzz-rep
-            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_URI/chzz-rep
+            aws ecr get-login-password --region $AWS_REGION | sudo docker login --username AWS --password-stdin $ECR_URI/chzz-rep
+            
+            docker info
             
             # 기존 컨테이너 정지 및 삭제
             sudo docker compose down
