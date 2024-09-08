@@ -108,7 +108,6 @@ class AuctionServiceTest {
                 .build();
 
         registerAuctionRequest = RegisterAuctionRequest.builder()
-                .userId(1L)
                 .productName("경매 등록 테스트 상품 이름")
                 .description("경매 등록 테스트 상품 설명")
                 .category(ELECTRONICS)
@@ -117,7 +116,6 @@ class AuctionServiceTest {
                 .build();
 
         preRegisterRequest = PreRegisterRequest.builder()
-                .userId(1L)
                 .productName("사전 등록 테스트 상품 이름")
                 .description("사전 등록 테스트 상품 설명")
                 .category(ELECTRONICS)
@@ -127,12 +125,10 @@ class AuctionServiceTest {
 
         validStartAuctionRequest = StartAuctionRequest.builder()
                 .productId(1L)
-                .userId(1L)
                 .build();
 
         invalidStartAuctionRequest = StartAuctionRequest.builder()
                 .productId(999L)
-                .userId(1L)
                 .build();
 
         System.setProperty("org.mockito.logging.verbosity", "all");
@@ -160,7 +156,7 @@ class AuctionServiceTest {
             when(productRepository.save(any(Product.class))).thenReturn(savedProduct);
 
             // when
-            RegisterResponse response = preRegisterService.register(preRegisterRequest, images);
+            RegisterResponse response = preRegisterService.register(userId, preRegisterRequest, images);
 
             // then
             assertNotNull(response);
@@ -176,7 +172,6 @@ class AuctionServiceTest {
             // Given
             Long userId = 999L;
             PreRegisterRequest invalidPreRegisterRequest = PreRegisterRequest.builder()
-                    .userId(userId)
                     .productName("사전 등록 테스트 상품 이름")
                     .description("사전 등록 테스트 상품 설명")
                     .category(ELECTRONICS)
@@ -190,7 +185,7 @@ class AuctionServiceTest {
 
             // When & Then
             assertThrows(UserException.class, () -> {
-                preRegisterService.register(invalidPreRegisterRequest, images);
+                preRegisterService.register(userId, invalidPreRegisterRequest, images);
             });
 
             // verify
@@ -228,7 +223,7 @@ class AuctionServiceTest {
             when(auctionRepository.save(any(Auction.class))).thenReturn(auction);
 
             // when
-            RegisterResponse response = auctionRegisterService.register(registerAuctionRequest, images);
+            RegisterResponse response = auctionRegisterService.register(userId, registerAuctionRequest, images);
 
             // then
             assertNotNull(response);
@@ -245,7 +240,6 @@ class AuctionServiceTest {
             // Given
             Long userId = 999L;
             RegisterAuctionRequest invalidRegisterAuctionRequest = RegisterAuctionRequest.builder()
-                    .userId(userId)
                     .productName("경매 등록 테스트 상품 이름")
                     .description("경매 등록 테스트 상품 설명")
                     .category(ELECTRONICS)
@@ -259,7 +253,7 @@ class AuctionServiceTest {
 
             // When & Then
             assertThrows(UserException.class, () -> {
-                auctionRegisterService.register(invalidRegisterAuctionRequest, images);
+                auctionRegisterService.register(userId, invalidRegisterAuctionRequest, images);
             });
 
             // verify
@@ -295,7 +289,7 @@ class AuctionServiceTest {
             when(auctionRepository.save(any(Auction.class))).thenReturn(newAuction);
 
             // when
-            StartAuctionResponse response = auctionService.startAuction(validStartAuctionRequest);
+            StartAuctionResponse response = auctionService.startAuction(1L, validStartAuctionRequest);
 
             // then
             assertNotNull(response);
@@ -318,7 +312,7 @@ class AuctionServiceTest {
 
             // When & Then
             AuctionException exception = assertThrows(AuctionException.class,
-                    () -> auctionService.startAuction(invalidStartAuctionRequest));
+                    () -> auctionService.startAuction(any(), invalidStartAuctionRequest));
 
             assertEquals(AUCTION_NOT_FOUND, exception.getErrorCode());
             verify(auctionRepository, never()).save(any(Auction.class));
@@ -338,7 +332,7 @@ class AuctionServiceTest {
 
             // When & Then
             AuctionException exception = assertThrows(AuctionException.class,
-                    () -> auctionService.startAuction(validStartAuctionRequest));
+                    () -> auctionService.startAuction(1L, validStartAuctionRequest));
             assertEquals(AUCTION_ALREADY_REGISTERED, exception.getErrorCode());
 
             verify(auctionRepository, never()).save(any(Auction.class));
