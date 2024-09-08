@@ -125,15 +125,6 @@ class AuctionRepositoryImplTest {
         auction1.registerBid(bid6);
     }
 
-    @AfterEach
-    void tearDown() {
-        auctionRepository.deleteAll();
-        productRepository.deleteAll();
-        imageRepository.deleteAll();
-        bidRepository.deleteAll();
-        userRepository.deleteAll();
-    }
-
     @Test
     @DisplayName("특정 카테고리 경매를 높은 가격순으로 조회")
     public void testFindAuctionsByCategoryExpensive() throws Exception {
