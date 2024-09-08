@@ -7,5 +7,5 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface AuctionRegistrationService {
-    RegisterResponse register(BaseRegisterRequest request, List<MultipartFile> images);
+    RegisterResponse register(Long userId, BaseRegisterRequest request, List<MultipartFile> images);
 }

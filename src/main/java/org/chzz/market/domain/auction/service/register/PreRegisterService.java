@@ -27,8 +27,8 @@ public class PreRegisterService implements AuctionRegistrationService {
 
     @Override
     @Transactional
-    public RegisterResponse register(BaseRegisterRequest request, List<MultipartFile> images) {
-        User user = userRepository.findById(request.getUserId())
+    public RegisterResponse register(Long userId, BaseRegisterRequest request, List<MultipartFile> images) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(USER_NOT_FOUND));
 
         Product product = createProduct(request, user);

@@ -32,8 +32,8 @@ public class AuctionRegisterService implements AuctionRegistrationService {
 
     @Override
     @Transactional
-    public RegisterResponse register(BaseRegisterRequest request, List<MultipartFile> images) {
-        User user = userRepository.findById(request.getUserId())
+    public RegisterResponse register(Long userId, BaseRegisterRequest request, List<MultipartFile> images) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
         Product product = createProduct(request, user);
@@ -44,7 +44,7 @@ public class AuctionRegisterService implements AuctionRegistrationService {
             imageService.saveProductImageEntities(savedProduct, imageUrls);
         }
 
-        Auction auction = createAuction(savedProduct, request);
+        Auction auction = createAuction(savedProduct);
         auctionRepository.save(auction);
 
         return RegisterAuctionResponse.of(savedProduct.getId(), auction.getId(), auction.getStatus());
@@ -60,7 +60,7 @@ public class AuctionRegisterService implements AuctionRegistrationService {
                 .build();
     }
 
-    private Auction createAuction(Product product, BaseRegisterRequest request) {
+    private Auction createAuction(Product product) {
         return Auction.builder()
                 .product(product)
                 .status(PROCEEDING)
