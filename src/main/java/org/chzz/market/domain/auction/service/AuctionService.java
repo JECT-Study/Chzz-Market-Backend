@@ -81,11 +81,10 @@ public class AuctionService {
 
     /**
      * 사전 등록 상품 경매 전환 처리
-     * TODO: 추후에 인증된 사용자 정보로 수정 필요
      */
     @Transactional
-    public StartAuctionResponse startAuction(StartAuctionRequest request) {
-        Product product = validateStartAuction(request.getProductId(), request.getUserId());
+    public StartAuctionResponse startAuction(Long userId, StartAuctionRequest request) {
+        Product product = validateStartAuction(request.getProductId(), userId);
         return changeAuction(product);
     }
 
