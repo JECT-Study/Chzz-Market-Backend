@@ -19,6 +19,7 @@ public enum AuctionErrorCode implements ErrorCode {
     AUCTION_ALREADY_REGISTERED(BAD_REQUEST, "이미 등록된 경매입니다."),
     UNKNOWN_AUCTION_TYPE(BAD_REQUEST, "알 수 없는 경매 타입입니다."),
     AUCTION_NOT_ENDED(BAD_REQUEST, "아직 경매가 종료되지 않았습니다."),
+    NOT_WINNER(FORBIDDEN, "낙찰자가 아닙니다."),
     FORBIDDEN_AUCTION_ACCESS(FORBIDDEN, "해당 경매에 접근할 수 없습니다.");
 
     private final HttpStatus httpStatus;
