@@ -78,9 +78,9 @@ public class Payment extends BaseTimeEntity {
         this.paymentKey = paymentKey;
     }
 
-    public static Payment of(TossPaymentResponse tossPaymentResponse, Auction auction) {
+    public static Payment of(User payer, TossPaymentResponse tossPaymentResponse, Auction auction) {
         return new Payment(
-                auction.getProduct().getUser(),
+                payer,
                 auction,
                 tossPaymentResponse.getTotalAmount(),
                 tossPaymentResponse.getMethod(),

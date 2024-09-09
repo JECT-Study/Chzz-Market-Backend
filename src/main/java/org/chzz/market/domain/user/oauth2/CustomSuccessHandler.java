@@ -20,11 +20,12 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 @RequiredArgsConstructor
 @Configuration
 public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
-    @Value("${oauth2.redirect-url}")
-    private String oauth2RedirectUrl;
+    private static final String REDIRECT_URL_SUCCESS = "/login?status=success";
+    private static final String REDIRECT_URL_ADDITIONAL_INFO = "/form";
 
-    @Value("${oauth2.additional-info-url}")
-    private String oauth2RedirectAdditionalInfoUrl;
+    @Value("${client.url}")
+    private String clientUrl;
+
 
     private final TokenService tokenService;
 
@@ -38,15 +39,13 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             response.addCookie(createTokenCookie(tempToken, TokenType.TEMP));
 
             // 추가 입력 페이지로 리다이렉트
-            response.sendRedirect(oauth2RedirectAdditionalInfoUrl);
+            response.sendRedirect(clientUrl + REDIRECT_URL_ADDITIONAL_INFO);
             log.info("임시 유저 인증 성공: user ID: {}", user.getId());
         } else {
             // 리프레쉬 토큰 발급
             String refresh = tokenService.createRefreshToken(user);
             response.addCookie(createTokenCookie(refresh, TokenType.REFRESH));
-
-            String redirectUrl = oauth2RedirectUrl + "?status=success";
-            response.sendRedirect(redirectUrl);
+            response.sendRedirect(clientUrl + REDIRECT_URL_SUCCESS);
             log.info("소셜로그인 성공 user ID: {}", user.getId());
         }
     }

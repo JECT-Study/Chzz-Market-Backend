@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.ToString;
 import org.chzz.market.domain.auction.dto.BaseAuctionDTO;
 
-import static org.chzz.market.domain.auction.entity.Auction.*;
+import org.chzz.market.domain.auction.type.AuctionStatus;
 
 /**
  * 나의 경매 목록 조회 DTO
