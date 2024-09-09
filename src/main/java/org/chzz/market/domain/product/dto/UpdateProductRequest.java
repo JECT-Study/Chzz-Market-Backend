@@ -12,8 +12,6 @@ import static org.chzz.market.domain.product.entity.Product.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateProductRequest {
-    private Long userId;
-
     @Size(min = 2, message = "제목은 최소 2글자 이상이어야 합니다")
     private String name;
 

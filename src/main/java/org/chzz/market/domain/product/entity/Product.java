@@ -111,6 +111,10 @@ public class Product extends BaseTimeEntity {
         this.minPrice = modifiedProduct.getMinPrice();
     }
 
+    public boolean isOwner(Long userId) {
+        return this.user.getId().equals(userId);
+    }
+
     public void clearImages() {
         this.images.clear();
     }

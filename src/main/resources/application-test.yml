@@ -57,7 +57,7 @@ spring:
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
   jwt:
-    secret: test1234test
+    secret: UI4Tv+IPs8QP8Cu18EgE83vi5tk3YLTmDPplA3EeBQg=
   quartz:
     job-store-type: memory
     properties:
@@ -93,10 +93,6 @@ payment:
 logging:
   level:
     org.springframework.security: trace
-
-oauth2:
-  redirect-url: http://test
-  additional-info-url: http://test
 
 client:
   url: "http://test"

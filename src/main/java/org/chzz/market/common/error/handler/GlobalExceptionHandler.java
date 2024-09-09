@@ -3,16 +3,19 @@ package org.chzz.market.common.error.handler;
 
 import static org.chzz.market.common.error.GlobalErrorCode.INTERNAL_SERVER_ERROR;
 
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import org.chzz.market.common.error.exception.BusinessException;
 import org.chzz.market.common.error.ErrorCode;
 import org.chzz.market.common.error.ErrorResponse;
 import org.chzz.market.common.error.GlobalErrorCode;
 import org.chzz.market.common.error.GlobalException;
+import org.chzz.market.common.error.exception.BusinessException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.lang.Nullable;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -46,7 +49,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(errorCode);
     }
 
-
     @Override
     protected ResponseEntity<Object> handleNoHandlerFoundException(final NoHandlerFoundException e,
                                                                    final HttpHeaders headers,
@@ -79,6 +81,39 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     protected ResponseEntity<?> handleWebClientResponseException(final WebClientResponseException exception) {
         logException(exception, INTERNAL_SERVER_ERROR, exception.getResponseBodyAsString());
         return handleExceptionInternal(INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException ex,
+            HttpHeaders headers,
+            HttpStatusCode status,
+            WebRequest request) {
+
+        GlobalErrorCode errorCode = GlobalErrorCode.INVALID_REQUEST_PARAMETER;
+        String detailedErrorMessage = ex.getBindingResult().getFieldErrors()
+                .stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .collect(Collectors.joining("; "));
+        logException(ex, errorCode, detailedErrorMessage);
+
+        ErrorResponse errorResponse = ErrorResponse.of(errorCode, detailedErrorMessage);
+        return ResponseEntity
+                .status(errorCode.getHttpStatus())
+                .body(errorResponse);
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleHttpMessageNotReadable(
+            HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+
+        GlobalErrorCode errorCode = GlobalErrorCode.INVALID_REQUEST_PARAMETER;
+        logException(ex, errorCode, ex.getMessage());
+
+        ErrorResponse errorResponse = ErrorResponse.from(errorCode);
+        return ResponseEntity
+                .status(errorCode.getHttpStatus())
+                .body(errorResponse);
     }
 
     private ResponseEntity<Object> handleExceptionInternal(ErrorCode errorCode) {

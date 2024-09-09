@@ -8,6 +8,7 @@ import static org.chzz.market.domain.product.error.ProductErrorCode.PRODUCT_NOT_
 import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.chzz.market.common.config.LoginUser;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.image.repository.ImageRepository;
@@ -70,6 +71,13 @@ public class ProductService {
     }
 
     /*
+     * 내가 참여한 사전경매 조회
+     */
+    public Page<ProductResponse> getLikedProductList(Long userId, Pageable pageable) {
+        return productRepository.findLikedProductsByUserId(userId, pageable);
+    }
+
+    /*
      * 상품 카테고리 목록 조회
      */
     public List<CategoryResponse> getCategories() {
@@ -82,11 +90,11 @@ public class ProductService {
      * 사전 등록 상품 수정
      */
     @Transactional
-    public UpdateProductResponse updateProduct(Long productId, UpdateProductRequest request,
+    public UpdateProductResponse updateProduct(Long userId, Long productId, UpdateProductRequest request,
                                                List<MultipartFile> images) {
         logger.info("상품 ID {}번에 대한 사전 등록 정보를 업데이트를 시작합니다.", productId);
         // 상품 유효성 검사
-        Product existingProduct = productRepository.findByIdAndUserId(productId, request.getUserId())
+        Product existingProduct = productRepository.findByIdAndUserId(productId, userId)
                 .orElseThrow(() -> new ProductException(PRODUCT_NOT_FOUND));
 
         // 경매 등록 상태 유무 유효성 검사

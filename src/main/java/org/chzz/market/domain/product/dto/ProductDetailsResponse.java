@@ -18,13 +18,13 @@ public class ProductDetailsResponse {
     private final LocalDateTime createdAt;
     private final String description;
     private final Long likeCount;
-    private final boolean isLiked;
+    private final Boolean isLiked;
     private List<String> imageUrls;
 
     @QueryProjection
     public ProductDetailsResponse(Long productId, String productName, String sellerName,
                                   Integer minPrice, LocalDateTime createdAt, String description,
-                                  Long likeCount, boolean isLiked) {
+                                  Long likeCount, Boolean isLiked) {
         this.productId = productId;
         this.productName = productName;
         this.sellerName = sellerName;

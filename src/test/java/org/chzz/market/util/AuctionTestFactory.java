@@ -2,13 +2,12 @@ package org.chzz.market.util;
 
 import org.chzz.market.domain.auction.dto.request.BaseRegisterRequest;
 import org.chzz.market.domain.auction.entity.Auction;
+import org.chzz.market.domain.auction.type.AuctionStatus;
 import org.chzz.market.domain.product.entity.Product;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.lang.reflect.Constructor;
 import java.time.LocalDateTime;
-
-import static org.chzz.market.domain.auction.entity.Auction.*;
 
 public class AuctionTestFactory {
     public static Auction createAuction(Product product, BaseRegisterRequest request, AuctionStatus status) {

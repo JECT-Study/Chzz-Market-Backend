@@ -1,5 +1,8 @@
 package org.chzz.market.common.config;
 
+import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.POST;
+
 import java.util.Collections;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.error.handler.CustomAccessDeniedHandler;
@@ -12,7 +15,6 @@ import org.chzz.market.domain.user.service.CustomOAuth2UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -43,19 +45,24 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(final HttpSecurity http) throws Exception {
-        // TODO: 추후에 실제 API 권한에 맞게 수정 필요
         return http.authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(ACTUATOR).permitAll()
-                        .requestMatchers("/api/v1/auctions/**").permitAll()
-                        .requestMatchers("/api/v1/products/**").permitAll()
-                        .requestMatchers("api/v1/bids/**").permitAll()
-                        .requestMatchers("api/v1/users/**").permitAll()
-                        .requestMatchers("/api/v1/notifications/**").permitAll()
-                        .requestMatchers("/api/v1/likes/**").permitAll()
-                        .requestMatchers("/error").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/users/tokens/reissue").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/users").hasRole("TEMP_USER")
-                        .anyRequest().authenticated()
+                        .requestMatchers(GET,
+                                "/api/v1/auctions",
+                                "/api/v1/auctions/{auctionId:\\d+}",
+                                "/api/v1/auctions/best",
+                                "/api/v1/auctions/imminent",
+                                "/api/v1/auctions/users/*",
+                                "/api/v1/products",
+                                "/api/v1/products/categories",
+                                "/api/v1/products/{productId:\\d+}",
+                                "/api/v1/products/users/*",
+                                "/api/v1/users/*",
+                                "/api/v1/users/check/nickname/*").permitAll()
+                        .requestMatchers(POST,
+                                "/api/v1/users/tokens/reissue").permitAll()
+                        .requestMatchers(POST, "/api/v1/users").hasRole("TEMP_USER")
+                        .anyRequest().hasRole("USER")
                 )
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .headers(header -> header.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable).disable())
