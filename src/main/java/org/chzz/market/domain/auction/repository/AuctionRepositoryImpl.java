@@ -226,7 +226,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                 .leftJoin(bid).on(bid.auction.id.eq(auction.id).and(bid.status.ne(CANCELLED)))
                 .groupBy(auction.id, product.name, image.cdnPath, auction.createdAt, product.minPrice)
                 .offset(0)
-                .limit(10)
+                .limit(5)
                 .fetch();
     }
 
@@ -252,7 +252,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                 .leftJoin(bid).on(bid.auction.id.eq(auction.id).and(bid.status.ne(CANCELLED)))
                 .groupBy(auction.id, product.name, image.cdnPath)
                 .offset(0)
-                .limit(10)
+                .limit(5)
                 .fetch();
     }
 
