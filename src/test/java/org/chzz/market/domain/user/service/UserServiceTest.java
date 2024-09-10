@@ -2,18 +2,22 @@ package org.chzz.market.domain.user.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.chzz.market.domain.auction.type.AuctionStatus.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import org.chzz.market.domain.auction.dto.response.AuctionParticipationResponse;
+import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
+import org.chzz.market.domain.auction.type.AuctionStatus;
 import org.chzz.market.domain.bank_account.entity.BankAccount;
+import org.chzz.market.domain.bid.entity.Bid;
+import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.user.dto.response.ParticipationCountsResponse;
 import org.chzz.market.domain.user.dto.response.UserProfileResponse;
 import org.chzz.market.domain.user.dto.request.UserCreateRequest;
@@ -48,7 +52,11 @@ class UserServiceTest {
     @InjectMocks
     private UserService userService;
 
-    private User user1;
+    private User user1, user2;
+    private Product product1, product2, product3, product4, product5, product6;
+    private Auction auction1, auction2, auction3, auction4, auction5, auction6;
+    private Bid bid1, bid2, bid3, bid4, bid5, bid6;
+
     private UpdateUserProfileRequest updateUserProfileRequest;
     private ParticipationCountsResponse counts;
 
@@ -60,13 +68,53 @@ class UserServiceTest {
                 .bio("자기소개 1")
                 .build();
 
+        user2 = User.builder()
+                .id(2L)
+                .nickname("닉네임 2")
+                .bio("자기소개 2")
+                .build();
+
+        product1 = Product.builder().id(1L).name("제품1").user(user2).minPrice(1000).build();
+        product2 = Product.builder().id(2L).name("제품2").user(user2).minPrice(2000).build();
+        product3 = Product.builder().id(3L).name("제품3").user(user2).minPrice(3000).build();
+        product4 = Product.builder().id(4L).name("제품4").user(user2).minPrice(4000).build();
+        product5 = Product.builder().id(5L).name("제품5").user(user2).minPrice(5000).build();
+        product6 = Product.builder().id(6L).name("제품6").user(user2).minPrice(6000).build();
+
+        auction1 = Auction.builder().id(1L).product(product1).status(AuctionStatus.PROCEEDING)
+                .endDateTime(LocalDateTime.now().plusDays(1)).build();
+        auction2 = Auction.builder().id(2L).product(product2).status(AuctionStatus.PROCEEDING)
+                .endDateTime(LocalDateTime.now().plusDays(2)).build();
+        auction3 = Auction.builder().id(3L).product(product3).status(AuctionStatus.PROCEEDING)
+                .endDateTime(LocalDateTime.now().plusDays(3)).build();
+        auction4 = Auction.builder().id(4L).product(product4).status(AuctionStatus.ENDED)
+                .endDateTime(LocalDateTime.now().minusDays(1)).winnerId(user1.getId()).build();
+        auction5 = Auction.builder().id(5L).product(product5).status(AuctionStatus.ENDED)
+                .endDateTime(LocalDateTime.now().minusDays(2)).winnerId(user1.getId()).build();
+        auction6 = Auction.builder().id(6L).product(product6).status(AuctionStatus.ENDED)
+                .endDateTime(LocalDateTime.now().minusDays(3)).winnerId(user2.getId()).build();
+
+        bid1 = Bid.builder().id(1L).auction(auction1).bidder(user1).amount(1500L).build();
+        bid2 = Bid.builder().id(2L).auction(auction2).bidder(user1).amount(2500L).build();
+        bid3 = Bid.builder().id(3L).auction(auction3).bidder(user1).amount(3500L).build();
+        bid4 = Bid.builder().id(4L).auction(auction4).bidder(user1).amount(4500L).build();
+        bid5 = Bid.builder().id(5L).auction(auction5).bidder(user1).amount(5500L).build();
+        bid6 = Bid.builder().id(6L).auction(auction6).bidder(user1).amount(6500L).build();
+
+        auction1.registerBid(bid1);
+        auction2.registerBid(bid2);
+        auction3.registerBid(bid3);
+        auction4.registerBid(bid4);
+        auction5.registerBid(bid5);
+        auction6.registerBid(bid6);
+
         updateUserProfileRequest = UpdateUserProfileRequest.builder()
                 .nickname("수정된 닉네임")
                 .bio("수정된 자기 소개")
                 .link("수정된 URL")
                 .build();
 
-        counts = new ParticipationCountsResponse(5L, 2L, 3L, 1L);
+        counts = new ParticipationCountsResponse(5L, 2L, 3L);
 
         System.setProperty("org.mockito.logging.verbosity", "all");
     }
@@ -234,9 +282,12 @@ class UserServiceTest {
             // given
             when(userRepository.findByNickname("닉네임 1")).thenReturn(Optional.of(user1));
             List<AuctionParticipationResponse> participations = Arrays.asList(
-                    new AuctionParticipationResponse(PROCEEDING, null, 5L),
-                    new AuctionParticipationResponse(ENDED, user1.getId(), 2L),
-                    new AuctionParticipationResponse(ENDED, 999L, 3L)
+                    new AuctionParticipationResponse(auction1.getStatus(), null, 1L),
+                    new AuctionParticipationResponse(auction2.getStatus(), null, 1L),
+                    new AuctionParticipationResponse(auction3.getStatus(), null, 1L),
+                    new AuctionParticipationResponse(auction4.getStatus(), auction4.getWinnerId(), 1L),
+                    new AuctionParticipationResponse(auction5.getStatus(), auction5.getWinnerId(), 1L),
+                    new AuctionParticipationResponse(auction6.getStatus(), auction6.getWinnerId(), 1L)
             );
             when(auctionRepository.getAuctionParticipations(user1.getId())).thenReturn(participations);
 
@@ -248,10 +299,9 @@ class UserServiceTest {
             assertEquals("닉네임 1", response.nickname());
             assertEquals("자기소개 1", response.bio());
             assertNotNull(response.participationCount());
-            assertEquals(5L, response.participationCount().ongoingAuctionCount());
+            assertEquals(3L, response.participationCount().ongoingAuctionCount());
             assertEquals(2L, response.participationCount().successfulAuctionCount());
-            assertEquals(3L, response.participationCount().failedAuctionCount());
-            assertEquals(5L, response.participationCount().unsuccessfulAuctionCount());
+            assertEquals(1L, response.participationCount().failedAuctionCount());
 
             verify(userRepository).findByNickname(user1.getNickname());
             verify(auctionRepository).getAuctionParticipations(user1.getId());
@@ -273,7 +323,7 @@ class UserServiceTest {
         @DisplayName("3. 사용자의 경매 참여 카운트가 모두 0인 경우")
         public void getUserProfile_ZeroCounts() {
             // given
-            ParticipationCountsResponse zeroCounts = new ParticipationCountsResponse(0L, 0L, 0L, 0L);
+            ParticipationCountsResponse zeroCounts = new ParticipationCountsResponse(0L, 0L, 0L);
 
             when(userRepository.findByNickname("닉네임 1")).thenReturn(Optional.of(user1));
             when(auctionRepository.getAuctionParticipations(user1.getId())).thenReturn(Collections.emptyList());
@@ -289,7 +339,6 @@ class UserServiceTest {
             assertEquals(0L, response.participationCount().ongoingAuctionCount());
             assertEquals(0L, response.participationCount().successfulAuctionCount());
             assertEquals(0L, response.participationCount().failedAuctionCount());
-            assertEquals(0L, response.participationCount().unsuccessfulAuctionCount());
 
             verify(userRepository).findByNickname(user1.getNickname());
             verify(auctionRepository).getAuctionParticipations(user1.getId());
