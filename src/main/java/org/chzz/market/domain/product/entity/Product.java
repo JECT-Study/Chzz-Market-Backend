@@ -127,4 +127,11 @@ public class Product extends BaseTimeEntity {
         return images.stream().findFirst();
     }
 
+    public List<Long> getLikeUserIds() {
+        return likes.stream()
+                .map(like -> like.getUser().getId())
+                .distinct()
+                .toList();
+    }
+
 }
