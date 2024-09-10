@@ -98,13 +98,11 @@ public class UserService {
         long ongoingAuctionCount = 0;
         long successfulBidCount = 0;
         long failedBidCount = 0;
-        long endedAuctionCount = 0;
 
         for (AuctionParticipationResponse participation : participations) {
             if (participation.status() == PROCEEDING) {
                 ongoingAuctionCount += participation.count();
             } else {
-                endedAuctionCount += participation.count();
                 if (userId.equals(participation.winnerId())) {
                     successfulBidCount += participation.count();
                 } else {
@@ -116,8 +114,7 @@ public class UserService {
         return new ParticipationCountsResponse(
                 ongoingAuctionCount,
                 successfulBidCount,
-                failedBidCount,
-                endedAuctionCount
+                failedBidCount
         );
     }
 }
