@@ -46,16 +46,24 @@ public interface AuctionRepositoryCustom {
      */
     Page<UserAuctionResponse> findAuctionsByNickname(String nickname, Pageable pageable);
 
-
     /**
      * 홈 화면의 베스트 경매 조회
-     * @return 입찰 기록이 많은 10개의 경매 정보
+     * @return 입찰 기록이 많은 경매 정보
      */
     List<AuctionResponse> findBestAuctions();
 
+    /**
+     * 홈 화면의 임박 경매 조회
+     * @return 경매 종료까지 1시간 이내인 경매 정보
+     */
     List<AuctionResponse> findImminentAuctions();
-    
-    ParticipationCountsResponse getParticipationCounts(Long userId);
+
+    /**
+     * 사용자의 참여 횟수, 낙찰 횟수, 낙찰 실패 횟수를 조회합니다.
+     * @param userId 사용자 ID
+     * @return 참여 횟수, 낙찰 횟수, 낙찰 실패 횟수 응답
+     */
+    List<AuctionParticipationResponse> getAuctionParticipations(Long userId);
 
     /**
      * 사용자가 낙찰한 경매 이력을 조회합니다.

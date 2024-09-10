@@ -13,7 +13,6 @@ import static org.chzz.market.domain.product.entity.QProduct.product;
 import static org.chzz.market.domain.user.entity.QUser.user;
 
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.Tuple;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
@@ -30,20 +29,9 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.util.QuerydslOrder;
 import org.chzz.market.common.util.QuerydslOrderProvider;
-import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
-import org.chzz.market.domain.auction.dto.response.AuctionResponse;
-import org.chzz.market.domain.auction.dto.response.LostAuctionResponse;
-import org.chzz.market.domain.auction.dto.response.QAuctionDetailsResponse;
-import org.chzz.market.domain.auction.dto.response.QAuctionResponse;
-import org.chzz.market.domain.auction.dto.response.QLostAuctionResponse;
-import org.chzz.market.domain.auction.dto.response.QUserAuctionResponse;
-import org.chzz.market.domain.auction.dto.response.QWonAuctionResponse;
-import org.chzz.market.domain.auction.dto.response.UserAuctionResponse;
-import org.chzz.market.domain.auction.dto.response.WonAuctionResponse;
-import org.chzz.market.domain.auction.type.AuctionStatus;
+import org.chzz.market.domain.auction.dto.response.*;
 import org.chzz.market.domain.image.entity.QImage;
 import org.chzz.market.domain.product.entity.Product.Category;
-import org.chzz.market.domain.user.dto.response.ParticipationCountsResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
@@ -336,48 +324,24 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchCount);
     }
 
+    /**
+     * 사용자의 참여 횟수, 낙찰 횟수, 낙찰 실패 횟수를 조회합니다.
+     * @param userId 사용자 ID
+     * @return 참여 횟수, 낙찰 횟수, 낙찰 실패 횟수 응답
+     */
     @Override
-    public ParticipationCountsResponse getParticipationCounts(Long userId) {
-        List<Tuple> result = jpaQueryFactory
-                .select(
+    public List<AuctionParticipationResponse> getAuctionParticipations(Long userId) {
+        return jpaQueryFactory
+                .select(new QAuctionParticipationResponse(
                         auction.status,
                         auction.winnerId,
                         auction.id.countDistinct()
-                )
+                ))
                 .from(auction)
                 .join(auction.bids, bid)
                 .where(bid.bidder.id.eq(userId).and(bid.status.ne(CANCELLED)))
                 .groupBy(auction.status, auction.winnerId)
                 .fetch();
-
-        long ongoingAuctionCount = 0;
-        long successfulBidCount = 0;
-        long failedBidCount = 0;
-        long endedAuctionCount = 0;
-
-        for (Tuple tuple : result) {
-            AuctionStatus status = tuple.get(auction.status);
-            Long winnerId = tuple.get(auction.winnerId);
-            Long count = tuple.get(2, Long.class);
-
-            if (status == PROCEEDING) {
-                ongoingAuctionCount += count;
-            } else {
-                endedAuctionCount += count;
-                if (userId.equals(winnerId)) {
-                    successfulBidCount += count;
-                } else {
-                    failedBidCount += count;
-                }
-            }
-        }
-
-        return new ParticipationCountsResponse(
-                ongoingAuctionCount,
-                successfulBidCount,
-                failedBidCount,
-                endedAuctionCount
-        );
     }
 
     /**
