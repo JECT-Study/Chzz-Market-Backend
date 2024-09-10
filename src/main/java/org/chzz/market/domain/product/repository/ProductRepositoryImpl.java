@@ -38,7 +38,7 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
     private final QuerydslOrderProvider querydslOrderProvider;
 
     /**
-     * 카테고리와 정렬 조건에 따라 사전 등록 상품 리스트를 조회합니다.
+     * 사전 등록 상품 리스트를 조회합니다.
      *
      * @param category 카테고리
      * @param userId   사용자 ID
@@ -50,7 +50,7 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
         JPAQuery<?> baseQuery = jpaQueryFactory.from(product)
                 .leftJoin(auction).on(auction.product.id.eq(product.id))
                 .where(auction.id.isNull())
-                .where(product.category.eq(category));
+                .where(categoryEq(category));
 
         List<ProductResponse> content = baseQuery
                 .select(new QProductResponse(
@@ -78,7 +78,7 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
      *
      * @param productId 상품 ID
      * @param userId    사용자 ID
-     * @return 상품 상세 정보
+     * @return          상품 상세 정보
      */
     @Override
     public Optional<ProductDetailsResponse> findProductDetailsById(Long productId, Long userId) {
@@ -216,6 +216,10 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
 
     private BooleanBuilder likeUserIdEq(Long userId) {
         return nullSafeBuilder(() -> like.user.id.eq(userId));
+    }
+
+    private BooleanBuilder categoryEq(Category category) {
+        return nullSafeBuilder(() -> product.category.eq(category));
     }
 
     @Getter

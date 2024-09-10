@@ -12,7 +12,6 @@ import org.chzz.market.domain.product.dto.ProductDetailsResponse;
 import org.chzz.market.domain.product.dto.ProductResponse;
 import org.chzz.market.domain.product.dto.UpdateProductRequest;
 import org.chzz.market.domain.product.dto.UpdateProductResponse;
-import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.product.service.ProductService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +31,8 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import static org.chzz.market.domain.product.entity.Product.*;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/products")
@@ -42,14 +43,15 @@ public class ProductController {
     private final LikeService likeService;
 
     /*
-     * 카테고리 별 사전 등록 상품 목록 조회
+     * 사전 등록 상품 목록 조회
      */
     @GetMapping
     public ResponseEntity<Page<ProductResponse>> getProductList(
-            @RequestParam Product.Category category,
+            @RequestParam(required = false) Category category,
             @LoginUser Long userId,
+            @RequestParam(defaultValue = "5") int size,
             Pageable pageable) {
-        return ResponseEntity.ok(productService.getProductListByCategory(category, userId, pageable));
+        return ResponseEntity.ok(productService.getProductListByCategory(category, userId, size, pageable));
     }
 
     /*
