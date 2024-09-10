@@ -2,11 +2,16 @@ package org.chzz.market.domain.user.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.chzz.market.domain.auction.type.AuctionStatus.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
+import org.chzz.market.domain.auction.dto.response.AuctionParticipationResponse;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.bank_account.entity.BankAccount;
 import org.chzz.market.domain.user.dto.response.ParticipationCountsResponse;
@@ -28,7 +33,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.mockito.Mockito.verify;
@@ -223,13 +227,18 @@ class UserServiceTest {
 
     @Nested
     @DisplayName("사용자 정보 조회 테스트")
-    class UpdateUserTest {
+    class getUserProfileTest {
         @Test
         @DisplayName("1. 사용자 정보 조회가 성공하는 경우")
-        public void updateUser_Success() {
+        public void getUserProfile_Success() {
             // given
             when(userRepository.findByNickname("닉네임 1")).thenReturn(Optional.of(user1));
-            when(auctionRepository.getParticipationCounts(1L)).thenReturn(counts);
+            List<AuctionParticipationResponse> participations = Arrays.asList(
+                    new AuctionParticipationResponse(PROCEEDING, null, 5L),
+                    new AuctionParticipationResponse(ENDED, user1.getId(), 2L),
+                    new AuctionParticipationResponse(ENDED, 999L, 3L)
+            );
+            when(auctionRepository.getAuctionParticipations(user1.getId())).thenReturn(participations);
 
             // when
             UserProfileResponse response = userService.getUserProfile("닉네임 1");
@@ -242,10 +251,10 @@ class UserServiceTest {
             assertEquals(5L, response.participationCount().ongoingAuctionCount());
             assertEquals(2L, response.participationCount().successfulAuctionCount());
             assertEquals(3L, response.participationCount().failedAuctionCount());
-            assertEquals(1L, response.participationCount().unsuccessfulAuctionCount());
+            assertEquals(5L, response.participationCount().unsuccessfulAuctionCount());
 
             verify(userRepository).findByNickname(user1.getNickname());
-            verify(auctionRepository).getParticipationCounts(user1.getId());
+            verify(auctionRepository).getAuctionParticipations(user1.getId());
         }
 
         @Test
@@ -267,7 +276,7 @@ class UserServiceTest {
             ParticipationCountsResponse zeroCounts = new ParticipationCountsResponse(0L, 0L, 0L, 0L);
 
             when(userRepository.findByNickname("닉네임 1")).thenReturn(Optional.of(user1));
-            when(auctionRepository.getParticipationCounts(1L)).thenReturn(zeroCounts);
+            when(auctionRepository.getAuctionParticipations(user1.getId())).thenReturn(Collections.emptyList());
 
             // when
             UserProfileResponse response = userService.getUserProfile("닉네임 1");
@@ -283,7 +292,7 @@ class UserServiceTest {
             assertEquals(0L, response.participationCount().unsuccessfulAuctionCount());
 
             verify(userRepository).findByNickname(user1.getNickname());
-            verify(auctionRepository).getParticipationCounts(user1.getId());
+            verify(auctionRepository).getAuctionParticipations(user1.getId());
         }
     }
 }
