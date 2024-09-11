@@ -5,7 +5,6 @@ import java.util.Optional;
 
 import org.chzz.market.domain.auction.dto.response.*;
 import org.chzz.market.domain.product.entity.Product.Category;
-import org.chzz.market.domain.user.dto.response.ParticipationCountsResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -36,6 +35,14 @@ public interface AuctionRepositoryCustom {
      * @return 경매 상세 응답
      */
     Optional<AuctionDetailsResponse> findAuctionDetailsById(Long auctionId, Long userId);
+
+    /**
+     * 경매 ID로 경매 간단 상세 정보를 조회합니다.
+     * @param auctionId 경매 ID
+     * @param userId    사용자 ID
+     * @return          경매 간단 상세정보 응답
+     */
+    Optional<SimpleAuctionResponse> findSimpleAuctionDetailsById(Long auctionId, Long userId);
 
     /**
      * 사용자 닉네임에 따라 경매 리스트를 조회합니다.

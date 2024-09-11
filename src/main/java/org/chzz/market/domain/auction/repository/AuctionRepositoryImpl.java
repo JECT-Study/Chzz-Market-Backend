@@ -154,6 +154,30 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
     }
 
     /**
+     * 경매 ID와 사용자 ID로 경매 간단 상세 정보를 조회합니다.
+     * @param auctionId 경매 ID
+     * @param userId    사용자 ID
+     * @return          경매 간단 상세정보 응답
+     */
+    @Override
+    public Optional<SimpleAuctionResponse> findSimpleAuctionDetailsById(Long auctionId, Long userId) {
+        return Optional.ofNullable(jpaQueryFactory
+                        .select(new QSimpleAuctionResponse(
+                                image.cdnPath,
+                                product.name,
+                                product.minPrice,
+                                bid.countDistinct()
+                        ))
+                        .from(auction)
+                        .join(auction.product, product)
+                        .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId())))
+                        .leftJoin(bid).on(bid.auction.id.eq(auctionId).and(bid.status.eq(ACTIVE)).and(bidderIdEq(userId)))
+                        .where(auction.id.eq(auctionId))
+                        .groupBy(product.name, image.cdnPath, product.minPrice)
+                        .fetchOne());
+    }
+
+    /**
      * 사용자 닉네임에 따라 경매 리스트를 조회합니다.
      *
      * @param nickname 사용자 닉네임
@@ -218,6 +242,10 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                 .fetch();
     }
 
+    /**
+     * 홈 화면의 임박 경매 조회
+     * @return  경매 종료까지 1시간 이내인 경매 정보
+     */
     @Override
     public List<AuctionResponse> findImminentAuctions() {
         JPAQuery<?> baseQuery = jpaQueryFactory
