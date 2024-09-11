@@ -48,33 +48,67 @@ public class AuctionService {
     private final ProductRepository productRepository;
     private final ApplicationEventPublisher eventPublisher;
 
+    /*
+     * 경매 ID로 경매 정보를 조회합니다.
+     */
     public Auction getAuction(Long auctionId) {
         return auctionRepository.findById(auctionId)
                 .orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
     }
 
+    /*
+     * 카테고리에 따라 경매 리스트를 조회합니다.
+     */
     public Page<AuctionResponse> getAuctionListByCategory(Category category, Long userId,
                                                           Pageable pageable) {
         return auctionRepository.findAuctionsByCategory(category, userId, pageable);
     }
 
+    /*
+     * 경매 상세 정보를 조회합니다.
+     */
     public AuctionDetailsResponse getAuctionDetails(Long auctionId, Long userId) {
         Optional<AuctionDetailsResponse> auctionDetails = auctionRepository.findAuctionDetailsById(auctionId, userId);
         return auctionDetails.orElseThrow(() -> new AuctionException(AUCTION_NOT_ACCESSIBLE));
     }
 
+    /*
+     * 판매자 입찰 화면에 제공되는 경매 간단 상세 정보를 조회합니다.
+     */
+    public SimpleAuctionResponse getSimpleAuctionDetails(Long auctionId, Long userId) {
+        // 판매자 유효성 검증
+        if (!auctionRepository.existsByAuctionIdAndUserId(auctionId, userId)) {
+            throw new AuctionException(AUCTION_NOT_ACCESSIBLE);
+        }
+
+        return auctionRepository.findSimpleAuctionDetailsById(auctionId, userId)
+                .orElseThrow(() -> new AuctionException(AUCTION_NOT_ACCESSIBLE));
+    }
+
+    /*
+     * 사용자 닉네임에 따라 경매 리스트를 조회합니다.
+     */
     public Page<UserAuctionResponse> getAuctionListByNickname(String nickname, Pageable pageable) {
         return auctionRepository.findAuctionsByNickname(nickname, pageable);
     }
 
+    /*
+     * 사용자가 참여한(입찰한) 경매 상세 정보를 조회합니다.
+     */
     public Page<AuctionResponse> getAuctionHistory(Long userId, Pageable pageable) {
         return auctionRepository.findParticipatingAuctionRecord(userId, pageable);
     }
 
+    /*
+     * 내가 성공한 경매 조회
+     */
     public Page<WonAuctionResponse> getWonAuctionHistory(Long userId, Pageable pageable) {
         return auctionRepository.findWonAuctionHistoryByUserId(userId, pageable);
     }
 
+    /*
+     * 내가 실패한 경매 조회
+     */
     public Page<LostAuctionResponse> getLostAuctionHistory(Long userId, Pageable pageable) {
         return auctionRepository.findLostAuctionHistoryByUserId(userId, pageable);
     }
@@ -88,6 +122,9 @@ public class AuctionService {
         return changeAuction(product);
     }
 
+    /*
+     * 사전 등록 상품 유효성 검사
+     */
     public Product validateStartAuction(Long productId, Long userId) {
         logger.info("사전 등록 상품 유효성 검사를 시작합니다. 상품 ID: {}", productId);
         Product product = productRepository.findById(productId)
@@ -107,6 +144,9 @@ public class AuctionService {
         return product;
     }
 
+    /*
+     * 경매 상품으로 전환
+     */
     @Transactional
     public StartAuctionResponse changeAuction(Product product) {
         logger.info("사전 등록 상품을 경매 등록 상품으로 전환하기 시작합니다. 상품 ID: {}", product.getId());
@@ -123,15 +163,24 @@ public class AuctionService {
         );
     }
 
+    /*
+     * 경매 입찰 내역 조회
+     */
     public List<AuctionResponse> getBestAuctionList() {
         return auctionRepository.findBestAuctions();
     }
 
+    /*
+     * 경매 종료까지 1시간 이내인 경매 조회
+     */
     public List<AuctionResponse> getImminentAuctionList() {
         return auctionRepository.findImminentAuctions();
 
     }
 
+    /*
+     * 경매 종료 처리
+     */
     @Transactional
     public void completeAuction(Long auctionId) {
         logger.info("경매 종료 작업 시작 auction ID: {}", auctionId);
@@ -140,6 +189,9 @@ public class AuctionService {
         processAuctionResults(auction);
     }
 
+    /*
+     * 경매 결과 처리
+     */
     private void processAuctionResults(Auction auction) {
         Long productUserId = auction.getProduct().getUser().getId();
         String productName = auction.getProduct().getName();
