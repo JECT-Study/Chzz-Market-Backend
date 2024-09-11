@@ -1,6 +1,6 @@
 package org.chzz.market.domain.product.service;
 
-import static org.chzz.market.domain.notification.entity.NotificationType.AUCTION_REGISTRATION_CANCELED;
+import static org.chzz.market.domain.notification.entity.NotificationType.PRE_REGISTRATION_CANCELED;
 import static org.chzz.market.domain.product.error.ProductErrorCode.ALREADY_IN_AUCTION;
 import static org.chzz.market.domain.product.error.ProductErrorCode.PRODUCT_ALREADY_AUCTIONED;
 import static org.chzz.market.domain.product.error.ProductErrorCode.PRODUCT_NOT_FOUND;
@@ -175,8 +175,8 @@ public class ProductService {
                 .toList();
         if (!likedUserIds.isEmpty()) {
             eventPublisher.publishEvent(
-                    NotificationEvent.createSimpleNotification(likedUserIds, AUCTION_REGISTRATION_CANCELED,
-                            AUCTION_REGISTRATION_CANCELED.getMessage(product.getName()),
+                    NotificationEvent.createSimpleNotification(likedUserIds, PRE_REGISTRATION_CANCELED,
+                            PRE_REGISTRATION_CANCELED.getMessage(product.getName()),
                             null)); // TODO: 사전 등록 취소 (soft delete 로 변경시 이미지 추가)
         }
 
