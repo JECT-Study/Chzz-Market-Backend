@@ -29,9 +29,9 @@ public class UserService {
     @Transactional
     public User completeUserRegistration(Long userId, UserCreateRequest userCreateRequest) {
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(USER_NOT_FOUND));
-        if (userRepository.findByNickname(userCreateRequest.getNickname()).isPresent()) {
+        userRepository.findByNickname(userCreateRequest.getNickname()).ifPresent(user1 -> {
             throw new UserException(NICKNAME_DUPLICATION);
-        }
+        });
         user.createUser(userCreateRequest);
         user.addBankAccount(userCreateRequest.toBankAccount());
         return user;
@@ -82,5 +82,11 @@ public class UserService {
                 request.getLink()
         );
         return UpdateProfileResponse.from(existingUser);
+    }
+
+    public String getCustomerKey(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new UserException(USER_NOT_FOUND))
+                .getCustomerKey().toString();
     }
 }
