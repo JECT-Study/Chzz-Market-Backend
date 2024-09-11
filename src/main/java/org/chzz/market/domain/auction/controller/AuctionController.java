@@ -40,6 +40,9 @@ public class AuctionController {
     private final BidService bidService;
     private final AuctionRegistrationServiceFactory registrationServiceFactory;
 
+    /*
+     * 경매 목록 조회
+     */
     @GetMapping
     public ResponseEntity<?> getAuctionList(@RequestParam Category category,
                                             @LoginUser Long userId,
@@ -47,11 +50,25 @@ public class AuctionController {
         return ResponseEntity.ok(auctionService.getAuctionListByCategory(category, userId, pageable));
     }
 
+    /*
+     * 경매 상세 조회
+     */
     @GetMapping("/{auctionId}")
     public ResponseEntity<?> getAuctionDetails(@PathVariable Long auctionId, @LoginUser Long userId) {
         return ResponseEntity.ok(auctionService.getAuctionDetails(auctionId, userId));
     }
 
+    /*
+     * 판매자 입찰 화면에 제공되는 경매 간단 상세 조회
+     */
+    @GetMapping("/{auctionId}/simple")
+    public ResponseEntity<SimpleAuctionResponse> getSimpleAuctionDetails(@PathVariable Long auctionId, @LoginUser Long userId) {
+        return ResponseEntity.ok(auctionService.getSimpleAuctionDetails(auctionId, userId));
+    }
+
+    /*
+     * 경매 입찰 내역 조회
+     */
     @GetMapping("/history")
     public ResponseEntity<?> getAuctionHistory(@LoginUser Long userId, Pageable pageable) {
         return ResponseEntity.ok(auctionService.getAuctionHistory(userId, pageable));
@@ -77,7 +94,7 @@ public class AuctionController {
         return ResponseEntity.ok(auctionService.getLostAuctionHistory(userId, pageable));
     }
 
-    /**
+    /*
      * 경매 등록
      */
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
@@ -93,7 +110,7 @@ public class AuctionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    /**
+    /*
      * 경매 상품으로 전환
      */
     @PostMapping("/start")
@@ -121,12 +138,18 @@ public class AuctionController {
         return ResponseEntity.ok(bestAuctionList);
     }
 
+    /*
+     * Imminent 경매 상품 목록 조회
+     */
     @GetMapping("/imminent")
     public ResponseEntity<?> imminentAuctionList() {
         List<AuctionResponse> imminentAuctionList = auctionService.getImminentAuctionList();
         return ResponseEntity.ok(imminentAuctionList);
     }
 
+    /*
+     * 경매 입찰 목록 조회
+     */
     @GetMapping("/{auctionId}/bids")
     public ResponseEntity<?> getBids(@LoginUser Long userId, @PathVariable Long auctionId, Pageable pageable) {
         return ResponseEntity.ok(bidService.getBidsByAuctionId(userId, auctionId, pageable));
