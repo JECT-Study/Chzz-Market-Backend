@@ -1,6 +1,6 @@
 package org.chzz.market.domain.notification.entity;
 
-import static org.chzz.market.domain.notification.entity.NotificationType.Values.PRE_REGISTRATION_CANCELED;
+import static org.chzz.market.domain.notification.entity.NotificationType.Values.PRE_AUCTION_CANCELED;
 
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -10,10 +10,10 @@ import org.chzz.market.domain.user.entity.User;
 
 @Entity
 @NoArgsConstructor
-@DiscriminatorValue(value = PRE_REGISTRATION_CANCELED)
-public class PreRegistrationCanceledNotification extends Notification {
+@DiscriminatorValue(value = PRE_AUCTION_CANCELED)
+public class PreAuctionCanceledNotification extends Notification {
 
-    public PreRegistrationCanceledNotification(User user, Image image, String message) {
+    public PreAuctionCanceledNotification(User user, Image image, String message) {
         super(user, image, message);
     }
 }
