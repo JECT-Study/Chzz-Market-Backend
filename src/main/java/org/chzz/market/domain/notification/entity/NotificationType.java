@@ -9,13 +9,13 @@ public enum NotificationType {
     AUCTION_START("좋아요를 누르신 사전 등록 제품 '%s'의 경매가 시작되었습니다.", Values.AUCTION_START) {
         @Override
         public Notification createNotification(User user, NotificationEvent event) {
-            return new AuctionStartNotification(user, event.image(), event.message(), event.auctionId());
+            return new AuctionStartNotification(user, event.image(), event.message(), event.getAuctionId());
         }
     },
     AUCTION_SUCCESS("경매에 올린 '%s'가 낙찰되었습니다.", Values.AUCTION_SUCCESS) {
         @Override
         public Notification createNotification(User user, NotificationEvent event) {
-            return new AuctionSuccessNotification(user, event.image(), event.message(), event.auctionId());
+            return new AuctionSuccessNotification(user, event.image(), event.message(), event.getAuctionId());
         }
     },
     AUCTION_FAILURE("경매에 올린 '%s'가 미낙찰되었습니다.", Values.AUCTION_FAILURE) {
@@ -27,7 +27,7 @@ public enum NotificationType {
     AUCTION_WINNER("축하합니다! 입찰에 참여한 경매 '%s'의 낙찰자로 선정되었습니다.", Values.AUCTION_WINNER) {
         @Override
         public Notification createNotification(User user, NotificationEvent event) {
-            return new AuctionWinnerNotification(user, event.image(), event.message(), event.auctionId());
+            return new AuctionWinnerNotification(user, event.image(), event.message(), event.getAuctionId());
         }
     },
     AUCTION_NON_WINNER("안타깝지만 입찰에 참여한 경매 '%s'에 낙찰되지 못했습니다.", Values.AUCTION_NON_WINNER) {
