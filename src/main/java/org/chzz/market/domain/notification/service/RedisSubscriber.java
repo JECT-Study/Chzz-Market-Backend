@@ -30,13 +30,14 @@ public class RedisSubscriber {
             try {
                 NotificationRealMessage notificationRealMessage = objectMapper.readValue(message,
                         NotificationRealMessage.class);
+                log.info("Redis 메세지 수신: {}", notificationRealMessage);
                 notificationRealMessage.notificationIds().forEach((userId, notificationId) -> {
-                    NotificationSseResponse sseResponse = new NotificationSseResponse(notificationId,
-                            notificationRealMessage.type().getName(), notificationRealMessage.message());
+                    NotificationSseResponse sseResponse = NotificationSseResponse.of(notificationRealMessage,
+                            notificationId);
                     notificationService.sendRealTimeNotification(userId, sseResponse);
                 });
             } catch (Exception e) {
-                log.error("Error handling message");
+                log.error("Redis pub/sub Message 처리 중 오류 발생: {} - 메시지: {}", e.getMessage(), message, e);
             }
         });
     }

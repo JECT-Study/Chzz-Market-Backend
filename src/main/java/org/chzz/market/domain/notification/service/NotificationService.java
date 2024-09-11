@@ -56,6 +56,7 @@ public class NotificationService {
                         .id(userId + "_" + Instant.now().toEpochMilli())
                         .name("notification")
                         .data(objectMapper.writeValueAsString(sseResponse)));
+                log.info("SSE 전송: userId: {}, sseResponse: {}", userId, sseResponse);
             } catch (IOException e) {
                 log.error("Error sending SSE event to user {}", userId);
             }

@@ -5,6 +5,7 @@ import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_FOUND;
 import static org.chzz.market.domain.notification.entity.NotificationType.AUCTION_FAILURE;
 import static org.chzz.market.domain.notification.entity.NotificationType.AUCTION_NON_WINNER;
+import static org.chzz.market.domain.notification.entity.NotificationType.AUCTION_START;
 import static org.chzz.market.domain.notification.entity.NotificationType.AUCTION_SUCCESS;
 import static org.chzz.market.domain.notification.entity.NotificationType.AUCTION_WINNER;
 import static org.chzz.market.domain.product.error.ProductErrorCode.FORBIDDEN_PRODUCT_ACCESS;
@@ -15,7 +16,12 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.domain.auction.dto.request.StartAuctionRequest;
-import org.chzz.market.domain.auction.dto.response.*;
+import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
+import org.chzz.market.domain.auction.dto.response.AuctionResponse;
+import org.chzz.market.domain.auction.dto.response.LostAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.StartAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.UserAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.WonAuctionResponse;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
@@ -27,8 +33,6 @@ import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.product.entity.Product.Category;
 import org.chzz.market.domain.product.error.ProductException;
 import org.chzz.market.domain.product.repository.ProductRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -40,8 +44,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Slf4j
 public class AuctionService {
-
-    private static final Logger logger = LoggerFactory.getLogger(AuctionService.class);
 
     private final BidService bidService;
     private final AuctionRepository auctionRepository;
@@ -79,6 +81,15 @@ public class AuctionService {
         return auctionRepository.findLostAuctionHistoryByUserId(userId, pageable);
     }
 
+    public List<AuctionResponse> getBestAuctionList() {
+        return auctionRepository.findBestAuctions();
+    }
+
+    public List<AuctionResponse> getImminentAuctionList() {
+        return auctionRepository.findImminentAuctions();
+
+    }
+
     /**
      * 사전 등록 상품 경매 전환 처리
      */
@@ -88,8 +99,41 @@ public class AuctionService {
         return changeAuction(product);
     }
 
-    public Product validateStartAuction(Long productId, Long userId) {
-        logger.info("사전 등록 상품 유효성 검사를 시작합니다. 상품 ID: {}", productId);
+    @Transactional
+    public StartAuctionResponse changeAuction(Product product) {
+        log.info("사전 등록 상품을 경매 등록 상품으로 전환하기 시작합니다. 상품 ID: {}", product.getId());
+
+        Auction auction = Auction.toEntity(product);
+        auction = auctionRepository.save(auction);
+
+        // 좋아요 누른 사용자 ID 추출
+        List<Long> likedUserIds = product.getLikeUserIds();
+        if (!likedUserIds.isEmpty()) {
+            eventPublisher.publishEvent(NotificationEvent.createAuctionNotification(likedUserIds, AUCTION_START,
+                    AUCTION_START.getMessage(product.getName()),
+                    product.getFirstImage(), auction.getId())); // 경매 시작 알림
+        }
+
+        log.info("경매가 시작되었습니다. 등록된 경매 마감 시간 : {}", auction.getEndDateTime());
+
+        return StartAuctionResponse.of(
+                auction.getId(),
+                auction.getProduct().getId(),
+                auction.getStatus(),
+                auction.getEndDateTime()
+        );
+    }
+
+    @Transactional
+    public void completeAuction(Long auctionId) {
+        log.info("경매 종료 작업 시작 auction ID: {}", auctionId);
+        Auction auction = getAuction(auctionId);
+        auction.endAuction();
+        processAuctionResults(auction);
+    }
+
+    private Product validateStartAuction(Long productId, Long userId) {
+        log.info("사전 등록 상품 유효성 검사를 시작합니다. 상품 ID: {}", productId);
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
 
@@ -103,57 +147,26 @@ public class AuctionService {
             throw new AuctionException(AUCTION_ALREADY_REGISTERED);
         }
 
-        logger.info("유효성 검사가 끝났습니다. 상품 ID : {}", productId);
+        log.info("유효성 검사가 끝났습니다. 상품 ID : {}", productId);
         return product;
-    }
-
-    @Transactional
-    public StartAuctionResponse changeAuction(Product product) {
-        logger.info("사전 등록 상품을 경매 등록 상품으로 전환하기 시작합니다. 상품 ID: {}", product.getId());
-
-        Auction auction = Auction.toEntity(product);
-        auction = auctionRepository.save(auction);
-        logger.info("경매가 시작되었습니다. 등록된 경매 마감 시간 : {}", auction.getEndDateTime());
-
-        return StartAuctionResponse.of(
-                auction.getId(),
-                auction.getProduct().getId(),
-                auction.getStatus(),
-                auction.getEndDateTime()
-        );
-    }
-
-    public List<AuctionResponse> getBestAuctionList() {
-        return auctionRepository.findBestAuctions();
-    }
-
-    public List<AuctionResponse> getImminentAuctionList() {
-        return auctionRepository.findImminentAuctions();
-
-    }
-
-    @Transactional
-    public void completeAuction(Long auctionId) {
-        logger.info("경매 종료 작업 시작 auction ID: {}", auctionId);
-        Auction auction = getAuction(auctionId);
-        auction.endAuction();
-        processAuctionResults(auction);
     }
 
     private void processAuctionResults(Auction auction) {
         Long productUserId = auction.getProduct().getUser().getId();
         String productName = auction.getProduct().getName();
-        Image firstImage = auction.getProduct().getFirstImage().orElse(null);
+        Image firstImage = auction.getProduct().getFirstImage();
         List<Bid> bids = bidService.findAllBidsByAuction(auction);
         if (bids.isEmpty()) { // 입찰이 없는 경우
             eventPublisher.publishEvent(
-                    NotificationEvent.of(productUserId, AUCTION_FAILURE, AUCTION_FAILURE.getMessage(productName),
+                    NotificationEvent.createSimpleNotification(productUserId, AUCTION_FAILURE,
+                            AUCTION_FAILURE.getMessage(productName),
                             firstImage)); // 낙찰 실패 알림 이벤트
             return;
         }
         eventPublisher.publishEvent(
-                NotificationEvent.of(productUserId, AUCTION_SUCCESS, AUCTION_SUCCESS.getMessage(productName),
-                        firstImage)); // 낙찰 성공 알림 이벤트
+                NotificationEvent.createAuctionNotification(productUserId, AUCTION_SUCCESS,
+                        AUCTION_SUCCESS.getMessage(productName),
+                        firstImage, auction.getId())); // 낙찰 성공 알림 이벤트
         processWinningBid(auction, bids.get(0), productName, firstImage); // 첫 번째 입찰이 낙찰
         processNonWinningBids(bids, productName, firstImage);
 
@@ -162,8 +175,9 @@ public class AuctionService {
     // 낙찰자 처리
     private void processWinningBid(Auction auction, Bid winningBid, String productName, Image firstImage) {
         auction.assignWinner(winningBid.getBidder().getId());
-        eventPublisher.publishEvent(NotificationEvent.of(winningBid.getBidder().getId(), AUCTION_WINNER,
-                AUCTION_WINNER.getMessage(productName), firstImage)); // 낙찰자 알림 이벤트
+        eventPublisher.publishEvent(
+                NotificationEvent.createAuctionNotification(winningBid.getBidder().getId(), AUCTION_WINNER,
+                        AUCTION_WINNER.getMessage(productName), firstImage, auction.getId())); // 낙찰자 알림 이벤트
         log.info("경매 ID {}: 낙찰자 처리 완료", auction.getId());
     }
 
@@ -173,7 +187,7 @@ public class AuctionService {
                 .map(bid -> bid.getBidder().getId()).collect(Collectors.toList());
 
         if (!nonWinnerIds.isEmpty()) {
-            eventPublisher.publishEvent(NotificationEvent.of(nonWinnerIds, AUCTION_NON_WINNER,
+            eventPublisher.publishEvent(NotificationEvent.createSimpleNotification(nonWinnerIds, AUCTION_NON_WINNER,
                     AUCTION_NON_WINNER.getMessage(productName), firstImage)); // 미낙찰자 알림 이벤트
         }
     }
