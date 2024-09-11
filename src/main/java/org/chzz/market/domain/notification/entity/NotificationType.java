@@ -36,10 +36,10 @@ public enum NotificationType {
             return new AuctionNonWinnerNotification(user, event.image(), event.message());
         }
     },
-    AUCTION_REGISTRATION_CANCELED("좋아요를 누른 사전 등록 제품 '%s'이(가) 판매자에 의해 취소되었습니다.", Values.AUCTION_REGISTRATION_CANCELED) {
+    PRE_REGISTRATION_CANCELED("좋아요를 누른 사전 등록 제품 '%s'이(가) 판매자에 의해 취소되었습니다.", Values.PRE_REGISTRATION_CANCELED) {
         @Override
         public Notification createNotification(User user, NotificationEvent event) {
-            return new AuctionRegistrationCanceledNotification(user, event.image(), event.message());
+            return new PreRegistrationCanceledNotification(user, event.image(), event.message());
         }
     };
 
@@ -59,6 +59,6 @@ public enum NotificationType {
         public static final String AUCTION_FAILURE = "AUCTION_FAILURE";
         public static final String AUCTION_WINNER = "AUCTION_WINNER";
         public static final String AUCTION_NON_WINNER = "AUCTION_NON_WINNER";
-        public static final String AUCTION_REGISTRATION_CANCELED = "AUCTION_REGISTRATION_CANCELED";
+        public static final String PRE_REGISTRATION_CANCELED = "PRE_REGISTRATION_CANCELED";
     }
 }
