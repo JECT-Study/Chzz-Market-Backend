@@ -1,9 +1,7 @@
 package org.chzz.market.domain.auction.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_ALREADY_REGISTERED;
-import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_ACCESSIBLE;
-import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_FOUND;
+import static org.chzz.market.domain.auction.error.AuctionErrorCode.*;
 import static org.chzz.market.domain.auction.type.AuctionRegisterType.PRE_REGISTER;
 import static org.chzz.market.domain.auction.type.AuctionRegisterType.REGISTER;
 import static org.chzz.market.domain.auction.type.AuctionStatus.PROCEEDING;
@@ -15,11 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.anyList;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -383,14 +377,18 @@ class AuctionServiceTest {
         void getSimpleAuctionDetails_Success() {
             // given
             Long auctionId = 1L;
-            Long userId = 1L;
+            Long sellerId = 1L;
+            Auction auction = mock(Auction.class);
+            Product product = mock(Product.class);
             SimpleAuctionResponse response = new SimpleAuctionResponse("image1.jpg", "Product 1", 10000, 5L);
 
-            when(auctionRepository.existsByAuctionIdAndUserId(auctionId, userId)).thenReturn(true);
-            when(auctionRepository.findSimpleAuctionDetailsById(auctionId, userId)).thenReturn(Optional.of(response));
+            when(auctionRepository.findById(auctionId)).thenReturn(Optional.of(auction));
+            when(auction.getProduct()).thenReturn(product);
+            when(product.isOwner(sellerId)).thenReturn(true);
+            when(auctionRepository.findSimpleAuctionDetailsById(auctionId, sellerId)).thenReturn(Optional.of(response));
 
             // when
-            SimpleAuctionResponse result = auctionService.getSimpleAuctionDetails(auctionId, userId);
+            SimpleAuctionResponse result = auctionService.getSimpleAuctionDetails(auctionId, sellerId);
 
             // then
             assertNotNull(result);
@@ -399,8 +397,9 @@ class AuctionServiceTest {
             assertEquals(10000, result.minPrice());
             assertEquals(5L, result.participantCount());
 
-            verify(auctionRepository, times(1)).existsByAuctionIdAndUserId(auctionId, userId);
-            verify(auctionRepository, times(1)).findSimpleAuctionDetailsById(auctionId, userId);
+            verify(auctionRepository).findById(auctionId);
+            verify(product).isOwner(sellerId);
+            verify(auctionRepository).findSimpleAuctionDetailsById(auctionId, sellerId);
         }
 
         @Test
@@ -408,18 +407,22 @@ class AuctionServiceTest {
         void getSimpleAuctionDetails_NotAccessible() {
             // given
             Long auctionId = 1L;
-            Long userId = 2L;
+            Long notSellerId = 2L;
+            Auction auction = mock(Auction.class);
+            Product product = mock(Product.class);
 
-            when(auctionRepository.existsByAuctionIdAndUserId(auctionId, userId)).thenReturn(false);
+            when(auctionRepository.findById(auctionId)).thenReturn(Optional.of(auction));
+            when(auction.getProduct()).thenReturn(product);
+            when(product.isOwner(notSellerId)).thenReturn(false);
 
             // when & then
-            AuctionException exception = assertThrows(AuctionException.class, () -> {
-                auctionService.getSimpleAuctionDetails(auctionId, userId);
-            });
+            AuctionException exception = assertThrows(AuctionException.class,
+                    () -> auctionService.getSimpleAuctionDetails(auctionId, notSellerId));
+            assertEquals(FORBIDDEN_AUCTION_ACCESS, exception.getErrorCode());
 
-            assertThat(exception.getErrorCode()).isEqualTo(AUCTION_NOT_ACCESSIBLE);
-            verify(auctionRepository, times(1)).existsByAuctionIdAndUserId(auctionId, userId);
-            verify(auctionRepository, never()).findSimpleAuctionDetailsById(auctionId, userId);
+            verify(auctionRepository).findById(auctionId);
+            verify(product).isOwner(notSellerId);
+            verifyNoMoreInteractions(auctionRepository);
         }
 
         @Test
@@ -427,19 +430,17 @@ class AuctionServiceTest {
         void getSimpleAuctionDetails_NotFound() {
             // given
             Long nonExistentAuctionId = 999L;
-            Long userId = 1L;
+            Long sellerId = 1L;
 
-            when(auctionRepository.existsByAuctionIdAndUserId(nonExistentAuctionId, userId)).thenReturn(true);
-            when(auctionRepository.findSimpleAuctionDetailsById(nonExistentAuctionId, userId)).thenReturn(Optional.empty());
+            when(auctionRepository.findById(nonExistentAuctionId)).thenReturn(Optional.empty());
 
             // when & then
-            AuctionException exception = assertThrows(AuctionException.class, () -> {
-                auctionService.getSimpleAuctionDetails(nonExistentAuctionId, userId);
-            });
+            AuctionException exception = assertThrows(AuctionException.class,
+                    () -> auctionService.getSimpleAuctionDetails(nonExistentAuctionId, sellerId));
+            assertEquals(AUCTION_NOT_FOUND, exception.getErrorCode());
 
-            assertThat(exception.getErrorCode()).isEqualTo(AUCTION_NOT_ACCESSIBLE);
-            verify(auctionRepository, times(1)).existsByAuctionIdAndUserId(nonExistentAuctionId, userId);
-            verify(auctionRepository, times(1)).findSimpleAuctionDetailsById(nonExistentAuctionId, userId);
+            verify(auctionRepository).findById(nonExistentAuctionId);
+            verifyNoMoreInteractions(auctionRepository);
         }
     }
 

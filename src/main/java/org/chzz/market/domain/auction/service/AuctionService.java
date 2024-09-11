@@ -1,8 +1,6 @@
 package org.chzz.market.domain.auction.service;
 
-import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_ALREADY_REGISTERED;
-import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_ACCESSIBLE;
-import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_FOUND;
+import static org.chzz.market.domain.auction.error.AuctionErrorCode.*;
 import static org.chzz.market.domain.notification.entity.NotificationType.AUCTION_FAILURE;
 import static org.chzz.market.domain.notification.entity.NotificationType.AUCTION_NON_WINNER;
 import static org.chzz.market.domain.notification.entity.NotificationType.AUCTION_SUCCESS;
@@ -77,12 +75,15 @@ public class AuctionService {
      */
     public SimpleAuctionResponse getSimpleAuctionDetails(Long auctionId, Long userId) {
         // 판매자 유효성 검증
-        if (!auctionRepository.existsByAuctionIdAndUserId(auctionId, userId)) {
-            throw new AuctionException(AUCTION_NOT_ACCESSIBLE);
+        Auction auction = auctionRepository.findById(auctionId)
+                .orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
+
+        if (!auction.getProduct().isOwner(userId)) {
+            throw new AuctionException(FORBIDDEN_AUCTION_ACCESS);
         }
 
         return auctionRepository.findSimpleAuctionDetailsById(auctionId, userId)
-                .orElseThrow(() -> new AuctionException(AUCTION_NOT_ACCESSIBLE));
+                .orElseThrow(() -> new AuctionException(FORBIDDEN_AUCTION_ACCESS));
     }
 
     /*
