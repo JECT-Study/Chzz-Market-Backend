@@ -8,7 +8,6 @@ import static org.chzz.market.domain.product.error.ProductErrorCode.PRODUCT_NOT_
 import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.chzz.market.common.config.LoginUser;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.image.repository.ImageRepository;
@@ -175,9 +174,10 @@ public class ProductService {
                 .distinct()
                 .toList();
         if (!likedUserIds.isEmpty()) {
-            eventPublisher.publishEvent(NotificationEvent.of(likedUserIds, AUCTION_REGISTRATION_CANCELED,
-                    AUCTION_REGISTRATION_CANCELED.getMessage(product.getName()),
-                    null)); // TODO: 사전 등록 취소 (soft delete 로 변경시 이미지 추가)
+            eventPublisher.publishEvent(
+                    NotificationEvent.createSimpleNotification(likedUserIds, AUCTION_REGISTRATION_CANCELED,
+                            AUCTION_REGISTRATION_CANCELED.getMessage(product.getName()),
+                            null)); // TODO: 사전 등록 취소 (soft delete 로 변경시 이미지 추가)
         }
 
         logger.info("사전 등록 상품 ID{}번에 해당하는 상품을 성공적으로 삭제하였습니다. (좋아요 누른 사용자 수: {})", productId, likedUserIds.size());
