@@ -34,20 +34,14 @@ public class Address extends BaseTimeEntity {
     private User user;
 
     @Column
-    private String streetAddr;
+    private String roadAddress;
 
     @Column
-    private String detailAddr;
-
-    @Column
-    private String sido;
-
-    @Column
-    private String sigungu;
-
-    @Column
-    private String eupmyondong;
+    private String jibun;
 
     @Column
     private String zipcode;
+
+    @Column
+    private String detailAddress;
 }
