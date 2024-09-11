@@ -30,11 +30,7 @@ import org.chzz.market.domain.auction.dto.request.BaseRegisterRequest;
 import org.chzz.market.domain.auction.dto.request.PreRegisterRequest;
 import org.chzz.market.domain.auction.dto.request.RegisterAuctionRequest;
 import org.chzz.market.domain.auction.dto.request.StartAuctionRequest;
-import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
-import org.chzz.market.domain.auction.dto.response.LostAuctionResponse;
-import org.chzz.market.domain.auction.dto.response.RegisterResponse;
-import org.chzz.market.domain.auction.dto.response.StartAuctionResponse;
-import org.chzz.market.domain.auction.dto.response.WonAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.*;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
@@ -376,6 +372,74 @@ class AuctionServiceTest {
                 auctionService.getAuctionDetails(nonExistentAuctionId, userId);
             });
             assertThat(auctionException.getErrorCode()).isEqualTo(AUCTION_NOT_ACCESSIBLE);
+        }
+    }
+
+    @Nested
+    @DisplayName("경매 간단 상세 조회 테스트")
+    class GetSimpleAuctionDetailsTest {
+        @Test
+        @DisplayName("1. 판매자가 자신의 경매 상품을 조회할 때 성공")
+        void getSimpleAuctionDetails_Success() {
+            // given
+            Long auctionId = 1L;
+            Long userId = 1L;
+            SimpleAuctionResponse response = new SimpleAuctionResponse("image1.jpg", "Product 1", 10000, 5L);
+
+            when(auctionRepository.existsByAuctionIdAndUserId(auctionId, userId)).thenReturn(true);
+            when(auctionRepository.findSimpleAuctionDetailsById(auctionId, userId)).thenReturn(Optional.of(response));
+
+            // when
+            SimpleAuctionResponse result = auctionService.getSimpleAuctionDetails(auctionId, userId);
+
+            // then
+            assertNotNull(result);
+            assertEquals("image1.jpg", result.imageUrl());
+            assertEquals("Product 1", result.name());
+            assertEquals(10000, result.minPrice());
+            assertEquals(5L, result.participantCount());
+
+            verify(auctionRepository, times(1)).existsByAuctionIdAndUserId(auctionId, userId);
+            verify(auctionRepository, times(1)).findSimpleAuctionDetailsById(auctionId, userId);
+        }
+
+        @Test
+        @DisplayName("2. 판매자가 아닌 사용자가 경매 상품을 조회할 때 예외 발생")
+        void getSimpleAuctionDetails_NotAccessible() {
+            // given
+            Long auctionId = 1L;
+            Long userId = 2L;
+
+            when(auctionRepository.existsByAuctionIdAndUserId(auctionId, userId)).thenReturn(false);
+
+            // when & then
+            AuctionException exception = assertThrows(AuctionException.class, () -> {
+                auctionService.getSimpleAuctionDetails(auctionId, userId);
+            });
+
+            assertThat(exception.getErrorCode()).isEqualTo(AUCTION_NOT_ACCESSIBLE);
+            verify(auctionRepository, times(1)).existsByAuctionIdAndUserId(auctionId, userId);
+            verify(auctionRepository, never()).findSimpleAuctionDetailsById(auctionId, userId);
+        }
+
+        @Test
+        @DisplayName("3. 존재하지 않는 경매 상품을 조회할 때 예외 발생")
+        void getSimpleAuctionDetails_NotFound() {
+            // given
+            Long nonExistentAuctionId = 999L;
+            Long userId = 1L;
+
+            when(auctionRepository.existsByAuctionIdAndUserId(nonExistentAuctionId, userId)).thenReturn(true);
+            when(auctionRepository.findSimpleAuctionDetailsById(nonExistentAuctionId, userId)).thenReturn(Optional.empty());
+
+            // when & then
+            AuctionException exception = assertThrows(AuctionException.class, () -> {
+                auctionService.getSimpleAuctionDetails(nonExistentAuctionId, userId);
+            });
+
+            assertThat(exception.getErrorCode()).isEqualTo(AUCTION_NOT_ACCESSIBLE);
+            verify(auctionRepository, times(1)).existsByAuctionIdAndUserId(nonExistentAuctionId, userId);
+            verify(auctionRepository, times(1)).findSimpleAuctionDetailsById(nonExistentAuctionId, userId);
         }
     }
 
