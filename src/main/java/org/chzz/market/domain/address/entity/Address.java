@@ -16,9 +16,6 @@ import org.chzz.market.domain.address.dto.request.AddressDto;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
 import org.chzz.market.domain.user.entity.User;
 
-/**
- * 영속화 이전에 별도의 검증 필요
- */
 @Getter
 @Entity
 @Table
@@ -47,11 +44,7 @@ public class Address extends BaseTimeEntity {
     private String detailAddress;
 
     public static Address toEntity(User user, AddressDto dto) {
-        return Address.of(user, dto.roadAddress(), dto.jibun(), dto.zipcode(), dto.detailAddress());
-    }
-
-    private static Address of(User user, String roadAddress, String jibun, String zipcode, String detailAddress) {
-        return new Address(user, roadAddress, jibun, zipcode, detailAddress);
+        return new Address(user, dto.roadAddress(), dto.jibun(), dto.zipcode(), dto.detailAddress());
     }
 
     private Address(User user, String roadAddress, String jibun, String zipcode, String detailAddress) {
