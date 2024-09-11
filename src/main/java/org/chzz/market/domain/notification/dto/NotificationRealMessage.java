@@ -8,7 +8,7 @@ public record NotificationRealMessage(
         Map<Long, Long> notificationIds,
         String message,
         NotificationType type,
-        Long auctionId
+        Map<String, Object> additionalFields
 ) {
     public static NotificationRealMessage of(Map<Long, Long> userNotificationMap,
                                              NotificationEvent notificationEvent) {
@@ -16,7 +16,7 @@ public record NotificationRealMessage(
                 userNotificationMap,
                 notificationEvent.message(),
                 notificationEvent.type(),
-                notificationEvent.auctionId()
+                notificationEvent.additionalFields()
         );
     }
 }
