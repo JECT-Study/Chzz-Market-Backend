@@ -15,7 +15,7 @@ public class NotificationResponse {
     private Boolean isRead;
     private String cdnPath;
 
-    @JsonInclude(JsonInclude.Include.NON_NULL) // TODO: 논의 필요
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long auctionId;
     private LocalDateTime createdAt;
 
