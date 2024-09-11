@@ -6,37 +6,37 @@ import org.chzz.market.domain.user.entity.User;
 
 @AllArgsConstructor
 public enum NotificationType {
-    AUCTION_SUCCESS("경매에 올린 '%s'가 낙찰되었습니다.", Values.AUCTION_SUCCESS) {
+    AUCTION_SUCCESS("%s 경매가 낙찰되었습니다.", Values.AUCTION_SUCCESS) {
         @Override
         public Notification createNotification(User user, NotificationEvent event) {
             return new AuctionSuccessNotification(user, event.image(), event.message(), event.getAuctionId());
         }
     },
-    AUCTION_FAILURE("경매에 올린 '%s'가 미낙찰되었습니다.", Values.AUCTION_FAILURE) {
+    AUCTION_FAILURE("%s 경매가 유찰되었습니다.", Values.AUCTION_FAILURE) {
         @Override
         public Notification createNotification(User user, NotificationEvent event) {
             return new AuctionFailureNotification(user, event.image(), event.message());
         }
     },
-    AUCTION_WINNER("축하합니다! 입찰에 참여한 경매 '%s'의 낙찰자로 선정되었습니다.", Values.AUCTION_WINNER) {
+    AUCTION_WINNER("축하합니다! 입찰에 참여한 %s 경매에 낙찰되었습니다.", Values.AUCTION_WINNER) {
         @Override
         public Notification createNotification(User user, NotificationEvent event) {
             return new AuctionWinnerNotification(user, event.image(), event.message(), event.getAuctionId());
         }
     },
-    AUCTION_NON_WINNER("안타깝지만 입찰에 참여한 경매 '%s'에 낙찰되지 못했습니다.", Values.AUCTION_NON_WINNER) {
+    AUCTION_NON_WINNER("안타깝지만 입찰에 참여한 %s 경매에 낙찰되지 못했습니다.", Values.AUCTION_NON_WINNER) {
         @Override
         public Notification createNotification(User user, NotificationEvent event) {
             return new AuctionNonWinnerNotification(user, event.image(), event.message());
         }
     },
-    AUCTION_START("좋아요를 누르신 사전 경매 제품 '%s'의 경매가 시작되었습니다.", Values.AUCTION_START) {
+    AUCTION_START("좋아요를 누른 %s 경매가 시작되었습니다.", Values.AUCTION_START) {
         @Override
         public Notification createNotification(User user, NotificationEvent event) {
             return new AuctionStartNotification(user, event.image(), event.message(), event.getAuctionId());
         }
     },
-    PRE_AUCTION_CANCELED("좋아요를 누른 사전 경매 제품 '%s'이(가) 판매자에 의해 취소되었습니다.", Values.PRE_AUCTION_CANCELED) {
+    PRE_AUCTION_CANCELED("좋아요를 누른 %s 사전 경매가 판매자에 의해 취소되었습니다.", Values.PRE_AUCTION_CANCELED) {
         @Override
         public Notification createNotification(User user, NotificationEvent event) {
             return new PreAuctionCanceledNotification(user, event.image(), event.message());
