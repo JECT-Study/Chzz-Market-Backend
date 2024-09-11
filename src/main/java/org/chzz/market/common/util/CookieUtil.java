@@ -4,15 +4,25 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.chzz.market.domain.token.entity.TokenType;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 
 public class CookieUtil {
+
+    public static String clientUrl;
+
+    @Value("${client.url}")
+    public void setKey(String clientUrl) {
+        this.clientUrl = clientUrl;
+    }
+
     public static void createTokenCookie(HttpServletResponse response, String token, TokenType tokenType) {
         ResponseCookie cookie = ResponseCookie.from(tokenType.name(), token)
                 .path("/")
                 .sameSite("None")
                 .httpOnly(true)
                 .secure(true)
+                .domain(clientUrl)
                 .maxAge(tokenType.getExpirationTime())
                 .build();
         response.addHeader("Set-Cookie", cookie.toString());
@@ -36,6 +46,7 @@ public class CookieUtil {
                 .sameSite("None")
                 .httpOnly(true)
                 .secure(true)
+                .domain(clientUrl)
                 .maxAge(0)
                 .build();
         response.addHeader("Set-Cookie", cookie.toString());
