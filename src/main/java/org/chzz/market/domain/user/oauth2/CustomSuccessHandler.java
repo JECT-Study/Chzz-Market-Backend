@@ -36,7 +36,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         if (user.isTempUser()) {
             // 임시 토큰 발급
             String tempToken = tokenService.createTempToken(user);
-            response.addCookie(createTokenCookie(tempToken, TokenType.TEMP));
+            createTokenCookie(response, tempToken, TokenType.TEMP);
 
             // 추가 입력 페이지로 리다이렉트
             response.sendRedirect(clientUrl + REDIRECT_URL_ADDITIONAL_INFO);
@@ -44,7 +44,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         } else {
             // 리프레쉬 토큰 발급
             String refresh = tokenService.createRefreshToken(user);
-            response.addCookie(createTokenCookie(refresh, TokenType.REFRESH));
+            createTokenCookie(response, refresh, TokenType.REFRESH);
             response.sendRedirect(clientUrl + REDIRECT_URL_SUCCESS);
             log.info("소셜로그인 성공 user ID: {}", user.getId());
         }
