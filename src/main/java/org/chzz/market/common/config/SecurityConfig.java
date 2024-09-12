@@ -3,6 +3,7 @@ package org.chzz.market.common.config;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Arrays;
 import java.util.Collections;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,7 @@ import org.chzz.market.common.error.handler.CustomAccessDeniedHandler;
 import org.chzz.market.common.error.handler.CustomAuthenticationEntryPoint;
 import org.chzz.market.common.error.handler.ExceptionHandlingFilter;
 import org.chzz.market.common.filter.JWTFilter;
+import org.chzz.market.common.util.JWTUtil;
 import org.chzz.market.domain.user.oauth2.CustomFailureHandler;
 import org.chzz.market.domain.user.oauth2.CustomSuccessHandler;
 import org.chzz.market.domain.user.service.CustomOAuth2UserService;
@@ -41,8 +43,8 @@ public class SecurityConfig {
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomSuccessHandler customSuccessHandler;
     private final CustomFailureHandler customFailureHandler;
-    private final JWTFilter jwtFilter;
-    private final ExceptionHandlingFilter exceptionHandlingFilter;
+    private final JWTUtil jwtUtil;
+    private final ObjectMapper objectMapper;
 
     @Bean
     public SecurityFilterChain filterChain(final HttpSecurity http) throws Exception {
@@ -80,8 +82,8 @@ public class SecurityConfig {
                         .successHandler(customSuccessHandler)
                         .failureHandler(customFailureHandler)
                 )
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(exceptionHandlingFilter, JWTFilter.class)
+                .addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new ExceptionHandlingFilter(objectMapper), JWTFilter.class)
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .build();
