@@ -4,6 +4,7 @@ import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 
 import java.util.Collections;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.error.handler.CustomAccessDeniedHandler;
 import org.chzz.market.common.error.handler.CustomAuthenticationEntryPoint;
@@ -90,7 +91,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Collections.singletonList(clientUrl));
-        configuration.setAllowedMethods(Collections.singletonList("*"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowCredentials(true);
         configuration.setAllowedHeaders(Collections.singletonList("*"));
         configuration.setExposedHeaders(Collections.singletonList("Authorization"));
