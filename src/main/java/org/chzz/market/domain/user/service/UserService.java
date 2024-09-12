@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.domain.auction.dto.response.AuctionParticipationResponse;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
+import org.chzz.market.domain.product.repository.ProductRepository;
 import org.chzz.market.domain.user.dto.response.UpdateProfileResponse;
 import org.chzz.market.domain.user.dto.request.UpdateUserProfileRequest;
 import org.chzz.market.domain.user.dto.request.UserCreateRequest;
@@ -29,6 +30,7 @@ import java.util.List;
 public class UserService {
     private final UserRepository userRepository;
     private final AuctionRepository auctionRepository;
+    private final ProductRepository productRepository;
 
     @Transactional
     public User completeUserRegistration(Long userId, UserCreateRequest userCreateRequest) {
@@ -42,7 +44,7 @@ public class UserService {
     }
 
     /**
-     * 사용자 프로필 조회 (닉네임 조회)
+     * 사용자 프로필 조회 (닉네임 기반)
      *
      * @param nickname 닉네임
      * @return 사용자 프로필 응답
@@ -53,11 +55,14 @@ public class UserService {
         List<AuctionParticipationResponse> participations = auctionRepository.getAuctionParticipations(user.getId());
         ParticipationCountsResponse counts = calculateParticipationCounts(user.getId(), participations);
 
-        return UserProfileResponse.of(user, counts);
+        long preRegisterCount = productRepository.countPreRegisteredProductsByUserId(user.getId());
+        long registeredAuctionCount = auctionRepository.countByProductUserId(user.getId());
+
+        return UserProfileResponse.of(user, counts, preRegisterCount, registeredAuctionCount);
     }
 
     /**
-     * 내 프로필 조회 (유저 ID 조회)
+     * 사용자 프로필 조회 (유저 ID 기반)
      * @param userId 유저 ID
      * @return 사용자 프로필 응답
      */
@@ -67,7 +72,10 @@ public class UserService {
         List<AuctionParticipationResponse> participations = auctionRepository.getAuctionParticipations(user.getId());
         ParticipationCountsResponse counts = calculateParticipationCounts(userId, participations);
 
-        return UserProfileResponse.of(user, counts);
+        long preRegisterCount = productRepository.countPreRegisteredProductsByUserId(userId);
+        long registeredAuctionCount = auctionRepository.countByProductUserId(userId);
+
+        return UserProfileResponse.of(user, counts, preRegisterCount, registeredAuctionCount);
     }
 
     public NicknameAvailabilityResponse checkNickname(String nickname) {
