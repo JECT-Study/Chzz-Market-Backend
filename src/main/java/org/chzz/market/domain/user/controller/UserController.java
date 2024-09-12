@@ -45,9 +45,9 @@ public class UserController {
                                                   HttpServletResponse response) {
         User user = userService.completeUserRegistration(userId, userCreateRequest);
         // 임시토큰 만료
-        CookieUtil.expireCookie(response, TokenType.TEMP.name());
+        response.addCookie(CookieUtil.expireCookie(TokenType.TEMP.name()));
         // 리프레쉬 토큰 발급
-        CookieUtil.createTokenCookie(response, tokenService.createRefreshToken(user), TokenType.REFRESH);
+        response.addCookie(CookieUtil.createTokenCookie(tokenService.createRefreshToken(user), TokenType.REFRESH));
         // 엑세스 토큰 발급
         response.setHeader(AUTHORIZATION_HEADER, BEARER_TOKEN_PREFIX + tokenService.createAccessToken(user));
         log.info("최종 회원가입 성공 userId = {}", userId);
@@ -91,7 +91,7 @@ public class UserController {
         Cookie refreshCookie = CookieUtil.getCookieByName(request, TokenType.REFRESH.name());
         Map<TokenType, String> newTokens = tokenService.reissue(refreshCookie);
         // 새로운 리프레쉬 토큰 발급
-        CookieUtil.createTokenCookie(response, newTokens.get(TokenType.REFRESH), TokenType.REFRESH);
+        response.addCookie(CookieUtil.createTokenCookie(newTokens.get(TokenType.REFRESH), TokenType.REFRESH));
         // 새로운 엑세스 토큰 발급
         response.setHeader(AUTHORIZATION_HEADER, BEARER_TOKEN_PREFIX + newTokens.get(TokenType.ACCESS));
         return ResponseEntity.ok().build();
@@ -101,7 +101,7 @@ public class UserController {
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
         Cookie refreshCookie = CookieUtil.getCookieByName(request, TokenType.REFRESH.name());
         tokenService.logout(refreshCookie);
-        CookieUtil.expireCookie(response, TokenType.REFRESH.name());
+        response.addCookie(CookieUtil.expireCookie(TokenType.REFRESH.name()));
         return ResponseEntity.ok().build();
     }
 }
