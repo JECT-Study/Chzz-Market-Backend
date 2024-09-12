@@ -377,18 +377,12 @@ class AuctionServiceTest {
         void getSimpleAuctionDetails_Success() {
             // given
             Long auctionId = 1L;
-            Long sellerId = 1L;
-            Auction auction = mock(Auction.class);
-            Product product = mock(Product.class);
             SimpleAuctionResponse response = new SimpleAuctionResponse("image1.jpg", "Product 1", 10000, 5L);
 
-            when(auctionRepository.findById(auctionId)).thenReturn(Optional.of(auction));
-            when(auction.getProduct()).thenReturn(product);
-            when(product.isOwner(sellerId)).thenReturn(true);
-            when(auctionRepository.findSimpleAuctionDetailsById(auctionId, sellerId)).thenReturn(Optional.of(response));
+            when(auctionRepository.findSimpleAuctionDetailsById(auctionId)).thenReturn(Optional.of(response));
 
             // when
-            SimpleAuctionResponse result = auctionService.getSimpleAuctionDetails(auctionId, sellerId);
+            SimpleAuctionResponse result = auctionService.getSimpleAuctionDetails(auctionId);
 
             // then
             assertNotNull(result);
@@ -397,9 +391,7 @@ class AuctionServiceTest {
             assertEquals(10000, result.minPrice());
             assertEquals(5L, result.participantCount());
 
-            verify(auctionRepository).findById(auctionId);
-            verify(product).isOwner(sellerId);
-            verify(auctionRepository).findSimpleAuctionDetailsById(auctionId, sellerId);
+            verify(auctionRepository).findSimpleAuctionDetailsById(auctionId);
         }
 
         @Test
@@ -407,22 +399,13 @@ class AuctionServiceTest {
         void getSimpleAuctionDetails_NotAccessible() {
             // given
             Long auctionId = 1L;
-            Long notSellerId = 2L;
             Auction auction = mock(Auction.class);
             Product product = mock(Product.class);
 
-            when(auctionRepository.findById(auctionId)).thenReturn(Optional.of(auction));
-            when(auction.getProduct()).thenReturn(product);
-            when(product.isOwner(notSellerId)).thenReturn(false);
-
             // when & then
             AuctionException exception = assertThrows(AuctionException.class,
-                    () -> auctionService.getSimpleAuctionDetails(auctionId, notSellerId));
+                    () -> auctionService.getSimpleAuctionDetails(auctionId));
             assertEquals(FORBIDDEN_AUCTION_ACCESS, exception.getErrorCode());
-
-            verify(auctionRepository).findById(auctionId);
-            verify(product).isOwner(notSellerId);
-            verifyNoMoreInteractions(auctionRepository);
         }
 
         @Test
@@ -430,17 +413,11 @@ class AuctionServiceTest {
         void getSimpleAuctionDetails_NotFound() {
             // given
             Long nonExistentAuctionId = 999L;
-            Long sellerId = 1L;
-
-            when(auctionRepository.findById(nonExistentAuctionId)).thenReturn(Optional.empty());
 
             // when & then
             AuctionException exception = assertThrows(AuctionException.class,
-                    () -> auctionService.getSimpleAuctionDetails(nonExistentAuctionId, sellerId));
-            assertEquals(AUCTION_NOT_FOUND, exception.getErrorCode());
-
-            verify(auctionRepository).findById(nonExistentAuctionId);
-            verifyNoMoreInteractions(auctionRepository);
+                    () -> auctionService.getSimpleAuctionDetails(nonExistentAuctionId));
+            assertEquals(FORBIDDEN_AUCTION_ACCESS, exception.getErrorCode());
         }
     }
 

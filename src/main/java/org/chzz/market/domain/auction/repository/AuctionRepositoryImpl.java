@@ -156,11 +156,10 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
     /**
      * 경매 ID와 사용자 ID로 경매 간단 상세 정보를 조회합니다.
      * @param auctionId 경매 ID
-     * @param userId    사용자 ID
      * @return          경매 간단 상세정보 응답
      */
     @Override
-    public Optional<SimpleAuctionResponse> findSimpleAuctionDetailsById(Long auctionId, Long userId) {
+    public Optional<SimpleAuctionResponse> findSimpleAuctionDetailsById(Long auctionId) {
         return Optional.ofNullable(jpaQueryFactory
                         .select(new QSimpleAuctionResponse(
                                 image.cdnPath,
@@ -171,7 +170,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                         .from(auction)
                         .join(auction.product, product)
                         .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId())))
-                        .leftJoin(bid).on(bid.auction.id.eq(auctionId).and(bid.status.eq(ACTIVE)).and(bidderIdEq(userId)))
+                        .leftJoin(bid).on(bid.auction.id.eq(auctionId).and(bid.status.eq(ACTIVE)))
                         .where(auction.id.eq(auctionId))
                         .groupBy(product.name, image.cdnPath, product.minPrice)
                         .fetchOne());

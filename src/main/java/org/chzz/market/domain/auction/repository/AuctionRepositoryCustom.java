@@ -39,10 +39,9 @@ public interface AuctionRepositoryCustom {
     /**
      * 경매 ID로 경매 간단 상세 정보를 조회합니다.
      * @param auctionId 경매 ID
-     * @param userId    사용자 ID
      * @return          경매 간단 상세정보 응답
      */
-    Optional<SimpleAuctionResponse> findSimpleAuctionDetailsById(Long auctionId, Long userId);
+    Optional<SimpleAuctionResponse> findSimpleAuctionDetailsById(Long auctionId);
 
     /**
      * 사용자 닉네임에 따라 경매 리스트를 조회합니다.

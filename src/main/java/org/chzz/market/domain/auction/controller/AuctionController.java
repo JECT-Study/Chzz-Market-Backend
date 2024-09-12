@@ -62,8 +62,8 @@ public class AuctionController {
      * 판매자 입찰 화면에 제공되는 경매 간단 상세 조회
      */
     @GetMapping("/{auctionId}/simple")
-    public ResponseEntity<SimpleAuctionResponse> getSimpleAuctionDetails(@PathVariable Long auctionId, @LoginUser Long userId) {
-        return ResponseEntity.ok(auctionService.getSimpleAuctionDetails(auctionId, userId));
+    public ResponseEntity<SimpleAuctionResponse> getSimpleAuctionDetails(@PathVariable Long auctionId) {
+        return ResponseEntity.ok(auctionService.getSimpleAuctionDetails(auctionId));
     }
 
     /*

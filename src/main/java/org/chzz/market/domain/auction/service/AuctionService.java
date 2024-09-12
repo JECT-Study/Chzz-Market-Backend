@@ -73,16 +73,8 @@ public class AuctionService {
     /*
      * 판매자 입찰 화면에 제공되는 경매 간단 상세 정보를 조회합니다.
      */
-    public SimpleAuctionResponse getSimpleAuctionDetails(Long auctionId, Long userId) {
-        // 판매자 유효성 검증
-        Auction auction = auctionRepository.findById(auctionId)
-                .orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
-
-        if (!auction.getProduct().isOwner(userId)) {
-            throw new AuctionException(FORBIDDEN_AUCTION_ACCESS);
-        }
-
-        return auctionRepository.findSimpleAuctionDetailsById(auctionId, userId)
+    public SimpleAuctionResponse getSimpleAuctionDetails(Long auctionId) {
+        return auctionRepository.findSimpleAuctionDetailsById(auctionId)
                 .orElseThrow(() -> new AuctionException(FORBIDDEN_AUCTION_ACCESS));
     }
 
