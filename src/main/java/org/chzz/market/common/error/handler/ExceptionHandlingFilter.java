@@ -14,10 +14,8 @@ import org.chzz.market.common.error.ErrorResponse;
 import org.chzz.market.common.error.GlobalErrorCode;
 import org.chzz.market.common.error.GlobalException;
 import org.chzz.market.common.error.exception.BusinessException;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-@Component
 @RequiredArgsConstructor
 @Slf4j
 public class ExceptionHandlingFilter extends OncePerRequestFilter {
