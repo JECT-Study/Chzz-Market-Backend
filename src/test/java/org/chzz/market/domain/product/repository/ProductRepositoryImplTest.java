@@ -164,6 +164,23 @@ class ProductRepositoryImplTest {
             assertThat(result.getContent().get(2).getName()).isEqualTo("사전등록상품1");
 
         }
+
+        @Test
+        @DisplayName("4. 카테고리가 null 일 때 모든 사전 등록 상품 조회")
+        void findProductsWithNullCategory() {
+            // given
+            Pageable pageable = PageRequest.of(0, 10, Sort.by("expensive"));
+
+            // when
+            Page<ProductResponse> result = productRepository.findProductsByCategory(null, user1.getId(), pageable);
+
+            // then
+            assertThat(result.getContent()).isNotNull();
+            assertThat(result.getContent()).hasSizeGreaterThan(3);
+            assertThat(result.getContent())
+                    .extracting(ProductResponse::getMinPrice)
+                    .isSortedAccordingTo(Comparator.reverseOrder());
+        }
     }
 
     @Nested
