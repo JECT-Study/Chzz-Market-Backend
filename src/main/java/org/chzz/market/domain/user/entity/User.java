@@ -1,5 +1,9 @@
 package org.chzz.market.domain.user.entity;
 
+import static org.chzz.market.domain.user.entity.User.UserRole.TEMP_USER;
+import static org.chzz.market.domain.user.entity.User.UserRole.USER;
+import static org.chzz.market.domain.user.error.UserErrorCode.USER_ALREADY_REGISTERED;
+
 import com.nimbusds.oauth2.sdk.util.StringUtils;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -15,7 +19,6 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import java.util.ArrayList;
 import java.util.List;
-
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,6 +30,7 @@ import org.chzz.market.domain.like.entity.Like;
 import org.chzz.market.domain.payment.entity.Payment;
 import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.user.dto.request.UserCreateRequest;
+import org.chzz.market.domain.user.error.exception.UserException;
 import org.hibernate.annotations.DynamicUpdate;
 
 @Getter
@@ -88,12 +92,15 @@ public class User extends BaseTimeEntity {
     }
 
     public boolean isTempUser() {
-        return userRole == UserRole.TEMP_USER;
+        return userRole == TEMP_USER;
     }
 
     public void createUser(UserCreateRequest userCreateRequest) {
+        if (this.userRole.equals(USER)) {
+            throw new UserException(USER_ALREADY_REGISTERED);
+        }
         this.nickname = userCreateRequest.getNickname();
-        this.userRole = UserRole.USER;
+        this.userRole = USER;
         if (!StringUtils.isBlank(userCreateRequest.getBio())) {
             this.bio = userCreateRequest.getBio();
         }
