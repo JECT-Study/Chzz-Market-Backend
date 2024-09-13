@@ -312,7 +312,7 @@ class UserServiceTest {
             when(productRepository.countPreRegisteredProductsByUserId(user1.getId())).thenReturn(2L);
             when(auctionRepository.countByProductUserId(user1.getId())).thenReturn(2L);
             // when
-            UserProfileResponse response = userService.getUserProfile("닉네임 1");
+            UserProfileResponse response = userService.getUserProfileByNickname("닉네임 1");
 
             // then
             assertNotNull(response);
@@ -338,7 +338,7 @@ class UserServiceTest {
             when(userRepository.findByNickname("존재하지 않는 닉네임")).thenReturn(Optional.empty());
 
             // when
-            assertThrows(UserException.class, () -> userService.getUserProfile("존재하지 않는 닉네임"));
+            assertThrows(UserException.class, () -> userService.getUserProfileByNickname("존재하지 않는 닉네임"));
             verify(userRepository).findByNickname("존재하지 않는 닉네임");
             verifyNoInteractions(auctionRepository);
         }
@@ -353,7 +353,7 @@ class UserServiceTest {
             when(auctionRepository.getAuctionParticipations(user1.getId())).thenReturn(Collections.emptyList());
 
             // when
-            UserProfileResponse response = userService.getUserProfile("닉네임 1");
+            UserProfileResponse response = userService.getUserProfileByNickname("닉네임 1");
 
             // then
             assertNotNull(response);
@@ -383,7 +383,7 @@ class UserServiceTest {
             when(auctionRepository.countByProductUserId(user1.getId())).thenReturn(2L);
 
             // when
-            UserProfileResponse response = userService.getUserProfile("닉네임 1");
+            UserProfileResponse response = userService.getUserProfileByNickname("닉네임 1");
 
             // then
             assertNotNull(response);

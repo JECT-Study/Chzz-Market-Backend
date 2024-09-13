@@ -32,6 +32,12 @@ public class UserService {
     private final AuctionRepository auctionRepository;
     private final ProductRepository productRepository;
 
+    /**
+     * 사용자 등록
+     *
+     * @param userCreateRequest 사용자 생성 요청
+     * @return 사용자 엔티티
+     */
     @Transactional
     public User completeUserRegistration(Long userId, UserCreateRequest userCreateRequest) {
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(USER_NOT_FOUND));
@@ -49,16 +55,8 @@ public class UserService {
      * @param nickname 닉네임
      * @return 사용자 프로필 응답
      */
-    public UserProfileResponse getUserProfile(String nickname) {
-        User user = userRepository.findByNickname(nickname).orElseThrow(() -> new UserException(USER_NOT_FOUND));
-
-        List<AuctionParticipationResponse> participations = auctionRepository.getAuctionParticipations(user.getId());
-        ParticipationCountsResponse counts = calculateParticipationCounts(user.getId(), participations);
-
-        long preRegisterCount = productRepository.countPreRegisteredProductsByUserId(user.getId());
-        long registeredAuctionCount = auctionRepository.countByProductUserId(user.getId());
-
-        return UserProfileResponse.of(user, counts, preRegisterCount, registeredAuctionCount);
+    public UserProfileResponse getUserProfileByNickname(String nickname) {
+        return getUserProfileInternal(findUserByNickname(nickname));
     }
 
     /**
@@ -66,22 +64,21 @@ public class UserService {
      * @param userId 유저 ID
      * @return 사용자 프로필 응답
      */
-    public UserProfileResponse getMyProfile(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(USER_NOT_FOUND));
-
-        List<AuctionParticipationResponse> participations = auctionRepository.getAuctionParticipations(user.getId());
-        ParticipationCountsResponse counts = calculateParticipationCounts(userId, participations);
-
-        long preRegisterCount = productRepository.countPreRegisteredProductsByUserId(userId);
-        long registeredAuctionCount = auctionRepository.countByProductUserId(userId);
-
-        return UserProfileResponse.of(user, counts, preRegisterCount, registeredAuctionCount);
+    public UserProfileResponse getUserProfileById(Long userId) {
+        return getUserProfileInternal(findUserById(userId));
     }
 
     public NicknameAvailabilityResponse checkNickname(String nickname) {
         return new NicknameAvailabilityResponse(userRepository.findByNickname(nickname).isEmpty());
     }
 
+    /**
+     * 내 프로필 수정
+     *
+     * @param userId 유저 ID
+     * @param request 프로필 수정 요청
+     * @return 프로필 수정 응답
+     */
     @Transactional
     public UpdateProfileResponse updateUserProfile(Long userId, UpdateUserProfileRequest request) {
         // 유저 유효성 검사
@@ -102,6 +99,21 @@ public class UserService {
         return UpdateProfileResponse.from(existingUser);
     }
 
+    /*
+     * 내 프로필 조회
+     */
+    private UserProfileResponse getUserProfileInternal(User user) {
+        var participations = auctionRepository.getAuctionParticipations(user.getId());
+        var counts = calculateParticipationCounts(user.getId(), participations);
+        var preRegisterCount = productRepository.countPreRegisteredProductsByUserId(user.getId());
+        var registeredAuctionCount = auctionRepository.countByProductUserId(user.getId());
+
+        return UserProfileResponse.of(user, counts, preRegisterCount, registeredAuctionCount);
+    }
+
+    /*
+     * 경매 참여 횟수 계산
+     */
     private ParticipationCountsResponse calculateParticipationCounts(Long userId, List<AuctionParticipationResponse> participations) {
         long ongoingAuctionCount = 0;
         long successfulBidCount = 0;
@@ -124,5 +136,21 @@ public class UserService {
                 successfulBidCount,
                 failedBidCount
         );
+    }
+
+    /*
+     * 닉네임으로 사용자 조회
+     */
+    private User findUserByNickname(String nickname) {
+        return userRepository.findByNickname(nickname)
+                .orElseThrow(() -> new UserException(USER_NOT_FOUND));
+    }
+
+    /*
+     * ID로 사용자 조회
+     */
+    private User findUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new UserException(USER_NOT_FOUND));
     }
 }

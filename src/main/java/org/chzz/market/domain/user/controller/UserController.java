@@ -73,7 +73,7 @@ public class UserController {
      */
     @GetMapping
     public ResponseEntity<UserProfileResponse> getUserProfileById(@LoginUser Long userId) {
-        return ResponseEntity.ok(userService.getMyProfile(userId));
+        return ResponseEntity.ok(userService.getUserProfileById(userId));
     }
 
     /*
@@ -81,7 +81,7 @@ public class UserController {
      */
     @GetMapping("/{nickname}")
     public ResponseEntity<UserProfileResponse> getUserProfileByNickname(@PathVariable String nickname) {
-        return ResponseEntity.ok(userService.getUserProfile(nickname));
+        return ResponseEntity.ok(userService.getUserProfileByNickname(nickname));
     }
 
     /*
