@@ -1,6 +1,7 @@
 package org.chzz.market.domain.product.repository;
 
 import static org.chzz.market.common.util.QuerydslUtil.nullSafeBuilder;
+import static org.chzz.market.common.util.QuerydslUtil.nullSafeBuilderIgnore;
 import static org.chzz.market.domain.auction.entity.QAuction.auction;
 import static org.chzz.market.domain.image.entity.QImage.image;
 import static org.chzz.market.domain.like.entity.QLike.like;
@@ -49,8 +50,7 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
     public Page<ProductResponse> findProductsByCategory(Category category, Long userId, Pageable pageable) {
         JPAQuery<?> baseQuery = jpaQueryFactory.from(product)
                 .leftJoin(auction).on(auction.product.id.eq(product.id))
-                .where(auction.id.isNull())
-                .where(categoryEq(category));
+                .where(auction.id.isNull(),categoryEqIgnoreNull(category));
 
         List<ProductResponse> content = baseQuery
                 .select(new QProductResponse(
@@ -218,8 +218,8 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
         return nullSafeBuilder(() -> like.user.id.eq(userId));
     }
 
-    private BooleanBuilder categoryEq(Category category) {
-        return nullSafeBuilder(() -> product.category.eq(category));
+    private BooleanBuilder categoryEqIgnoreNull(Category category) {
+        return nullSafeBuilderIgnore(() -> product.category.eq(category));
     }
 
     @Getter
