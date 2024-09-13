@@ -47,7 +47,7 @@ public class JWTFilter extends OncePerRequestFilter {
             jwtUtil.validateToken(accessToken, TokenType.ACCESS);
             setAuthentication(accessToken);
             filterChain.doFilter(request, response);
-        } else if (tempCookie != null) {
+        } else if (isSignUpRequest(request) && tempCookie != null) {
             String tempToken = tempCookie.getValue();
             jwtUtil.validateToken(tempToken, TokenType.TEMP);
             setAuthentication(tempToken);
@@ -69,5 +69,9 @@ public class JWTFilter extends OncePerRequestFilter {
         Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null,
                 customUserDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authToken);
+    }
+
+    private boolean isSignUpRequest(HttpServletRequest request) {
+        return request.getRequestURI().equals("/api/v1/users") && request.getMethod().equals(POST.name());
     }
 }
