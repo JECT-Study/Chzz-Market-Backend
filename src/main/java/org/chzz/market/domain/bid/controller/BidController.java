@@ -2,6 +2,7 @@ package org.chzz.market.domain.bid.controller;
 
 import static org.springframework.http.HttpStatus.CREATED;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.config.LoginUser;
 import org.chzz.market.domain.bid.dto.BidCreateRequest;
@@ -26,7 +27,7 @@ public class BidController {
     private final BidService bidService;
 
     @PostMapping
-    public ResponseEntity<?> createBid(@RequestBody BidCreateRequest bidCreateRequest,
+    public ResponseEntity<?> createBid(@Valid @RequestBody BidCreateRequest bidCreateRequest,
                                        @LoginUser Long userId) {
         bidService.createBid(bidCreateRequest, userId);
         return ResponseEntity.status(CREATED).build();
