@@ -7,8 +7,6 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -82,7 +80,7 @@ public class UserController {
     }
 
     @GetMapping("/check/nickname/{nickname}")
-    public ResponseEntity<?> checkNickname(@NotBlank @Size(max = 15) @PathVariable String nickname) {
+    public ResponseEntity<?> checkNickname(@PathVariable String nickname) {
         return ResponseEntity.ok((userService.checkNickname(nickname)));
     }
 
