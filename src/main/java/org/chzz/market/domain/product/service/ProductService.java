@@ -53,15 +53,8 @@ public class ProductService {
     /*
      * 사전 등록 상품 목록 조회
      */
-    public Page<ProductResponse> getProductListByCategory(Category category, Long userId, int size, Pageable pageable) {
-        if (category == null) {
-            // 카테고리 없는 경우 최대 5개 반환
-            Pageable limitedPageable = PageRequest.of(0, Math.min(size, 5), pageable.getSort());
-            return productRepository.findProductsByCategory(null, userId, limitedPageable);
-        } else {
-            // 카테고리 있는 경우
-            return productRepository.findProductsByCategory(category, userId, pageable);
-        }
+    public Page<ProductResponse> getProductListByCategory(Category category, Long userId, Pageable pageable) {
+        return productRepository.findProductsByCategory(category, userId, pageable);
     }
 
     /*

@@ -49,9 +49,8 @@ public class ProductController {
     public ResponseEntity<Page<ProductResponse>> getProductList(
             @RequestParam(required = false) Category category,
             @LoginUser Long userId,
-            @RequestParam(defaultValue = "5") int size,
             Pageable pageable) {
-        return ResponseEntity.ok(productService.getProductListByCategory(category, userId, size, pageable));
+        return ResponseEntity.ok(productService.getProductListByCategory(category, userId, pageable));
     }
 
     /*
