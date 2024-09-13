@@ -80,6 +80,7 @@ class UserServiceTest {
             User user = User.builder()
                     .email("test@gmail.com")
                     .providerId("123456")
+                    .userRole(UserRole.TEMP_USER)
                     .providerType(ProviderType.KAKAO)
                     .build();
             when(userRepository.findById(userId)).thenReturn(Optional.of(user));
@@ -106,6 +107,7 @@ class UserServiceTest {
             User user = User.builder()
                     .email("test@gmail.com")
                     .providerId("123456")
+                    .userRole(UserRole.TEMP_USER)
                     .providerType(ProviderType.KAKAO)
                     .build();
             when(userRepository.findById(userId)).thenReturn(Optional.of(user));
