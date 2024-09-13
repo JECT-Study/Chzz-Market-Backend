@@ -75,7 +75,7 @@ class UserServiceTest {
         public void createUser_Success() throws Exception {
             // given
             Long userId = 1L;
-            UserCreateRequest userCreateRequest = new UserCreateRequest("nickname", BankAccount.BankName.KB, "1234567890",
+            UserCreateRequest userCreateRequest = new UserCreateRequest("nickname", "KB", "1234567890",
                     "bio", "http://link.com");
             User user = User.builder()
                     .email("test@gmail.com")
@@ -101,7 +101,7 @@ class UserServiceTest {
         public void createUser_WhenBioAndLinkAreEmptyStrings_ThenFieldsAreSetToNull() throws Exception {
             // given
             Long userId = 1L;
-            UserCreateRequest userCreateRequest = new UserCreateRequest("newNickname", BankAccount.BankName.KB, "1234567890",
+            UserCreateRequest userCreateRequest = new UserCreateRequest("newNickname", "KB", "1234567890",
                     "", "");
             User user = User.builder()
                     .email("test@gmail.com")
