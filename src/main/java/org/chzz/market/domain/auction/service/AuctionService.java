@@ -1,7 +1,6 @@
 package org.chzz.market.domain.auction.service;
 
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_ALREADY_REGISTERED;
-import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_ACCESSIBLE;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_FOUND;
 import static org.chzz.market.domain.notification.entity.NotificationType.AUCTION_FAILURE;
 import static org.chzz.market.domain.notification.entity.NotificationType.AUCTION_NON_WINNER;
@@ -61,8 +60,7 @@ public class AuctionService {
     }
 
     public AuctionDetailsResponse getAuctionDetails(Long auctionId, Long userId) {
-        Optional<AuctionDetailsResponse> auctionDetails = auctionRepository.findAuctionDetailsById(auctionId, userId);
-        return auctionDetails.orElseThrow(() -> new AuctionException(AUCTION_NOT_ACCESSIBLE));
+        return auctionRepository.findAuctionDetailsById(auctionId, userId).orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
     }
 
     public Page<UserAuctionResponse> getAuctionListByNickname(String nickname, Pageable pageable) {

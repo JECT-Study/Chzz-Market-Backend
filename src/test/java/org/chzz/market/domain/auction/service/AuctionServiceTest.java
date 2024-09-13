@@ -2,7 +2,6 @@ package org.chzz.market.domain.auction.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_ALREADY_REGISTERED;
-import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_ACCESSIBLE;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_FOUND;
 import static org.chzz.market.domain.auction.type.AuctionRegisterType.PRE_REGISTER;
 import static org.chzz.market.domain.auction.type.AuctionRegisterType.REGISTER;
@@ -375,7 +374,7 @@ class AuctionServiceTest {
             AuctionException auctionException = assertThrows(AuctionException.class, () -> {
                 auctionService.getAuctionDetails(nonExistentAuctionId, userId);
             });
-            assertThat(auctionException.getErrorCode()).isEqualTo(AUCTION_NOT_ACCESSIBLE);
+            assertThat(auctionException.getErrorCode()).isEqualTo(AUCTION_NOT_FOUND);
         }
     }
 
