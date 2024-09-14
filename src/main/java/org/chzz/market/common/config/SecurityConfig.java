@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.error.handler.CustomAccessDeniedHandler;
 import org.chzz.market.common.error.handler.CustomAuthenticationEntryPoint;
 import org.chzz.market.common.error.handler.ExceptionHandlingFilter;
+import org.chzz.market.common.filter.NotFoundFilter;
 import org.chzz.market.common.filter.JWTFilter;
 import org.chzz.market.common.util.JWTUtil;
 import org.chzz.market.domain.user.oauth2.CustomFailureHandler;
@@ -28,6 +29,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.HandlerMapping;
 
 @Configuration
 @EnableWebSecurity
@@ -45,6 +47,7 @@ public class SecurityConfig {
     private final CustomFailureHandler customFailureHandler;
     private final JWTUtil jwtUtil;
     private final ObjectMapper objectMapper;
+    private final List<HandlerMapping> handlerMappings;
 
     @Bean
     public SecurityFilterChain filterChain(final HttpSecurity http) throws Exception {
@@ -83,7 +86,8 @@ public class SecurityConfig {
                         .failureHandler(customFailureHandler)
                 )
                 .addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(new ExceptionHandlingFilter(objectMapper), JWTFilter.class)
+                .addFilterBefore(new NotFoundFilter(handlerMappings), JWTFilter.class)
+                .addFilterBefore(new ExceptionHandlingFilter(objectMapper), NotFoundFilter.class)
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .build();
