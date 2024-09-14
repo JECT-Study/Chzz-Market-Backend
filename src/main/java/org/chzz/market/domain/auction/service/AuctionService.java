@@ -75,7 +75,7 @@ public class AuctionService {
      */
     public SimpleAuctionResponse getSimpleAuctionDetails(Long auctionId) {
         return auctionRepository.findSimpleAuctionDetailsById(auctionId)
-                .orElseThrow(() -> new AuctionException(AUCTION_NOT_ACCESSIBLE));
+                .orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
     }
 
     /*
