@@ -50,7 +50,7 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
     public Page<ProductResponse> findProductsByCategory(Category category, Long userId, Pageable pageable) {
         JPAQuery<?> baseQuery = jpaQueryFactory.from(product)
                 .leftJoin(auction).on(auction.product.id.eq(product.id))
-                .where(auction.id.isNull(),categoryEqIgnoreNull(category));
+                .where(auction.id.isNull().and(categoryEqIgnoreNull(category)));
 
         List<ProductResponse> content = baseQuery
                 .select(new QProductResponse(
