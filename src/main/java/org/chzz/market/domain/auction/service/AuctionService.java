@@ -57,8 +57,7 @@ public class AuctionService {
     /*
      * 카테고리에 따라 경매 리스트를 조회합니다.
      */
-    public Page<AuctionResponse> getAuctionListByCategory(Category category, Long userId,
-                                                          Pageable pageable) {
+    public Page<AuctionResponse> getAuctionListByCategory(Category category, Long userId, Pageable pageable) {
         return auctionRepository.findAuctionsByCategory(category, userId, pageable);
     }
 

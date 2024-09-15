@@ -103,10 +103,10 @@ public class UserService {
      * 내 프로필 조회
      */
     private UserProfileResponse getUserProfileInternal(User user) {
-        var participations = auctionRepository.getAuctionParticipations(user.getId());
-        var counts = calculateParticipationCounts(user.getId(), participations);
-        var preRegisterCount = productRepository.countPreRegisteredProductsByUserId(user.getId());
-        var registeredAuctionCount = auctionRepository.countByProductUserId(user.getId());
+        List<AuctionParticipationResponse> participations = auctionRepository.getAuctionParticipations(user.getId());
+        ParticipationCountsResponse counts = calculateParticipationCounts(user.getId(), participations);
+        long preRegisterCount = productRepository.countPreRegisteredProductsByUserId(user.getId());
+        long registeredAuctionCount = auctionRepository.countByProductUserId(user.getId());
 
         return UserProfileResponse.of(user, counts, preRegisterCount, registeredAuctionCount);
     }
