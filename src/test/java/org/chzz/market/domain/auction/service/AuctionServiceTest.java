@@ -405,7 +405,7 @@ class AuctionServiceTest {
             // when & then
             AuctionException exception = assertThrows(AuctionException.class,
                     () -> auctionService.getSimpleAuctionDetails(auctionId));
-            assertEquals(FORBIDDEN_AUCTION_ACCESS, exception.getErrorCode());
+            assertEquals(AUCTION_NOT_FOUND, exception.getErrorCode());
         }
 
         @Test
@@ -417,7 +417,7 @@ class AuctionServiceTest {
             // when & then
             AuctionException exception = assertThrows(AuctionException.class,
                     () -> auctionService.getSimpleAuctionDetails(nonExistentAuctionId));
-            assertEquals(FORBIDDEN_AUCTION_ACCESS, exception.getErrorCode());
+            assertEquals(AUCTION_NOT_FOUND, exception.getErrorCode());
         }
     }
 
