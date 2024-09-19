@@ -1,8 +1,5 @@
 package org.chzz.market.common.config;
 
-import static org.springframework.http.HttpMethod.GET;
-import static org.springframework.http.HttpMethod.POST;
-
 import java.util.Collections;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.error.handler.CustomAccessDeniedHandler;
@@ -25,6 +22,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import static org.springframework.http.HttpMethod.*;
 
 @Configuration
 @EnableWebSecurity
@@ -50,6 +49,7 @@ public class SecurityConfig {
                         .requestMatchers(GET,
                                 "/api/v1/auctions",
                                 "/api/v1/auctions/{auctionId:\\d+}",
+                                "/api/v1/auctions/{auctionId:\\d+}/simple",
                                 "/api/v1/auctions/best",
                                 "/api/v1/auctions/imminent",
                                 "/api/v1/auctions/users/*",
@@ -62,6 +62,20 @@ public class SecurityConfig {
                         .requestMatchers(POST,
                                 "/api/v1/users/tokens/reissue").permitAll()
                         .requestMatchers(POST, "/api/v1/users").hasRole("TEMP_USER")
+                        .requestMatchers(GET,
+                                "/api/v1/auctions/history",
+                                "/api/v1/auctions/won",
+                                "/api/v1/auctions/lost",
+                                "/api/v1/products/history").hasRole("USER")
+                        .requestMatchers(POST,
+                                "/api/v1/auctions",
+                                "/api/v1/auctions/start",
+                                "/api/v1/products/{productId:\\d+}/likes",
+                                "/api/v1/users/profile").hasRole("USER")
+                        .requestMatchers(PATCH,
+                                "/api/v1/products/{productId:\\d+}").hasRole("USER")
+                        .requestMatchers(DELETE,
+                                "/api/v1/products/{productId:\\d+}").hasRole("USER")
                         .anyRequest().hasRole("USER")
                 )
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
