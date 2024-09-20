@@ -1,5 +1,6 @@
 package org.chzz.market.domain.auction.entity;
 
+import static org.chzz.market.domain.auction.type.AuctionStatus.ENDED;
 import static org.chzz.market.domain.auction.type.AuctionStatus.PROCEEDING;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_ENDED;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_ENDED;
@@ -103,8 +104,24 @@ public class Auction extends BaseTimeEntity {
         }
     }
 
-    public void start(LocalDateTime endDateTime) {
-        this.status = PROCEEDING;
-        this.endDateTime = endDateTime;
+    /*
+     * 경매가 진행중인지 확인
+     */
+    public boolean isProceeding() {
+        return status == PROCEEDING && LocalDateTime.now().isBefore(endDateTime);
+    }
+
+    /*
+     * 사용자가 낙찰에 성공한 경매인지 확인
+     */
+    public boolean isSuccessfulBidFor(Long userId) {
+        return status == ENDED && winnerId != null && winnerId.equals(userId);
+    }
+
+    /*
+     * 사용자가 낙찰에 실패한 경매인지 확인
+     */
+    public boolean isFailedBidFor(Long userId) {
+        return status == ENDED && (winnerId == null || !winnerId.equals(userId));
     }
 }

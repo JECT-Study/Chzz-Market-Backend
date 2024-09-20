@@ -21,8 +21,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.bank_account.entity.BankAccount;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
+import org.chzz.market.domain.bid.entity.Bid;
 import org.chzz.market.domain.like.entity.Like;
 import org.chzz.market.domain.payment.entity.Payment;
 import org.chzz.market.domain.product.entity.Product;
@@ -67,6 +69,10 @@ public class User extends BaseTimeEntity {
     private ProviderType providerType;
 
     @Builder.Default
+    @OneToMany(mappedBy = "bidder", fetch = FetchType.LAZY)
+    private List<Bid> bids = new ArrayList<>();
+
+    @Builder.Default
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private List<Product> products = new ArrayList<>();
 
@@ -106,6 +112,30 @@ public class User extends BaseTimeEntity {
         this.nickname = nickname;
         this.bio = bio;
         this.link = link;
+    }
+
+    public long getOngoingAuctionCount() {
+        return bids.stream()
+                .map(Bid::getAuction)
+                .distinct()
+                .filter(Auction::isProceeding)
+                .count();
+    }
+
+    public long getSuccessfulBidCount() {
+        return bids.stream()
+                .map(Bid::getAuction)
+                .distinct()
+                .filter(auction -> auction.isSuccessfulBidFor(this.id))
+                .count();
+    }
+
+    public long getFailedBidCount() {
+        return bids.stream()
+                .map(Bid::getAuction)
+                .distinct()
+                .filter(auction -> auction.isFailedBidFor(this.id))
+                .count();
     }
 
     @Getter
