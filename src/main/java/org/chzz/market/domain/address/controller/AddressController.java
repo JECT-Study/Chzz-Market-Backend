@@ -20,10 +20,10 @@ public class AddressController {
 
     @GetMapping
     public ResponseEntity<?> getAddresses(
-//            @LoginUser Long userId,
+            @LoginUser Long userId,
             Pageable pageable
     ) {
-        return ResponseEntity.ok(addressService.getAddresses(1L,pageable));
+        return ResponseEntity.ok(addressService.getAddresses(userId,pageable));
     }
 
     @PostMapping
