@@ -1,6 +1,7 @@
 package org.chzz.market.domain.address.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.chzz.market.common.config.LoginUser;
 import org.chzz.market.domain.address.dto.request.AddressDto;
 import org.chzz.market.domain.address.service.AddressService;
 import org.springframework.data.domain.Pageable;
@@ -27,10 +28,10 @@ public class AddressController {
 
     @PostMapping
     public ResponseEntity<?> addAddress(
-//            @LoginUser Long userId,
+            @LoginUser Long userId,
             @RequestBody AddressDto addressDto
     ){
-        addressService.save(1L,addressDto);
+        addressService.save(userId,addressDto);
         return ResponseEntity.ok().build();//TODO 2024 09 11 16:42:57 : redirect
     }
 }
