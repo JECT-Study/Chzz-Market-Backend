@@ -21,6 +21,6 @@ public class CustomFailureHandler extends SimpleUrlAuthenticationFailureHandler 
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
                                         AuthenticationException exception) throws IOException {
         response.sendRedirect(clientUrl + REDIRECT_URL_FAILURE);
-        log.info("social login failure");
+        log.error("social login failure");
     }
 }
