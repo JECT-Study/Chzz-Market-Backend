@@ -3,7 +3,6 @@ package org.chzz.market.domain.auction.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_ALREADY_REGISTERED;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_ACCESSIBLE;
-import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_FOUND;
 import static org.chzz.market.domain.auction.type.AuctionRegisterType.PRE_REGISTER;
 import static org.chzz.market.domain.auction.type.AuctionRegisterType.REGISTER;
 import static org.chzz.market.domain.auction.type.AuctionStatus.PROCEEDING;
@@ -42,6 +41,8 @@ import org.chzz.market.domain.auction.service.register.AuctionRegisterService;
 import org.chzz.market.domain.auction.service.register.PreRegisterService;
 import org.chzz.market.domain.image.service.ImageService;
 import org.chzz.market.domain.product.entity.Product;
+import org.chzz.market.domain.product.error.ProductErrorCode;
+import org.chzz.market.domain.product.error.ProductException;
 import org.chzz.market.domain.product.repository.ProductRepository;
 import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.error.exception.UserException;
@@ -311,10 +312,10 @@ class AuctionServiceTest {
             when(productRepository.findById(nonExistentProductId)).thenReturn(Optional.empty());
 
             // When & Then
-            AuctionException exception = assertThrows(AuctionException.class,
+            ProductException exception = assertThrows(ProductException.class,
                     () -> auctionService.startAuction(any(), invalidStartAuctionRequest));
 
-            assertEquals(AUCTION_NOT_FOUND, exception.getErrorCode());
+            assertEquals(ProductErrorCode.PRODUCT_NOT_FOUND, exception.getErrorCode());
             verify(auctionRepository, never()).save(any(Auction.class));
         }
 
