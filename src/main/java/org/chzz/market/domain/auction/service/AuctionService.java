@@ -15,7 +15,12 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.domain.auction.dto.request.StartAuctionRequest;
-import org.chzz.market.domain.auction.dto.response.*;
+import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
+import org.chzz.market.domain.auction.dto.response.AuctionResponse;
+import org.chzz.market.domain.auction.dto.response.LostAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.StartAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.UserAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.WonAuctionResponse;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
@@ -25,6 +30,7 @@ import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.notification.event.NotificationEvent;
 import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.product.entity.Product.Category;
+import org.chzz.market.domain.product.error.ProductErrorCode;
 import org.chzz.market.domain.product.error.ProductException;
 import org.chzz.market.domain.product.repository.ProductRepository;
 import org.slf4j.Logger;
@@ -91,7 +97,7 @@ public class AuctionService {
     public Product validateStartAuction(Long productId, Long userId) {
         logger.info("사전 등록 상품 유효성 검사를 시작합니다. 상품 ID: {}", productId);
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
+                .orElseThrow(() -> new ProductException(ProductErrorCode.PRODUCT_NOT_FOUND));
 
         // 등록된 상품의 사용자 정보와 전환 요청한 사용자 정보 유효성 검사
         if (!product.isOwner(userId)) {
