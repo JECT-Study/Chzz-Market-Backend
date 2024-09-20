@@ -51,19 +51,18 @@ public class AuctionController {
     }
 
     /*
-     * 경매 상세 조회
+     * 경매 상세 조회 (simple 일 경우 간단 정보만 조회)
      */
     @GetMapping("/{auctionId}")
-    public ResponseEntity<?> getAuctionDetails(@PathVariable Long auctionId, @LoginUser Long userId) {
-        return ResponseEntity.ok(auctionService.getAuctionDetails(auctionId, userId));
-    }
-
-    /*
-     * 판매자 입찰 화면에 제공되는 경매 간단 상세 조회
-     */
-    @GetMapping("/{auctionId}/simple")
-    public ResponseEntity<SimpleAuctionResponse> getSimpleAuctionDetails(@PathVariable Long auctionId) {
-        return ResponseEntity.ok(auctionService.getSimpleAuctionDetails(auctionId));
+    public ResponseEntity<?> getAuctionDetails(
+            @PathVariable Long auctionId,
+            @RequestParam(defaultValue="full") String view,
+            @LoginUser Long userId) {
+        if ("simple".equals(view)) {
+            return ResponseEntity.ok(auctionService.getSimpleAuctionDetails(auctionId));
+        } else {
+            return ResponseEntity.ok(auctionService.getAuctionDetails(auctionId, userId));
+        }
     }
 
     /*
