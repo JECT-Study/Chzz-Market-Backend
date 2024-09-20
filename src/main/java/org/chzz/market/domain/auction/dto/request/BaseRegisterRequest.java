@@ -12,7 +12,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import org.chzz.market.common.validation.annotation.ThousandMultiple;
 import org.chzz.market.domain.auction.type.AuctionRegisterType;
 
 @Getter
@@ -38,7 +37,6 @@ public abstract class BaseRegisterRequest {
     protected Category category;
 
     @NotNull
-    @ThousandMultiple
     @Min(value = 1000, message = "시작 가격은 최소 1,000원 이상, 1000의 배수이어야 합니다")
     protected Integer minPrice;
 
