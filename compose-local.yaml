@@ -79,4 +79,3 @@ services:
       - ./monitoring/loki:/etc/loki
       - ./monitoring/loki-data:/tmp/loki
     command: -config.file=/etc/loki/loki-config.yaml
-    user: "1000:1000"

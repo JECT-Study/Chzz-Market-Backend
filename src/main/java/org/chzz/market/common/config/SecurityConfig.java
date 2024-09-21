@@ -47,6 +47,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(final HttpSecurity http) throws Exception {
         return http.authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(ACTUATOR).permitAll()
+                        .requestMatchers("/metrics").permitAll()
                         .requestMatchers(GET,
                                 "/api/v1/auctions",
                                 "/api/v1/auctions/{auctionId:\\d+}",
