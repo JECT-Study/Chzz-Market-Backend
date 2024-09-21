@@ -347,7 +347,7 @@ class AuctionServiceTest {
 
             // then
             assertDoesNotThrow(() -> {
-                auctionService.getAuctionDetails(existingAuctionId, userId);
+                auctionService.getFullAuctionDetails(existingAuctionId, userId);
             });
         }
 
@@ -363,7 +363,7 @@ class AuctionServiceTest {
 
             // then
             AuctionException auctionException = assertThrows(AuctionException.class, () -> {
-                auctionService.getAuctionDetails(nonExistentAuctionId, userId);
+                auctionService.getFullAuctionDetails(nonExistentAuctionId, userId);
             });
             assertThat(auctionException.getErrorCode()).isEqualTo(AUCTION_NOT_ACCESSIBLE);
         }
