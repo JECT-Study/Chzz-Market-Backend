@@ -15,6 +15,7 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -114,28 +115,20 @@ public class User extends BaseTimeEntity {
         this.link = link;
     }
 
+    private Stream<Auction> getAuctionsFromBids() {
+        return bids.stream().map(Bid::getAuction);
+    }
+
     public long getOngoingAuctionCount() {
-        return bids.stream()
-                .map(Bid::getAuction)
-                .distinct()
-                .filter(Auction::isProceeding)
-                .count();
+        return getAuctionsFromBids().filter(Auction::isProceeding).count();
     }
 
     public long getSuccessfulBidCount() {
-        return bids.stream()
-                .map(Bid::getAuction)
-                .distinct()
-                .filter(auction -> auction.isSuccessfulBidFor(this.id))
-                .count();
+        return getAuctionsFromBids().filter(auction -> auction.isSuccessfulBidFor(this.id)).count();
     }
 
     public long getFailedBidCount() {
-        return bids.stream()
-                .map(Bid::getAuction)
-                .distinct()
-                .filter(auction -> auction.isFailedBidFor(this.id))
-                .count();
+        return getAuctionsFromBids().filter(auction -> auction.isFailedBidFor(this.id)).count();
     }
 
     @Getter
