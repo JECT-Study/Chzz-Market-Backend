@@ -8,7 +8,6 @@ import static org.chzz.market.domain.notification.entity.NotificationType.AUCTIO
 import static org.chzz.market.domain.product.error.ProductErrorCode.FORBIDDEN_PRODUCT_ACCESS;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -63,10 +62,13 @@ public class AuctionService {
 
     /*
      * 경매 상세 정보를 조회합니다.
+     * TODO: 서비스 추상화 적용 시 참고 (#9 관련)
+     * 현재 enum 통해 응답 형태 다양화 구현
+     * 추후 서비스 추상화 적용 시 이 부분 활용해 구현할 수 있습니다.
      */
-    public AuctionDetailsResponse getAuctionDetails(Long auctionId, Long userId) {
-        Optional<AuctionDetailsResponse> auctionDetails = auctionRepository.findAuctionDetailsById(auctionId, userId);
-        return auctionDetails.orElseThrow(() -> new AuctionException(AUCTION_NOT_ACCESSIBLE));
+    public AuctionDetailsResponse getFullAuctionDetails(Long auctionId, Long userId) {
+        return auctionRepository.findAuctionDetailsById(auctionId, userId)
+                .orElseThrow(() -> new AuctionException(AUCTION_NOT_ACCESSIBLE));
     }
 
     /*

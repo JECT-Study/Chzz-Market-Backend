@@ -10,6 +10,7 @@ import org.chzz.market.domain.auction.dto.response.*;
 import org.chzz.market.domain.auction.service.AuctionRegistrationServiceFactory;
 import org.chzz.market.domain.auction.service.AuctionService;
 import org.chzz.market.domain.auction.service.register.AuctionRegistrationService;
+import org.chzz.market.domain.auction.type.AuctionViewType;
 import org.chzz.market.domain.bid.service.BidService;
 import org.chzz.market.domain.product.entity.Product.Category;
 import org.slf4j.Logger;
@@ -56,13 +57,12 @@ public class AuctionController {
     @GetMapping("/{auctionId}")
     public ResponseEntity<?> getAuctionDetails(
             @PathVariable Long auctionId,
-            @RequestParam(defaultValue="full") String view,
+            @RequestParam(defaultValue="FULL") AuctionViewType viewType,
             @LoginUser Long userId) {
-        if ("simple".equals(view)) {
-            return ResponseEntity.ok(auctionService.getSimpleAuctionDetails(auctionId));
-        } else {
-            return ResponseEntity.ok(auctionService.getAuctionDetails(auctionId, userId));
-        }
+        return switch (viewType) {
+            case FULL -> ResponseEntity.ok(auctionService.getFullAuctionDetails(auctionId, userId));
+            case SIMPLE -> ResponseEntity.ok(auctionService.getSimpleAuctionDetails(auctionId));
+        };
     }
 
     /*
