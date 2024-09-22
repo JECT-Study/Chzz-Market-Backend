@@ -5,13 +5,17 @@ import org.chzz.market.domain.user.entity.User;
 public record UserProfileResponse (
         String nickname,
         String bio,
-        ParticipationCountsResponse participationCount
+        ParticipationCountsResponse participationCount,
+        long preRegisterCount,
+        long registeredAuctionCount
 ) {
-    public static UserProfileResponse of (User user, ParticipationCountsResponse counts) {
+    public static UserProfileResponse of (User user, ParticipationCountsResponse counts, long preRegisterCount, long registeredAuctionCount) {
         return new UserProfileResponse(
                 user.getNickname(),
                 user.getBio(),
-                counts
+                counts,
+                preRegisterCount,
+                registeredAuctionCount
         );
     }
 }

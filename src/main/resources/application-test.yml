@@ -73,6 +73,8 @@ spring:
             threadCount: 3
             threadPriority: 5
             threadsInheritContextClassLoaderOfInitializingThread: true
+  flyway:
+    enabled: false
 cloud:
   aws:
     credentials:

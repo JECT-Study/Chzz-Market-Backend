@@ -5,7 +5,6 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.chzz.market.domain.product.entity.Product.Category.ELECTRONICS;
 import static org.chzz.market.domain.product.entity.Product.Category.HOME_APPLIANCES;
-import static org.chzz.market.domain.product.entity.Product.builder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -104,7 +103,7 @@ public class ProductServiceTest {
                 .images(new ArrayList<>())
                 .build();
 
-        existingProduct = builder()
+        existingProduct = Product.builder()
                 .id(1L)
                 .user(user)
                 .name("기존 상품")

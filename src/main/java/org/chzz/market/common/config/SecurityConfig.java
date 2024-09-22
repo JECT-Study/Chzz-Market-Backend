@@ -10,8 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.error.handler.CustomAccessDeniedHandler;
 import org.chzz.market.common.error.handler.CustomAuthenticationEntryPoint;
 import org.chzz.market.common.error.handler.ExceptionHandlingFilter;
-import org.chzz.market.common.filter.NotFoundFilter;
 import org.chzz.market.common.filter.JWTFilter;
+import org.chzz.market.common.filter.NotFoundFilter;
 import org.chzz.market.common.util.JWTUtil;
 import org.chzz.market.domain.user.oauth2.CustomFailureHandler;
 import org.chzz.market.domain.user.oauth2.CustomSuccessHandler;
@@ -56,6 +56,7 @@ public class SecurityConfig {
                         .requestMatchers(GET,
                                 "/api/v1/auctions",
                                 "/api/v1/auctions/{auctionId:\\d+}",
+                                "/api/v1/auctions/{auctionId:\\d+}/simple",
                                 "/api/v1/auctions/best",
                                 "/api/v1/auctions/imminent",
                                 "/api/v1/auctions/users/*",

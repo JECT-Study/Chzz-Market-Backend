@@ -1,7 +1,7 @@
 package org.chzz.market.common.error.handler;
 
 
-import static org.chzz.market.common.error.GlobalErrorCode.INTERNAL_SERVER_ERROR;
+import static org.chzz.market.common.error.GlobalErrorCode.EXTERNAL_API_ERROR;
 
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
@@ -59,6 +60,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(errorCode);
     }
 
+    @Nullable
+    @Override
+    protected ResponseEntity<Object> handleMissingServletRequestPart(MissingServletRequestPartException ex,
+                                                                     HttpHeaders headers, HttpStatusCode status,
+                                                                     WebRequest request) {
+        final GlobalErrorCode errorCode = GlobalErrorCode.INVALID_REQUEST_PARAMETER;
+        logException(ex, errorCode);
+        return handleExceptionInternal(errorCode);
+    }
+
     /**
      * @param e 비즈니스 로직상 발생한 커스텀 예외
      * @return 커스텀 예외 메세지와 상태를 담은 {@link ResponseEntity}
@@ -79,8 +90,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(WebClientResponseException.class)
     protected ResponseEntity<?> handleWebClientResponseException(final WebClientResponseException exception) {
-        logException(exception, INTERNAL_SERVER_ERROR, exception.getResponseBodyAsString());
-        return handleExceptionInternal(INTERNAL_SERVER_ERROR);
+        logException(exception, EXTERNAL_API_ERROR, exception.getResponseBodyAsString());
+        return handleExceptionInternal(EXTERNAL_API_ERROR);
     }
 
     @Override

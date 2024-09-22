@@ -12,12 +12,10 @@ import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.chzz.market.domain.address.dto.request.AddressDto;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
 import org.chzz.market.domain.user.entity.User;
 
-/**
- * 영속화 이전에 별도의 검증 필요
- */
 @Getter
 @Entity
 @Table
@@ -34,20 +32,26 @@ public class Address extends BaseTimeEntity {
     private User user;
 
     @Column
-    private String streetAddr;
+    private String roadAddress;
 
     @Column
-    private String detailAddr;
-
-    @Column
-    private String sido;
-
-    @Column
-    private String sigungu;
-
-    @Column
-    private String eupmyondong;
+    private String jibun;
 
     @Column
     private String zipcode;
+
+    @Column
+    private String detailAddress;
+
+    public static Address toEntity(User user, AddressDto dto) {
+        return new Address(user, dto.roadAddress(), dto.jibun(), dto.zipcode(), dto.detailAddress());
+    }
+
+    private Address(User user, String roadAddress, String jibun, String zipcode, String detailAddress) {
+        this.user = user;
+        this.roadAddress = roadAddress;
+        this.jibun = jibun;
+        this.zipcode = zipcode;
+        this.detailAddress = detailAddress;
+    }
 }

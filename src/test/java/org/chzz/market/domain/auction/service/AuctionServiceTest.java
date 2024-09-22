@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -32,6 +33,7 @@ import org.chzz.market.domain.auction.dto.request.StartAuctionRequest;
 import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.LostAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.RegisterResponse;
+import org.chzz.market.domain.auction.dto.response.SimpleAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.StartAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.WonAuctionResponse;
 import org.chzz.market.domain.auction.entity.Auction;
@@ -41,6 +43,8 @@ import org.chzz.market.domain.auction.service.register.AuctionRegisterService;
 import org.chzz.market.domain.auction.service.register.PreRegisterService;
 import org.chzz.market.domain.image.service.ImageService;
 import org.chzz.market.domain.product.entity.Product;
+import org.chzz.market.domain.product.error.ProductErrorCode;
+import org.chzz.market.domain.product.error.ProductException;
 import org.chzz.market.domain.product.repository.ProductRepository;
 import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.error.exception.UserException;
@@ -310,10 +314,10 @@ class AuctionServiceTest {
             when(productRepository.findById(nonExistentProductId)).thenReturn(Optional.empty());
 
             // When & Then
-            AuctionException exception = assertThrows(AuctionException.class,
+            ProductException exception = assertThrows(ProductException.class,
                     () -> auctionService.startAuction(any(), invalidStartAuctionRequest));
 
-            assertEquals(AUCTION_NOT_FOUND, exception.getErrorCode());
+            assertEquals(ProductErrorCode.PRODUCT_NOT_FOUND, exception.getErrorCode());
             verify(auctionRepository, never()).save(any(Auction.class));
         }
 
@@ -356,7 +360,7 @@ class AuctionServiceTest {
 
             // then
             assertDoesNotThrow(() -> {
-                auctionService.getAuctionDetails(existingAuctionId, userId);
+                auctionService.getFullAuctionDetails(existingAuctionId, userId);
             });
         }
 
@@ -372,9 +376,61 @@ class AuctionServiceTest {
 
             // then
             AuctionException auctionException = assertThrows(AuctionException.class, () -> {
-                auctionService.getAuctionDetails(nonExistentAuctionId, userId);
+                auctionService.getFullAuctionDetails(nonExistentAuctionId, userId);
             });
             assertThat(auctionException.getErrorCode()).isEqualTo(AUCTION_NOT_FOUND);
+        }
+    }
+
+    @Nested
+    @DisplayName("경매 간단 상세 조회 테스트")
+    class GetSimpleAuctionDetailsTest {
+        @Test
+        @DisplayName("1. 판매자가 자신의 경매 상품을 조회할 때 성공")
+        void getSimpleAuctionDetails_Success() {
+            // given
+            Long auctionId = 1L;
+            SimpleAuctionResponse response = new SimpleAuctionResponse("image1.jpg", "Product 1", 10000, 5L);
+
+            when(auctionRepository.findSimpleAuctionDetailsById(auctionId)).thenReturn(Optional.of(response));
+
+            // when
+            SimpleAuctionResponse result = auctionService.getSimpleAuctionDetails(auctionId);
+
+            // then
+            assertNotNull(result);
+            assertEquals("image1.jpg", result.imageUrl());
+            assertEquals("Product 1", result.name());
+            assertEquals(10000, result.minPrice());
+            assertEquals(5L, result.participantCount());
+
+            verify(auctionRepository).findSimpleAuctionDetailsById(auctionId);
+        }
+
+        @Test
+        @DisplayName("2. 판매자가 아닌 사용자가 경매 상품을 조회할 때 예외 발생")
+        void getSimpleAuctionDetails_NotAccessible() {
+            // given
+            Long auctionId = 1L;
+            Auction auction = mock(Auction.class);
+            Product product = mock(Product.class);
+
+            // when & then
+            AuctionException exception = assertThrows(AuctionException.class,
+                    () -> auctionService.getSimpleAuctionDetails(auctionId));
+            assertEquals(AUCTION_NOT_FOUND, exception.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("3. 존재하지 않는 경매 상품을 조회할 때 예외 발생")
+        void getSimpleAuctionDetails_NotFound() {
+            // given
+            Long nonExistentAuctionId = 999L;
+
+            // when & then
+            AuctionException exception = assertThrows(AuctionException.class,
+                    () -> auctionService.getSimpleAuctionDetails(nonExistentAuctionId));
+            assertEquals(AUCTION_NOT_FOUND, exception.getErrorCode());
         }
     }
 
