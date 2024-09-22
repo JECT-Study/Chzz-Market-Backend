@@ -16,8 +16,8 @@ import org.chzz.market.common.config.LoginUser;
 import org.chzz.market.common.util.CookieUtil;
 import org.chzz.market.domain.token.entity.TokenType;
 import org.chzz.market.domain.token.service.TokenService;
-import org.chzz.market.domain.user.dto.UpdateProfileResponse;
-import org.chzz.market.domain.user.dto.UpdateUserProfileRequest;
+import org.chzz.market.domain.user.dto.response.UpdateProfileResponse;
+import org.chzz.market.domain.user.dto.request.UpdateUserProfileRequest;
 import org.chzz.market.domain.user.dto.request.UserCreateRequest;
 import org.chzz.market.domain.user.dto.response.UserProfileResponse;
 import org.chzz.market.domain.user.entity.User;
@@ -39,6 +39,9 @@ public class UserController {
     private final UserService userService;
     private final TokenService tokenService;
 
+    /*
+     * 회원가입 완료
+     */
     @PostMapping
     public ResponseEntity<?> completeRegistration(@LoginUser Long userId,
                                                   @Valid @RequestBody UserCreateRequest userCreateRequest,
@@ -67,7 +70,6 @@ public class UserController {
         return ResponseEntity.ok(userService.getCustomerKey(userId));
     }
 
-
     /**
      * 내 프로필 수정
      */
@@ -80,18 +82,32 @@ public class UserController {
     }
 
     /*
-     * 사용자 프로필 조회
+     * 사용자 프로필 조회 (유저 ID 기반)
      */
-    @GetMapping("/{nickname}")
-    public ResponseEntity<UserProfileResponse> getUserProfile(@PathVariable String nickname) {
-        return ResponseEntity.ok(userService.getUserProfile(nickname));
+    @GetMapping
+    public ResponseEntity<UserProfileResponse> getUserProfileById(@LoginUser Long userId) {
+        return ResponseEntity.ok(userService.getUserProfileById(userId));
     }
 
+    /*
+     * 사용자 프로필 조회 (닉네임 기반)
+     */
+    @GetMapping("/{nickname}")
+    public ResponseEntity<UserProfileResponse> getUserProfileByNickname(@PathVariable String nickname) {
+        return ResponseEntity.ok(userService.getUserProfileByNickname(nickname));
+    }
+
+    /*
+     * 닉네임 중복 확인
+     */
     @GetMapping("/check/nickname/{nickname}")
     public ResponseEntity<?> checkNickname(@NotBlank @Size(max = 15) @PathVariable String nickname) {
         return ResponseEntity.ok((userService.checkNickname(nickname)));
     }
 
+    /*
+     * 토큰 재발급
+     */
     @PostMapping("/tokens/reissue")
     public ResponseEntity<?> reissue(HttpServletRequest request, HttpServletResponse response) {
         Cookie refreshCookie = CookieUtil.getCookieByName(request, TokenType.REFRESH.name());
@@ -103,6 +119,9 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
+    /*
+     * 로그아웃
+     */
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
         Cookie refreshCookie = CookieUtil.getCookieByName(request, TokenType.REFRESH.name());

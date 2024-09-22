@@ -10,6 +10,7 @@ import org.chzz.market.domain.auction.dto.response.*;
 import org.chzz.market.domain.auction.service.AuctionRegistrationServiceFactory;
 import org.chzz.market.domain.auction.service.AuctionService;
 import org.chzz.market.domain.auction.service.register.AuctionRegistrationService;
+import org.chzz.market.domain.auction.type.AuctionViewType;
 import org.chzz.market.domain.bid.service.BidService;
 import org.chzz.market.domain.product.entity.Product.Category;
 import org.slf4j.Logger;
@@ -40,6 +41,9 @@ public class AuctionController {
     private final BidService bidService;
     private final AuctionRegistrationServiceFactory registrationServiceFactory;
 
+    /*
+     * 경매 목록 조회
+     */
     @GetMapping
     public ResponseEntity<?> getAuctionList(@RequestParam Category category,
                                             @LoginUser Long userId,
@@ -47,11 +51,23 @@ public class AuctionController {
         return ResponseEntity.ok(auctionService.getAuctionListByCategory(category, userId, pageable));
     }
 
+    /*
+     * 경매 상세 조회 (simple 일 경우 간단 정보만 조회)
+     */
     @GetMapping("/{auctionId}")
-    public ResponseEntity<?> getAuctionDetails(@PathVariable Long auctionId, @LoginUser Long userId) {
-        return ResponseEntity.ok(auctionService.getAuctionDetails(auctionId, userId));
+    public ResponseEntity<?> getAuctionDetails(
+            @PathVariable Long auctionId,
+            @RequestParam(defaultValue="FULL") AuctionViewType viewType,
+            @LoginUser Long userId) {
+        return switch (viewType) {
+            case FULL -> ResponseEntity.ok(auctionService.getFullAuctionDetails(auctionId, userId));
+            case SIMPLE -> ResponseEntity.ok(auctionService.getSimpleAuctionDetails(auctionId));
+        };
     }
 
+    /*
+     * 경매 입찰 내역 조회
+     */
     @GetMapping("/history")
     public ResponseEntity<?> getAuctionHistory(@LoginUser Long userId, Pageable pageable) {
         return ResponseEntity.ok(auctionService.getAuctionHistory(userId, pageable));
@@ -77,7 +93,7 @@ public class AuctionController {
         return ResponseEntity.ok(auctionService.getLostAuctionHistory(userId, pageable));
     }
 
-    /**
+    /*
      * 경매 등록
      */
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
@@ -93,7 +109,7 @@ public class AuctionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    /**
+    /*
      * 경매 상품으로 전환
      */
     @PostMapping("/start")
@@ -121,12 +137,18 @@ public class AuctionController {
         return ResponseEntity.ok(bestAuctionList);
     }
 
+    /*
+     * Imminent 경매 상품 목록 조회
+     */
     @GetMapping("/imminent")
     public ResponseEntity<?> imminentAuctionList() {
         List<AuctionResponse> imminentAuctionList = auctionService.getImminentAuctionList();
         return ResponseEntity.ok(imminentAuctionList);
     }
 
+    /*
+     * 경매 입찰 목록 조회
+     */
     @GetMapping("/{auctionId}/bids")
     public ResponseEntity<?> getBids(@LoginUser Long userId, @PathVariable Long auctionId, Pageable pageable) {
         return ResponseEntity.ok(bidService.getBidsByAuctionId(userId, auctionId, pageable));

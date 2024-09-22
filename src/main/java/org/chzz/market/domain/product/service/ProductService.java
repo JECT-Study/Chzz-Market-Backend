@@ -1,6 +1,7 @@
 package org.chzz.market.domain.product.service;
 
 import static org.chzz.market.domain.notification.entity.NotificationType.AUCTION_REGISTRATION_CANCELED;
+import static org.chzz.market.domain.product.entity.Product.*;
 import static org.chzz.market.domain.product.error.ProductErrorCode.ALREADY_IN_AUCTION;
 import static org.chzz.market.domain.product.error.ProductErrorCode.PRODUCT_ALREADY_AUCTIONED;
 import static org.chzz.market.domain.product.error.ProductErrorCode.PRODUCT_NOT_FOUND;
@@ -28,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.TransientDataAccessException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -49,9 +51,9 @@ public class ProductService {
     private final ApplicationEventPublisher eventPublisher;
 
     /*
-     * 카테고리별 사전 등록 상품 목록 조회
+     * 사전 등록 상품 목록 조회
      */
-    public Page<ProductResponse> getProductListByCategory(Product.Category category, Long userId, Pageable pageable) {
+    public Page<ProductResponse> getProductListByCategory(Category category, Long userId, Pageable pageable) {
         return productRepository.findProductsByCategory(category, userId, pageable);
     }
 
@@ -81,7 +83,7 @@ public class ProductService {
      * 상품 카테고리 목록 조회
      */
     public List<CategoryResponse> getCategories() {
-        return Arrays.stream(Product.Category.values())
+        return Arrays.stream(Category.values())
                 .map(category -> new CategoryResponse(category.name(), category.getDisplayName()))
                 .toList();
     }

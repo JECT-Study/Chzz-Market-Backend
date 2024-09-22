@@ -1,6 +1,7 @@
 package org.chzz.market.domain.product.repository;
 
 import static org.chzz.market.common.util.QuerydslUtil.nullSafeBuilder;
+import static org.chzz.market.common.util.QuerydslUtil.nullSafeBuilderIgnore;
 import static org.chzz.market.domain.auction.entity.QAuction.auction;
 import static org.chzz.market.domain.image.entity.QImage.image;
 import static org.chzz.market.domain.like.entity.QLike.like;
@@ -38,7 +39,7 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
     private final QuerydslOrderProvider querydslOrderProvider;
 
     /**
-     * 카테고리와 정렬 조건에 따라 사전 등록 상품 리스트를 조회합니다.
+     * 사전 등록 상품 리스트를 조회합니다.
      *
      * @param category 카테고리
      * @param userId   사용자 ID
@@ -49,8 +50,7 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
     public Page<ProductResponse> findProductsByCategory(Category category, Long userId, Pageable pageable) {
         JPAQuery<?> baseQuery = jpaQueryFactory.from(product)
                 .leftJoin(auction).on(auction.product.id.eq(product.id))
-                .where(auction.id.isNull())
-                .where(product.category.eq(category));
+                .where(auction.id.isNull().and(categoryEqIgnoreNull(category)));
 
         List<ProductResponse> content = baseQuery
                 .select(new QProductResponse(
@@ -78,7 +78,7 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
      *
      * @param productId 상품 ID
      * @param userId    사용자 ID
-     * @return 상품 상세 정보
+     * @return          상품 상세 정보
      */
     @Override
     public Optional<ProductDetailsResponse> findProductDetailsById(Long productId, Long userId) {
@@ -216,6 +216,10 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
 
     private BooleanBuilder likeUserIdEq(Long userId) {
         return nullSafeBuilder(() -> like.user.id.eq(userId));
+    }
+
+    private BooleanBuilder categoryEqIgnoreNull(Category category) {
+        return nullSafeBuilderIgnore(() -> product.category.eq(category));
     }
 
     @Getter

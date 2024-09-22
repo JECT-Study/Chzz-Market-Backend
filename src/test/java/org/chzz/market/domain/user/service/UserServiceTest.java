@@ -5,16 +5,24 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
+import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
+import org.chzz.market.domain.auction.type.AuctionStatus;
 import org.chzz.market.domain.bank_account.entity.BankAccount;
+import org.chzz.market.domain.bid.entity.Bid;
+import org.chzz.market.domain.product.entity.Product;
+import org.chzz.market.domain.product.repository.ProductRepository;
 import org.chzz.market.domain.user.dto.response.ParticipationCountsResponse;
 import org.chzz.market.domain.user.dto.response.UserProfileResponse;
 import org.chzz.market.domain.user.dto.request.UserCreateRequest;
 import org.chzz.market.domain.user.dto.response.NicknameAvailabilityResponse;
-import org.chzz.market.domain.user.dto.UpdateProfileResponse;
-import org.chzz.market.domain.user.dto.UpdateUserProfileRequest;
+import org.chzz.market.domain.user.dto.response.UpdateProfileResponse;
+import org.chzz.market.domain.user.dto.request.UpdateUserProfileRequest;
 import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.entity.User.ProviderType;
 import org.chzz.market.domain.user.entity.User.UserRole;
@@ -28,8 +36,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.mockito.Mockito.verify;
 
@@ -41,20 +49,79 @@ class UserServiceTest {
     @Mock
     private AuctionRepository auctionRepository;
 
+    @Mock
+    private ProductRepository productRepository;
+
     @InjectMocks
     private UserService userService;
 
-    private User user1;
+    private User user1, user2;
+    private Product product1, product2, product3, product4, product5, product6;
+    private Product preRegisteredProduct1, preRegisteredProduct2, auctionProduct1, auctionProduct2;
+    private Auction auction1, auction2, auction3, auction4, auction5, auction6, auction7, auction8;
+    private Bid bid1, bid2, bid3, bid4, bid5, bid6;
+
     private UpdateUserProfileRequest updateUserProfileRequest;
     private ParticipationCountsResponse counts;
 
     @BeforeEach
     void setUp() {
-        user1 = User.builder()
+        user1 = spy(User.builder()
                 .id(1L)
                 .nickname("닉네임 1")
                 .bio("자기소개 1")
-                .build();
+                .build());
+
+        user2 = spy(User.builder()
+                .id(2L)
+                .nickname("닉네임 2")
+                .bio("자기소개 2")
+                .build());
+
+        product1 = Product.builder().id(1L).name("제품1").user(user2).minPrice(1000).build();
+        product2 = Product.builder().id(2L).name("제품2").user(user2).minPrice(2000).build();
+        product3 = Product.builder().id(3L).name("제품3").user(user2).minPrice(3000).build();
+        product4 = Product.builder().id(4L).name("제품4").user(user2).minPrice(4000).build();
+        product5 = Product.builder().id(5L).name("제품5").user(user2).minPrice(5000).build();
+        product6 = Product.builder().id(6L).name("제품6").user(user2).minPrice(6000).build();
+
+        auction1 = Auction.builder().id(1L).product(product1).status(AuctionStatus.PROCEEDING)
+                .endDateTime(LocalDateTime.now().plusDays(1)).build();
+        auction2 = Auction.builder().id(2L).product(product2).status(AuctionStatus.PROCEEDING)
+                .endDateTime(LocalDateTime.now().plusDays(2)).build();
+        auction3 = Auction.builder().id(3L).product(product3).status(AuctionStatus.PROCEEDING)
+                .endDateTime(LocalDateTime.now().plusDays(3)).build();
+        auction4 = Auction.builder().id(4L).product(product4).status(AuctionStatus.ENDED)
+                .endDateTime(LocalDateTime.now().minusDays(1)).winnerId(user1.getId()).build();
+        auction5 = Auction.builder().id(5L).product(product5).status(AuctionStatus.ENDED)
+                .endDateTime(LocalDateTime.now().minusDays(2)).winnerId(user1.getId()).build();
+        auction6 = Auction.builder().id(6L).product(product6).status(AuctionStatus.ENDED)
+                .endDateTime(LocalDateTime.now().minusDays(3)).winnerId(user2.getId()).build();
+
+        bid1 = Bid.builder().id(1L).auction(auction1).bidder(user1).amount(1500L).build();
+        bid2 = Bid.builder().id(2L).auction(auction2).bidder(user1).amount(2500L).build();
+        bid3 = Bid.builder().id(3L).auction(auction3).bidder(user1).amount(3500L).build();
+        bid4 = Bid.builder().id(4L).auction(auction4).bidder(user1).amount(4500L).build();
+        bid5 = Bid.builder().id(5L).auction(auction5).bidder(user1).amount(5500L).build();
+        bid6 = Bid.builder().id(6L).auction(auction6).bidder(user1).amount(6500L).build();
+
+        auction1.registerBid(bid1);
+        auction2.registerBid(bid2);
+        auction3.registerBid(bid3);
+        auction4.registerBid(bid4);
+        auction5.registerBid(bid5);
+        auction6.registerBid(bid6);
+
+        preRegisteredProduct1 = Product.builder().id(7L).name("사전등록상품1").user(user1).minPrice(7000).build();
+        preRegisteredProduct2 = Product.builder().id(8L).name("사전등록상품2").user(user1).minPrice(8000).build();
+
+        auctionProduct1 = Product.builder().id(9L).name("경매상품1").user(user1).minPrice(9000).build();
+        auctionProduct2 = Product.builder().id(10L).name("경매상품2").user(user1).minPrice(10000).build();
+
+        auction7 = Auction.builder().id(7L).product(auctionProduct1).status(AuctionStatus.PROCEEDING)
+                .endDateTime(LocalDateTime.now().plusDays(4)).build();
+        auction8 = Auction.builder().id(8L).product(auctionProduct2).status(AuctionStatus.PROCEEDING)
+                .endDateTime(LocalDateTime.now().plusDays(5)).build();
 
         updateUserProfileRequest = UpdateUserProfileRequest.builder()
                 .nickname("수정된 닉네임")
@@ -62,7 +129,10 @@ class UserServiceTest {
                 .link("수정된 URL")
                 .build();
 
-        counts = new ParticipationCountsResponse(5L, 2L, 3L, 1L);
+        counts = new ParticipationCountsResponse(5L, 2L, 3L);
+
+        List<Bid> user1Bids = Arrays.asList(bid1, bid2, bid3, bid4, bid5, bid6);
+        ReflectionTestUtils.setField(user1, "bids", user1Bids);
 
         System.setProperty("org.mockito.logging.verbosity", "all");
     }
@@ -223,16 +293,20 @@ class UserServiceTest {
 
     @Nested
     @DisplayName("사용자 정보 조회 테스트")
-    class UpdateUserTest {
+    class getUserProfileTest {
         @Test
         @DisplayName("1. 사용자 정보 조회가 성공하는 경우")
-        public void updateUser_Success() {
+        public void getUserProfile_Success() {
             // given
-            when(userRepository.findByNickname("닉네임 1")).thenReturn(Optional.of(user1));
-            when(auctionRepository.getParticipationCounts(1L)).thenReturn(counts);
+            doReturn(5L).when(user1).getOngoingAuctionCount();
+            doReturn(2L).when(user1).getSuccessfulBidCount();
+            doReturn(1L).when(user1).getFailedBidCount();
 
+            when(userRepository.findByNickname("닉네임 1")).thenReturn(Optional.of(user1));
+            when(productRepository.countPreRegisteredProductsByUserId(user1.getId())).thenReturn(2L);
+            when(auctionRepository.countByProductUserId(user1.getId())).thenReturn(2L);
             // when
-            UserProfileResponse response = userService.getUserProfile("닉네임 1");
+            UserProfileResponse response = userService.getUserProfileByNickname("닉네임 1");
 
             // then
             assertNotNull(response);
@@ -241,11 +315,16 @@ class UserServiceTest {
             assertNotNull(response.participationCount());
             assertEquals(5L, response.participationCount().ongoingAuctionCount());
             assertEquals(2L, response.participationCount().successfulAuctionCount());
-            assertEquals(3L, response.participationCount().failedAuctionCount());
-            assertEquals(1L, response.participationCount().unsuccessfulAuctionCount());
+            assertEquals(1L, response.participationCount().failedAuctionCount());
+            assertEquals(2L, response.preRegisterCount());
+            assertEquals(2L, response.registeredAuctionCount());
 
             verify(userRepository).findByNickname(user1.getNickname());
-            verify(auctionRepository).getParticipationCounts(user1.getId());
+            verify(user1).getOngoingAuctionCount();
+            verify(user1).getSuccessfulBidCount();
+            verify(user1).getFailedBidCount();
+            verify(productRepository).countPreRegisteredProductsByUserId(user1.getId());
+            verify(auctionRepository).countByProductUserId(user1.getId());
         }
 
         @Test
@@ -255,35 +334,83 @@ class UserServiceTest {
             when(userRepository.findByNickname("존재하지 않는 닉네임")).thenReturn(Optional.empty());
 
             // when
-            assertThrows(UserException.class, () -> userService.getUserProfile("존재하지 않는 닉네임"));
+            assertThrows(UserException.class, () -> userService.getUserProfileByNickname("존재하지 않는 닉네임"));
             verify(userRepository).findByNickname("존재하지 않는 닉네임");
-            verifyNoInteractions(auctionRepository);
+            verifyNoInteractions(productRepository, auctionRepository);
         }
 
         @Test
         @DisplayName("3. 사용자의 경매 참여 카운트가 모두 0인 경우")
         public void getUserProfile_ZeroCounts() {
             // given
-            ParticipationCountsResponse zeroCounts = new ParticipationCountsResponse(0L, 0L, 0L, 0L);
+            User zeroCountUser = spy(User.builder()
+                    .id(3L)
+                    .nickname("닉네임 3")
+                    .bio("참여 없음")
+                    .build());
 
-            when(userRepository.findByNickname("닉네임 1")).thenReturn(Optional.of(user1));
-            when(auctionRepository.getParticipationCounts(1L)).thenReturn(zeroCounts);
+            doReturn(0L).when(zeroCountUser).getOngoingAuctionCount();
+            doReturn(0L).when(zeroCountUser).getSuccessfulBidCount();
+            doReturn(0L).when(zeroCountUser).getFailedBidCount();
+
+            when(userRepository.findByNickname("닉네임 3")).thenReturn(Optional.of(zeroCountUser));
+            when(productRepository.countPreRegisteredProductsByUserId(zeroCountUser.getId())).thenReturn(0L);
+            when(auctionRepository.countByProductUserId(zeroCountUser.getId())).thenReturn(0L);
 
             // when
-            UserProfileResponse response = userService.getUserProfile("닉네임 1");
+            UserProfileResponse response = userService.getUserProfileByNickname("닉네임 3");
+
+            // then
+            assertNotNull(response);
+            assertEquals("닉네임 3", response.nickname());
+            assertEquals("참여 없음", response.bio());
+            assertNotNull(response.participationCount());
+            assertEquals(0L, response.participationCount().ongoingAuctionCount());
+            assertEquals(0L, response.participationCount().successfulAuctionCount());
+            assertEquals(0L, response.participationCount().failedAuctionCount());
+            assertEquals(0L, response.preRegisterCount());
+            assertEquals(0L, response.registeredAuctionCount());
+
+            verify(userRepository).findByNickname(zeroCountUser.getNickname());
+            verify(zeroCountUser).getOngoingAuctionCount();
+            verify(zeroCountUser).getSuccessfulBidCount();
+            verify(zeroCountUser).getFailedBidCount();
+            verify(productRepository).countPreRegisteredProductsByUserId(3L);
+            verify(auctionRepository).countByProductUserId(3L);
+        }
+
+        @Test
+        @DisplayName("4. 사전 등록 상품과 경매 상품만 있는 경우")
+        public void getUserProfile_WithPAndR() {
+            // given
+            doReturn(2L).when(user1).getOngoingAuctionCount();
+            doReturn(3L).when(user1).getSuccessfulBidCount();
+            doReturn(1L).when(user1).getFailedBidCount();
+
+            when(userRepository.findByNickname("닉네임 1")).thenReturn(Optional.of(user1));
+            when(productRepository.countPreRegisteredProductsByUserId(user1.getId())).thenReturn(2L);
+            when(auctionRepository.countByProductUserId(user1.getId())).thenReturn(2L);
+
+            // when
+            UserProfileResponse response = userService.getUserProfileByNickname("닉네임 1");
 
             // then
             assertNotNull(response);
             assertEquals("닉네임 1", response.nickname());
             assertEquals("자기소개 1", response.bio());
             assertNotNull(response.participationCount());
-            assertEquals(0L, response.participationCount().ongoingAuctionCount());
-            assertEquals(0L, response.participationCount().successfulAuctionCount());
-            assertEquals(0L, response.participationCount().failedAuctionCount());
-            assertEquals(0L, response.participationCount().unsuccessfulAuctionCount());
+            assertEquals(2L, response.participationCount().ongoingAuctionCount());
+            assertEquals(3L, response.participationCount().successfulAuctionCount());
+            assertEquals(1L, response.participationCount().failedAuctionCount());
+            assertEquals(2L, response.preRegisterCount());
+            assertEquals(2L, response.registeredAuctionCount());
 
             verify(userRepository).findByNickname(user1.getNickname());
-            verify(auctionRepository).getParticipationCounts(user1.getId());
+            verify(user1).getOngoingAuctionCount();
+            verify(user1).getSuccessfulBidCount();
+            verify(user1).getFailedBidCount();
+            verify(productRepository).countPreRegisteredProductsByUserId(user1.getId());
+            verify(auctionRepository).countByProductUserId(user1.getId());
         }
     }
 }
