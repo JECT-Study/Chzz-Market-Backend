@@ -103,6 +103,8 @@ public class UserService {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(USER_NOT_FOUND))
                 .getCustomerKey().toString();
+    }
+
     /*
      * 내 프로필 조회
      */

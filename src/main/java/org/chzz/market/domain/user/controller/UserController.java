@@ -57,14 +57,6 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    /*
-     * 내 프로필 조회
-     */
-    @GetMapping
-    public ResponseEntity<UserProfileResponse> getMyProfile(@LoginUser Long userId) {
-        return ResponseEntity.ok(userService.getMyProfile(userId));
-    }
-
     @GetMapping("/customer-key")
     public ResponseEntity<String> getCustomerKey(@LoginUser Long userId) {
         return ResponseEntity.ok(userService.getCustomerKey(userId));
