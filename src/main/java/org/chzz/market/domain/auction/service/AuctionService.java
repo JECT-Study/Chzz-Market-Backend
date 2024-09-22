@@ -8,6 +8,7 @@ import static org.chzz.market.domain.notification.entity.NotificationType.AUCTIO
 import static org.chzz.market.domain.notification.entity.NotificationType.AUCTION_SUCCESS;
 import static org.chzz.market.domain.notification.entity.NotificationType.AUCTION_WINNER;
 import static org.chzz.market.domain.product.error.ProductErrorCode.FORBIDDEN_PRODUCT_ACCESS;
+import static org.chzz.market.domain.product.error.ProductErrorCode.PRODUCT_NOT_FOUND;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -178,7 +179,7 @@ public class AuctionService {
     private Product validateStartAuction(Long productId, Long userId) {
         log.info("사전 등록 상품 유효성 검사를 시작합니다. 상품 ID: {}", productId);
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
+                .orElseThrow(() -> new ProductException(PRODUCT_NOT_FOUND));
 
         // 등록된 상품의 사용자 정보와 전환 요청한 사용자 정보 유효성 검사
         if (!product.isOwner(userId)) {
