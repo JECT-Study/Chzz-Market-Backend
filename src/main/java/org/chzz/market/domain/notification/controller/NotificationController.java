@@ -2,6 +2,7 @@ package org.chzz.market.domain.notification.controller;
 
 import static org.springframework.http.MediaType.TEXT_EVENT_STREAM_VALUE;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.config.LoginUser;
 import org.chzz.market.domain.notification.service.NotificationService;
@@ -39,7 +40,8 @@ public class NotificationController {
     }
 
     @GetMapping(value = "/subscribe", produces = TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter subscribe(@LoginUser Long userId) {
+    public SseEmitter subscribe(@LoginUser Long userId, HttpServletResponse response) {
+        response.setHeader("X-Accel-Buffering", "no");
         return notificationService.subscribe(userId);
     }
 }

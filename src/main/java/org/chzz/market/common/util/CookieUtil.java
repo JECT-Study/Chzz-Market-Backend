@@ -2,15 +2,20 @@ package org.chzz.market.common.util;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.chzz.market.domain.token.entity.TokenType;
+import org.springframework.http.ResponseCookie;
 
 public class CookieUtil {
-    public static Cookie createTokenCookie(String token, TokenType tokenType) {
-        Cookie cookie = new Cookie(tokenType.name(), token);
-        cookie.setHttpOnly(true);
-        cookie.setMaxAge(tokenType.getExpirationTime());
-        cookie.setPath("/");
-        return cookie;
+    public static void createTokenCookie(HttpServletResponse response, String token, TokenType tokenType) {
+        ResponseCookie cookie = ResponseCookie.from(tokenType.name(), token)
+                .path("/")
+                .sameSite("None")
+                .httpOnly(true)
+                .secure(true)
+                .maxAge(tokenType.getExpirationTime())
+                .build();
+        response.addHeader("Set-Cookie", cookie.toString());
     }
 
     public static Cookie getCookieByName(HttpServletRequest request, String cookieName) {
@@ -25,11 +30,14 @@ public class CookieUtil {
         return null;
     }
 
-    public static Cookie expireCookie(String cookieName) {
-        Cookie cookie = new Cookie(cookieName, null);
-        cookie.setHttpOnly(true);
-        cookie.setMaxAge(0);
-        cookie.setPath("/");
-        return cookie;
+    public static void expireCookie(HttpServletResponse response, String cookieName) {
+        ResponseCookie cookie = ResponseCookie.from(cookieName, null)
+                .path("/")
+                .sameSite("None")
+                .httpOnly(true)
+                .secure(true)
+                .maxAge(0)
+                .build();
+        response.addHeader("Set-Cookie", cookie.toString());
     }
 }

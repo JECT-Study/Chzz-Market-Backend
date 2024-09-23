@@ -7,8 +7,6 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,8 +14,8 @@ import org.chzz.market.common.config.LoginUser;
 import org.chzz.market.common.util.CookieUtil;
 import org.chzz.market.domain.token.entity.TokenType;
 import org.chzz.market.domain.token.service.TokenService;
-import org.chzz.market.domain.user.dto.UpdateProfileResponse;
-import org.chzz.market.domain.user.dto.UpdateUserProfileRequest;
+import org.chzz.market.domain.user.dto.response.UpdateProfileResponse;
+import org.chzz.market.domain.user.dto.request.UpdateUserProfileRequest;
 import org.chzz.market.domain.user.dto.request.UserCreateRequest;
 import org.chzz.market.domain.user.dto.response.UserProfileResponse;
 import org.chzz.market.domain.user.entity.User;
@@ -39,27 +37,27 @@ public class UserController {
     private final UserService userService;
     private final TokenService tokenService;
 
+    /*
+     * 회원가입 완료
+     */
     @PostMapping
     public ResponseEntity<?> completeRegistration(@LoginUser Long userId,
                                                   @Valid @RequestBody UserCreateRequest userCreateRequest,
                                                   HttpServletResponse response) {
         User user = userService.completeUserRegistration(userId, userCreateRequest);
         // 임시토큰 만료
-        response.addCookie(CookieUtil.expireCookie(TokenType.TEMP.name()));
+        CookieUtil.expireCookie(response, TokenType.TEMP.name());
         // 리프레쉬 토큰 발급
-        response.addCookie(CookieUtil.createTokenCookie(tokenService.createRefreshToken(user), TokenType.REFRESH));
+        CookieUtil.createTokenCookie(response, tokenService.createRefreshToken(user), TokenType.REFRESH);
         // 엑세스 토큰 발급
         response.setHeader(AUTHORIZATION_HEADER, BEARER_TOKEN_PREFIX + tokenService.createAccessToken(user));
         log.info("최종 회원가입 성공 userId = {}", userId);
         return ResponseEntity.ok().build();
     }
 
-    /*
-     * 내 프로필 조회
-     */
-    @GetMapping
-    public ResponseEntity<UserProfileResponse> getMyProfile(@LoginUser Long userId) {
-        return ResponseEntity.ok(userService.getMyProfile(userId));
+    @GetMapping("/customer-key")
+    public ResponseEntity<String> getCustomerKey(@LoginUser Long userId) {
+        return ResponseEntity.ok(userService.getCustomerKey(userId));
     }
 
     /**
@@ -74,34 +72,51 @@ public class UserController {
     }
 
     /*
-     * 사용자 프로필 조회
+     * 사용자 프로필 조회 (유저 ID 기반)
      */
-    @GetMapping("/{nickname}")
-    public ResponseEntity<UserProfileResponse> getUserProfile(@PathVariable String nickname) {
-        return ResponseEntity.ok(userService.getUserProfile(nickname));
+    @GetMapping
+    public ResponseEntity<UserProfileResponse> getUserProfileById(@LoginUser Long userId) {
+        return ResponseEntity.ok(userService.getUserProfileById(userId));
     }
 
+    /*
+     * 사용자 프로필 조회 (닉네임 기반)
+     */
+    @GetMapping("/{nickname}")
+    public ResponseEntity<UserProfileResponse> getUserProfileByNickname(@PathVariable String nickname) {
+        return ResponseEntity.ok(userService.getUserProfileByNickname(nickname));
+    }
+
+    /*
+     * 닉네임 중복 확인
+     */
     @GetMapping("/check/nickname/{nickname}")
-    public ResponseEntity<?> checkNickname(@NotBlank @Size(max = 15) @PathVariable String nickname) {
+    public ResponseEntity<?> checkNickname(@PathVariable String nickname) {
         return ResponseEntity.ok((userService.checkNickname(nickname)));
     }
 
+    /*
+     * 토큰 재발급
+     */
     @PostMapping("/tokens/reissue")
     public ResponseEntity<?> reissue(HttpServletRequest request, HttpServletResponse response) {
         Cookie refreshCookie = CookieUtil.getCookieByName(request, TokenType.REFRESH.name());
         Map<TokenType, String> newTokens = tokenService.reissue(refreshCookie);
         // 새로운 리프레쉬 토큰 발급
-        response.addCookie(CookieUtil.createTokenCookie(newTokens.get(TokenType.REFRESH), TokenType.REFRESH));
+        CookieUtil.createTokenCookie(response, newTokens.get(TokenType.REFRESH), TokenType.REFRESH);
         // 새로운 엑세스 토큰 발급
         response.setHeader(AUTHORIZATION_HEADER, BEARER_TOKEN_PREFIX + newTokens.get(TokenType.ACCESS));
         return ResponseEntity.ok().build();
     }
 
+    /*
+     * 로그아웃
+     */
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
         Cookie refreshCookie = CookieUtil.getCookieByName(request, TokenType.REFRESH.name());
         tokenService.logout(refreshCookie);
-        response.addCookie(CookieUtil.expireCookie(TokenType.REFRESH.name()));
+        CookieUtil.expireCookie(response, TokenType.REFRESH.name());
         return ResponseEntity.ok().build();
     }
 }

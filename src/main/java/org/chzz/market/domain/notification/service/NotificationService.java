@@ -13,6 +13,7 @@ import org.chzz.market.domain.notification.error.NotificationErrorCode;
 import org.chzz.market.domain.notification.error.NotificationException;
 import org.chzz.market.domain.notification.repository.EmitterRepositoryImpl;
 import org.chzz.market.domain.notification.repository.NotificationRepository;
+import org.chzz.market.domain.token.entity.TokenType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -35,7 +36,7 @@ public class NotificationService {
      * @return SseEmitter 객체
      */
     public SseEmitter subscribe(Long userId) {
-        SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
+        SseEmitter emitter = new SseEmitter(TokenType.ACCESS.getExpirationTime() * 1000L);
         emitterRepository.save(userId, emitter);
         setupEmitterCallbacks(userId, emitter);
         sendInitialConnectionEvent(userId, emitter);
@@ -56,6 +57,7 @@ public class NotificationService {
                         .id(userId + "_" + Instant.now().toEpochMilli())
                         .name("notification")
                         .data(objectMapper.writeValueAsString(sseResponse)));
+                log.info("SSE 전송: userId: {}, sseResponse: {}", userId, sseResponse);
             } catch (IOException e) {
                 log.error("Error sending SSE event to user {}", userId);
             }

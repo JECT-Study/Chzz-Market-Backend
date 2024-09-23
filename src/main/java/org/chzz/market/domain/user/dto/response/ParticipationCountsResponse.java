@@ -5,8 +5,7 @@ import com.querydsl.core.annotations.QueryProjection;
 public record ParticipationCountsResponse(
         long ongoingAuctionCount,
         long successfulAuctionCount,
-        long failedAuctionCount,
-        long unsuccessfulAuctionCount
+        long failedAuctionCount
 ) {
     @QueryProjection
     public ParticipationCountsResponse {}

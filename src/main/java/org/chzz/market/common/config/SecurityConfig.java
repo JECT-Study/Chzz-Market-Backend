@@ -3,12 +3,16 @@ package org.chzz.market.common.config;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Collections;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.error.handler.CustomAccessDeniedHandler;
 import org.chzz.market.common.error.handler.CustomAuthenticationEntryPoint;
 import org.chzz.market.common.error.handler.ExceptionHandlingFilter;
 import org.chzz.market.common.filter.JWTFilter;
+import org.chzz.market.common.filter.NotFoundFilter;
+import org.chzz.market.common.util.JWTUtil;
 import org.chzz.market.domain.user.oauth2.CustomFailureHandler;
 import org.chzz.market.domain.user.oauth2.CustomSuccessHandler;
 import org.chzz.market.domain.user.service.CustomOAuth2UserService;
@@ -25,6 +29,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.HandlerMapping;
 
 @Configuration
 @EnableWebSecurity
@@ -40,8 +45,9 @@ public class SecurityConfig {
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomSuccessHandler customSuccessHandler;
     private final CustomFailureHandler customFailureHandler;
-    private final JWTFilter jwtFilter;
-    private final ExceptionHandlingFilter exceptionHandlingFilter;
+    private final JWTUtil jwtUtil;
+    private final ObjectMapper objectMapper;
+    private final List<HandlerMapping> handlerMappings;
 
     @Bean
     public SecurityFilterChain filterChain(final HttpSecurity http) throws Exception {
@@ -51,6 +57,7 @@ public class SecurityConfig {
                         .requestMatchers(GET,
                                 "/api/v1/auctions",
                                 "/api/v1/auctions/{auctionId:\\d+}",
+                                "/api/v1/auctions/{auctionId:\\d+}/simple",
                                 "/api/v1/auctions/best",
                                 "/api/v1/auctions/imminent",
                                 "/api/v1/auctions/users/*",
@@ -80,8 +87,9 @@ public class SecurityConfig {
                         .successHandler(customSuccessHandler)
                         .failureHandler(customFailureHandler)
                 )
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(exceptionHandlingFilter, JWTFilter.class)
+                .addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new NotFoundFilter(handlerMappings), JWTFilter.class)
+                .addFilterBefore(new ExceptionHandlingFilter(objectMapper), NotFoundFilter.class)
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .build();
@@ -91,7 +99,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Collections.singletonList(clientUrl));
-        configuration.setAllowedMethods(Collections.singletonList("*"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowCredentials(true);
         configuration.setAllowedHeaders(Collections.singletonList("*"));
         configuration.setExposedHeaders(Collections.singletonList("Authorization"));

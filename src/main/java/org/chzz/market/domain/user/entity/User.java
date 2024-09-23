@@ -1,5 +1,9 @@
 package org.chzz.market.domain.user.entity;
 
+import static org.chzz.market.domain.user.entity.User.UserRole.TEMP_USER;
+import static org.chzz.market.domain.user.entity.User.UserRole.USER;
+import static org.chzz.market.domain.user.error.UserErrorCode.USER_ALREADY_REGISTERED;
+
 import com.nimbusds.oauth2.sdk.util.StringUtils;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -11,22 +15,27 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.UUID;
+import java.util.stream.Stream;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.bank_account.entity.BankAccount;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
+import org.chzz.market.domain.bid.entity.Bid;
 import org.chzz.market.domain.like.entity.Like;
 import org.chzz.market.domain.payment.entity.Payment;
 import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.user.dto.request.UserCreateRequest;
+import org.chzz.market.domain.user.error.exception.UserException;
 import org.hibernate.annotations.DynamicUpdate;
 
 @Getter
@@ -66,6 +75,13 @@ public class User extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private ProviderType providerType;
 
+    @Column(columnDefinition = "binary(16)", unique = true, nullable = false)
+    private UUID customerKey;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "bidder", fetch = FetchType.LAZY)
+    private List<Bid> bids = new ArrayList<>();
+
     @Builder.Default
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private List<Product> products = new ArrayList<>();
@@ -82,18 +98,28 @@ public class User extends BaseTimeEntity {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<BankAccount> bankAccounts = new ArrayList<>();
 
+    @PrePersist
+    public void prePersist() {
+        if (customerKey == null) {
+            customerKey = UUID.randomUUID();//TODO 2024 09 11 22:33:46 : 분산 시스템에서 사용 가능한 UUID 생성 고려
+        }
+    }
+
     public void addBankAccount(BankAccount bankAccount) {
         this.bankAccounts.add(bankAccount);
         bankAccount.specifyUser(this);
     }
 
     public boolean isTempUser() {
-        return userRole == UserRole.TEMP_USER;
+        return userRole == TEMP_USER;
     }
 
     public void createUser(UserCreateRequest userCreateRequest) {
+        if (this.userRole.equals(USER)) {
+            throw new UserException(USER_ALREADY_REGISTERED);
+        }
         this.nickname = userCreateRequest.getNickname();
-        this.userRole = UserRole.USER;
+        this.userRole = USER;
         if (!StringUtils.isBlank(userCreateRequest.getBio())) {
             this.bio = userCreateRequest.getBio();
         }
@@ -106,6 +132,22 @@ public class User extends BaseTimeEntity {
         this.nickname = nickname;
         this.bio = bio;
         this.link = link;
+    }
+
+    private Stream<Auction> getAuctionsFromBids() {
+        return bids.stream().map(Bid::getAuction);
+    }
+
+    public long getOngoingAuctionCount() {
+        return getAuctionsFromBids().filter(Auction::isProceeding).count();
+    }
+
+    public long getSuccessfulBidCount() {
+        return getAuctionsFromBids().filter(auction -> auction.isSuccessfulBidFor(this.id)).count();
+    }
+
+    public long getFailedBidCount() {
+        return getAuctionsFromBids().filter(auction -> auction.isFailedBidFor(this.id)).count();
     }
 
     @Getter

@@ -1,6 +1,6 @@
 package org.chzz.market.domain.product.service;
 
-import static org.chzz.market.domain.notification.entity.NotificationType.AUCTION_REGISTRATION_CANCELED;
+import static org.chzz.market.domain.notification.entity.NotificationType.PRE_AUCTION_CANCELED;
 import static org.chzz.market.domain.product.error.ProductErrorCode.ALREADY_IN_AUCTION;
 import static org.chzz.market.domain.product.error.ProductErrorCode.PRODUCT_ALREADY_AUCTIONED;
 import static org.chzz.market.domain.product.error.ProductErrorCode.PRODUCT_NOT_FOUND;
@@ -8,7 +8,6 @@ import static org.chzz.market.domain.product.error.ProductErrorCode.PRODUCT_NOT_
 import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.chzz.market.common.config.LoginUser;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.image.repository.ImageRepository;
@@ -21,6 +20,7 @@ import org.chzz.market.domain.product.dto.ProductResponse;
 import org.chzz.market.domain.product.dto.UpdateProductRequest;
 import org.chzz.market.domain.product.dto.UpdateProductResponse;
 import org.chzz.market.domain.product.entity.Product;
+import org.chzz.market.domain.product.entity.Product.Category;
 import org.chzz.market.domain.product.error.ProductException;
 import org.chzz.market.domain.product.repository.ProductRepository;
 import org.slf4j.Logger;
@@ -48,14 +48,14 @@ public class ProductService {
     private final ImageRepository imageRepository;
     private final ApplicationEventPublisher eventPublisher;
 
-    /*
-     * 카테고리별 사전 등록 상품 목록 조회
+    /**
+     * 사전 등록 상품 목록 조회
      */
-    public Page<ProductResponse> getProductListByCategory(Product.Category category, Long userId, Pageable pageable) {
+    public Page<ProductResponse> getProductListByCategory(Category category, Long userId, Pageable pageable) {
         return productRepository.findProductsByCategory(category, userId, pageable);
     }
 
-    /*
+    /**
      * 상품 상세 정보 조회
      */
     public ProductDetailsResponse getProductDetails(Long productId, Long userId) {
@@ -63,30 +63,30 @@ public class ProductService {
                 .orElseThrow(() -> new ProductException(PRODUCT_NOT_FOUND));
     }
 
-    /*
+    /**
      * 나의 사전 등록 상품 목록 조회
      */
     public Page<ProductResponse> getMyProductList(String nickname, Pageable pageable) {
         return productRepository.findProductsByNickname(nickname, pageable);
     }
 
-    /*
+    /**
      * 내가 참여한 사전경매 조회
      */
     public Page<ProductResponse> getLikedProductList(Long userId, Pageable pageable) {
         return productRepository.findLikedProductsByUserId(userId, pageable);
     }
 
-    /*
+    /**
      * 상품 카테고리 목록 조회
      */
     public List<CategoryResponse> getCategories() {
-        return Arrays.stream(Product.Category.values())
+        return Arrays.stream(Category.values())
                 .map(category -> new CategoryResponse(category.name(), category.getDisplayName()))
                 .toList();
     }
 
-    /*
+    /**
      * 사전 등록 상품 수정
      */
     @Transactional
@@ -141,7 +141,7 @@ public class ProductService {
         logger.info("상품 ID {}번의 이미지를 성공적으로 저장하였습니다.", product.getId());
     }
 
-    /*
+    /**
      * 사전 등록 상품 삭제
      */
     @Retryable(
@@ -175,9 +175,10 @@ public class ProductService {
                 .distinct()
                 .toList();
         if (!likedUserIds.isEmpty()) {
-            eventPublisher.publishEvent(NotificationEvent.of(likedUserIds, AUCTION_REGISTRATION_CANCELED,
-                    AUCTION_REGISTRATION_CANCELED.getMessage(product.getName()),
-                    null)); // TODO: 사전 등록 취소 (soft delete 로 변경시 이미지 추가)
+            eventPublisher.publishEvent(
+                    NotificationEvent.createSimpleNotification(likedUserIds, PRE_AUCTION_CANCELED,
+                            PRE_AUCTION_CANCELED.getMessage(product.getName()),
+                            null)); // TODO: 사전 등록 취소 (soft delete 로 변경시 이미지 추가)
         }
 
         logger.info("사전 등록 상품 ID{}번에 해당하는 상품을 성공적으로 삭제하였습니다. (좋아요 누른 사용자 수: {})", productId, likedUserIds.size());
@@ -185,7 +186,7 @@ public class ProductService {
         return DeleteProductResponse.ofPreRegistered(product, likedUserIds.size());
     }
 
-    /*
+    /**
      * 상품 이미지 삭제
      */
     private void deleteProductImages(Product product) {
