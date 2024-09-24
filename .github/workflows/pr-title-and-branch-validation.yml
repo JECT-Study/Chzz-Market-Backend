@@ -1,6 +1,8 @@
 name: PR Title and Branch Name Validation
+
 on:
   pull_request:
+    types: [ opened, edited, reopened ]
     branches:
       - main
       - develop
@@ -15,29 +17,21 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      - name: Validate PR Title and Branch Name
-        id: validate
+      - name: Validate PR Title
+        uses: Slashgear/action-check-pr-title@v4.3.0
+        with:
+          regexp: '^(feat|fix|docs|refactor|style|test|chore|design|move):\s.+$|^(release|hotfix):\s\d+\.\d+\.\d+$'
+          helpMessage: |
+            ❌ PR 제목이 규칙을 따르지 않습니다.
+            제목은 다음 형식 중 하나여야 합니다:
+            - `<type>: <description>`  (Allowed types: feat, fix, docs, refactor, style, test, chore, design, move)
+            - `release: x.x.x` (Semantic Versioning format)
+            - `hotfix: x.x.x` (Semantic Versioning format)
+
+      - name: Validate Branch Name
         run: |
-          PR_TITLE="${{ github.event.pull_request.title }}"
           BRANCH_NAME="${{ github.head_ref }}"
           
-          # 일반적인 PR 유형 검사 ex) feat: Add new feature
-          if [[ "$PR_TITLE" =~ ^(feat|fix|docs|refactor|style|test|chore|design|move):\s.+$ ]]; then
-            echo "✅ PR title follows the convention!"
-          else
-            # release나 hotfix일 경우 버전 형식 검사 ex) release: 1.0.0
-            if [[ "$PR_TITLE" =~ ^(release|hotfix):\s[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-              echo "✅ PR title follows the release or hotfix versioning convention!"
-            else
-              echo "❌ Pull Request title does not follow the conventional pattern."
-              echo "Ensure your title follows one of these formats:"
-              echo "- <type>: <description>  (Allowed types: feat, fix, docs, refactor, style, test, chore, design, move)"
-              echo "- release: x.x.x (Semantic Versioning format)"
-              echo "- hotfix: x.x.x (Semantic Versioning format)"
-              exit 1
-            fi
-          fi
-
           # PR 브랜치 이름 검사
           if [[ "$BRANCH_NAME" =~ ^(feat|fix|docs|refactor|style|test|chore|design|move)/.+$ ]]; then
             echo "✅ Branch name follows the feature branch convention!"
@@ -51,7 +45,6 @@ jobs:
             echo "- hotfix/x.x.x (Semantic Versioning format)"
             exit 1
           fi
-
         shell: bash
 
       - name: PR Title and Branch Validation Success
