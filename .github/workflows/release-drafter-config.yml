@@ -9,8 +9,6 @@ categories:
     label: '🪄refactor'
   - title: '⚙️ 설정 파일을 변경했어요'
     label: '⚙️chore'
-  - title: '📚 문서를 업데이트했어요'
-    label: '📃docs'
 change-template: '- $TITLE #$NUMBER @$AUTHOR '
 template: |
   ## 이번 버전의 변경사항은 아래와 같아요
