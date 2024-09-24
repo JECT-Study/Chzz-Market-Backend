@@ -1,4 +1,4 @@
-name: CICD
+name: CD
 run-name: Running
 on:
   push:
@@ -48,7 +48,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: gradle 빌드
-        run: ./gradlew build -x test -i
+        run: ./gradlew build -x test
 
       - name: Docker 이미지 빌드 및 ECR 배포
         id: build-image
@@ -58,44 +58,16 @@ jobs:
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-      - name: 기존 `compose.yaml` 파일 삭제
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_IP }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            rm -f /home/ec2-user/compose.yaml
-
-      - name: EC2로 `docker-compose.yml` 파일 복사
+      - name: EC2로 파일 복사 (compose.yaml 및 nginx.conf 포함)
         uses: appleboy/scp-action@master
         with:
-          host: ${{ secrets.EC2_IP }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          source: './compose.yaml'
-          target: '/home/ec2-user'
-
-      - name: EC2로 `nginx.conf` 파일 복사
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.EC2_IP }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          source: './nginx.conf'
-          target: '/home/ec2-user'
-
-      - name: EC2에서 .env 파일 생성
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_IP }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            touch /home/ec2-user/.env
-            echo ECR_IMAGE=${{ steps.build-image.outputs.image }} >> /home/ec2-user/.env
+            host: ${{ secrets.EC2_IP }}
+            username: ${{ secrets.EC2_USERNAME }}
+            key: ${{ secrets.EC2_SSH_KEY }}
+            source: './compose.yaml,./nginx.conf'
+            target: '/home/ec2-user'
 
       - name: EC2에서 Docker Compose를 통한 애플리케이션 실행
         uses: appleboy/ssh-action@master
@@ -107,14 +79,18 @@ jobs:
             export AWS_REGION=${{ env.AWS_REGION }}
             export ECR_URI=${{ secrets.ECR_URI }}
             
+            # .env 파일 생성 및 ECR_IMAGE 변수 추가
+            touch /home/ec2-user/.env
+            echo ECR_IMAGE=${{ steps.build-image.outputs.image }} >> /home/ec2-user/.env
+            
             # ECR 레지스트리에 로그인
             aws ecr get-login-password --region $AWS_REGION | sudo docker login --username AWS --password-stdin $ECR_URI/chzz-rep
             
             # 기존 컨테이너 정지 및 삭제
             sudo docker compose down
             
-            # 최신 이미지를 가져와서 환경 변수로 전달
-            sudo docker compose --env-file /home/ec2-user/.env pull
+            # 최신 이미지를 pull
+            sudo docker compose pull
             
             # Docker Compose로 애플리케이션 실행
-            sudo docker compose --env-file /home/ec2-user/.env up -d
+            sudo docker compose up -d
