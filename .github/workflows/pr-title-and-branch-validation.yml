@@ -2,7 +2,7 @@ name: PR Title and Branch Name Validation
 
 on:
   pull_request:
-    types: [ opened, edited, reopened, synchronize]
+    types: [ opened, synchronize]
     branches:
       - main
       - develop
