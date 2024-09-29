@@ -38,7 +38,6 @@ public abstract class BaseRegisterRequest {
     protected Category category;
 
     @NotNull
-    @Min(value = 1000, message = "시작 가격은 최소 1,000원 이상, 1000의 배수이어야 합니다")
     @ThousandMultiple(message = "1,000원 단위로 입력해주세요")
     protected Integer minPrice;
 
