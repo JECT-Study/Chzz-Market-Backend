@@ -13,9 +13,6 @@ services:
       collation-server: 'utf8mb4_unicode_ci'
     ports:
       - "3306:3306"
-    volumes:
-      - ./mysql/data:/var/lib/mysql
-      - ./mysql/conf.d:/etc/mysql/conf.d
     command:
       - "mysqld"
       - "--character-set-server=utf8mb4"
@@ -38,10 +35,6 @@ services:
     image: prom/node-exporter:latest
     container_name: node-exporter
     restart: unless-stopped
-    volumes:
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
-      - /:/rootfs:ro
     command:
       - '--path.procfs=/host/proc'
       - '--path.rootfs=/rootfs'
@@ -53,18 +46,12 @@ services:
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
-    volumes:
-      - ./monitoring/prometheus:/etc/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
     ports:
       - "9090:9090"
 
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
-    volumes:
-      - ./monitoring/grafana:/var/lib/grafana
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     ports:
@@ -75,7 +62,4 @@ services:
     container_name: loki
     ports:
       - "3100:3100"
-    volumes:
-      - ./monitoring/loki:/etc/loki
-      - ./monitoring/loki-data:/tmp/loki
     command: -config.file=/etc/loki/loki-config.yaml
