@@ -13,22 +13,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Create Tag
-        run: |
-          BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
-          # 'release/' 또는 'hotfix/' 접두사를 제거
-          TAG_NAME="${BRANCH_NAME#release/}"
-          TAG_NAME="${TAG_NAME#hotfix/}"
-          # 태그 이름이 비어있을 경우 처리
-          if [ -z "$TAG_NAME" ]; then
-            echo "Error: TAG_NAME is empty. Please check the branch name."
-            exit 1
-          fi
-          git tag $TAG_NAME
-          git push origin $TAG_NAME
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Update Release
         uses: release-drafter/release-drafter@v5
         with:
