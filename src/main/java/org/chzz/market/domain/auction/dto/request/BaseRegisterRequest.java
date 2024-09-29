@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.chzz.market.common.validation.annotation.ThousandMultiple;
 import org.chzz.market.domain.auction.type.AuctionRegisterType;
 
 @Getter
@@ -38,6 +39,7 @@ public abstract class BaseRegisterRequest {
 
     @NotNull
     @Min(value = 1000, message = "시작 가격은 최소 1,000원 이상, 1000의 배수이어야 합니다")
+    @ThousandMultiple(message = "1,000원 단위로 입력해주세요")
     protected Integer minPrice;
 
     @NotNull(message = "경매 타입을 선택해주세요")
