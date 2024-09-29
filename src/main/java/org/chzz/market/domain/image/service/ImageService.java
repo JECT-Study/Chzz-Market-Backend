@@ -4,7 +4,6 @@ import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.domain.image.entity.Image;
-import org.chzz.market.domain.image.error.ImageErrorCode;
 import org.chzz.market.domain.image.error.exception.ImageException;
 import org.chzz.market.domain.image.repository.ImageRepository;
 import org.chzz.market.domain.product.entity.Product;
@@ -15,8 +14,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static org.chzz.market.domain.image.error.ImageErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -83,10 +87,11 @@ public class ImageService {
      */
     private void deleteImage(String cdnPath) {
         try {
-            String key = cdnPath.substring(1);
-            amazonS3Client.deleteObject(bucket, key);
-        } catch (AmazonServiceException e) {
-            throw new ImageException(ImageErrorCode.IMAGE_DELETE_FAILED);
+            String encodeKey = cdnPath.substring(cdnPath.lastIndexOf("/") + 1);
+            String decodedKey = URLDecoder.decode(encodeKey, StandardCharsets.UTF_8.toString());
+            amazonS3Client.deleteObject(bucket, decodedKey);
+        } catch (AmazonServiceException | UnsupportedEncodingException e) {
+            throw new ImageException(IMAGE_DELETE_FAILED);
         }
     }
 
@@ -95,7 +100,17 @@ public class ImageService {
      * 이미지 -> 서버에 들어왔는지 확인하는 로그에 사용
      */
     public String getFullImageUrl(String cdnPath) {
-        return "https://" + cloudfrontDomain + cdnPath;
+        String domain = cloudfrontDomain.endsWith("/") ? cloudfrontDomain.substring(0, cloudfrontDomain.length() - 1) : cloudfrontDomain;
+        String path = cdnPath.startsWith("/") ? cdnPath.substring(1) : cdnPath;
+
+        try {
+            // URL 인코딩
+            path = URLEncoder.encode(path, StandardCharsets.UTF_8.toString()).replace("+", "%20");
+        } catch (UnsupportedEncodingException e) {
+            throw new ImageException(IMAGE_URL_ENCODING_FAILED);
+        }
+
+        return domain + "/" + path;
     }
 }
 
