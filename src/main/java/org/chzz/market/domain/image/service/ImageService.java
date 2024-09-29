@@ -51,7 +51,8 @@ public class ImageService {
      * 단일 이미지 파일 업로드 및 CDN 경로 리스트 반환
      */
     private String uploadImage(MultipartFile image) {
-        return imageUploader.uploadImage(image);
+        String cdnPath = imageUploader.uploadImage(image);
+        return getFullImageUrl(cdnPath);
     }
 
     /**
@@ -73,8 +74,8 @@ public class ImageService {
     /**
      * 업로드된 이미지 삭제
      */
-    public void deleteUploadImages(List<String> cdnPaths) {
-        cdnPaths.forEach(this::deleteImage);
+    public void deleteUploadImages(List<String> fullImageUrls) {
+        fullImageUrls.forEach(this::deleteImage);
     }
 
     /**
