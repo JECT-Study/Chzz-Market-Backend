@@ -38,7 +38,7 @@ public abstract class BaseRegisterRequest {
     protected Category category;
 
     @NotNull
-    @ThousandMultiple(message = "1,000원 단위로 입력해주세요")
+    @ThousandMultiple
     protected Integer minPrice;
 
     @NotNull(message = "경매 타입을 선택해주세요")
