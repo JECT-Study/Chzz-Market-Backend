@@ -155,25 +155,26 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
 
     /**
      * 경매 ID와 사용자 ID로 경매 간단 상세 정보를 조회합니다.
+     *
      * @param auctionId 경매 ID
-     * @return          경매 간단 상세정보 응답
+     * @return 경매 간단 상세정보 응답
      */
     @Override
     public Optional<SimpleAuctionResponse> findSimpleAuctionDetailsById(Long auctionId) {
         return Optional.ofNullable(jpaQueryFactory
-                        .select(new QSimpleAuctionResponse(
-                                image.cdnPath,
-                                product.name,
-                                product.minPrice,
-                                bid.countDistinct()
-                        ))
-                        .from(auction)
-                        .join(auction.product, product)
-                        .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId())))
-                        .leftJoin(bid).on(bid.auction.id.eq(auctionId).and(bid.status.eq(ACTIVE)))
-                        .where(auction.id.eq(auctionId))
-                        .groupBy(product.name, image.cdnPath, product.minPrice)
-                        .fetchOne());
+                .select(new QSimpleAuctionResponse(
+                        image.cdnPath,
+                        product.name,
+                        product.minPrice,
+                        bid.countDistinct()
+                ))
+                .from(auction)
+                .join(auction.product, product)
+                .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId())))
+                .leftJoin(bid).on(bid.auction.id.eq(auctionId).and(bid.status.eq(ACTIVE)))
+                .where(auction.id.eq(auctionId))
+                .groupBy(product.name, image.cdnPath, product.minPrice)
+                .fetchOne());
     }
 
     /**
@@ -190,7 +191,27 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                 .join(product.user, user)
                 .where(user.nickname.eq(nickname));
 
-        List<UserAuctionResponse> content = baseQuery
+        return getUserAuctionResponses(pageable, baseQuery);
+    }
+
+    /**
+     * 사용자 인증정보를 통해 사용자가 등록한 경매 리스트를 조회합니다.
+     * @param userId   사용자 ID
+     * @param pageable 페이징 정보
+     * @return 페이징된 사용자 경매 응답 리스트
+     */
+    @Override
+    public Page<UserAuctionResponse> findAuctionsByUserId(Long userId, Pageable pageable) {
+        JPAQuery<?> baseQuery = jpaQueryFactory.from(auction)
+                .join(auction.product, product)
+                .join(product.user, user)
+                .on(user.id.eq(userId));
+
+        return getUserAuctionResponses(pageable, baseQuery);
+    }
+
+    private Page<UserAuctionResponse> getUserAuctionResponses(Pageable pageable, JPAQuery<?> baseQuery) {
+        JPAQuery<UserAuctionResponse> contentQuery = baseQuery
                 .select(new QUserAuctionResponse(
                         auction.id,
                         product.name,
@@ -199,7 +220,9 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                         product.minPrice.longValue(),
                         getBidCount(),
                         auction.status,
-                        auction.createdAt))
+                        auction.createdAt));
+
+        List<UserAuctionResponse> content = contentQuery
                 .leftJoin(image).on(image.product.id.eq(product.id)
                         .and(image.id.eq(getFirstImageId())))
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
@@ -207,11 +230,10 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        JPAQuery<Long> countQuery = baseQuery
-                .select(auction.count());
-
-        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchCount);
+        JPAQuery<Long> countQuery = baseQuery.select(auction.count());
+        return  PageableExecutionUtils.getPage(content, pageable, countQuery::fetchCount);
     }
+
 
     /**
      * 홈 화면의 베스트 경매 조회
@@ -243,7 +265,8 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
 
     /**
      * 홈 화면의 임박 경매 조회
-     * @return  경매 종료까지 1시간 이내인 경매 정보
+     *
+     * @return 경매 종료까지 1시간 이내인 경매 정보
      */
     @Override
     public List<AuctionResponse> findImminentAuctions() {
@@ -353,6 +376,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
 
     /**
      * 사용자의 참여 횟수, 낙찰 횟수, 낙찰 실패 횟수를 조회합니다.
+     *
      * @param userId 사용자 ID
      * @return 참여 횟수, 낙찰 횟수, 낙찰 실패 횟수 응답
      */

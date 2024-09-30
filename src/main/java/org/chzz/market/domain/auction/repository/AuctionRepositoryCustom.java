@@ -53,6 +53,13 @@ public interface AuctionRepositoryCustom {
     Page<UserAuctionResponse> findAuctionsByNickname(String nickname, Pageable pageable);
 
     /**
+     * @param userId 사용자 ID
+     * @param pageable 페이징 정보
+     * @return 페이징된 사용자 경매 등록 기록
+     */
+    Page<UserAuctionResponse> findAuctionsByUserId(Long userId, Pageable pageable);
+
+    /**
      * 홈 화면의 베스트 경매 조회
      * @return 입찰 기록이 많은 경매 정보
      */
