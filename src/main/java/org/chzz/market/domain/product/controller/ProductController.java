@@ -1,5 +1,7 @@
 package org.chzz.market.domain.product.controller;
 
+import static org.chzz.market.domain.product.entity.Product.Category;
+
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -30,8 +32,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
-import static org.chzz.market.domain.product.entity.Product.*;
 
 @RequiredArgsConstructor
 @RestController
@@ -79,7 +79,14 @@ public class ProductController {
     public ResponseEntity<Page<ProductResponse>> getMyProductList(
             @PathVariable String nickname,
             Pageable pageable) {
-        return ResponseEntity.ok(productService.getMyProductList(nickname, pageable));
+        return ResponseEntity.ok(productService.getProductListByNickname(nickname, pageable));
+    }
+
+    @GetMapping("/registered")
+    public ResponseEntity<Page<ProductResponse>> getRegisteredProductList(
+            @LoginUser Long userId,
+            Pageable pageable) {
+        return ResponseEntity.ok(productService.getProductListByUserId(userId, pageable));
     }
 
     /*

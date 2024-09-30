@@ -128,6 +128,13 @@ public class AuctionController {
         return ResponseEntity.ok(auctionService.getAuctionListByNickname(nickname, pageable));
     }
 
+    @GetMapping("/registered")
+    public ResponseEntity<?> getUserRegisteredAuction(@LoginUser Long userId,
+                                                      Pageable pageable) {
+        return ResponseEntity.ok(auctionService.getAuctionListByUserId(userId, pageable));
+    }
+
+
     /*
      * Best 경매 상품 목록 조회
      */
