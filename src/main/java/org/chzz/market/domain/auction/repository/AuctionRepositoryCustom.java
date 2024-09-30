@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.chzz.market.domain.auction.dto.response.*;
 import org.chzz.market.domain.product.entity.Product.Category;
+import org.chzz.market.domain.user.dto.response.ParticipationCountsResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -65,13 +66,6 @@ public interface AuctionRepositoryCustom {
     List<AuctionResponse> findImminentAuctions();
 
     /**
-     * 사용자의 참여 횟수, 낙찰 횟수, 낙찰 실패 횟수를 조회합니다.
-     * @param userId 사용자 ID
-     * @return 참여 횟수, 낙찰 횟수, 낙찰 실패 횟수 응답
-     */
-    List<AuctionParticipationResponse> getAuctionParticipations(Long userId);
-
-    /**
      * 사용자가 낙찰한 경매 이력을 조회합니다.
      * @param userId    사용자 ID
      * @param pageable  페이징 정보
@@ -86,4 +80,10 @@ public interface AuctionRepositoryCustom {
      * @return         페이징된 낙찰 실패 경매 응답 리스트
      */
     Page<LostAuctionResponse> findLostAuctionHistoryByUserId(Long userId, Pageable pageable);
+
+    /**
+     * @param userId - 사용자 ID
+     * @return 사용자가 참여한 상태별 경매들의 수
+     */
+    Optional<ParticipationCountsResponse> getParticipationCounts(Long userId);
 }
