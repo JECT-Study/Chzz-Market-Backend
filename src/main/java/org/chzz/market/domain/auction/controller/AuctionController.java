@@ -128,7 +128,7 @@ public class AuctionController {
         return ResponseEntity.ok(auctionService.getAuctionListByNickname(nickname, pageable));
     }
 
-    @GetMapping("/registered")
+    @GetMapping("/users")
     public ResponseEntity<?> getUserRegisteredAuction(@LoginUser Long userId,
                                                       Pageable pageable) {
         return ResponseEntity.ok(auctionService.getAuctionListByUserId(userId, pageable));

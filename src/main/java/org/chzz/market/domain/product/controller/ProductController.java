@@ -82,7 +82,7 @@ public class ProductController {
         return ResponseEntity.ok(productService.getProductListByNickname(nickname, pageable));
     }
 
-    @GetMapping("/registered")
+    @GetMapping("/users")
     public ResponseEntity<Page<ProductResponse>> getRegisteredProductList(
             @LoginUser Long userId,
             Pageable pageable) {
