@@ -27,6 +27,12 @@ public class NotificationController {
         return ResponseEntity.ok(notificationService.getNotifications(userId, pageable));
     }
 
+    @GetMapping(value = "/subscribe", produces = TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter subscribe(@LoginUser Long userId, HttpServletResponse response) {
+        response.setHeader("X-Accel-Buffering", "no");
+        return notificationService.subscribe(userId);
+    }
+
     @PostMapping("/{notificationId}/read")
     public ResponseEntity<?> readNotification(@LoginUser Long userId, @PathVariable Long notificationId) {
         notificationService.readNotification(userId, notificationId);
@@ -37,11 +43,5 @@ public class NotificationController {
     public ResponseEntity<?> deleteNotification(@LoginUser Long userId, @PathVariable Long notificationId) {
         notificationService.deleteNotification(userId, notificationId);
         return ResponseEntity.ok().build();
-    }
-
-    @GetMapping(value = "/subscribe", produces = TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter subscribe(@LoginUser Long userId, HttpServletResponse response) {
-        response.setHeader("X-Accel-Buffering", "no");
-        return notificationService.subscribe(userId);
     }
 }
