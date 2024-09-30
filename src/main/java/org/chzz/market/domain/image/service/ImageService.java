@@ -1,15 +1,11 @@
 package org.chzz.market.domain.image.service;
 
 import static org.chzz.market.domain.image.error.ImageErrorCode.IMAGE_DELETE_FAILED;
-import static org.chzz.market.domain.image.error.ImageErrorCode.IMAGE_URL_ENCODING_FAILED;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.domain.image.entity.Image;
@@ -44,7 +40,7 @@ public class ImageService {
                 .map(this::uploadImage)
                 .toList();
 
-        uploadedUrls.forEach(url -> log.info("업로드 된 이미지 : {}", url));
+        uploadedUrls.forEach(url -> log.info("업로드 된 이미지 : {}", getFullImageUrl(url)));
 
         return uploadedUrls;
     }
@@ -53,8 +49,8 @@ public class ImageService {
      * 단일 이미지 파일 업로드 및 CDN 경로 리스트 반환
      */
     private String uploadImage(MultipartFile image) {
-        String cdnPath = imageUploader.uploadImage(image);
-        return getFullImageUrl(cdnPath);
+        String uniqueFileName = createUniqueFileName(image.getOriginalFilename());
+        return imageUploader.uploadImage(image, uniqueFileName);
     }
 
     /**
@@ -64,7 +60,7 @@ public class ImageService {
     public List<Image> saveProductImageEntities(Product product, List<String> cdnPaths) {
         List<Image> images = cdnPaths.stream()
                 .map(cdnPath -> Image.builder()
-                        .cdnPath(cdnPath)
+                        .cdnPath(cloudfrontDomain + cdnPath)
                         .product(product)
                         .build())
                 .toList();
@@ -85,10 +81,9 @@ public class ImageService {
      */
     private void deleteImage(String cdnPath) {
         try {
-//            String encodeKey = cdnPath.substring(cdnPath.lastIndexOf("/") + 1);
-            String decodedKey = URLDecoder.decode(cdnPath, StandardCharsets.UTF_8.toString());
-            amazonS3Client.deleteObject(bucket, decodedKey);
-        } catch (AmazonServiceException | UnsupportedEncodingException e) {
+            String key = cdnPath.substring(1);
+            amazonS3Client.deleteObject(bucket, key);
+        } catch (AmazonServiceException e) {
             throw new ImageException(IMAGE_DELETE_FAILED);
         }
     }
@@ -97,13 +92,25 @@ public class ImageService {
      * CDN 경로로부터 전체 이미지 URL 재구성 이미지 -> 서버에 들어왔는지 확인하는 로그에 사용
      */
     public String getFullImageUrl(String cdnPath) {
-        try {
-            // URL 인코딩
-            String encodedPath = URLEncoder.encode(cdnPath, StandardCharsets.UTF_8.toString());
-            return cloudfrontDomain + encodedPath;
-        } catch (UnsupportedEncodingException e) {
-            throw new ImageException(IMAGE_URL_ENCODING_FAILED);
-        }
+        // URL 인코딩
+        return cloudfrontDomain + cdnPath;
+    }
+
+    /**
+     * 고유한 파일 이름 생성
+     */
+    private String createUniqueFileName(String originalFileName) {
+        String uuid = UUID.randomUUID().toString();
+        String extension = getFileExtension(originalFileName);
+
+        return uuid + "." + extension;
+    }
+
+    /**
+     * 파일 확장자 추출
+     */
+    private String getFileExtension(String originalFileName) {
+        return originalFileName.substring(originalFileName.lastIndexOf(".") + 1);
     }
 }
 
