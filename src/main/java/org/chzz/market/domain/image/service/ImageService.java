@@ -1,6 +1,7 @@
 package org.chzz.market.domain.image.service;
 
 import static org.chzz.market.domain.image.error.ImageErrorCode.IMAGE_DELETE_FAILED;
+import static org.chzz.market.domain.image.error.ImageErrorCode.INVALID_IMAGE_EXTENSION;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
@@ -21,6 +22,8 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 @RequiredArgsConstructor
 public class ImageService {
+    // 지원하는 이미지 확장자
+    private static final List<String> ALLOWED_EXTENSIONS = List.of("jpg", "jpeg", "png", "gif", "webp");
 
     private final ImageUploader imageUploader;
     private final ImageRepository imageRepository;
@@ -40,7 +43,7 @@ public class ImageService {
                 .map(this::uploadImage)
                 .toList();
 
-        uploadedUrls.forEach(url -> log.info("업로드 된 이미지 : {}", getFullImageUrl(url)));
+        uploadedUrls.forEach(url -> log.info("업로드 된 이미지 : {}", cloudfrontDomain + url));
 
         return uploadedUrls;
     }
@@ -97,11 +100,15 @@ public class ImageService {
     }
 
     /**
-     * 고유한 파일 이름 생성
+     * 고유한 파일 이름 생성 및 확장자 검증
      */
     private String createUniqueFileName(String originalFileName) {
         String uuid = UUID.randomUUID().toString();
         String extension = getFileExtension(originalFileName);
+
+        if (!ALLOWED_EXTENSIONS.contains(extension.toLowerCase())) {
+            throw new ImageException(INVALID_IMAGE_EXTENSION);
+        }
 
         return uuid + "." + extension;
     }
