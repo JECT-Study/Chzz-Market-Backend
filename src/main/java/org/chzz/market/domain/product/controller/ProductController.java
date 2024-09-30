@@ -1,8 +1,11 @@
 package org.chzz.market.domain.product.controller;
 
+import static org.chzz.market.domain.product.entity.Product.Category;
+
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.common.config.LoginUser;
 import org.chzz.market.domain.like.dto.LikeResponse;
 import org.chzz.market.domain.like.service.LikeService;
@@ -13,8 +16,6 @@ import org.chzz.market.domain.product.dto.ProductResponse;
 import org.chzz.market.domain.product.dto.UpdateProductRequest;
 import org.chzz.market.domain.product.dto.UpdateProductResponse;
 import org.chzz.market.domain.product.service.ProductService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -31,14 +32,11 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import static org.chzz.market.domain.product.entity.Product.*;
-
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/products")
 public class ProductController {
-    private static final Logger logger = LoggerFactory.getLogger(ProductController.class);
-
     private final ProductService productService;
     private final LikeService likeService;
 
@@ -113,7 +111,7 @@ public class ProductController {
             @PathVariable Long productId,
             @LoginUser Long userId) {
         DeleteProductResponse response = productService.deleteProduct(productId, userId);
-        logger.info("상품이 성공적으로 삭제되었습니다. 상품 ID: {}", productId);
+        log.info("상품이 성공적으로 삭제되었습니다. 상품 ID: {}", productId);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 

@@ -1,32 +1,30 @@
 package org.chzz.market.domain.image.service;
 
+import static org.chzz.market.domain.image.error.ImageErrorCode.IMAGE_DELETE_FAILED;
+import static org.chzz.market.domain.image.error.ImageErrorCode.IMAGE_URL_ENCODING_FAILED;
+
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
-import lombok.RequiredArgsConstructor;
-import org.chzz.market.domain.image.entity.Image;
-import org.chzz.market.domain.image.error.exception.ImageException;
-import org.chzz.market.domain.image.repository.ImageRepository;
-import org.chzz.market.domain.product.entity.Product;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.chzz.market.domain.image.entity.Image;
+import org.chzz.market.domain.image.error.exception.ImageException;
+import org.chzz.market.domain.image.repository.ImageRepository;
+import org.chzz.market.domain.product.entity.Product;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
-import static org.chzz.market.domain.image.error.ImageErrorCode.*;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ImageService {
-
-    private static final Logger logger = LoggerFactory.getLogger(ImageService.class);
 
     private final ImageUploader imageUploader;
     private final ImageRepository imageRepository;
@@ -46,7 +44,7 @@ public class ImageService {
                 .map(this::uploadImage)
                 .toList();
 
-        uploadedUrls.forEach(url -> logger.info("업로드 된 이미지 : {}", url));
+        uploadedUrls.forEach(url -> log.info("업로드 된 이미지 : {}", url));
 
         return uploadedUrls;
     }
@@ -87,8 +85,8 @@ public class ImageService {
      */
     private void deleteImage(String cdnPath) {
         try {
-            String encodeKey = cdnPath.substring(cdnPath.lastIndexOf("/") + 1);
-            String decodedKey = URLDecoder.decode(encodeKey, StandardCharsets.UTF_8.toString());
+//            String encodeKey = cdnPath.substring(cdnPath.lastIndexOf("/") + 1);
+            String decodedKey = URLDecoder.decode(cdnPath, StandardCharsets.UTF_8.toString());
             amazonS3Client.deleteObject(bucket, decodedKey);
         } catch (AmazonServiceException | UnsupportedEncodingException e) {
             throw new ImageException(IMAGE_DELETE_FAILED);
@@ -96,8 +94,7 @@ public class ImageService {
     }
 
     /**
-     * CDN 경로로부터 전체 이미지 URL 재구성
-     * 이미지 -> 서버에 들어왔는지 확인하는 로그에 사용
+     * CDN 경로로부터 전체 이미지 URL 재구성 이미지 -> 서버에 들어왔는지 확인하는 로그에 사용
      */
     public String getFullImageUrl(String cdnPath) {
         try {
