@@ -3,6 +3,7 @@ package org.chzz.market.common.error.handler;
 
 import static org.chzz.market.common.error.GlobalErrorCode.EXTERNAL_API_ERROR;
 
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.common.error.ErrorCode;
 import org.chzz.market.common.error.ErrorResponse;
@@ -77,10 +78,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      */
     @Override
     protected ResponseEntity<Object> handleMissingServletRequestParameter(
-            final MissingServletRequestParameterException e,
-            final HttpHeaders headers,
-            final HttpStatusCode status,
-            final WebRequest request) {
+            @NonNull final MissingServletRequestParameterException e,
+            @NonNull final HttpHeaders headers,
+            @NonNull final HttpStatusCode status,
+            @NonNull final WebRequest request) {
         GlobalErrorCode errorCode = GlobalErrorCode.UNSUPPORTED_PARAMETER_NAME;
         logException(e, errorCode);
         return handleExceptionInternal(errorCode);
@@ -90,10 +91,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      * 존재하지 않는 URL 요청 시 발생
      */
     @Override
-    protected ResponseEntity<Object> handleNoHandlerFoundException(final NoHandlerFoundException e,
-                                                                   final HttpHeaders headers,
-                                                                   final HttpStatusCode status,
-                                                                   final WebRequest request) {
+    protected ResponseEntity<Object> handleNoHandlerFoundException(@NonNull final NoHandlerFoundException e,
+                                                                   @NonNull final HttpHeaders headers,
+                                                                   @NonNull final HttpStatusCode status,
+                                                                   @NonNull final WebRequest request) {
         final GlobalErrorCode errorCode = GlobalErrorCode.RESOURCE_NOT_FOUND;
         logException(e, errorCode);
         return handleExceptionInternal(errorCode);
@@ -103,9 +104,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      * 멀티파트 요청의 필수 파트가 누락된 경우 발생
      */
     @Override
-    protected ResponseEntity<Object> handleMissingServletRequestPart(MissingServletRequestPartException ex,
-                                                                     HttpHeaders headers, HttpStatusCode status,
-                                                                     WebRequest request) {
+    protected ResponseEntity<Object> handleMissingServletRequestPart(@NonNull MissingServletRequestPartException ex,
+                                                                     @NonNull HttpHeaders headers,
+                                                                     @NonNull HttpStatusCode status,
+                                                                     @NonNull WebRequest request) {
         final GlobalErrorCode errorCode = GlobalErrorCode.INVALID_REQUEST_PARAMETER;
         logException(ex, errorCode);
         return handleExceptionInternal(errorCode);
@@ -115,11 +117,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      * 요청의 유효성 검사 실패 시 발생
      */
     @Override
-    protected ResponseEntity<Object> handleMethodArgumentNotValid(
-            MethodArgumentNotValidException ex,
-            HttpHeaders headers,
-            HttpStatusCode status,
-            WebRequest request) {
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(@NonNull MethodArgumentNotValidException ex,
+                                                                  @NonNull HttpHeaders headers,
+                                                                  @NonNull HttpStatusCode status,
+                                                                  @NonNull WebRequest request) {
 
         GlobalErrorCode errorCode = GlobalErrorCode.VALIDATION_FAILED;
         String[] detailedErrorMessages = ex.getBindingResult().getFieldErrors()
@@ -138,8 +139,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      * 읽을 수 없는 HTTP 메시지가 수신된 경우 발생
      */
     @Override
-    protected ResponseEntity<Object> handleHttpMessageNotReadable(
-            HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+    protected ResponseEntity<Object> handleHttpMessageNotReadable(@NonNull HttpMessageNotReadableException ex,
+                                                                  @NonNull HttpHeaders headers,
+                                                                  @NonNull HttpStatusCode status,
+                                                                  @NonNull WebRequest request) {
 
         GlobalErrorCode errorCode = GlobalErrorCode.INVALID_REQUEST_PARAMETER;
         logException(ex, errorCode, ex.getMessage());
