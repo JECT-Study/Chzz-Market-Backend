@@ -46,7 +46,7 @@ public class ImageService {
                 .map(this::uploadImage)
                 .toList();
 
-        uploadedUrls.forEach(url -> logger.info("업로드 된 이미지 : {}", getFullImageUrl(url)));
+        uploadedUrls.forEach(url -> logger.info("업로드 된 이미지 : {}", url));
 
         return uploadedUrls;
     }
@@ -100,17 +100,13 @@ public class ImageService {
      * 이미지 -> 서버에 들어왔는지 확인하는 로그에 사용
      */
     public String getFullImageUrl(String cdnPath) {
-        String domain = cloudfrontDomain.endsWith("/") ? cloudfrontDomain.substring(0, cloudfrontDomain.length() - 1) : cloudfrontDomain;
-        String path = cdnPath.startsWith("/") ? cdnPath.substring(1) : cdnPath;
-
         try {
             // URL 인코딩
-            path = URLEncoder.encode(path, StandardCharsets.UTF_8.toString()).replace("+", "%20");
+            String encodedPath = URLEncoder.encode(cdnPath, StandardCharsets.UTF_8.toString());
+            return cloudfrontDomain + encodedPath;
         } catch (UnsupportedEncodingException e) {
             throw new ImageException(IMAGE_URL_ENCODING_FAILED);
         }
-
-        return domain + "/" + path;
     }
 }
 

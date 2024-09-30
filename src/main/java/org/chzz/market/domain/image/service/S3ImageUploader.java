@@ -29,7 +29,7 @@ public class S3ImageUploader implements ImageUploader {
 
             amazonS3Client.putObject(bucket, fileName, image.getInputStream(), metadata);
 
-            return "/" + fileName; // CDN 경로 생성 (전체 URL 아닌 경로만)
+            return fileName; // CDN 경로 생성 (전체 URL 아닌 경로만)
         } catch (IOException e) {
             throw new ImageException(ImageErrorCode.IMAGE_UPLOAD_FAILED);
         }
