@@ -497,11 +497,11 @@ class AuctionRepositoryCustomImplTest {
         @Test
         @DisplayName("경매 수 정상 조회")
         public void successfulCount() {
-            Optional<ParticipationCountsResponse> counts = auctionRepository.getParticipationCounts(user.getId());
+            ParticipationCountsResponse counts = auctionRepository.getParticipationCounts(user.getId());
             assertThat(counts).isNotNull();
-            assertThat(counts.get().ongoingAuctionCount()).isEqualTo(2);
-            assertThat(counts.get().successfulAuctionCount()).isEqualTo(1);
-            assertThat(counts.get().failedAuctionCount()).isEqualTo(2);
+            assertThat(counts.ongoingAuctionCount()).isEqualTo(2);
+            assertThat(counts.successfulAuctionCount()).isEqualTo(1);
+            assertThat(counts.failedAuctionCount()).isEqualTo(2);
         }
     }
 }
