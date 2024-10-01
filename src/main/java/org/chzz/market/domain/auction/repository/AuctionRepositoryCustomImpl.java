@@ -202,7 +202,27 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                 .join(product.user, user)
                 .where(user.nickname.eq(nickname));
 
-        List<UserAuctionResponse> content = baseQuery
+        return getUserAuctionResponses(pageable, baseQuery);
+    }
+
+    /**
+     * 사용자 인증정보를 통해 사용자가 등록한 경매 리스트를 조회합니다.
+     * @param userId   사용자 ID
+     * @param pageable 페이징 정보
+     * @return 페이징된 사용자 경매 응답 리스트
+     */
+    @Override
+    public Page<UserAuctionResponse> findAuctionsByUserId(Long userId, Pageable pageable) {
+        JPAQuery<?> baseQuery = jpaQueryFactory.from(auction)
+                .join(auction.product, product)
+                .join(product.user, user)
+                .on(user.id.eq(userId));
+
+        return getUserAuctionResponses(pageable, baseQuery);
+    }
+
+    private Page<UserAuctionResponse> getUserAuctionResponses(Pageable pageable, JPAQuery<?> baseQuery) {
+        JPAQuery<UserAuctionResponse> contentQuery = baseQuery
                 .select(new QUserAuctionResponse(
                         auction.id,
                         product.name,
@@ -211,7 +231,9 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                         product.minPrice.longValue(),
                         getBidCount(),
                         auction.status,
-                        auction.createdAt))
+                        auction.createdAt));
+
+        List<UserAuctionResponse> content = contentQuery
                 .leftJoin(image).on(image.product.id.eq(product.id)
                         .and(image.id.eq(getFirstImageId())))
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
@@ -219,10 +241,8 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        JPAQuery<Long> countQuery = baseQuery
-                .select(auction.count());
-
-        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchCount);
+        JPAQuery<Long> countQuery = baseQuery.select(auction.count());
+        return  PageableExecutionUtils.getPage(content, pageable, countQuery::fetchCount);
     }
 
     /**

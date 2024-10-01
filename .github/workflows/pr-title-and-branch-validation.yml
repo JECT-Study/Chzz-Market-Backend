@@ -1,0 +1,52 @@
+name: PR Title and Branch Name Validation
+
+on:
+  pull_request:
+    types: [ opened, synchronize, edited]
+    branches:
+      - main
+      - develop
+      - release/*
+      - hotfix/*
+
+jobs:
+  validate-title-and-branch:
+    runs-on: ubuntu-latest
+    if: ${{ !(startsWith(github.head_ref, 'release/') && github.base_ref == 'develop') }} # release/* -> develop일 때는 실행하지 않음
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Validate PR Title
+        uses: Slashgear/action-check-pr-title@v4.3.0
+        with:
+          regexp: '^(feat|fix|docs|refactor|style|test|chore|design|move):\s.+$|^(release|hotfix):\s\d+\.\d+\.\d+$'
+          helpMessage: |
+            ❌ PR 제목이 규칙을 따르지 않습니다.
+            제목은 다음 형식 중 하나여야 합니다:
+            - `<type>: <description>`  (Allowed types: feat, fix, docs, refactor, style, test, chore, design, move)
+            - `release: x.x.x` (Semantic Versioning format)
+            - `hotfix: x.x.x` (Semantic Versioning format)
+
+      - name: Validate Branch Name
+        run: |
+          BRANCH_NAME="${{ github.head_ref }}"
+          
+          # PR 브랜치 이름 검사
+          if [[ "$BRANCH_NAME" =~ ^(feat|fix|docs|refactor|style|test|chore|design|move)/.+$ ]]; then
+            echo "✅ Branch name follows the feature branch convention!"
+          elif [[ "$BRANCH_NAME" =~ ^(release|hotfix)/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "✅ Branch name follows the release or hotfix versioning convention!"
+          else
+            echo "❌ Branch name does not follow the conventional pattern."
+            echo "Ensure your branch name follows one of these formats:"
+            echo "- feat/*, fix/*, docs/*, refactor/*, style/*, test/*, chore/*, design/*, move/*"
+            echo "- release/x.x.x (Semantic Versioning format)"
+            echo "- hotfix/x.x.x (Semantic Versioning format)"
+            exit 1
+          fi
+        shell: bash
+
+      - name: PR Title and Branch Validation Success
+        if: success()
+        run: echo "✅ PR title and branch name follow the conventions!"

@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.chzz.market.common.DatabaseTest;
 import org.chzz.market.domain.notification.dto.response.NotificationResponse;
+import org.chzz.market.domain.notification.entity.AuctionSuccessNotification;
 import org.chzz.market.domain.notification.entity.Notification;
-import org.chzz.market.domain.notification.entity.NotificationType;
 import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,24 +33,13 @@ class NotificationRepositoryImplTest {
         userRepository.save(user1);
 
         // 몇 개의 알림을 미리 저장
-        Notification notification1 = Notification.builder()
-                .user(user1)
-                .message("Test Notification 1")
-                .type(NotificationType.AUCTION_START)
-                .build();
+        Notification notification1 = new AuctionSuccessNotification(user1, null, "Test Notification 1", 1L);
 
-        Notification notification2 = Notification.builder()
-                .user(user1)
-                .message("Test Notification 2")
-                .type(NotificationType.AUCTION_SUCCESS)
-                .build();
+        Notification notification2 = new AuctionSuccessNotification(user1, null, "Test Notification 1", 1L);
 
-        Notification notification3 = Notification.builder()
-                .user(user1)
-                .message("Test Notification 2")
-                .type(NotificationType.AUCTION_SUCCESS)
-                .isDeleted(true)
-                .build();
+        Notification notification3 = new AuctionSuccessNotification(user1, null, "Test Notification 1", 1L);
+
+        notification3.delete();
         notificationRepository.save(notification1);
         notificationRepository.save(notification2);
         notificationRepository.save(notification3);

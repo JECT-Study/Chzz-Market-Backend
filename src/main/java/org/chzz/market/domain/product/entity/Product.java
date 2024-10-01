@@ -16,7 +16,6 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -34,7 +33,7 @@ import org.hibernate.annotations.DynamicUpdate;
 @Entity
 @Builder
 @Table(indexes = {
-        @Index(name = "idx_product_id_name",columnList = "product_id, name")
+        @Index(name = "idx_product_id_name", columnList = "product_id, name")
 })
 @DynamicUpdate
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -58,7 +57,6 @@ public class Product extends BaseTimeEntity {
     private String description;
 
     @Column
-    @ThousandMultiple
     private Integer minPrice;
 
     @Column(nullable = false, columnDefinition = "varchar(30)")
@@ -123,8 +121,15 @@ public class Product extends BaseTimeEntity {
         this.images.addAll(images);
     }
 
-    public Optional<Image> getFirstImage() {
-        return images.stream().findFirst();
+    public Image getFirstImage() {
+        return images.stream().findFirst().orElse(null);
+    }
+
+    public List<Long> getLikeUserIds() {
+        return likes.stream()
+                .map(like -> like.getUser().getId())
+                .distinct()
+                .toList();
     }
 
 }

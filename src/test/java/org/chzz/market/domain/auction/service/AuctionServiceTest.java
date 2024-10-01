@@ -1,7 +1,8 @@
 package org.chzz.market.domain.auction.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.chzz.market.domain.auction.error.AuctionErrorCode.*;
+import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_ALREADY_REGISTERED;
+import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_FOUND;
 import static org.chzz.market.domain.auction.type.AuctionRegisterType.PRE_REGISTER;
 import static org.chzz.market.domain.auction.type.AuctionRegisterType.REGISTER;
 import static org.chzz.market.domain.auction.type.AuctionStatus.PROCEEDING;
@@ -13,7 +14,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -24,7 +30,12 @@ import org.chzz.market.domain.auction.dto.request.BaseRegisterRequest;
 import org.chzz.market.domain.auction.dto.request.PreRegisterRequest;
 import org.chzz.market.domain.auction.dto.request.RegisterAuctionRequest;
 import org.chzz.market.domain.auction.dto.request.StartAuctionRequest;
-import org.chzz.market.domain.auction.dto.response.*;
+import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
+import org.chzz.market.domain.auction.dto.response.LostAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.RegisterResponse;
+import org.chzz.market.domain.auction.dto.response.SimpleAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.StartAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.WonAuctionResponse;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
@@ -367,7 +378,7 @@ class AuctionServiceTest {
             AuctionException auctionException = assertThrows(AuctionException.class, () -> {
                 auctionService.getFullAuctionDetails(nonExistentAuctionId, userId);
             });
-            assertThat(auctionException.getErrorCode()).isEqualTo(AUCTION_NOT_ACCESSIBLE);
+            assertThat(auctionException.getErrorCode()).isEqualTo(AUCTION_NOT_FOUND);
         }
     }
 

@@ -30,11 +30,8 @@ public class NotificationEventListener {
     @Async("threadPoolTaskExecutor")
     @TransactionalEventListener // default 인 phase = TransactionPhase.AFTER_COMMIT 사용
     public void sendNotification(final NotificationEvent notificationEvent) {
-        log.info("알림 이벤트 수신 - Type: {}, Message: '{}', User IDs: {}, Image: {}",
-                notificationEvent.type(),
-                notificationEvent.message(),
-                notificationEvent.userIds(),
-                notificationEvent.image() != null ? notificationEvent.image().getId() : "No Image");
+        log.info("알림 이벤트 수신 - notificationEvent = {}", notificationEvent);
+
         // 1. 알림 메시지 저장
         Map<Long, User> userMap = userRepository.findAllById(notificationEvent.userIds())
                 .stream()
@@ -47,8 +44,7 @@ public class NotificationEventListener {
                 .collect(Collectors.toMap(n -> n.getUser().getId(), Notification::getId));
 
         // 3. Redis에 메시지 발행
-        redisPublisher.publish(new NotificationRealMessage(userNotificationMap, notificationEvent.message(),
-                notificationEvent.type()));
+        redisPublisher.publish(NotificationRealMessage.of(userNotificationMap, notificationEvent));
     }
 
     /**
@@ -63,23 +59,7 @@ public class NotificationEventListener {
         return notificationEvent.userIds().stream()
                 .map(userMap::get)
                 .filter(Objects::nonNull)
-                .map(user -> createNotification(notificationEvent, user))
+                .map(user -> notificationEvent.toEntity(user))
                 .toList();
-    }
-
-    /**
-     * 알림 객체를 생성합니다.
-     *
-     * @param notificationEvent 알림 이벤트 데이터
-     * @param user              사용자 객체
-     * @return 생성된 알림 객체
-     */
-    private Notification createNotification(NotificationEvent notificationEvent, User user) {
-        return Notification.builder()
-                .message(notificationEvent.message())
-                .user(user)
-                .image(notificationEvent.image())
-                .type(notificationEvent.type())
-                .build();
     }
 }

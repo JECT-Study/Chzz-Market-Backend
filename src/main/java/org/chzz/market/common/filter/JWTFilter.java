@@ -1,5 +1,7 @@
 package org.chzz.market.common.filter;
 
+import static org.springframework.http.HttpMethod.POST;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -17,10 +19,8 @@ import org.chzz.market.domain.user.entity.User.UserRole;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-@Component
 @RequiredArgsConstructor
 @Slf4j
 public class JWTFilter extends OncePerRequestFilter {
@@ -28,6 +28,13 @@ public class JWTFilter extends OncePerRequestFilter {
     public static final String BEARER_TOKEN_PREFIX = "Bearer ";
 
     private final JWTUtil jwtUtil;
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request)
+            throws ServletException { // 해당 url에 대해서 필터를 적용 제외 (토큰 재발행)
+        return request.getRequestURI().equals("/api/v1/users/tokens/reissue") && request.getMethod()
+                .equals(POST.name());
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -40,7 +47,7 @@ public class JWTFilter extends OncePerRequestFilter {
             jwtUtil.validateToken(accessToken, TokenType.ACCESS);
             setAuthentication(accessToken);
             filterChain.doFilter(request, response);
-        } else if (tempCookie != null) {
+        } else if (isSignUpRequest(request) && tempCookie != null) {
             String tempToken = tempCookie.getValue();
             jwtUtil.validateToken(tempToken, TokenType.TEMP);
             setAuthentication(tempToken);
@@ -62,5 +69,9 @@ public class JWTFilter extends OncePerRequestFilter {
         Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null,
                 customUserDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authToken);
+    }
+
+    private boolean isSignUpRequest(HttpServletRequest request) {
+        return request.getRequestURI().equals("/api/v1/users") && request.getMethod().equals(POST.name());
     }
 }
