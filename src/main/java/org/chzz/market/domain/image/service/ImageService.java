@@ -5,6 +5,8 @@ import static org.chzz.market.domain.image.error.ImageErrorCode.INVALID_IMAGE_EX
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -85,9 +87,13 @@ public class ImageService {
      */
     private void deleteImage(String cdnPath) {
         try {
-            String key = cdnPath.substring(1);
+            URL url = new URL(cdnPath);
+            String path = url.getPath();
+            String key = path.substring(1);
+
+            log.info("S3에서 객체 삭제 시도, Key : {}", key);
             amazonS3Client.deleteObject(bucket, key);
-        } catch (AmazonServiceException e) {
+        } catch (AmazonServiceException | MalformedURLException e) {
             throw new ImageException(IMAGE_DELETE_FAILED);
         }
     }
@@ -103,7 +109,7 @@ public class ImageService {
             throw new ImageException(INVALID_IMAGE_EXTENSION);
         }
 
-        return uuid;
+        return uuid + "." + extension;
     }
 
     /**
