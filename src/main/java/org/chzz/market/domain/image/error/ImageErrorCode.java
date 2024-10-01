@@ -12,7 +12,8 @@ public enum ImageErrorCode implements ErrorCode {
     IMAGE_DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "이미지 삭제를 실패했습니다. "),
     IMAGE_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "이미지 저장을 실패했습니다."),
     IMAGE_URL_ENCODING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "이미지 URL 인코딩을 실패했습니다."),
-    INVALID_IMAGE_EXTENSION(HttpStatus.BAD_REQUEST, "지원하지 않는 이미지 확장자입니다.");
+    INVALID_IMAGE_EXTENSION(HttpStatus.BAD_REQUEST, "지원하지 않는 이미지 확장자입니다."),
+    INVALID_FILENAME(HttpStatus.BAD_REQUEST, "유효하지 않은 파일명입니다.");
 
     private final HttpStatus httpStatus;
     private final String message;
