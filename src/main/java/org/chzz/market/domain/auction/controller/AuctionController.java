@@ -106,9 +106,9 @@ public class AuctionController {
     @GetMapping("/{auctionId}")
     public ResponseEntity<?> getAuctionDetails(
             @PathVariable Long auctionId,
-            @RequestParam(defaultValue = "FULL") AuctionViewType viewType,
+            @RequestParam(defaultValue = "FULL") AuctionViewType type,
             @LoginUser Long userId) {
-        return switch (viewType) {
+        return switch (type) {
             case FULL -> ResponseEntity.ok(auctionService.getFullAuctionDetails(auctionId, userId));
             case SIMPLE -> ResponseEntity.ok(auctionService.getSimpleAuctionDetails(auctionId));
         };
