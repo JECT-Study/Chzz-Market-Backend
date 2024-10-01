@@ -358,8 +358,9 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
     }
 
     @Override
-    public Optional<ParticipationCountsResponse> getParticipationCounts(Long userId) {
-        DateTimeOperation<LocalDateTime> now = Expressions.dateTimeOperation(LocalDateTime.class, DateTimeOps.CURRENT_TIMESTAMP);
+    public ParticipationCountsResponse getParticipationCounts(Long userId) {
+        DateTimeOperation<LocalDateTime> now = Expressions.dateTimeOperation(LocalDateTime.class,
+                DateTimeOps.CURRENT_TIMESTAMP);
 
         BooleanExpression isEnded = auction.status.eq(ENDED)
                 .and(auction.endDateTime.before(now));
@@ -373,42 +374,39 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                         .and(bid.status.eq(ACTIVE)))
                 .fetch();
 
-        if (participatedAuctionIds.isEmpty()) {
-            return Optional.of(new ParticipationCountsResponse(0L, 0L, 0L));
-        }
-
+        BooleanExpression isParticipatedAuction = auction.id.in(participatedAuctionIds);
         // 진행 중인 경매 수
         Long proceedingCount = jpaQueryFactory
                 .select(auction.count())
                 .from(auction)
-                .where(auction.id.in(participatedAuctionIds)
+                .where(isParticipatedAuction
                         .and(auction.status.eq(PROCEEDING))
                         .and(auction.endDateTime.after(now)))
-                .fetchOne();
+                .fetchFirst();
 
         // 성공한 경매 수 (사용자가 낙찰자)
         Long successCount = jpaQueryFactory
                 .select(auction.count())
                 .from(auction)
-                .where(auction.id.in(participatedAuctionIds)
+                .where(isParticipatedAuction
                         .and(auction.winnerId.eq(userId))
                         .and(isEnded))
-                .fetchOne();
+                .fetchFirst();
 
         // 실패한 경매 수 (사용자가 낙찰자가 아님)
         Long failureCount = jpaQueryFactory
                 .select(auction.count())
                 .from(auction)
-                .where(auction.id.in(participatedAuctionIds)
+                .where(isParticipatedAuction
                         .and(auction.winnerId.ne(userId))
                         .and(isEnded))
-                .fetchOne();
+                .fetchFirst();
 
-        return Optional.of(new ParticipationCountsResponse(
-                proceedingCount != null ? proceedingCount : 0L,
-                successCount != null ? successCount : 0L,
-                failureCount != null ? failureCount : 0L
-        ));
+        return new ParticipationCountsResponse(
+                proceedingCount,
+                successCount,
+                failureCount
+        );
     }
 
     /**

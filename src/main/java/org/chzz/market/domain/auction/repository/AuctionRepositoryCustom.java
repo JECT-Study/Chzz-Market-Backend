@@ -85,5 +85,5 @@ public interface AuctionRepositoryCustom {
      * @param userId - 사용자 ID
      * @return 사용자가 참여한 상태별 경매들의 수
      */
-    Optional<ParticipationCountsResponse> getParticipationCounts(Long userId);
+    ParticipationCountsResponse getParticipationCounts(Long userId);
 }
