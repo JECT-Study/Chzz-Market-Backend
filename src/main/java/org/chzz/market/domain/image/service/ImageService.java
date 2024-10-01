@@ -102,22 +102,21 @@ public class ImageService {
      */
     private String createUniqueFileName(String originalFileName) {
         String uuid = UUID.randomUUID().toString();
+        String extension = StringUtils.getFilenameExtension(originalFileName);
 
-        if (!isValidFileExtension(originalFileName)) {
+        if (extension == null || !isValidFileExtension(extension)) {
             throw new ImageException(INVALID_IMAGE_EXTENSION);
         }
 
-        return uuid + "_" + originalFileName;
+        String nameWithoutExtension = StringUtils.stripFilenameExtension(originalFileName);
+
+        return uuid + "_" + nameWithoutExtension;
     }
 
     /**
      * 파일 확장자 검증
      */
-    private boolean isValidFileExtension(String filename) {
-        String extension = StringUtils.getFilenameExtension(filename);
-        if (extension == null) {
-            return false;
-        }
+    private boolean isValidFileExtension(String extension) {
         List<String> allowedExtensions = Arrays.asList("jpg", "jpeg", "png", "webp");
         return allowedExtensions.contains(extension.toLowerCase());
     }
