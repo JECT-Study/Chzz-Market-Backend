@@ -242,4 +242,8 @@ public class AuctionService {
                     AUCTION_NON_WINNER.getMessage(productName), firstImage)); // 미낙찰자 알림 이벤트
         }
     }
+
+    public Page<UserAuctionResponse> getAuctionListByUserId(Long userId, Pageable pageable) {
+        return auctionRepository.findAuctionsByUserId(userId, pageable);
+    }
 }

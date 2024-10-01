@@ -35,10 +35,10 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/auctions")
-@Slf4j
 public class AuctionController {
     private final AuctionService auctionService;
     private final BidService bidService;
@@ -123,7 +123,16 @@ public class AuctionController {
     }
 
     /**
-     * 사용자 경매 상품 목록 조회
+     * 사용자 경매 상품 목록 조회 (토큰)
+     */
+    @GetMapping("/users")
+    public ResponseEntity<?> getUserRegisteredAuction(@LoginUser Long userId,
+                                                      Pageable pageable) {
+        return ResponseEntity.ok(auctionService.getAuctionListByUserId(userId, pageable));
+    }
+
+    /**
+     * 사용자 경매 상품 목록 조회 (닉네임)
      */
     @GetMapping("/users/{nickname}")
     public ResponseEntity<Page<UserAuctionResponse>> getUserAuctionList(@PathVariable String nickname,

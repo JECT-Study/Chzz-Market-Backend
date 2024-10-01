@@ -1,27 +1,23 @@
 package org.chzz.market.domain.user.service;
 
-import static org.chzz.market.domain.auction.type.AuctionStatus.*;
 import static org.chzz.market.domain.user.error.UserErrorCode.NICKNAME_DUPLICATION;
 import static org.chzz.market.domain.user.error.UserErrorCode.USER_NOT_FOUND;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.chzz.market.domain.auction.dto.response.AuctionParticipationResponse;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.product.repository.ProductRepository;
-import org.chzz.market.domain.user.dto.response.UpdateProfileResponse;
 import org.chzz.market.domain.user.dto.request.UpdateUserProfileRequest;
 import org.chzz.market.domain.user.dto.request.UserCreateRequest;
 import org.chzz.market.domain.user.dto.response.NicknameAvailabilityResponse;
 import org.chzz.market.domain.user.dto.response.ParticipationCountsResponse;
+import org.chzz.market.domain.user.dto.response.UpdateProfileResponse;
 import org.chzz.market.domain.user.dto.response.UserProfileResponse;
 import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.error.exception.UserException;
 import org.chzz.market.domain.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Slf4j
 @Service
@@ -112,40 +108,9 @@ public class UserService {
         long preRegisterCount = productRepository.countPreRegisteredProductsByUserId(user.getId());
         long registeredAuctionCount = auctionRepository.countByProductUserId(user.getId());
 
-        ParticipationCountsResponse counts = new ParticipationCountsResponse(
-                user.getOngoingAuctionCount(),
-                user.getSuccessfulBidCount(),
-                user.getFailedBidCount()
-        );
+        ParticipationCountsResponse counts = auctionRepository.getParticipationCounts(user.getId());
 
         return UserProfileResponse.of(user, counts, preRegisterCount, registeredAuctionCount);
-    }
-
-    /*
-     * 경매 참여 횟수 계산
-     */
-    private ParticipationCountsResponse calculateParticipationCounts(Long userId, List<AuctionParticipationResponse> participations) {
-        long ongoingAuctionCount = 0;
-        long successfulBidCount = 0;
-        long failedBidCount = 0;
-
-        for (AuctionParticipationResponse participation : participations) {
-            if (participation.status() == PROCEEDING) {
-                ongoingAuctionCount += participation.count();
-            } else {
-                if (userId.equals(participation.winnerId())) {
-                    successfulBidCount += participation.count();
-                } else {
-                    failedBidCount += participation.count();
-                }
-            }
-        }
-
-        return new ParticipationCountsResponse(
-                ongoingAuctionCount,
-                successfulBidCount,
-                failedBidCount
-        );
     }
 
     /*

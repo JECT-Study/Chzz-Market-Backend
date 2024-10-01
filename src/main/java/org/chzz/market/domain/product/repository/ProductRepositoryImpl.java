@@ -78,7 +78,7 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
      *
      * @param productId 상품 ID
      * @param userId    사용자 ID
-     * @return          상품 상세 정보
+     * @return 상품 상세 정보
      */
     @Override
     public Optional<ProductDetailsResponse> findProductDetailsById(Long productId, Long userId) {
@@ -127,6 +127,20 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
                 .leftJoin(like).on(like.product.eq(product).and(like.user.nickname.eq(nickname)))
                 .where(auction.isNull().and(user.nickname.eq(nickname)));
 
+        return getProductResponses(pageable, baseQuery);
+    }
+
+    @Override
+    public Page<ProductResponse> findProductsByUserId(Long userId, Pageable pageable) {
+        JPAQuery<?> baseQuery = jpaQueryFactory.from(product)
+                .join(product.user, user)
+                .join(auction.product, product)
+                .on(user.id.eq(product.id));
+
+        return getProductResponses(pageable, baseQuery);
+    }
+
+    private Page<ProductResponse> getProductResponses(Pageable pageable, JPAQuery<?> baseQuery) {
         List<ProductResponse> content = baseQuery
                 .select(new QProductResponse(
                         product.id,

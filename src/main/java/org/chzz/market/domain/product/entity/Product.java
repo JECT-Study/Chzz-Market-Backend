@@ -57,7 +57,6 @@ public class Product extends BaseTimeEntity {
     private String description;
 
     @Column
-    @ThousandMultiple
     private Integer minPrice;
 
     @Column(nullable = false, columnDefinition = "varchar(30)")
