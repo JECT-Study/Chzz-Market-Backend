@@ -10,7 +10,6 @@ import org.chzz.market.common.error.ErrorResponse;
 import org.chzz.market.common.error.GlobalErrorCode;
 import org.chzz.market.common.error.GlobalException;
 import org.chzz.market.common.error.exception.BusinessException;
-import org.chzz.market.domain.image.error.exception.ImageException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -80,19 +79,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ErrorCode errorCode = e.getErrorCode();
         logException(e, errorCode);
         return handleExceptionInternal(errorCode);
-    }
-
-    @ExceptionHandler(ImageException.class)
-    public ResponseEntity<ErrorResponse> handleImageException(ImageException ex) {
-        ErrorCode errorCode = ex.getErrorCode();
-        String message = ex.getDetailedMessage();
-
-        ErrorResponse errorResponse = ErrorResponse.builder()
-                .status(errorCode.getHttpStatus().value())
-                .message(message)
-                .build();
-
-        return new ResponseEntity<>(errorResponse, errorCode.getHttpStatus());
     }
 
     @ExceptionHandler(GlobalException.class)
