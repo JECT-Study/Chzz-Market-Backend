@@ -43,7 +43,7 @@ public class ImageService {
                 .map(this::uploadImage)
                 .toList();
 
-        uploadedUrls.forEach(url -> log.info("업로드 된 이미지 : {}", cloudfrontDomain + url));
+        uploadedUrls.forEach(url -> log.info("업로드 된 이미지 : {}", cloudfrontDomain + "/" + url));
 
         return uploadedUrls;
     }
@@ -64,7 +64,7 @@ public class ImageService {
     public List<Image> saveProductImageEntities(Product product, List<String> cdnPaths) {
         List<Image> images = cdnPaths.stream()
                 .map(cdnPath -> Image.builder()
-                        .cdnPath(cloudfrontDomain + cdnPath)
+                        .cdnPath(cloudfrontDomain + "/" + cdnPath)
                         .product(product)
                         .build())
                 .toList();
