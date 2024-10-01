@@ -1,11 +1,14 @@
 package org.chzz.market.domain.image.service;
 
 import static org.chzz.market.domain.image.error.ImageErrorCode.IMAGE_DELETE_FAILED;
+import static org.chzz.market.domain.image.error.ImageErrorCode.INVALID_FILENAME;
 import static org.chzz.market.domain.image.error.ImageErrorCode.INVALID_IMAGE_EXTENSION;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,15 +19,13 @@ import org.chzz.market.domain.product.entity.Product;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ImageService {
-    // 지원하는 이미지 확장자
-    private static final List<String> ALLOWED_EXTENSIONS = List.of("jpg", "jpeg", "png", "gif", "webp");
-
     private final ImageUploader imageUploader;
     private final ImageRepository imageRepository;
     private final AmazonS3 amazonS3Client;
@@ -52,7 +53,12 @@ public class ImageService {
      * 단일 이미지 파일 업로드 및 CDN 경로 리스트 반환
      */
     private String uploadImage(MultipartFile image) {
-        String uniqueFileName = createUniqueFileName(image.getOriginalFilename());
+        String uniqueFileName = createUniqueFileName(Objects.requireNonNull(image.getOriginalFilename()));
+
+        if ((cloudfrontDomain + uniqueFileName).length() > 255) {
+            throw new ImageException(INVALID_FILENAME);
+        }
+
         return imageUploader.uploadImage(image, uniqueFileName);
     }
 
@@ -92,32 +98,28 @@ public class ImageService {
     }
 
     /**
-     * CDN 경로로부터 전체 이미지 URL 재구성 이미지 -> 서버에 들어왔는지 확인하는 로그에 사용
-     */
-    public String getFullImageUrl(String cdnPath) {
-        // URL 인코딩
-        return cloudfrontDomain + cdnPath;
-    }
-
-    /**
-     * 고유한 파일 이름 생성 및 확장자 검증
+     * 고유한 파일 이름 생성
      */
     private String createUniqueFileName(String originalFileName) {
         String uuid = UUID.randomUUID().toString();
-        String extension = getFileExtension(originalFileName);
 
-        if (!ALLOWED_EXTENSIONS.contains(extension.toLowerCase())) {
+        if (!isValidFileExtension(originalFileName)) {
             throw new ImageException(INVALID_IMAGE_EXTENSION);
         }
 
-        return uuid + "." + extension;
+        return uuid + "_" + originalFileName;
     }
 
     /**
-     * 파일 확장자 추출
+     * 파일 확장자 검증
      */
-    private String getFileExtension(String originalFileName) {
-        return originalFileName.substring(originalFileName.lastIndexOf(".") + 1);
+    private boolean isValidFileExtension(String filename) {
+        String extension = StringUtils.getFilenameExtension(filename);
+        if (extension == null) {
+            return false;
+        }
+        List<String> allowedExtensions = Arrays.asList("jpg", "jpeg", "png", "webp");
+        return allowedExtensions.contains(extension.toLowerCase());
     }
 }
 
