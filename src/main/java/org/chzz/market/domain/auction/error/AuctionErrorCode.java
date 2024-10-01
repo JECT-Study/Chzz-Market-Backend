@@ -2,7 +2,6 @@ package org.chzz.market.domain.auction.error;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import lombok.AllArgsConstructor;
@@ -21,8 +20,7 @@ public enum AuctionErrorCode implements ErrorCode {
     UNKNOWN_AUCTION_TYPE(BAD_REQUEST, "알 수 없는 경매 타입입니다."),
     AUCTION_NOT_ENDED(BAD_REQUEST, "아직 경매가 종료되지 않았습니다."),
     NOT_WINNER(FORBIDDEN, "낙찰자가 아닙니다."),
-    FORBIDDEN_AUCTION_ACCESS(FORBIDDEN, "해당 경매에 접근할 수 없습니다."),
-    CONFLICT(INTERNAL_SERVER_ERROR,"알수없는 서버 예외입니다.");
+    FORBIDDEN_AUCTION_ACCESS(FORBIDDEN, "해당 경매에 접근할 수 없습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;

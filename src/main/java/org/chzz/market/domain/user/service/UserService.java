@@ -5,15 +5,13 @@ import static org.chzz.market.domain.user.error.UserErrorCode.USER_NOT_FOUND;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.chzz.market.domain.auction.error.AuctionErrorCode;
-import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.product.repository.ProductRepository;
-import org.chzz.market.domain.user.dto.response.UpdateProfileResponse;
 import org.chzz.market.domain.user.dto.request.UpdateUserProfileRequest;
 import org.chzz.market.domain.user.dto.request.UserCreateRequest;
 import org.chzz.market.domain.user.dto.response.NicknameAvailabilityResponse;
 import org.chzz.market.domain.user.dto.response.ParticipationCountsResponse;
+import org.chzz.market.domain.user.dto.response.UpdateProfileResponse;
 import org.chzz.market.domain.user.dto.response.UserProfileResponse;
 import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.error.exception.UserException;
@@ -107,18 +105,10 @@ public class UserService {
      * 내 프로필 조회
      */
     private UserProfileResponse getUserProfileInternal(User user) {
-        //TODO 2024 09 23 16:21:01 : 애플리케이션 레벨 연산이 아닌 조회 쿼리로 갯수 작성
-        /*
-            참여한 경매 내역
-            1. 진행중인 경매: 사용자의 입찰 기록을 통해 경매를 확인, 그중 진행중인거만 count
-            2. 성공한 경매: 경매중 winnerId가 사용자의 pk인 경우를 count
-            3. 실패한 경매: 사용자의 입찰 기록을 통해 경매를 확인, 그중 종료된것 중
-         */
         long preRegisterCount = productRepository.countPreRegisteredProductsByUserId(user.getId());
         long registeredAuctionCount = auctionRepository.countByProductUserId(user.getId());
 
-        ParticipationCountsResponse counts = auctionRepository.getParticipationCounts(user.getId())
-                .orElseThrow(() -> new AuctionException(AuctionErrorCode.CONFLICT));
+        ParticipationCountsResponse counts = auctionRepository.getParticipationCounts(user.getId());
 
         return UserProfileResponse.of(user, counts, preRegisterCount, registeredAuctionCount);
     }
