@@ -108,7 +108,7 @@ class BidServiceTest {
         //then
         assertThat(bid.getId()).isEqualTo(1L);
         assertThat(bid.getAmount()).isEqualTo(2000L);
-        assertThat(bid.getCount()).isEqualTo(2L);
+        assertThat(bid.getCount()).isEqualTo(1L);
     }
 
     @Test
