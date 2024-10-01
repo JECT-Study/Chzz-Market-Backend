@@ -1,7 +1,7 @@
 package org.chzz.market.domain.image.service;
 
+import static org.chzz.market.domain.image.error.ImageErrorCode.FILENAME_TOO_LONG;
 import static org.chzz.market.domain.image.error.ImageErrorCode.IMAGE_DELETE_FAILED;
-import static org.chzz.market.domain.image.error.ImageErrorCode.INVALID_FILENAME;
 import static org.chzz.market.domain.image.error.ImageErrorCode.INVALID_IMAGE_EXTENSION;
 
 import com.amazonaws.AmazonServiceException;
@@ -30,6 +30,10 @@ public class ImageService {
     private final ImageRepository imageRepository;
     private final AmazonS3 amazonS3Client;
 
+    private static final int UUID_LENGTH = 36;
+    private static final int UNDERSCORE_LENGTH = 1;
+    private static final int MAX_TOTAL_LENGTH = 255;
+
     @Value("${cloud.aws.cloudfront.domain}")
     private String cloudfrontDomain;
 
@@ -53,12 +57,17 @@ public class ImageService {
      * 단일 이미지 파일 업로드 및 CDN 경로 리스트 반환
      */
     private String uploadImage(MultipartFile image) {
-        String uniqueFileName = createUniqueFileName(Objects.requireNonNull(image.getOriginalFilename()));
+        String originalFilename = Objects.requireNonNull(image.getOriginalFilename());
+        int fixedLength = cloudfrontDomain.length() + UUID_LENGTH + UNDERSCORE_LENGTH;
+        int maxAllowedFilenameLength = MAX_TOTAL_LENGTH - fixedLength;
 
-        if ((cloudfrontDomain + uniqueFileName).length() > 255) {
-            throw new ImageException(INVALID_FILENAME);
+        if (originalFilename.length() > maxAllowedFilenameLength) {
+            String detailedMessage = String.format("파일명은 최대 %d 자까지 허용됩니다. 현재 파일명 길이: %d 자",
+                    maxAllowedFilenameLength, originalFilename.length());
+            throw new ImageException(FILENAME_TOO_LONG, detailedMessage);
         }
 
+        String uniqueFileName = createUniqueFileName(originalFilename);
         return imageUploader.uploadImage(image, uniqueFileName);
     }
 
