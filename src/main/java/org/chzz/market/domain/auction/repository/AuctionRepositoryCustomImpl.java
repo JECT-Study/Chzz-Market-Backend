@@ -207,6 +207,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
 
     /**
      * 사용자 인증정보를 통해 사용자가 등록한 경매 리스트를 조회합니다.
+     *
      * @param userId   사용자 ID
      * @param pageable 페이징 정보
      * @return 페이징된 사용자 경매 응답 리스트
@@ -242,7 +243,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                 .fetch();
 
         JPAQuery<Long> countQuery = baseQuery.select(auction.count());
-        return  PageableExecutionUtils.getPage(content, pageable, countQuery::fetchCount);
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchCount);
     }
 
     /**
@@ -441,69 +442,6 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                 .on(bid.bidder.id.eq(userId)
                         .and(bid.status.eq(ACTIVE)));
     }
-
-    /**
-     * 사용자가 참여 중인 경매 수를 조회합니다.
-     *
-     * @param userId 사용자 ID
-     * @return 참여 중인 경매 수
-     */
-//    private JPQLQuery<Long> getOngoingAuctionCount(Long userId) {
-//        return JPAExpressions
-//                .select(auction.id.count())
-//                .from(auction)
-//                .join(auction.bids, bid)
-//                .where(auction.status.eq(PROCEEDING)
-//                        .and(bid.bidder.id.eq(userId))
-//                        .and(bid.status.ne(BidStatus.CANCELLED)));
-//    }
-
-    /**
-     * 사용자의 낙찰 성공 경매 수를 조회합니다.
-     *
-     * @param userId 사용자 ID
-     * @return 낙찰 경매 수
-     */
-//    private JPQLQuery<Long> getSuccessfulAuctionCount(Long userId) {
-//        return JPAExpressions
-//                .select(auction.id.count())
-//                .from(auction)
-//                .where(auction.status.eq(ENDED)
-//                        .and(auction.winnerId.eq(userId)));
-//    }
-
-    /**
-     * 사용자의 낙찰 실패 경매 수를 조회합니다.
-     *
-     * @param userId 사용자 ID
-     * @return 낙찰 실패 경매 수
-     */
-//    private JPQLQuery<Long> getFailedAuctionCount(Long userId) {
-//        return JPAExpressions
-//                .select(auction.id.count())
-//                .from(auction)
-//                .join(auction.bids, bid)
-//                .where(auction.status.eq(ENDED)
-//                        .and(auction.winnerId.ne(userId))
-//                        .and(bid.bidder.id.eq(userId))
-//                        .and(bid.status.ne(BidStatus.CANCELLED)));
-//    }
-
-    /**
-     * 사용자의 낙찰 취소 경매 수를 조회합니다.
-     *
-     * @param userId 사용자 ID
-     * @return 낙찰 취소 경매 수
-     */
-//    private JPQLQuery<Long> getEndedAuctionCount(Long userId) {
-//        return JPAExpressions
-//                .select(auction.countDistinct())
-//                .from(auction)
-//                .join(auction.bids, bid)
-//                .where(auction.status.eq(ENDED)
-//                        .and(bid.bidder.id.eq(userId))
-//                        .and(bid.status.ne(BidStatus.CANCELLED)));
-//    }
 
     /**
      * 상품의 첫 번째 이미지를 조회합니다.
