@@ -1,6 +1,7 @@
 package org.chzz.market.domain.auction.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.chzz.market.domain.auction.type.AuctionStatus.ENDED;
 import static org.chzz.market.domain.auction.type.AuctionStatus.PROCEEDING;
 
 import java.time.LocalDateTime;
@@ -21,35 +22,26 @@ import org.chzz.market.domain.image.repository.ImageRepository;
 import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.product.entity.Product.Category;
 import org.chzz.market.domain.product.repository.ProductRepository;
+import org.chzz.market.domain.user.dto.response.ParticipationCountsResponse;
 import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.repository.UserRepository;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.transaction.annotation.Transactional;
 
 @DatabaseTest
-class AuctionRepositoryImplTest {
+class AuctionRepositoryCustomImplTest {
 
     @Autowired
     AuctionRepository auctionRepository;
-
-    @Autowired
-    ProductRepository productRepository;
-
-    @Autowired
-    ImageRepository imageRepository;
-
-    @Autowired
-    BidRepository bidRepository;
-
-    @Autowired
-    UserRepository userRepository;
 
     private static User user1, user2, user3, user4;
     private static Product product1, product2, product3, product4, product5, product6, product7;
@@ -101,7 +93,6 @@ class AuctionRepositoryImplTest {
         auction7 = Auction.builder().product(product7).status(AuctionStatus.PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusSeconds(700)).build();
         auctionRepository.saveAll(List.of(auction1, auction2, auction3, auction4, auction5, auction6, auction7));
-
 
         image1 = Image.builder().product(product1).cdnPath("path/to/image1_1.jpg").build();
         image2 = Image.builder().product(product1).cdnPath("path/to/image1_2.jpg").build();
@@ -326,7 +317,7 @@ class AuctionRepositoryImplTest {
         // then
         assertThat(imminentAuctions).isNotEmpty();
         assertThat(imminentAuctions.size()).isEqualTo(3);
-        assertThat(imminentAuctions).allMatch(auctionResponse ->auctionResponse.getTimeRemaining()<=3600);
+        assertThat(imminentAuctions).allMatch(auctionResponse -> auctionResponse.getTimeRemaining() <= 3600);
         assertThat(imminentAuctions).isSortedAccordingTo(
                 Comparator.comparing(BaseAuctionDTO::getTimeRemaining));
 
@@ -369,5 +360,148 @@ class AuctionRepositoryImplTest {
         // then
         assertThat(responses.getContent()).isSortedAccordingTo(
                 Comparator.comparingLong(BaseAuctionDTO::getTimeRemaining));
+    }
+
+    @Nested
+    @DisplayName("사용자 정보 조회 테스트")
+    class getUserProfileTest {
+        @Autowired
+        private UserRepository userRepository;
+
+        @Autowired
+        private ProductRepository productRepository;
+
+        @Autowired
+        private AuctionRepository auctionRepository;
+
+        @Autowired
+        private BidRepository bidRepository;
+
+        User user, seller;
+        Product successedProduct, ongoingProduct1, ongoingProduct2, failedProduct1, failedProduct2;
+
+        @BeforeEach
+        @Transactional
+        void setUp() {
+            user = User.builder()
+                    .email("test01@gmail.com")
+                    .providerId("132456798")
+                    .build();
+            seller = User.builder()
+                    .email("test02@gmail.com")
+                    .providerId("222222222")
+                    .build();
+            userRepository.saveAll(List.of(user, seller));
+
+            successedProduct = Product.builder()
+                    .user(seller)
+                    .category(Category.BOOKS_AND_MEDIA)
+                    .name("product1")
+                    .minPrice(10000)
+                    .build();
+            ongoingProduct1 = Product.builder()
+                    .user(seller)
+                    .category(Category.OTHER)
+                    .name("product2")
+                    .minPrice(20000)
+                    .build();
+
+            ongoingProduct2 = Product.builder()
+                    .user(seller)
+                    .category(Category.OTHER)
+                    .name("product3")
+                    .minPrice(20000)
+                    .build();
+
+            failedProduct1 = Product.builder()
+                    .user(seller)
+                    .category(Category.OTHER)
+                    .name("product4")
+                    .minPrice(20000)
+                    .build();
+
+            failedProduct2 = Product.builder()
+                    .user(seller)
+                    .category(Category.OTHER)
+                    .name("product5")
+                    .minPrice(20000)
+                    .build();
+
+            productRepository.saveAll(
+                    List.of(ongoingProduct1, ongoingProduct2, failedProduct1, failedProduct2, successedProduct));
+
+            Auction ongoingAuction1 = Auction.builder()
+                    .endDateTime(LocalDateTime.now().plusHours(1))
+                    .product(ongoingProduct1)
+                    .status(PROCEEDING)
+                    .build();
+
+            Auction ongoingAuction2 = Auction.builder()
+                    .endDateTime(LocalDateTime.now().plusHours(1))
+                    .product(ongoingProduct2)
+                    .status(PROCEEDING)
+                    .build();
+
+            Auction failedAuction1 = Auction.builder()
+                    .endDateTime(LocalDateTime.now().minusHours(1))
+                    .product(failedProduct1)
+                    .status(ENDED)
+                    .winnerId(2L)
+                    .build();
+
+            Auction failedAuction2 = Auction.builder()
+                    .endDateTime(LocalDateTime.now().minusHours(1))
+                    .product(failedProduct2)
+                    .status(ENDED)
+                    .winnerId(2L)
+                    .build();
+
+            Auction successedAuction = Auction.builder()
+                    .endDateTime(LocalDateTime.now().minusHours(1))
+                    .product(successedProduct)
+                    .status(ENDED)
+                    .winnerId(user.getId())
+                    .build();
+            auctionRepository.saveAll(
+                    List.of(ongoingAuction1, ongoingAuction2, failedAuction1, failedAuction2, successedAuction));
+
+            Bid bid1 = Bid.builder()
+                    .bidder(user)
+                    .auction(successedAuction)
+                    .amount(10000L)
+                    .build();
+            Bid bid2 = Bid.builder()
+                    .bidder(user)
+                    .auction(failedAuction1)
+                    .amount(10000L)
+                    .build();
+            Bid bid3 = Bid.builder()
+                    .bidder(user)
+                    .auction(failedAuction2)
+                    .amount(10000L)
+                    .build();
+            Bid bid4 = Bid.builder()
+                    .bidder(user)
+                    .auction(ongoingAuction1)
+                    .amount(1000L)
+                    .build();
+            Bid bid5 = Bid.builder()
+                    .bidder(user)
+                    .auction(ongoingAuction2)
+                    .amount(1000L)
+                    .build();
+
+            bidRepository.saveAll(List.of(bid1, bid2, bid3, bid4, bid5));
+        }
+
+        @Test
+        @DisplayName("경매 수 정상 조회")
+        public void successfulCount() {
+            ParticipationCountsResponse counts = auctionRepository.getParticipationCounts(user.getId());
+            assertThat(counts).isNotNull();
+            assertThat(counts.ongoingAuctionCount()).isEqualTo(2);
+            assertThat(counts.successfulAuctionCount()).isEqualTo(1);
+            assertThat(counts.failedAuctionCount()).isEqualTo(2);
+        }
     }
 }

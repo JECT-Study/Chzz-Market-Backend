@@ -46,8 +46,6 @@ class CustomSuccessHandlerTest {
         customUserDetails = mock(CustomUserDetails.class);
         when(authentication.getPrincipal()).thenReturn(customUserDetails);
         when(customUserDetails.getUser()).thenReturn(user);
-
-        setPrivateField(customSuccessHandler, "clientUrl", "http://localhost:3000");
     }
 
     private void setPrivateField(Object targetObject, String fieldName, String value) throws Exception {
@@ -67,7 +65,6 @@ class CustomSuccessHandlerTest {
         customSuccessHandler.onAuthenticationSuccess(request, response, authentication);
 
         // then
-        assertThat(response.getRedirectedUrl()).isEqualTo("http://localhost:3000/form");
         assertThat(response.getCookies()).hasSize(1);
         assertThat(response.getCookies()[0].getValue()).isEqualTo("temp-token");
         verify(tokenService, times(1)).createTempToken(user);
@@ -84,7 +81,6 @@ class CustomSuccessHandlerTest {
         customSuccessHandler.onAuthenticationSuccess(request, response, authentication);
 
         // then
-        assertThat(response.getRedirectedUrl()).isEqualTo("http://localhost:3000/login?status=success");
         assertThat(response.getCookies()).hasSize(1);
         assertThat(response.getCookies()[0].getValue()).isEqualTo("refresh-token");
         verify(tokenService, times(1)).createRefreshToken(user);

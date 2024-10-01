@@ -26,13 +26,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class BidController {
     private final BidService bidService;
 
-    @PostMapping
-    public ResponseEntity<?> createBid(@Valid @RequestBody BidCreateRequest bidCreateRequest,
-                                       @LoginUser Long userId) {
-        bidService.createBid(bidCreateRequest, userId);
-        return ResponseEntity.status(CREATED).build();
-    }
-
+    /**
+     * 입찰 내역 조회
+     */
     @GetMapping
     public ResponseEntity<?> findUsersBidHistory(
             @LoginUser Long userId,
@@ -42,6 +38,19 @@ public class BidController {
         return ResponseEntity.ok(records);
     }
 
+    /**
+     * 입찰 요청 및 수정
+     */
+    @PostMapping
+    public ResponseEntity<?> createBid(@Valid @RequestBody BidCreateRequest bidCreateRequest,
+                                       @LoginUser Long userId) {
+        bidService.createBid(bidCreateRequest, userId);
+        return ResponseEntity.status(CREATED).build();
+    }
+
+    /**
+     * 입찰 취소
+     */
     @PatchMapping("/{bidId}/cancel")
     public ResponseEntity<?> cancelBid(@PathVariable Long bidId,
                                        @LoginUser Long userId) {
