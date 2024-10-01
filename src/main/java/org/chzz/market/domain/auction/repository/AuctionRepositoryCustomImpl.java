@@ -375,32 +375,33 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                 .fetch();
 
         BooleanExpression isParticipatedAuction = auction.id.in(participatedAuctionIds);
-        // 진행 중인 경매 수
-        Long proceedingCount = jpaQueryFactory
-                .select(auction.count())
-                .from(auction)
-                .where(isParticipatedAuction
-                        .and(auction.status.eq(PROCEEDING))
-                        .and(auction.endDateTime.after(now)))
-                .fetchFirst();
 
-        // 성공한 경매 수 (사용자가 낙찰자)
-        Long successCount = jpaQueryFactory
-                .select(auction.count())
-                .from(auction)
-                .where(isParticipatedAuction
-                        .and(auction.winnerId.eq(userId))
-                        .and(isEnded))
-                .fetchFirst();
+        Long proceedingCount = Optional.ofNullable(jpaQueryFactory
+                        .select(auction.count())
+                        .from(auction)
+                        .where(isParticipatedAuction
+                                .and(auction.status.eq(PROCEEDING))
+                                .and(auction.endDateTime.after(now)))
+                        .fetchFirst())
+                .orElse(0L);
 
-        // 실패한 경매 수 (사용자가 낙찰자가 아님)
-        Long failureCount = jpaQueryFactory
-                .select(auction.count())
-                .from(auction)
-                .where(isParticipatedAuction
-                        .and(auction.winnerId.ne(userId))
-                        .and(isEnded))
-                .fetchFirst();
+        Long successCount = Optional.ofNullable(jpaQueryFactory
+                        .select(auction.count())
+                        .from(auction)
+                        .where(isParticipatedAuction
+                                .and(auction.winnerId.eq(userId))
+                                .and(isEnded))
+                        .fetchFirst())
+                .orElse(0L);
+
+        Long failureCount = Optional.ofNullable(jpaQueryFactory
+                        .select(auction.count())
+                        .from(auction)
+                        .where(isParticipatedAuction
+                                .and(auction.winnerId.ne(userId))
+                                .and(isEnded))
+                        .fetchFirst())
+                .orElse(0L);
 
         return new ParticipationCountsResponse(
                 proceedingCount,
