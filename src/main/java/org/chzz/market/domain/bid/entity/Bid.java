@@ -55,9 +55,9 @@ public class Bid extends BaseTimeEntity {
     private Long amount;
 
     @Column(nullable = false)
-    @ColumnDefault(value = "3")
+    @ColumnDefault(value = "2")
     @Builder.Default
-    private int count = 3;
+    private int count = 2;
 
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "varchar(255)")
