@@ -12,7 +12,7 @@ on:
 jobs:
   validate-title-and-branch:
     runs-on: ubuntu-latest
-    if: ${{ !(startsWith(github.head_ref, 'release/') && github.base_ref == 'develop') }} # release/* -> develop일 때는 실행하지 않음
+    if: ${{ !(startsWith(github.head_ref, 'release/') && github.base_ref == 'develop') && github.actor != 'jira' }} # release/* -> develop일 때는 실행하지 않음, 또한 Jira Bot이 실행하는 경우 무시
     steps:
       - name: Check out code
         uses: actions/checkout@v3
