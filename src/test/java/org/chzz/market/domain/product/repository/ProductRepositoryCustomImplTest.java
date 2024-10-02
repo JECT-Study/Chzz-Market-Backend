@@ -37,7 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @DatabaseTest
 @Transactional
-class ProductRepositoryImplTest {
+class ProductRepositoryCustomImplTest {
 
     @Autowired
     ProductRepository productRepository;
@@ -205,6 +205,7 @@ class ProductRepositoryImplTest {
             assertThat(result.get().getLikeCount()).isEqualTo(2);
             assertThat(result.get().getIsLiked()).isTrue(); // user2가 좋아요 한 상품
             assertThat(result.get().getImageUrls()).contains("path/to/image1.jpg");
+            assertThat(result.get().getIsSeller()).isTrue();
         }
 
         @Test
@@ -266,6 +267,22 @@ class ProductRepositoryImplTest {
             assertThat(result.get().getCreatedAt()).isNotNull();
             // 생성 시간이 현재 시간보다 과거인지 확인
             assertThat(result.get().getCreatedAt()).isBefore(LocalDateTime.now());
+        }
+
+        @Test
+        @DisplayName("7. 비안증 사용자의 요청인 경우")
+        void findProductDetailsWithAnonymousUser() {
+            // when
+            Optional<ProductDetailsResponse> result = productRepository.findProductDetailsById(product1.getId(), null);
+
+            // then
+            assertThat(result).isPresent();
+            assertThat(result.get().getProductName()).isEqualTo("사전등록상품1");
+            assertThat(result.get().getMinPrice()).isEqualTo(10000);
+            assertThat(result.get().getLikeCount()).isEqualTo(2);
+            assertThat(result.get().getIsLiked()).isFalse(); // user2가 좋아요 한 상품
+            assertThat(result.get().getImageUrls()).contains("path/to/image1.jpg");
+            assertThat(result.get().getIsSeller()).isFalse();
         }
 
     }
