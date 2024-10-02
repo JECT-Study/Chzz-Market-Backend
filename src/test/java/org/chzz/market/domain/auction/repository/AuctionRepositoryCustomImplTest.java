@@ -214,6 +214,7 @@ class AuctionRepositoryCustomImplTest {
         assertThat(result.get().getBidAmount()).isEqualTo(0);
         assertThat(result.get().getIsParticipated()).isFalse();
         assertThat(result.get().getBidId()).isNull();
+        assertThat(result.get().getRemainingBidCount()).isEqualTo(3);
     }
 
     @Test
@@ -233,6 +234,7 @@ class AuctionRepositoryCustomImplTest {
         assertThat(result.get().getBidAmount()).isEqualTo(6000L);
         assertThat(result.get().getIsParticipated()).isTrue();
         assertThat(result.get().getBidId()).isEqualTo(bid4.getId());
+        assertThat(result.get().getRemainingBidCount()).isEqualTo(2);
     }
 
     @Test
@@ -247,6 +249,26 @@ class AuctionRepositoryCustomImplTest {
 
         //then
         assertThat(result).isNotPresent();
+    }
+
+    @Test
+    @DisplayName("경매 상세 조회 - 비로그인 상태에서 조회 할 경우")
+    public void testAuctionDetailsWhenUserIdIsNull() throws Exception {
+        //given
+        Long auctionId = auction2.getId();
+        Long userId = null;
+
+        //when
+        Optional<AuctionDetailsResponse> result = auctionRepository.findAuctionDetailsById(auctionId, userId);
+
+        //then
+        assertThat(result).isPresent();
+        assertThat(result.get().getProductId()).isEqualTo(product2.getId());
+        assertThat(result.get().getIsSeller()).isFalse();
+        assertThat(result.get().getBidAmount()).isEqualTo(0L);
+        assertThat(result.get().getIsParticipated()).isFalse();
+        assertThat(result.get().getBidId()).isNull();
+        assertThat(result.get().getRemainingBidCount()).isEqualTo(3);
     }
 
     @Test
