@@ -17,6 +17,7 @@ import org.chzz.market.domain.auction.service.AuctionRegistrationServiceFactory;
 import org.chzz.market.domain.auction.service.AuctionService;
 import org.chzz.market.domain.auction.service.register.AuctionRegistrationService;
 import org.chzz.market.domain.auction.type.AuctionViewType;
+import org.chzz.market.domain.auction.type.TestService;
 import org.chzz.market.domain.bid.service.BidService;
 import org.chzz.market.domain.product.entity.Product.Category;
 import org.springframework.data.domain.Page;
@@ -42,6 +43,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class AuctionController {
     private final AuctionService auctionService;
     private final BidService bidService;
+    private final TestService testService;
     private final AuctionRegistrationServiceFactory registrationServiceFactory;
 
     /**
@@ -165,5 +167,17 @@ public class AuctionController {
         StartAuctionResponse response = auctionService.startAuction(userId, request);
         log.info("경매 상품으로 성공적으로 전환되었습니다. 상품 ID: {}", response.productId());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+//    ---------------------------------------------------------------------------------------
+
+    /**
+     * 경매 종료 테스트 API (삭제 필요)
+     */
+    @PostMapping("/test")
+    public ResponseEntity<?> testEndAuction(@LoginUser Long userId,
+                                            @RequestParam("minutes") int minutes) {
+        testService.test(userId, minutes);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }
