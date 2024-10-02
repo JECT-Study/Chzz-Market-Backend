@@ -9,7 +9,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import org.chzz.market.common.DatabaseTest;
-import org.chzz.market.domain.auction.dto.BaseAuctionDTO;
+import org.chzz.market.domain.auction.dto.BaseAuctionDto;
 import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.AuctionResponse;
 import org.chzz.market.domain.auction.dto.response.UserAuctionResponse;
@@ -129,14 +129,14 @@ class AuctionRepositoryCustomImplTest {
         //then
         assertThat(result).isNotNull();
         assertThat(result.getContent()).hasSize(2);
-        assertThat(result.getContent().get(0).getName()).isEqualTo("제품3");
-        assertThat(result.getContent().get(0).getIsParticipating()).isTrue();
+        assertThat(result.getContent().get(0).getProductName()).isEqualTo("제품3");
+        assertThat(result.getContent().get(0).getIsParticipated()).isTrue();
         assertThat(result.getContent().get(0).getParticipantCount()).isEqualTo(1);
-        assertThat(result.getContent().get(0).getCdnPath()).isEqualTo("path/to/image3.jpg");
-        assertThat(result.getContent().get(1).getName()).isEqualTo("제품1");
-        assertThat(result.getContent().get(1).getIsParticipating()).isFalse();
+        assertThat(result.getContent().get(0).getImageUrl()).isEqualTo("path/to/image3.jpg");
+        assertThat(result.getContent().get(1).getProductName()).isEqualTo("제품1");
+        assertThat(result.getContent().get(1).getIsParticipated()).isFalse();
         assertThat(result.getContent().get(1).getParticipantCount()).isEqualTo(1);
-        assertThat(result.getContent().get(1).getCdnPath()).isEqualTo("path/to/image1_1.jpg");
+        assertThat(result.getContent().get(1).getImageUrl()).isEqualTo("path/to/image1_1.jpg");
     }
 
     @Test
@@ -152,14 +152,14 @@ class AuctionRepositoryCustomImplTest {
         //then
         assertThat(result).isNotNull();
         assertThat(result.getContent()).hasSize(2);
-        assertThat(result.getContent().get(0).getName()).isEqualTo("제품1");
-        assertThat(result.getContent().get(0).getIsParticipating()).isTrue();
+        assertThat(result.getContent().get(0).getProductName()).isEqualTo("제품1");
+        assertThat(result.getContent().get(0).getIsParticipated()).isTrue();
         assertThat(result.getContent().get(0).getParticipantCount()).isEqualTo(1);
-        assertThat(result.getContent().get(0).getCdnPath()).isEqualTo("path/to/image1_1.jpg");
-        assertThat(result.getContent().get(1).getName()).isEqualTo("제품3");
-        assertThat(result.getContent().get(1).getIsParticipating()).isFalse();
+        assertThat(result.getContent().get(0).getImageUrl()).isEqualTo("path/to/image1_1.jpg");
+        assertThat(result.getContent().get(1).getProductName()).isEqualTo("제품3");
+        assertThat(result.getContent().get(1).getIsParticipated()).isFalse();
         assertThat(result.getContent().get(1).getParticipantCount()).isEqualTo(1);
-        assertThat(result.getContent().get(1).getCdnPath()).isEqualTo("path/to/image3.jpg");
+        assertThat(result.getContent().get(1).getImageUrl()).isEqualTo("path/to/image3.jpg");
     }
 
     @Test
@@ -192,9 +192,9 @@ class AuctionRepositoryCustomImplTest {
         assertThat(result.get().getProductId()).isEqualTo(product1.getId());
         assertThat(result.get().getIsSeller()).isTrue();
         assertThat(result.get().getBidAmount()).isEqualTo(0);
-        assertThat(result.get().getIsParticipating()).isFalse();
+        assertThat(result.get().getIsParticipated()).isFalse();
         assertThat(result.get().getBidId()).isNull();
-        assertThat(result.get().getImageList()).containsOnly(image1.getCdnPath(), image2.getCdnPath());
+        assertThat(result.get().getImageUrls()).containsOnly(image1.getCdnPath(), image2.getCdnPath());
     }
 
     @Test
@@ -212,7 +212,7 @@ class AuctionRepositoryCustomImplTest {
         assertThat(result.get().getProductId()).isEqualTo(product1.getId());
         assertThat(result.get().getIsSeller()).isFalse();
         assertThat(result.get().getBidAmount()).isEqualTo(0);
-        assertThat(result.get().getIsParticipating()).isFalse();
+        assertThat(result.get().getIsParticipated()).isFalse();
         assertThat(result.get().getBidId()).isNull();
     }
 
@@ -231,7 +231,7 @@ class AuctionRepositoryCustomImplTest {
         assertThat(result.get().getProductId()).isEqualTo(product2.getId());
         assertThat(result.get().getIsSeller()).isFalse();
         assertThat(result.get().getBidAmount()).isEqualTo(6000L);
-        assertThat(result.get().getIsParticipating()).isTrue();
+        assertThat(result.get().getIsParticipated()).isTrue();
         assertThat(result.get().getBidId()).isEqualTo(bid4.getId());
     }
 
@@ -319,7 +319,7 @@ class AuctionRepositoryCustomImplTest {
         assertThat(imminentAuctions.size()).isEqualTo(3);
         assertThat(imminentAuctions).allMatch(auctionResponse -> auctionResponse.getTimeRemaining() <= 3600);
         assertThat(imminentAuctions).isSortedAccordingTo(
-                Comparator.comparing(BaseAuctionDTO::getTimeRemaining));
+                Comparator.comparing(BaseAuctionDto::getTimeRemaining));
 
     }
 
@@ -333,7 +333,7 @@ class AuctionRepositoryCustomImplTest {
 
         // then
         assertThat(responses.getContent())
-                .isSortedAccordingTo(Comparator.comparingLong(BaseAuctionDTO::getMinPrice).reversed());
+                .isSortedAccordingTo(Comparator.comparingLong(BaseAuctionDto::getMinPrice).reversed());
     }
 
     @Test
@@ -346,7 +346,7 @@ class AuctionRepositoryCustomImplTest {
 
         // then
         assertThat(responses.getContent()).isSortedAccordingTo(
-                Comparator.comparingLong(BaseAuctionDTO::getParticipantCount).reversed());
+                Comparator.comparingLong(BaseAuctionDto::getParticipantCount).reversed());
     }
 
     @Test
@@ -359,7 +359,7 @@ class AuctionRepositoryCustomImplTest {
 
         // then
         assertThat(responses.getContent()).isSortedAccordingTo(
-                Comparator.comparingLong(BaseAuctionDTO::getTimeRemaining));
+                Comparator.comparingLong(BaseAuctionDto::getTimeRemaining));
     }
 
     @Nested

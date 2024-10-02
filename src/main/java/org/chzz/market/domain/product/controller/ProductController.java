@@ -107,7 +107,7 @@ public class ProductController {
             @PathVariable Long productId,
             @RequestPart("request") @Valid UpdateProductRequest request,
             @RequestPart(value = "images", required = false) List<MultipartFile> images) {
-        UpdateProductResponse response = productService.updateProduct(userId, productId, request, images);
+        UpdateProductResponse response = productService.updateProduct(userId, productId, request, images);//TODO 2024 10 02 20:47:09 : N+1 문제
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 

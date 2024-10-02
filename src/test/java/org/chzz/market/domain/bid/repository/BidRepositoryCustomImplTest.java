@@ -203,7 +203,7 @@ class BidRepositoryCustomImplTest {
     @DisplayName("입찰 기록은 가격 기준으로 정렬 가능하다")
     void testFindBidHistory() {
         // given
-        Pageable pageable = PageRequest.of(0, 10, Sort.by("amount"));
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("bidAmount"));
         Page<BiddingRecord> usersBidHistory1 = bidRepository.findUsersBidHistory(bidder1.getId(), pageable);
         Page<BiddingRecord> usersBidHistory2 = bidRepository.findUsersBidHistory(bidder2.getId(), pageable);
 
@@ -298,7 +298,7 @@ class BidRepositoryCustomImplTest {
     @DisplayName("경매 ID로 입찰 내역을 조회할 때 활성화 된 입찰이 없는 경우(낙찰자가 없는 경우)를 처리한다")
     void testFindBidsByAuctionIdWithoutWinner() {
         // given
-        Pageable pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "amount"));
+        Pageable pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "bidAmount"));
 
         // when
         Page<BidInfoResponse> bidsForAuction3 = bidRepository.findBidsByAuctionId(auction3.getId(), pageable);
@@ -341,7 +341,7 @@ class BidRepositoryCustomImplTest {
         bidRepository.saveAll(List.of(bid5, bid6, cancelledBid3));
 
         // given
-        Pageable pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "amount"));
+        Pageable pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "bidAmount"));
 
         // when
         Page<BidInfoResponse> bidsForAuction4 = bidRepository.findBidsByAuctionId(auction4.getId(), pageable);
@@ -353,10 +353,10 @@ class BidRepositoryCustomImplTest {
         // then
         assertThat(bidsForAuction4.getContent()).hasSize(2); // 활성화된 입찰 2개만 조회되어야 함
         assertThat(bidsForAuction4.getContent()).isSortedAccordingTo(
-                Comparator.comparing(BidInfoResponse::amount).reversed());
+                Comparator.comparing(BidInfoResponse::bidAmount).reversed());
         assertThat(winningBid).isNotNull();
-        assertThat(winningBid.amount()).isEqualTo(7000L);
-        assertThat(winningBid.nickname()).isEqualTo("bidder2");
+        assertThat(winningBid.bidAmount()).isEqualTo(7000L);
+        assertThat(winningBid.bidderNickname()).isEqualTo("bidder2");
         assertThat(winningBid.isWinningBidder()).isTrue();
     }
 

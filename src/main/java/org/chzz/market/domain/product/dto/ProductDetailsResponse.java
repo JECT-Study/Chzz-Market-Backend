@@ -13,7 +13,7 @@ import java.util.List;
 public class ProductDetailsResponse {
     private final Long productId;
     private final String productName;
-    private final String sellerName;
+    private final String sellerNickname;
     private final Integer minPrice;
     private final LocalDateTime createdAt;
     private final String description;
@@ -22,12 +22,12 @@ public class ProductDetailsResponse {
     private List<String> imageUrls;
 
     @QueryProjection
-    public ProductDetailsResponse(Long productId, String productName, String sellerName,
+    public ProductDetailsResponse(Long productId, String productName, String sellerNickname,
                                   Integer minPrice, LocalDateTime createdAt, String description,
                                   Long likeCount, Boolean isLiked) {
         this.productId = productId;
         this.productName = productName;
-        this.sellerName = sellerName;
+        this.sellerNickname = sellerNickname;
         this.minPrice = minPrice;
         this.createdAt = createdAt;
         this.description = description;

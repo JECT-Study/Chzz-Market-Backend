@@ -11,7 +11,7 @@ public record StartAuctionResponse(
         Long auctionId,
         Long productId,
         AuctionStatus status,
-        LocalDateTime endTime,
+        LocalDateTime endDateTime,
         String message
 ) {
     private static final String DEFAULT_SUCCESS_MESSAGE = "경매가 성공적으로 시작되었습니다.";

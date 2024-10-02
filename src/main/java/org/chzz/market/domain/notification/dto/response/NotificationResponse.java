@@ -9,24 +9,23 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class NotificationResponse {
-    private Long id;
+    private Long notificationId;
     private String message;
     private String type;
     private Boolean isRead;
-    private String cdnPath;
-
+    private String imageUrl;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long auctionId;
     private LocalDateTime createdAt;
 
     @QueryProjection
-    public NotificationResponse(Long id, String message, String type, Boolean isRead, String cdnPath, Long auctionId,
+    public NotificationResponse(Long notificationId, String message, String type, Boolean isRead, String imageUrl, Long auctionId,
                                 LocalDateTime createdAt) {
-        this.id = id;
+        this.notificationId = notificationId;
         this.message = message;
         this.type = type;
         this.isRead = isRead;
-        this.cdnPath = cdnPath;
+        this.imageUrl = imageUrl;
         this.auctionId = auctionId;
         this.createdAt = createdAt;
     }

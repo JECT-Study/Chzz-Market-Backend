@@ -1,5 +1,6 @@
 package org.chzz.market.domain.payment.controller;
 
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.config.LoginUser;
 import org.chzz.market.domain.payment.dto.request.ApprovalRequest;
@@ -26,6 +27,7 @@ public class PaymentController {
 
     @PostMapping("/order-id")
     public ResponseEntity<?> createOrderId() { // TODO: 낙찰자에 한해서 호출 가능 API로 변경
-        return ResponseEntity.status(HttpStatus.CREATED).body(paymentService.createOrderId());
+        String orderId = paymentService.createOrderId();
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("orderId", orderId));
     }
 }

@@ -9,7 +9,7 @@ import org.springframework.http.HttpStatus;
 public enum GlobalErrorCode implements ErrorCode {
     INVALID_REQUEST_PARAMETER(HttpStatus.BAD_REQUEST, "Invalid request parameter"),
     UNSUPPORTED_PARAMETER_TYPE(HttpStatus.BAD_REQUEST, "Unsupported type of parameter included"),
-    UNSUPPORTED_PARAMETER_NAME(HttpStatus.BAD_REQUEST, "Unsupported name of parameter included"),
+    UNSUPPORTED_PARAMETER_NAME(HttpStatus.BAD_REQUEST, "Unsupported productName of parameter included"),
     VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "Validation failed"),
     AUTHENTICATION_REQUIRED(HttpStatus.UNAUTHORIZED, "Authentication is required"),
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "Access is denied"),

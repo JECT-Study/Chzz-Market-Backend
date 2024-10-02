@@ -299,7 +299,7 @@ class AuctionServiceTest {
             assertEquals(newAuctionId, response.auctionId());
             assertEquals(productId, response.productId());
             assertEquals(PROCEEDING, response.status());
-            assertTrue(response.endTime().isAfter(now) && response.endTime().isBefore(now.plusHours(25)));
+            assertTrue(response.endDateTime().isAfter(now) && response.endDateTime().isBefore(now.plusHours(25)));
 
             verify(productRepository).findById(productId);
             verify(auctionRepository).existsByProductId(productId);
@@ -400,7 +400,7 @@ class AuctionServiceTest {
             // then
             assertNotNull(result);
             assertEquals("image1.jpg", result.imageUrl());
-            assertEquals("Product 1", result.name());
+            assertEquals("Product 1", result.productName());
             assertEquals(10000, result.minPrice());
             assertEquals(5L, result.participantCount());
 
@@ -459,10 +459,10 @@ class AuctionServiceTest {
             // then
             assertThat(resultPage).isNotNull();
             assertThat(resultPage.getContent()).hasSize(2);
-            assertThat(resultPage.getContent().get(0).id()).isEqualTo(1L);
-            assertThat(resultPage.getContent().get(0).name()).isEqualTo("Product 1");
-            assertThat(resultPage.getContent().get(1).id()).isEqualTo(2L);
-            assertThat(resultPage.getContent().get(1).name()).isEqualTo("Product 2");
+            assertThat(resultPage.getContent().get(0).auctionId()).isEqualTo(1L);
+            assertThat(resultPage.getContent().get(0).productName()).isEqualTo("Product 1");
+            assertThat(resultPage.getContent().get(1).auctionId()).isEqualTo(2L);
+            assertThat(resultPage.getContent().get(1).productName()).isEqualTo("Product 2");
 
             verify(auctionRepository, times(1)).findWonAuctionHistoryByUserId(userId, pageable);
         }
@@ -515,9 +515,9 @@ class AuctionServiceTest {
 
             // then
             assertThat(firstResultPage.getContent()).hasSize(1);
-            assertThat(firstResultPage.getContent().get(0).id()).isEqualTo(1L);
+            assertThat(firstResultPage.getContent().get(0).auctionId()).isEqualTo(1L);
             assertThat(secondResultPage.getContent()).hasSize(1);
-            assertThat(secondResultPage.getContent().get(0).id()).isEqualTo(2L);
+            assertThat(secondResultPage.getContent().get(0).auctionId()).isEqualTo(2L);
 
             verify(auctionRepository, times(1)).findWonAuctionHistoryByUserId(userId, firstPageable);
             verify(auctionRepository, times(1)).findWonAuctionHistoryByUserId(userId, secondPageable);
@@ -579,10 +579,10 @@ class AuctionServiceTest {
             // then
             assertThat(resultPage).isNotNull();
             assertThat(resultPage.getContent()).hasSize(2);
-            assertThat(resultPage.getContent().get(0).id()).isEqualTo(1L);
-            assertThat(resultPage.getContent().get(0).name()).isEqualTo("Product 1");
-            assertThat(resultPage.getContent().get(1).id()).isEqualTo(2L);
-            assertThat(resultPage.getContent().get(1).name()).isEqualTo("Product 2");
+            assertThat(resultPage.getContent().get(0).auctionId()).isEqualTo(1L);
+            assertThat(resultPage.getContent().get(0).productName()).isEqualTo("Product 1");
+            assertThat(resultPage.getContent().get(1).auctionId()).isEqualTo(2L);
+            assertThat(resultPage.getContent().get(1).productName()).isEqualTo("Product 2");
 
             verify(auctionRepository, times(1)).findLostAuctionHistoryByUserId(userId, pageable);
         }
@@ -635,9 +635,9 @@ class AuctionServiceTest {
 
             // then
             assertThat(firstResultPage.getContent()).hasSize(1);
-            assertThat(firstResultPage.getContent().get(0).id()).isEqualTo(1L);
+            assertThat(firstResultPage.getContent().get(0).auctionId()).isEqualTo(1L);
             assertThat(secondResultPage.getContent()).hasSize(1);
-            assertThat(secondResultPage.getContent().get(0).id()).isEqualTo(2L);
+            assertThat(secondResultPage.getContent().get(0).auctionId()).isEqualTo(2L);
 
             verify(auctionRepository, times(1)).findLostAuctionHistoryByUserId(userId, firstPageable);
             verify(auctionRepository, times(1)).findLostAuctionHistoryByUserId(userId, secondPageable);
@@ -694,8 +694,8 @@ class AuctionServiceTest {
 
             // then
             assertThat(resultPage.getContent()).hasSize(2);
-            assertThat(resultPage.getContent().get(0).highestBid()).isEqualTo(15000L);
-            assertThat(resultPage.getContent().get(1).highestBid()).isEqualTo(25000L);
+            assertThat(resultPage.getContent().get(0).highestAmount()).isEqualTo(15000L);
+            assertThat(resultPage.getContent().get(1).highestAmount()).isEqualTo(25000L);
 
             verify(auctionRepository, times(1)).findLostAuctionHistoryByUserId(userId, pageable);
         }

@@ -142,7 +142,7 @@ public class ProductServiceTest {
 
             // then
             assertThat(response).isNotNull();
-            assertThat(response.name()).isEqualTo("수정된 상품");
+            assertThat(response.productName()).isEqualTo("수정된 상품");
             assertThat(response.description()).isEqualTo("수정된 설명");
             assertThat(response.category()).isEqualTo(HOME_APPLIANCES);
             assertThat(response.minPrice()).isEqualTo(20000);
@@ -201,7 +201,7 @@ public class ProductServiceTest {
 
             // then
             assertThat(response).isNotNull();
-            assertThat(response.name()).isEqualTo("수정된 상품");
+            assertThat(response.productName()).isEqualTo("수정된 상품");
             assertThat(response.description()).isEqualTo("수정된 설명");
             assertThat(response.category()).isEqualTo(HOME_APPLIANCES);
             assertThat(response.minPrice()).isEqualTo(20000);
@@ -306,8 +306,8 @@ public class ProductServiceTest {
             // then
             assertNotNull(result);
             assertEquals(2, result.getContent().size());
-            assertEquals("Product 1", result.getContent().get(0).getName());
-            assertEquals("Product 2", result.getContent().get(1).getName());
+            assertEquals("Product 1", result.getContent().get(0).getProductName());
+            assertEquals("Product 2", result.getContent().get(1).getProductName());
             assertTrue(result.getContent().get(0).getIsLiked());
             assertTrue(result.getContent().get(1).getIsLiked());
 
@@ -362,9 +362,9 @@ public class ProductServiceTest {
 
             // then
             assertEquals(1, firstResult.getContent().size());
-            assertEquals("Product 1", firstResult.getContent().get(0).getName());
+            assertEquals("Product 1", firstResult.getContent().get(0).getProductName());
             assertEquals(1, secondResult.getContent().size());
-            assertEquals("Product 2", secondResult.getContent().get(0).getName());
+            assertEquals("Product 2", secondResult.getContent().get(0).getProductName());
 
             verify(productRepository, times(1)).findLikedProductsByUserId(userId, firstPageable);
             verify(productRepository, times(1)).findLikedProductsByUserId(userId, secondPageable);

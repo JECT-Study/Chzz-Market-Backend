@@ -14,7 +14,7 @@ public class UserTestFactory {
             User user = constructor.newInstance();
 
             ReflectionTestUtils.setField(user, "id", id);
-            ReflectionTestUtils.setField(user, "nickname", nickname);
+            ReflectionTestUtils.setField(user, "bidderNickname", nickname);
             ReflectionTestUtils.setField(user, "email", email);
             ReflectionTestUtils.setField(user, "providerId", "testProviderId");
             ReflectionTestUtils.setField(user, "userRole", User.UserRole.USER);

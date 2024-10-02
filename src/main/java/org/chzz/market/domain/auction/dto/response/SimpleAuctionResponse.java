@@ -4,7 +4,7 @@ import com.querydsl.core.annotations.QueryProjection;
 
 public record SimpleAuctionResponse (
         String imageUrl,
-        String name,
+        String productName,
         Integer minPrice,
         Long participantCount
 ) {

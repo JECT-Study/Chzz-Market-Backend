@@ -5,12 +5,12 @@ import com.querydsl.core.annotations.QueryProjection;
 import java.time.LocalDateTime;
 
 public record LostAuctionResponse (
-        Long id,
-        String name,
-        String cdnPath,
+        Long auctionId,
+        String productName,
+        String imageUrl,
         Integer minPrice,
         LocalDateTime endDateTime,
-        Long highestBid
+        Long highestAmount
 ) {
     @QueryProjection
     public LostAuctionResponse {}

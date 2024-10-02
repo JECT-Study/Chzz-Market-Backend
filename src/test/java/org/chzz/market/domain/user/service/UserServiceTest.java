@@ -147,7 +147,7 @@ class UserServiceTest {
         public void createUser_Success() throws Exception {
             // given
             Long userId = 1L;
-            UserCreateRequest userCreateRequest = new UserCreateRequest("nickname", "KB", "1234567890",
+            UserCreateRequest userCreateRequest = new UserCreateRequest("bidderNickname", "KB", "1234567890",
                     "bio", "http://link.com");
             User user = User.builder()
                     .email("test@gmail.com")

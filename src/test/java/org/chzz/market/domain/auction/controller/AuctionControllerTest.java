@@ -235,7 +235,7 @@ public class AuctionControllerTest {
                     .andExpect(jsonPath("$.auctionId").value(1))
                     .andExpect(jsonPath("$.productId").value(1))
                     .andExpect(jsonPath("$.status").value("PROCEEDING"))
-                    .andExpect(jsonPath("$.endTime").isNotEmpty())
+                    .andExpect(jsonPath("$.endDateTime").isNotEmpty())
                     .andExpect(jsonPath("$.message").value("경매가 성공적으로 시작되었습니다."));
 
             verify(auctionService).startAuction(any(), any(StartAuctionRequest.class));
@@ -296,15 +296,15 @@ public class AuctionControllerTest {
                 .andExpect(jsonPath("$.auctionId").value(1))
                 .andExpect(jsonPath("$.productId").value(productId))
                 .andExpect(jsonPath("$.status").value("PROCEEDING"))
-                .andExpect(jsonPath("$.endTime").isNotEmpty())
+                .andExpect(jsonPath("$.endDateTime").isNotEmpty())
                 .andExpect(jsonPath("$.message").value("경매가 성공적으로 시작되었습니다."))
                 .andReturn();
 
         String content = result.getResponse().getContentAsString();
         StartAuctionResponse returnedResponse = objectMapper.readValue(content, StartAuctionResponse.class);
 
-        assertThat(returnedResponse.endTime()).isAfter(startTime);
-        assertThat(returnedResponse.endTime()).isBefore(startTime.plusHours(25));
-        assertThat(ChronoUnit.HOURS.between(startTime, returnedResponse.endTime())).isEqualTo(24);
+        assertThat(returnedResponse.endDateTime()).isAfter(startTime);
+        assertThat(returnedResponse.endDateTime()).isBefore(startTime.plusHours(25));
+        assertThat(ChronoUnit.HOURS.between(startTime, returnedResponse.endDateTime())).isEqualTo(24);
     }
 }

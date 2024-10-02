@@ -1,17 +1,17 @@
 package org.chzz.market.domain.product.dto;
 
+import java.util.List;
 import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.product.entity.Product;
-
-import java.util.List;
+import org.chzz.market.domain.product.entity.Product.Category;
 
 public record UpdateProductResponse (
-        Long id,
-        String name,
+        Long productId,
+        String productName,
         String description,
-        Product.Category category,
+        Category category,
         Integer minPrice,
-        List<String> cdnPaths
+        List<String> imageUrls
 ) {
     public static UpdateProductResponse from(Product product) {
         return new UpdateProductResponse(

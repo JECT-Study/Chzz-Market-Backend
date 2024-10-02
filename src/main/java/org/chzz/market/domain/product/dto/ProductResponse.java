@@ -9,23 +9,23 @@ import lombok.Getter;
  * 사전 등록 상품 목록 조회 DTO
  */
 @Getter
-public class ProductResponse extends BaseProductDTO {
-    private final Long id;
+public class ProductResponse extends BaseProductDto {
+    private final Long productId;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Boolean isLiked;
 
     @QueryProjection
-    public ProductResponse(Long id, String name, String cdnPath, Integer minPrice,
-                               Long likeCount, Boolean isLiked) {
+    public ProductResponse(Long productId, String name, String cdnPath, Integer minPrice,
+                           Long likeCount, Boolean isLiked) {
         super(name, cdnPath, likeCount, minPrice);
-        this.id = id;
+        this.productId = productId;
         this.isLiked = isLiked;
     }
 
     @QueryProjection
-    public ProductResponse(Long id, String name, String cdnPath, Integer minPrice,
+    public ProductResponse(Long productId, String name, String cdnPath, Integer minPrice,
                            Long likeCount) {
         super(name, cdnPath, likeCount, minPrice);
-        this.id = id;
+        this.productId = productId;
     }
 }

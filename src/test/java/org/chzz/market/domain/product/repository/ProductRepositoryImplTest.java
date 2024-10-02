@@ -1,7 +1,17 @@
 package org.chzz.market.domain.product.repository;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.chzz.market.domain.product.entity.Product.Category.BOOKS_AND_MEDIA;
+import static org.chzz.market.domain.product.entity.Product.Category.ELECTRONICS;
+import static org.chzz.market.domain.product.entity.Product.Category.FASHION_AND_CLOTHING;
+import static org.chzz.market.domain.product.entity.Product.builder;
+
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 import org.chzz.market.common.DatabaseTest;
 import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.image.repository.ImageRepository;
@@ -12,7 +22,11 @@ import org.chzz.market.domain.product.dto.ProductResponse;
 import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.repository.UserRepository;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,15 +34,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.chzz.market.domain.product.entity.Product.*;
-import static org.chzz.market.domain.product.entity.Product.Category.*;
 
 @DatabaseTest
 @Transactional
@@ -115,11 +120,11 @@ class ProductRepositoryImplTest {
             assertThat(result.getContent())
                     .extracting(ProductResponse::getMinPrice)
                     .isSortedAccordingTo(Comparator.reverseOrder());
-            assertThat(result.getContent().get(0).getName()).isEqualTo("사전등록상품4");
+            assertThat(result.getContent().get(0).getProductName()).isEqualTo("사전등록상품4");
             assertThat(result.getContent().get(0).getMinPrice()).isEqualTo(40000);
-            assertThat(result.getContent().get(1).getName()).isEqualTo("사전등록상품3");
+            assertThat(result.getContent().get(1).getProductName()).isEqualTo("사전등록상품3");
             assertThat(result.getContent().get(1).getMinPrice()).isEqualTo(30000);
-            assertThat(result.getContent().get(2).getName()).isEqualTo("사전등록상품1");
+            assertThat(result.getContent().get(2).getProductName()).isEqualTo("사전등록상품1");
             assertThat(result.getContent().get(2).getMinPrice()).isEqualTo(10000);
         }
 
@@ -138,9 +143,9 @@ class ProductRepositoryImplTest {
             assertThat(result.getContent())
                     .extracting(ProductResponse::getLikeCount)
                     .isSortedAccordingTo(Comparator.reverseOrder());
-            assertThat(result.getContent().get(0).getName()).isEqualTo("사전등록상품1");
+            assertThat(result.getContent().get(0).getProductName()).isEqualTo("사전등록상품1");
             assertThat(result.getContent().get(0).getLikeCount()).isEqualTo(2);
-            assertThat(result.getContent().get(1).getName()).isEqualTo("사전등록상품3");
+            assertThat(result.getContent().get(1).getProductName()).isEqualTo("사전등록상품3");
             assertThat(result.getContent().get(1).getLikeCount()).isEqualTo(1);
         }
 
@@ -157,11 +162,11 @@ class ProductRepositoryImplTest {
             assertThat(result.getContent()).isNotEmpty();
             assertThat(result.getContent()).hasSize(3);
             assertThat(result.getContent())
-                    .extracting(ProductResponse::getId)
+                    .extracting(ProductResponse::getProductId)
                     .isSortedAccordingTo(Comparator.reverseOrder());
-            assertThat(result.getContent().get(0).getName()).isEqualTo("사전등록상품4");
-            assertThat(result.getContent().get(1).getName()).isEqualTo("사전등록상품3");
-            assertThat(result.getContent().get(2).getName()).isEqualTo("사전등록상품1");
+            assertThat(result.getContent().get(0).getProductName()).isEqualTo("사전등록상품4");
+            assertThat(result.getContent().get(1).getProductName()).isEqualTo("사전등록상품3");
+            assertThat(result.getContent().get(2).getProductName()).isEqualTo("사전등록상품1");
 
         }
 
@@ -247,7 +252,7 @@ class ProductRepositoryImplTest {
 
             // then
             assertThat(result).isPresent();
-            assertThat(result.get().getSellerName()).isEqualTo(user1.getNickname());
+            assertThat(result.get().getSellerNickname()).isEqualTo(user1.getNickname());
         }
 
         @Test
@@ -282,7 +287,7 @@ class ProductRepositoryImplTest {
             assertThat(result.getContent()).isNotEmpty();
             assertThat(result.getContent()).hasSize(2);
             assertThat(result.getContent())
-                    .extracting("name")
+                    .extracting("productName")
                     .containsExactly("사전등록상품2", "사전등록상품1");
         }
 
@@ -314,9 +319,9 @@ class ProductRepositoryImplTest {
             // then
             assertThat(firstResult.getContent()).hasSize(2);
             assertThat(secondResult.getContent()).hasSize(1);
-            assertThat(firstResult.getContent().get(0).getName()).isEqualTo("사전등록상품4");
-            assertThat(firstResult.getContent().get(1).getName()).isEqualTo("사전등록상품3");
-            assertThat(secondResult.getContent().get(0).getName()).isEqualTo("사전등록상품1");
+            assertThat(firstResult.getContent().get(0).getProductName()).isEqualTo("사전등록상품4");
+            assertThat(firstResult.getContent().get(1).getProductName()).isEqualTo("사전등록상품3");
+            assertThat(secondResult.getContent().get(0).getProductName()).isEqualTo("사전등록상품1");
         }
 
         @Test
@@ -331,9 +336,9 @@ class ProductRepositoryImplTest {
             Page<ProductResponse> expensiveResult = productRepository.findProductsByNickname(user1.getNickname(), expensivePageable);
 
             // then
-            assertThat(newestResult.getContent()).extracting("name")
+            assertThat(newestResult.getContent()).extracting("productName")
                     .containsExactly("사전등록상품2", "사전등록상품1");
-            assertThat(expensiveResult.getContent()).extracting("name")
+            assertThat(expensiveResult.getContent()).extracting("productName")
                     .containsExactly("사전등록상품2", "사전등록상품1");
         }
 

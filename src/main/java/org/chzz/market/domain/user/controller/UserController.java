@@ -56,8 +56,9 @@ public class UserController {
     }
 
     @GetMapping("/customer-key")
-    public ResponseEntity<String> getCustomerKey(@LoginUser Long userId) {
-        return ResponseEntity.ok(userService.getCustomerKey(userId));
+    public ResponseEntity<?> getCustomerKey(@LoginUser Long userId) {
+        String customerKey = userService.getCustomerKey(userId);
+        return ResponseEntity.ok(Map.of("customerKey", customerKey));
     }
 
     /**

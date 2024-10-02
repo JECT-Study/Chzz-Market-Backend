@@ -33,7 +33,7 @@ import org.hibernate.annotations.DynamicUpdate;
 @Entity
 @Builder
 @Table(indexes = {
-        @Index(name = "idx_product_id_name", columnList = "product_id, name")
+        @Index(name = "idx_product_id_name", columnList = "product_id, productName")
 })
 @DynamicUpdate
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -49,7 +49,7 @@ public class Product extends BaseTimeEntity {
     private User user;
 
     @Column(nullable = false)
-    // @Pattern(regexp = "^[가-힣a-zA-Z0-9]{2,}$",message = "invalid type of nickname")
+    // @Pattern(regexp = "^[가-힣a-zA-Z0-9]{2,}$",message = "invalid type of bidderNickname")
     private String name;
 
     @Column(length = 1000)

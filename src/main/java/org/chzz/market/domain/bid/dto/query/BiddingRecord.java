@@ -2,11 +2,9 @@ package org.chzz.market.domain.bid.dto.query;
 
 import com.querydsl.core.annotations.QueryProjection;
 import lombok.Getter;
-import lombok.ToString;
-import org.chzz.market.domain.auction.dto.BaseAuctionDTO;
+import org.chzz.market.domain.auction.dto.BaseAuctionDto;
 @Getter
-@ToString(callSuper = true)
-public class BiddingRecord extends BaseAuctionDTO {
+public class BiddingRecord extends BaseAuctionDto {
     private final Long bidAmount;
 
     @QueryProjection
