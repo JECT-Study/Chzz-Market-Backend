@@ -40,7 +40,7 @@ jobs:
           else
             echo "❌ Branch name does not follow the conventional pattern."
             echo "Ensure your branch name follows one of these formats:"
-            echo "- feat/*, fix/*, docs/*, refactor/*, style/*, test/*, chore/*, design/*, move/*"
+            echo "- feat/*"
             echo "- release/x.x.x (Semantic Versioning format)"
             echo "- hotfix/x.x.x (Semantic Versioning format)"
             exit 1
