@@ -205,7 +205,7 @@ class ProductRepositoryCustomImplTest {
             assertThat(result.get().getLikeCount()).isEqualTo(2);
             assertThat(result.get().getIsLiked()).isTrue(); // user2가 좋아요 한 상품
             assertThat(result.get().getImageUrls()).contains("path/to/image1.jpg");
-            assertThat(result.get().getIsSeller()).isTrue();
+            assertThat(result.get().getIsSeller()).isFalse();
         }
 
         @Test
