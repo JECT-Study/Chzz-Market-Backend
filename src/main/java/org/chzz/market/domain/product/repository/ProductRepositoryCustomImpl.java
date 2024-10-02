@@ -34,7 +34,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 
 @RequiredArgsConstructor
-public class ProductRepositoryImpl implements ProductRepositoryCustom {
+public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
     private final JPAQueryFactory jpaQueryFactory;
     private final QuerydslOrderProvider querydslOrderProvider;
 
@@ -92,7 +92,8 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
                         product.createdAt,
                         product.description,
                         product.likes.size().longValue(),
-                        isProductLikedByUser(userId)
+                        isProductLikedByUser(userId),
+                        nullSafeBuilder(() -> user.id.eq(userId))
                 ))
                 .from(product)
                 .join(product.user, user)
