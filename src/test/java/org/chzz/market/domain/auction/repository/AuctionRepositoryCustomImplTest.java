@@ -59,10 +59,10 @@ class AuctionRepositoryCustomImplTest {
                           @Autowired AuctionRepository auctionRepository,
                           @Autowired ImageRepository imageRepository,
                           @Autowired BidRepository bidRepository) {
-        user1 = User.builder().id(1L).providerId("1234").nickname("닉네임1").email("asd@naver.com").build();
-        user2 = User.builder().id(2L).providerId("12345").nickname("닉네임2").email("asd1@naver.com").build();
-        user3 = User.builder().id(3L).providerId("123456").nickname("닉네임3").email("asd12@naver.com").build();
-        user4 = User.builder().id(4L).providerId("1234567").nickname("닉네임4").email("asd123@naver.com").build();
+        user1 = User.builder().providerId("1234").nickname("닉네임1").email("asd@naver.com").build();
+        user2 = User.builder().providerId("12345").nickname("닉네임2").email("asd1@naver.com").build();
+        user3 = User.builder().providerId("123456").nickname("닉네임3").email("asd12@naver.com").build();
+        user4 = User.builder().providerId("1234567").nickname("닉네임4").email("asd123@naver.com").build();
         userRepository.saveAll(List.of(user1, user2, user3, user4));
 
         product1 = Product.builder().user(user1).name("제품1").category(Category.FASHION_AND_CLOTHING).minPrice(10000)
