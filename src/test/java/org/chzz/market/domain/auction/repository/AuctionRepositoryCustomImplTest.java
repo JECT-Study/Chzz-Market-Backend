@@ -159,7 +159,7 @@ class AuctionRepositoryCustomImplTest {
         assertThat(result.getContent()).hasSize(2);
         assertThat(result.getContent().get(0).getProductName()).isEqualTo("제품3");
         assertThat(result.getContent().get(0).getIsParticipated()).isTrue();
-        assertThat(result.getContent().get(0).getParticipantCount()).isEqualTo(3);
+        assertThat(result.getContent().get(0).getParticipantCount()).isEqualTo(4);
         assertThat(result.getContent().get(0).getImageUrl()).isEqualTo("path/to/image3.jpg");
         assertThat(result.getContent().get(1).getProductName()).isEqualTo("제품1");
         assertThat(result.getContent().get(1).getIsParticipated()).isFalse();
@@ -181,8 +181,8 @@ class AuctionRepositoryCustomImplTest {
         assertThat(result).isNotNull();
         assertThat(result.getContent()).hasSize(2);
         assertThat(result.getContent().get(0).getProductName()).isEqualTo("제품3");
-        assertThat(result.getContent().get(0).getIsParticipated()).isFalse();
-        assertThat(result.getContent().get(0).getParticipantCount()).isEqualTo(3);
+        assertThat(result.getContent().get(0).getIsParticipated()).isTrue();
+        assertThat(result.getContent().get(0).getParticipantCount()).isEqualTo(4);
         assertThat(result.getContent().get(0).getImageUrl()).isEqualTo("path/to/image3.jpg");
         assertThat(result.getContent().get(1).getProductName()).isEqualTo("제품1");
         assertThat(result.getContent().get(1).getIsParticipated()).isTrue();
