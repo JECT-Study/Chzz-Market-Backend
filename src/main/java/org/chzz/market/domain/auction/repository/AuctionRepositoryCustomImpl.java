@@ -151,7 +151,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                         bid.id.isNotNull(),
                         bid.id,
                         bid.amount.coalesce(0L),
-                        bid.count.coalesce(0)
+                        bid.count.coalesce(3)
                 ))
                 .from(auction)
                 .join(auction.product, product)

@@ -341,7 +341,7 @@ class BidRepositoryCustomImplTest {
         bidRepository.saveAll(List.of(bid5, bid6, cancelledBid3));
 
         // given
-        Pageable pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "bidAmount"));
+        Pageable pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "bid-amount"));
 
         // when
         Page<BidInfoResponse> bidsForAuction4 = bidRepository.findBidsByAuctionId(auction4.getId(), pageable);
