@@ -51,7 +51,7 @@ public class BidService {
         bidRepository.findByAuctionAndBidder(auction, user)
                 .ifPresentOrElse(
                         // 이미 입찰을 한 경우
-                        bid -> bid.adjustBidAmount(bidCreateRequest.getAmount()),
+                        bid -> bid.adjustBidAmount(bidCreateRequest.getBidAmount()),
                         // 입찰을 처음 하는 경우
                         () -> auction.registerBid(bidCreateRequest.toEntity(auction, user)) // 연관관계 설정
                 );
@@ -90,7 +90,7 @@ public class BidService {
         }
         auction.validateAuctionEndTime();
         // 최소 금액보다 낮은 금액일 때
-        if (!auction.isAboveMinPrice(bidCreateRequest.getAmount())) {
+        if (!auction.isAboveMinPrice(bidCreateRequest.getBidAmount())) {
             throw new BidException(BID_BELOW_MIN_PRICE);
         }
     }
