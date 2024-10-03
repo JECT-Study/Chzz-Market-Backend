@@ -2,6 +2,7 @@ package org.chzz.market.domain.product.service;
 
 import static org.chzz.market.domain.notification.entity.NotificationType.PRE_AUCTION_CANCELED;
 import static org.chzz.market.domain.product.error.ProductErrorCode.ALREADY_IN_AUCTION;
+import static org.chzz.market.domain.product.error.ProductErrorCode.FORBIDDEN_PRODUCT_ACCESS;
 import static org.chzz.market.domain.product.error.ProductErrorCode.PRODUCT_ALREADY_AUCTIONED;
 import static org.chzz.market.domain.product.error.ProductErrorCode.PRODUCT_NOT_FOUND;
 
@@ -23,6 +24,7 @@ import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.product.entity.Product.Category;
 import org.chzz.market.domain.product.error.ProductException;
 import org.chzz.market.domain.product.repository.ProductRepository;
+import org.chzz.market.domain.user.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -47,6 +49,7 @@ public class ProductService {
     private final AuctionRepository auctionRepository;
     private final ImageRepository imageRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final UserRepository userRepository;
 
     /**
      * 사전 등록 상품 목록 조회
@@ -98,8 +101,12 @@ public class ProductService {
                                                List<MultipartFile> images) {
         logger.info("상품 ID {}번에 대한 사전 등록 정보를 업데이트를 시작합니다.", productId);
         // 상품 유효성 검사
-        Product existingProduct = productRepository.findByIdAndUserId(productId, userId)
+        Product existingProduct = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductException(PRODUCT_NOT_FOUND));
+
+        if (!existingProduct.isOwner(userId)) {
+            throw new ProductException(FORBIDDEN_PRODUCT_ACCESS);
+        }
 
         // 경매 등록 상태 유무 유효성 검사
         if (auctionRepository.existsByProductId(productId)) {
@@ -158,11 +165,15 @@ public class ProductService {
         logger.info("상품 ID {}번에 해당하는 상품 삭제 프로세스를 시작합니다.", productId);
 
         // 상품 유효성 검사
-        Product product = productRepository.findByIdAndUserId(productId, userId)
+        Product product = productRepository.findById(productId)
                 .orElseThrow(() -> {
                     logger.info("상품 ID {}번에 해당하는 상품을 찾을 수 없습니다.", productId);
                     return new ProductException(PRODUCT_NOT_FOUND);
                 });
+
+        if (!product.isOwner(userId)) {
+            throw new ProductException(FORBIDDEN_PRODUCT_ACCESS);
+        }
 
         // 경매 등록 여부 확인
         if (auctionRepository.existsByProductId(productId)) {
