@@ -44,6 +44,7 @@ import org.chzz.market.domain.auction.dto.response.QWonAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.SimpleAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.UserAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.WonAuctionResponse;
+import org.chzz.market.domain.bid.entity.QBid;
 import org.chzz.market.domain.image.entity.QImage;
 import org.chzz.market.domain.product.entity.Product.Category;
 import org.chzz.market.domain.user.dto.response.ParticipationCountsResponse;
@@ -351,22 +352,25 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
      */
     @Override
     public Page<LostAuctionResponse> findLostAuctionHistoryByUserId(Long userId, Pageable pageable) {
+        QBid subBid = new QBid("subBid");
+
         JPAQuery<?> baseQuery = getActualParticipatedAuction(userId)
                 .join(auction.product, product)
-                .where(auction.winnerId.ne(userId)
-                        .or(auction.winnerId.isNull().and(auction.status.eq(ENDED))));
+                .where(auction.winnerId.ne(userId).and(auction.status.eq(ENDED)));
 
-        List<LostAuctionResponse> content = baseQuery
+        List<LostAuctionResponse> query = baseQuery
                 .select(new QLostAuctionResponse(
                         auction.id,
                         product.name,
                         image.cdnPath,
                         product.minPrice,
                         auction.endDateTime,
-                        bid.amount
+                        JPAExpressions.select(subBid.amount.max())
+                                .from(subBid)
+                                .where(subBid.auction.eq(auction))
                 ))
                 .leftJoin(image).on(image.product.eq(product).and(image.id.eq(getFirstImageId())))
-                .groupBy(auction.id, product.name, image.cdnPath, product.minPrice, bid.amount)
+                .groupBy(auction.id, product.name, image.cdnPath, product.minPrice, auction.endDateTime)
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -375,7 +379,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
         JPAQuery<Long> countQuery = baseQuery
                 .select(auction.count());
 
-        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchCount);
+        return PageableExecutionUtils.getPage(query, pageable, countQuery::fetchCount);
     }
 
     @Override
