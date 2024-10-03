@@ -119,19 +119,17 @@ class AuctionRepositoryCustomImplTest {
         bid6 = Bid.builder().bidder(user2).auction(auction6).amount(8000L).build();
         bid7 = Bid.builder().bidder(user3).auction(auction3).amount(310000L).build();
         bid8 = Bid.builder().bidder(user4).auction(auction3).amount(320000L).build();
-        bid9 = Bid.builder().bidder(user2).auction(auction2).amount(25000L).build();
         bid10 = Bid.builder().bidder(user2).auction(auction3).amount(8000L).build();
         bid11 = Bid.builder().bidder(user2).auction(auction4).amount(15000L).build();
         bid12 = Bid.builder().bidder(user3).auction(auction4).amount(25000L).build();
         bid13 = Bid.builder().bidder(user4).auction(auction8).amount(250000L).build();
         bid14 = Bid.builder().bidder(user2).auction(auction8).amount(150000L).build();
-        bidRepository.saveAll(List.of(bid1, bid2, bid3, bid4, bid5, bid6, bid7, bid8, bid9, bid10, bid11, bid12, bid13,
+        bidRepository.saveAll(List.of(bid1, bid2, bid3, bid4, bid5, bid6, bid7, bid8, bid10, bid11, bid12, bid13,
                 bid14));
 
         auction1.registerBid(bid1);
         auction2.registerBid(bid2);
         auction2.registerBid(bid4);
-        auction2.registerBid(bid9);
         auction3.registerBid(bid3);
         auction3.registerBid(bid7);
         auction3.registerBid(bid8);
@@ -429,6 +427,7 @@ class AuctionRepositoryCustomImplTest {
 
         // then
         assertNotNull(result);
+        result.getContent().forEach(System.out::println);
         assertEquals(2, result.getTotalElements()); // user2는 2개의 경매에서 낙찰하지 못했음
 
         // 첫 번째 실패한 경매
