@@ -352,10 +352,17 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
      */
     @Override
     public Page<LostAuctionResponse> findLostAuctionHistoryByUserId(Long userId, Pageable pageable) {
-        QBid subBid = new QBid("subBid");
+        QBid highestBid = new QBid("highestBid");
 
         JPAQuery<?> baseQuery = getActualParticipatedAuction(userId)
                 .join(auction.product, product)
+                .leftJoin(image).on(image.product.eq(product).and(image.id.eq(getFirstImageId())))
+                .leftJoin(highestBid).on(highestBid.auction.eq(auction)
+                        .and(highestBid.amount.eq(
+                                JPAExpressions.select(bid.amount.max())
+                                        .from(bid)
+                                        .where(bid.auction.eq(auction))
+                        )))
                 .where(auction.winnerId.ne(userId).and(auction.status.eq(ENDED)));
 
         List<LostAuctionResponse> query = baseQuery
@@ -365,11 +372,8 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                         image.cdnPath,
                         product.minPrice,
                         auction.endDateTime,
-                        JPAExpressions.select(subBid.amount.max())
-                                .from(subBid)
-                                .where(subBid.auction.eq(auction))
+                        highestBid.amount
                 ))
-                .leftJoin(image).on(image.product.eq(product).and(image.id.eq(getFirstImageId())))
                 .groupBy(auction.id, product.name, image.cdnPath, product.minPrice, auction.endDateTime)
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
