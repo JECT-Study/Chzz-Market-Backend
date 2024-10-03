@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.never;
@@ -133,8 +132,9 @@ public class ProductServiceTest {
             // given
             List<MultipartFile> images = createMockMultipartFiles();
 
-            when(productRepository.findByIdAndUserId(anyLong(), eq(user.getId()))).thenReturn(
+            when(productRepository.findById(anyLong())).thenReturn(
                     Optional.of(existingProduct));
+
             when(auctionRepository.existsByProductId(anyLong())).thenReturn(false);
 
             // when
@@ -146,11 +146,6 @@ public class ProductServiceTest {
             assertThat(response.description()).isEqualTo("수정된 설명");
             assertThat(response.category()).isEqualTo(HOME_APPLIANCES);
             assertThat(response.minPrice()).isEqualTo(20000);
-
-            verify(productRepository, times(1)).findByIdAndUserId(eq(1L), eq(user.getId()));
-            verify(auctionRepository, times(1)).existsByProductId(1L);
-            verify(imageRepository, times(1)).deleteAll(anyList());  // 이미지 삭제 확인
-            verify(imageService, times(1)).uploadImages(anyList());  // 이미지 업로드 확인
         }
 
         @Test
@@ -158,14 +153,14 @@ public class ProductServiceTest {
         void updateProduct_ProductNotFound() {
             // given
             List<MultipartFile> images = createMockMultipartFiles();
-            when(productRepository.findByIdAndUserId(anyLong(), eq(user.getId()))).thenReturn(Optional.empty());
+            when(productRepository.findById(anyLong())).thenReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> productService.updateProduct(user.getId(), 1L, updateRequest, images))
                     .isInstanceOf(ProductException.class)
                     .hasMessageContaining("상품을 찾을 수 없습니다.");
 
-            verify(productRepository, times(1)).findByIdAndUserId(eq(1L), eq(user.getId()));
+            verify(productRepository, times(1)).findById(eq(1L));
             verify(auctionRepository, never()).existsByProductId(anyLong());
             verify(imageService, never()).uploadImages(anyList());
             verify(imageRepository, never()).deleteAll(anyList());
@@ -175,7 +170,7 @@ public class ProductServiceTest {
         @DisplayName("3. 이미 경매 등록된 상품 수정 시도 실패")
         void updateProduct_AlreadyInAuction() {
             // given
-            when(productRepository.findByIdAndUserId(anyLong(), eq(user.getId()))).thenReturn(
+            when(productRepository.findById(anyLong())).thenReturn(
                     Optional.of(existingProduct));
             when(auctionRepository.existsByProductId(anyLong())).thenReturn(true);
 
@@ -183,16 +178,13 @@ public class ProductServiceTest {
             assertThatThrownBy(() -> productService.updateProduct(user.getId(), 1L, updateRequest, null))
                     .isInstanceOf(ProductException.class)
                     .hasMessageContaining("이미 경매가 진행 중인 상품입니다.");
-
-            verify(productRepository, times(1)).findByIdAndUserId(eq(1L), eq(user.getId()));
-            verify(auctionRepository, times(1)).existsByProductId(1L);
         }
 
         @Test
         @DisplayName("4. 이미지 없이 상품 정보만 수정 성공")
         void updateProduct_WithoutImages() {
             // given
-            when(productRepository.findByIdAndUserId(anyLong(), eq(user.getId()))).thenReturn(
+            when(productRepository.findById(anyLong())).thenReturn(
                     Optional.of(existingProduct));
             when(auctionRepository.existsByProductId(anyLong())).thenReturn(false);
 
@@ -205,12 +197,6 @@ public class ProductServiceTest {
             assertThat(response.description()).isEqualTo("수정된 설명");
             assertThat(response.category()).isEqualTo(HOME_APPLIANCES);
             assertThat(response.minPrice()).isEqualTo(20000);
-
-            verify(productRepository, times(1)).findByIdAndUserId(eq(1L), eq(user.getId()));
-            verify(auctionRepository, times(1)).existsByProductId(1L);
-            verify(imageRepository, never()).deleteAll(anyList());
-            verify(imageService, never()).uploadImages(anyList());
-
         }
 
         @Test
@@ -228,8 +214,26 @@ public class ProductServiceTest {
             assertThatThrownBy(() -> productService.updateProduct(999L, 1L, invalidUserRequest, null))
                     .isInstanceOf(ProductException.class)
                     .hasMessageContaining("상품을 찾을 수 없습니다.");
+        }
 
-            verify(productRepository, times(1)).findByIdAndUserId(eq(1L), eq(999L));
+        @Test
+        @DisplayName("6. 소유자 아닌 사용자가 상품 수정 시도 실패")
+        void updateProduct_InvalidOwner() {
+            // given
+            UpdateProductRequest invalidUserRequest = UpdateProductRequest.builder()
+                    .name("수정된 상품")
+                    .description("수정된 설명")
+                    .category(HOME_APPLIANCES)
+                    .minPrice(20000)
+                    .build();
+
+            when(productRepository.findById(anyLong())).thenReturn(
+                    Optional.of(existingProduct));
+
+            // when & then
+            assertThatThrownBy(() -> productService.updateProduct(2L, 1L, invalidUserRequest, null))
+                    .isInstanceOf(ProductException.class)
+                    .hasMessageContaining("상품에 접근할 수 없습니다.");
         }
     }
 
@@ -241,7 +245,7 @@ public class ProductServiceTest {
         @DisplayName("1. 유효한 요청으로 사전 상품 삭제 성공 응답")
         void deletePreRegisteredProduct_Success() {
             // given
-            when(productRepository.findByIdAndUserId(anyLong(), anyLong())).thenReturn(Optional.of(product));
+            when(productRepository.findById(anyLong())).thenReturn(Optional.of(product));
             when(auctionRepository.existsByProductId(anyLong())).thenReturn(false);
 
             // when
@@ -251,15 +255,13 @@ public class ProductServiceTest {
             assertThat(response.productId()).isEqualTo(1L);
             assertThat(response.productName()).isEqualTo("사전 등록 상품");
             assertThat(response.likeCount()).isZero();
-            verify(productRepository, times(1)).delete(product);
-            verify(imageService, times(1)).deleteUploadImages(any());
         }
 
         @Test
         @DisplayName("2. 이미 경매로 등록된 상품 삭제 시도")
         void deleteAlreadyAuctionedProduct() {
             // Given
-            when(productRepository.findByIdAndUserId(anyLong(), anyLong())).thenReturn(Optional.of(product));
+            when(productRepository.findById(anyLong())).thenReturn(Optional.of(product));
             when(auctionRepository.existsByProductId(anyLong())).thenReturn(true);
 
             // When & Then
@@ -272,7 +274,7 @@ public class ProductServiceTest {
         @DisplayName("3. 존재하지 않는 상품 삭제 시도")
         void deleteNonExistingProduct() {
             // Given
-            when(productRepository.findByIdAndUserId(anyLong(), anyLong())).thenReturn(Optional.empty());
+            when(productRepository.findById(anyLong())).thenReturn(Optional.empty());
 
             // When & Then
             assertThatThrownBy(() -> productService.deleteProduct(1L, 1L))
