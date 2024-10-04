@@ -93,7 +93,8 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
                         product.description,
                         product.likes.size().longValue(),
                         isProductLikedByUser(userId),
-                        nullSafeBuilder(() -> user.id.eq(userId))
+                        nullSafeBuilder(() -> user.id.eq(userId)),
+                        product.category
                 ))
                 .from(product)
                 .join(product.user, user)
