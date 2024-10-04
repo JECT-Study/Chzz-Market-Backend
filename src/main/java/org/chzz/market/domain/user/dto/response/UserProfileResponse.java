@@ -5,6 +5,7 @@ import org.chzz.market.domain.user.entity.User;
 public record UserProfileResponse(
         String nickname,
         String bio,
+        String link,
         ParticipationCountsResponse participantCount,
         Long preRegisterCount,
         Long registeredAuctionCount
@@ -16,6 +17,7 @@ public record UserProfileResponse(
         return new UserProfileResponse(
                 user.getNickname(),
                 user.getBio(),
+                user.getLink(),
                 counts,
                 preRegisterCount,
                 registeredAuctionCount
