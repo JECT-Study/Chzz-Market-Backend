@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.chzz.market.domain.product.entity.Product.Category.BOOKS_AND_MEDIA;
 import static org.chzz.market.domain.product.entity.Product.Category.ELECTRONICS;
 import static org.chzz.market.domain.product.entity.Product.Category.FASHION_AND_CLOTHING;
-import static org.chzz.market.domain.product.entity.Product.builder;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -69,15 +68,15 @@ class ProductRepositoryCustomImplTest {
         user3 = User.builder().providerId("9012").nickname("닉네임3").email("user3@test.com").build();
         userRepository.saveAll(List.of(user1, user2, user3));
 
-        product1 = builder().user(user1).name("사전등록상품1").category(ELECTRONICS).minPrice(10000).build();
+        product1 = Product.builder().user(user1).name("사전등록상품1").category(ELECTRONICS).minPrice(10000).build();
         ReflectionTestUtils.setField(product1, "createdAt", LocalDateTime.now().minusDays(5));
-        product2 = builder().user(user1).name("사전등록상품2").category(BOOKS_AND_MEDIA).minPrice(20000).build();
+        product2 = Product.builder().user(user1).name("사전등록상품2").category(BOOKS_AND_MEDIA).minPrice(20000).build();
         ReflectionTestUtils.setField(product2, "createdAt", LocalDateTime.now().minusDays(4));
-        product3 = builder().user(user2).name("사전등록상품3").category(ELECTRONICS).minPrice(30000).build();
+        product3 = Product.builder().user(user2).name("사전등록상품3").category(ELECTRONICS).minPrice(30000).build();
         ReflectionTestUtils.setField(product3, "createdAt", LocalDateTime.now().minusDays(3));
-        product4 = builder().user(user2).name("사전등록상품4").category(ELECTRONICS).minPrice(40000).build();
+        product4 = Product.builder().user(user2).name("사전등록상품4").category(ELECTRONICS).minPrice(40000).build();
         ReflectionTestUtils.setField(product4, "createdAt", LocalDateTime.now().minusDays(2));
-        product5 = builder().user(user3).name("사전등록상품5").category(FASHION_AND_CLOTHING).minPrice(50000).build();
+        product5 = Product.builder().user(user3).name("사전등록상품5").category(FASHION_AND_CLOTHING).minPrice(50000).build();
         ReflectionTestUtils.setField(product5, "createdAt", LocalDateTime.now().minusDays(1));
         productRepository.saveAll(List.of(product1, product2, product3, product4, product5));
 
@@ -206,6 +205,7 @@ class ProductRepositoryCustomImplTest {
             assertThat(result.get().getIsLiked()).isTrue(); // user2가 좋아요 한 상품
             assertThat(result.get().getImageUrls()).contains("path/to/image1.jpg");
             assertThat(result.get().getIsSeller()).isFalse();
+            assertThat(result.get().getCategory()).isEqualTo(ELECTRONICS);
         }
 
         @Test
@@ -234,7 +234,7 @@ class ProductRepositoryCustomImplTest {
         void findProductDetailsWithNoLikes() {
             // given
             Product productWithoutLikes = productRepository.save(
-                    builder().user(user1).name("좋아요 없는 상품").category(ELECTRONICS).minPrice(10000).build()
+                    Product.builder().user(user1).name("좋아요 없는 상품").category(ELECTRONICS).minPrice(10000).build()
             );
 
             // when
@@ -283,6 +283,7 @@ class ProductRepositoryCustomImplTest {
             assertThat(result.get().getIsLiked()).isFalse(); // user2가 좋아요 한 상품
             assertThat(result.get().getImageUrls()).contains("path/to/image1.jpg");
             assertThat(result.get().getIsSeller()).isFalse();
+            assertThat(result.get().getCategory()).isEqualTo(ELECTRONICS);
         }
 
     }
