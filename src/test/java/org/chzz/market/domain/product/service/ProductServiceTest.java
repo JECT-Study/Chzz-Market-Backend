@@ -113,7 +113,7 @@ public class ProductServiceTest {
                 .build();
 
         updateRequest = UpdateProductRequest.builder()
-                .name("수정된 상품")
+                .productName("수정된 상품")
                 .description("수정된 설명")
                 .category(HOME_APPLIANCES)
                 .minPrice(20000)
@@ -204,7 +204,7 @@ public class ProductServiceTest {
         void updateProduct_InvalidUser() {
             // given
             UpdateProductRequest invalidUserRequest = UpdateProductRequest.builder()
-                    .name("수정된 상품")
+                    .productName("수정된 상품")
                     .description("수정된 설명")
                     .category(HOME_APPLIANCES)
                     .minPrice(20000)
@@ -221,7 +221,7 @@ public class ProductServiceTest {
         void updateProduct_InvalidOwner() {
             // given
             UpdateProductRequest invalidUserRequest = UpdateProductRequest.builder()
-                    .name("수정된 상품")
+                    .productName("수정된 상품")
                     .description("수정된 설명")
                     .category(HOME_APPLIANCES)
                     .minPrice(20000)
