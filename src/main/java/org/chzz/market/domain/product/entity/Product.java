@@ -21,7 +21,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.chzz.market.common.validation.annotation.ThousandMultiple;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
 import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.like.entity.Like;
@@ -103,7 +102,7 @@ public class Product extends BaseTimeEntity {
 
 
     public void update(UpdateProductRequest modifiedProduct) {
-        this.name = modifiedProduct.getName();
+        this.name = modifiedProduct.getProductName();
         this.description = modifiedProduct.getDescription();
         this.category = modifiedProduct.getCategory();
         this.minPrice = modifiedProduct.getMinPrice();

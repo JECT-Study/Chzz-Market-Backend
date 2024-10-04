@@ -13,7 +13,7 @@ import static org.chzz.market.domain.product.entity.Product.*;
 @AllArgsConstructor
 public class UpdateProductRequest {
     @Size(min = 2, message = "제목은 최소 2글자 이상이어야 합니다")
-    private String name;
+    private String productName;
 
     @Size(max = 1000, message = "상품 설명은 최대 1000자까지 가능합니다")
     private String description;
