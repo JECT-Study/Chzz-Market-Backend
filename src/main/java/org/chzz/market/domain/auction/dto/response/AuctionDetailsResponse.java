@@ -11,6 +11,7 @@ import org.chzz.market.domain.product.entity.Product.Category;
 public class AuctionDetailsResponse {
     private final Long productId;
     private final String sellerNickname;
+    private final String sellerProfileImageUrl;
     private final String productName;
     private final String description;
     private final Integer minPrice;
@@ -26,13 +27,15 @@ public class AuctionDetailsResponse {
     private List<String> imageUrls = new ArrayList<>();
 
     @QueryProjection
-    public AuctionDetailsResponse(Long productId, String sellerNickname, String productName, String description,
+    public AuctionDetailsResponse(Long productId, String sellerNickname, String sellerProfileImageUrl,
+                                  String productName, String description,
                                   Integer minPrice, Category category, Long timeRemaining, AuctionStatus status,
                                   Boolean isSeller,
                                   Long participantCount, Boolean isParticipated, Long bidId, Long bidAmount,
                                   int remainingBidCount) {
         this.productId = productId;
         this.sellerNickname = sellerNickname;
+        this.sellerProfileImageUrl = sellerProfileImageUrl;
         this.productName = productName;
         this.description = description;
         this.minPrice = minPrice;
