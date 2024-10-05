@@ -31,6 +31,36 @@ public class UserService {
     private final ProductRepository productRepository;
 
     /**
+     * 사용자 프로필 조회 (유저 ID 기반)
+     */
+    public UserProfileResponse getUserProfileById(Long userId) {
+        return getUserProfileInternal(findUserById(userId));
+    }
+
+    /**
+     * 사용자 프로필 조회 (닉네임 기반)
+     */
+    public UserProfileResponse getUserProfileByNickname(String nickname) {
+        return getUserProfileInternal(findUserByNickname(nickname));
+    }
+
+    /**
+     * 닉네임 이용가능 체크
+     */
+    public NicknameAvailabilityResponse checkNickname(String nickname) {
+        return new NicknameAvailabilityResponse(userRepository.findByNickname(nickname).isEmpty());
+    }
+
+    /**
+     * customerKey 조회
+     */
+    public String getCustomerKey(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new UserException(USER_NOT_FOUND))
+                .getCustomerKey().toString();
+    }
+
+    /**
      * 사용자 등록
      */
     @Transactional
@@ -42,24 +72,6 @@ public class UserService {
         user.createUser(userCreateRequest);
         user.addBankAccount(userCreateRequest.toBankAccount());
         return user;
-    }
-
-    /**
-     * 사용자 프로필 조회 (닉네임 기반)
-     */
-    public UserProfileResponse getUserProfileByNickname(String nickname) {
-        return getUserProfileInternal(findUserByNickname(nickname));
-    }
-
-    /**
-     * 사용자 프로필 조회 (유저 ID 기반)
-     */
-    public UserProfileResponse getUserProfileById(Long userId) {
-        return getUserProfileInternal(findUserById(userId));
-    }
-
-    public NicknameAvailabilityResponse checkNickname(String nickname) {
-        return new NicknameAvailabilityResponse(userRepository.findByNickname(nickname).isEmpty());
     }
 
     /**
@@ -81,12 +93,6 @@ public class UserService {
         log.info("profileImageUrl = {}", profileImageUrl);
         // 프로필 정보 업데이트
         existingUser.updateProfile(request, profileImageUrl);
-    }
-
-    public String getCustomerKey(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new UserException(USER_NOT_FOUND))
-                .getCustomerKey().toString();
     }
 
     /**
