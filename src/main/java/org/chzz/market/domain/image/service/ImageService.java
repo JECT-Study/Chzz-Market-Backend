@@ -44,19 +44,17 @@ public class ImageService {
         List<String> uploadedUrls = images.stream()
                 .map(this::uploadImage)
                 .toList();
-
-        uploadedUrls.forEach(url -> log.info("업로드 된 이미지 : {}", cloudfrontDomain + "/" + url));
-
+        log.info("업로드 된 이미지 리스트: {}", uploadedUrls);
         return uploadedUrls;
     }
 
     /**
-     * 단일 이미지 파일 업로드 및 CDN 경로 리스트 반환
+     * 단일 이미지 파일 업로드 및 CDN 전체경로 리스트 반환
      */
-    private String uploadImage(MultipartFile image) {
+    public String uploadImage(MultipartFile image) {
         String uniqueFileName = createUniqueFileName(Objects.requireNonNull(image.getOriginalFilename()));
-
-        return imageUploader.uploadImage(image, uniqueFileName);
+        String s3Key = imageUploader.uploadImage(image, uniqueFileName);
+        return cloudfrontDomain + "/" + s3Key;
     }
 
     /**
@@ -66,7 +64,7 @@ public class ImageService {
     public List<Image> saveProductImageEntities(Product product, List<String> cdnPaths) {
         List<Image> images = cdnPaths.stream()
                 .map(cdnPath -> Image.builder()
-                        .cdnPath(cloudfrontDomain + "/" + cdnPath)
+                        .cdnPath(cdnPath)
                         .product(product)
                         .build())
                 .toList();
