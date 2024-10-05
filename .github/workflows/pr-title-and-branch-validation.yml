@@ -2,7 +2,7 @@ name: PR Title and Branch Name Validation
 
 on:
   pull_request:
-    types: [ opened, synchronize, edited]
+    types: [ opened, synchronize, edited ]
     branches:
       - main
       - develop
@@ -16,6 +16,10 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v3
+      # github.actor 출력
+      - name: Display GitHub Actor
+        run:
+          echo "Actor: ${{ github.actor }}"
 
       - name: Validate PR Title
         uses: Slashgear/action-check-pr-title@v4.3.0
