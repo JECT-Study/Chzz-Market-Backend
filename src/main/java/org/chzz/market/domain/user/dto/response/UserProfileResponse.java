@@ -6,6 +6,7 @@ public record UserProfileResponse(
         String nickname,
         String bio,
         String link,
+        String profileImageUrl,
         ParticipationCountsResponse participantCount,
         Long preRegisterCount,
         Long registeredAuctionCount
@@ -18,6 +19,7 @@ public record UserProfileResponse(
                 user.getNickname(),
                 user.getBio(),
                 user.getLink(),
+                user.getProfileImageUrl(),
                 counts,
                 preRegisterCount,
                 registeredAuctionCount
