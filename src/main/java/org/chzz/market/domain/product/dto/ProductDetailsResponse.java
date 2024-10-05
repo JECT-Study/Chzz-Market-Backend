@@ -1,10 +1,9 @@
 package org.chzz.market.domain.product.dto;
 
 import com.querydsl.core.annotations.QueryProjection;
-import lombok.Getter;
-
 import java.time.LocalDateTime;
 import java.util.List;
+import lombok.Getter;
 import org.chzz.market.domain.product.entity.Product.Category;
 
 /**
@@ -15,6 +14,7 @@ public class ProductDetailsResponse {
     private final Long productId;
     private final String productName;
     private final String sellerNickname;
+    private final String sellerProfileImageUrl;
     private final Integer minPrice;
     private final LocalDateTime createdAt;
     private final String description;
@@ -26,11 +26,13 @@ public class ProductDetailsResponse {
 
     @QueryProjection
     public ProductDetailsResponse(Long productId, String productName, String sellerNickname,
+                                  String sellerProfileImageUrl,
                                   Integer minPrice, LocalDateTime createdAt, String description,
                                   Long likeCount, Boolean isLiked, Boolean isSeller, Category category) {
         this.productId = productId;
         this.productName = productName;
         this.sellerNickname = sellerNickname;
+        this.sellerProfileImageUrl = sellerProfileImageUrl;
         this.minPrice = minPrice;
         this.createdAt = createdAt;
         this.description = description;
