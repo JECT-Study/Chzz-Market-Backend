@@ -21,19 +21,17 @@ import jakarta.validation.constraints.Email;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Stream;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.bank_account.entity.BankAccount;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
-import org.chzz.market.domain.bid.entity.Bid;
 import org.chzz.market.domain.like.entity.Like;
 import org.chzz.market.domain.payment.entity.Payment;
 import org.chzz.market.domain.product.entity.Product;
+import org.chzz.market.domain.user.dto.request.UpdateUserProfileRequest;
 import org.chzz.market.domain.user.dto.request.UserCreateRequest;
 import org.chzz.market.domain.user.error.exception.UserException;
 import org.hibernate.annotations.DynamicUpdate;
@@ -66,6 +64,8 @@ public class User extends BaseTimeEntity {
 
     private String link;
 
+    private String profileImageUrl;
+
     // 구현 방식에 따라 권한 설정이 달라질 수 있어 임의로 열거체 선언 하였습니다
     @Column(columnDefinition = "varchar(20)")
     @Enumerated(EnumType.STRING)
@@ -77,10 +77,6 @@ public class User extends BaseTimeEntity {
 
     @Column(columnDefinition = "binary(16)", unique = true, nullable = false)
     private UUID customerKey;
-
-    @Builder.Default
-    @OneToMany(mappedBy = "bidder", fetch = FetchType.LAZY)
-    private List<Bid> bids = new ArrayList<>();
 
     @Builder.Default
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
@@ -128,26 +124,11 @@ public class User extends BaseTimeEntity {
         }
     }
 
-    public void updateProfile(String nickname, String bio, String link) {
-        this.nickname = nickname;
-        this.bio = bio;
-        this.link = link;
-    }
-
-    private Stream<Auction> getAuctionsFromBids() {
-        return bids.stream().map(Bid::getAuction);
-    }
-
-    public long getOngoingAuctionCount() {
-        return getAuctionsFromBids().filter(Auction::isProceeding).count();
-    }
-
-    public long getSuccessfulBidCount() {
-        return getAuctionsFromBids().filter(auction -> auction.isSuccessfulBidFor(this.id)).count();
-    }
-
-    public long getFailedBidCount() {
-        return getAuctionsFromBids().filter(auction -> auction.isFailedBidFor(this.id)).count();
+    public void updateProfile(UpdateUserProfileRequest request, String profileImageUrl) {
+        this.nickname = request.getNickname();
+        this.bio = request.getBio();
+        this.link = request.getLink();
+        this.profileImageUrl = profileImageUrl;
     }
 
     @Getter
