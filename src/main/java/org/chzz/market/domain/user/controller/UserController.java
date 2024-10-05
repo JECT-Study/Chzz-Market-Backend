@@ -16,11 +16,9 @@ import org.chzz.market.domain.token.entity.TokenType;
 import org.chzz.market.domain.token.service.TokenService;
 import org.chzz.market.domain.user.dto.request.UpdateUserProfileRequest;
 import org.chzz.market.domain.user.dto.request.UserCreateRequest;
-import org.chzz.market.domain.user.dto.response.UpdateProfileResponse;
 import org.chzz.market.domain.user.dto.response.UserProfileResponse;
 import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.service.UserService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -40,42 +38,12 @@ public class UserController {
     private final TokenService tokenService;
 
     /**
-     * 회원가입 완료
-     */
-    @PostMapping
-    public ResponseEntity<?> completeRegistration(@LoginUser Long userId,
-                                                  @Valid @RequestBody UserCreateRequest userCreateRequest,
-                                                  HttpServletResponse response) {
-        User user = userService.completeUserRegistration(userId, userCreateRequest);
-        // 임시토큰 만료
-        CookieUtil.expireCookie(response, TokenType.TEMP.name());
-        // 리프레쉬 토큰 발급
-        CookieUtil.createTokenCookie(response, tokenService.createRefreshToken(user), TokenType.REFRESH);
-        // 엑세스 토큰 발급
-        response.setHeader(AUTHORIZATION_HEADER, BEARER_TOKEN_PREFIX + tokenService.createAccessToken(user));
-        log.info("최종 회원가입 성공 userId = {}", userId);
-        return ResponseEntity.ok().build();
-    }
-
-    /**
      * 내 customerKey 조회
      */
     @GetMapping("/customer-key")
     public ResponseEntity<?> getCustomerKey(@LoginUser Long userId) {
         String customerKey = userService.getCustomerKey(userId);
         return ResponseEntity.ok(Map.of("customerKey", customerKey));
-    }
-
-    /**
-     * 내 프로필 수정
-     */
-    @PostMapping("/profile")
-    public ResponseEntity<UpdateProfileResponse> updateUserProfile(
-            @LoginUser Long userId,
-            @RequestPart(required = false) MultipartFile file,
-            @RequestPart @Valid UpdateUserProfileRequest request) {
-        userService.updateUserProfile(userId, file, request);
-        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     /**
@@ -100,6 +68,36 @@ public class UserController {
     @GetMapping("/check/nickname/{nickname}")
     public ResponseEntity<?> checkNickname(@PathVariable String nickname) {
         return ResponseEntity.ok((userService.checkNickname(nickname)));
+    }
+
+    /**
+     * 회원가입 완료
+     */
+    @PostMapping
+    public ResponseEntity<?> completeRegistration(@LoginUser Long userId,
+                                                  @Valid @RequestBody UserCreateRequest userCreateRequest,
+                                                  HttpServletResponse response) {
+        User user = userService.completeUserRegistration(userId, userCreateRequest);
+        // 임시토큰 만료
+        CookieUtil.expireCookie(response, TokenType.TEMP.name());
+        // 리프레쉬 토큰 발급
+        CookieUtil.createTokenCookie(response, tokenService.createRefreshToken(user), TokenType.REFRESH);
+        // 엑세스 토큰 발급
+        response.setHeader(AUTHORIZATION_HEADER, BEARER_TOKEN_PREFIX + tokenService.createAccessToken(user));
+        log.info("최종 회원가입 성공 userId = {}", userId);
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * 내 프로필 수정
+     */
+    @PostMapping("/profile")
+    public ResponseEntity<?> updateUserProfile(
+            @LoginUser Long userId,
+            @RequestPart(required = false) MultipartFile file,
+            @RequestPart @Valid UpdateUserProfileRequest request) {
+        userService.updateUserProfile(userId, file, request);
+        return ResponseEntity.ok().build();
     }
 
     /**
