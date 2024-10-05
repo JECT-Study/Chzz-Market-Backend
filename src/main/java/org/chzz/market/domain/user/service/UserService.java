@@ -34,14 +34,14 @@ public class UserService {
      * 사용자 프로필 조회 (유저 ID 기반)
      */
     public UserProfileResponse getUserProfileById(Long userId) {
-        return getUserProfileInternal(findUserById(userId));
+        return getUserProfileInternal(findUserById(userId), true);
     }
 
     /**
      * 사용자 프로필 조회 (닉네임 기반)
      */
     public UserProfileResponse getUserProfileByNickname(String nickname) {
-        return getUserProfileInternal(findUserByNickname(nickname));
+        return getUserProfileInternal(findUserByNickname(nickname), false);
     }
 
     /**
@@ -98,13 +98,13 @@ public class UserService {
     /**
      * 내 프로필 조회
      */
-    private UserProfileResponse getUserProfileInternal(User user) {
+    private UserProfileResponse getUserProfileInternal(User user, boolean includeProviderType) {
         long preRegisterCount = productRepository.countPreRegisteredProductsByUserId(user.getId());
         long registeredAuctionCount = auctionRepository.countByProductUserId(user.getId());
 
         ParticipationCountsResponse counts = auctionRepository.getParticipationCounts(user.getId());
 
-        return UserProfileResponse.of(user, counts, preRegisterCount, registeredAuctionCount);
+        return UserProfileResponse.of(user, counts, preRegisterCount, registeredAuctionCount, includeProviderType);
     }
 
     /**
