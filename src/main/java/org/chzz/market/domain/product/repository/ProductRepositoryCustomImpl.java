@@ -88,6 +88,7 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
                         product.id,
                         product.name,
                         user.nickname,
+                        user.profileImageUrl,
                         product.minPrice,
                         product.createdAt,
                         product.description,
