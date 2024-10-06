@@ -1,15 +1,18 @@
 package org.chzz.market.domain.product.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.chzz.market.domain.product.entity.Product.Category.BOOKS_AND_MEDIA;
 import static org.chzz.market.domain.product.entity.Product.Category.ELECTRONICS;
 import static org.chzz.market.domain.product.entity.Product.Category.FASHION_AND_CLOTHING;
+import static org.chzz.market.domain.product.entity.Product.Category.HOME_APPLIANCES;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import org.chzz.market.common.DatabaseTest;
 import org.chzz.market.domain.image.entity.Image;
@@ -18,7 +21,9 @@ import org.chzz.market.domain.like.entity.Like;
 import org.chzz.market.domain.like.repository.LikeRepository;
 import org.chzz.market.domain.product.dto.ProductDetailsResponse;
 import org.chzz.market.domain.product.dto.ProductResponse;
+import org.chzz.market.domain.product.dto.UpdateProductRequest;
 import org.chzz.market.domain.product.entity.Product;
+import org.chzz.market.domain.product.entity.Product.Category;
 import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -397,5 +402,106 @@ class ProductRepositoryCustomImplTest {
                     .extracting("likeCount")
                     .containsExactly(2L, 0L);
         }
+    }
+
+    @Nested
+    @DisplayName("사전 등록 상품 수정 테스트")
+    class UpdateProducts {
+
+        @Test
+        @DisplayName("1. 상품 정보 수정 성공")
+        void updateProductInfo() {
+            // given
+            String newName = "수정된 상품명";
+            String newDescription = "수정된 설명";
+            Category newCategory = HOME_APPLIANCES;
+            int newMinPrice = 15000;
+
+            // when
+            Product productToUpdate = productRepository.findById(product1.getId()).orElseThrow();
+            productToUpdate.update(new UpdateProductRequest(newName, newDescription, newCategory, newMinPrice, null));
+            productRepository.save(productToUpdate);
+            entityManager.flush();
+            entityManager.clear();
+
+            // then
+            Product updatedProduct = productRepository.findById(product1.getId()).orElseThrow();
+            assertThat(updatedProduct.getName()).isEqualTo(newName);
+            assertThat(updatedProduct.getDescription()).isEqualTo(newDescription);
+            assertThat(updatedProduct.getCategory()).isEqualTo(newCategory);
+            assertThat(updatedProduct.getMinPrice()).isEqualTo(newMinPrice);
+        }
+
+        @Test
+        @DisplayName("2. 이미지 추가 성공")
+        void addNewImage() {
+            // given
+            String newImagePath = "path/to/new_image.jpg";
+            Image newImage = Image.builder().product(product1).cdnPath(newImagePath).build();
+
+            // when
+            imageRepository.save(newImage);
+            entityManager.flush();
+            entityManager.clear();
+
+            // then
+            Product updatedProduct = productRepository.findById(product1.getId()).orElseThrow();
+            assertThat(updatedProduct.getImages()).hasSize(2);
+            assertThat(updatedProduct.getImages().stream().map(Image::getCdnPath)).contains(newImagePath);
+        }
+
+        @Test
+        @DisplayName("3. 이미지 삭제 성공")
+        void deleteImage() {
+            // given
+            Long imageIdToDelete = image1.getId();
+
+            // when
+            imageRepository.deleteById(imageIdToDelete);
+            entityManager.flush();
+            entityManager.clear();
+
+            // then
+            Product updatedProduct = productRepository.findById(product1.getId()).orElseThrow();
+            assertThat(updatedProduct.getImages()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("4. 상품 정보 수정 및 이미지 변경 성공")
+        void updateProductInfoAndChangeImages() {
+            // given
+            String newName = "수정된 상품명";
+            String newImagePath = "path/to/new_image.jpg";
+            Image newImage = Image.builder().product(product1).cdnPath(newImagePath).build();
+
+            // when
+            Product productToUpdate = productRepository.findById(product1.getId()).orElseThrow();
+            productToUpdate.update(new UpdateProductRequest(newName, null, HOME_APPLIANCES, null, null));
+            imageRepository.deleteById(image1.getId());
+            imageRepository.save(newImage);
+            productRepository.save(productToUpdate);
+            entityManager.flush();
+            entityManager.clear();
+
+            // then
+            Product updatedProduct = productRepository.findById(product1.getId()).orElseThrow();
+            assertThat(updatedProduct.getName()).isEqualTo(newName);
+            assertThat(updatedProduct.getImages()).hasSize(1);
+            assertThat(updatedProduct.getImages().get(0).getCdnPath()).isEqualTo(newImagePath);
+        }
+
+        @Test
+        @DisplayName("5. 존재하지 않는 상품 수정 시도")
+        void updateNonExistentProduct() {
+            // given
+            Long nonExistentProductId = 9999L;
+
+            // when & then
+            assertThatThrownBy(() -> {
+                Product nonExistentProduct = productRepository.findById(nonExistentProductId).orElseThrow();
+                nonExistentProduct.update(new UpdateProductRequest("New Name", null, null, null, null));
+            }).isInstanceOf(NoSuchElementException.class);
+        }
+
     }
 }
