@@ -98,7 +98,7 @@ public class ProductService {
      */
     @Transactional
     public UpdateProductResponse updateProduct(Long userId, Long productId, UpdateProductRequest request,
-                                               List<MultipartFile> images) {
+                                               List<MultipartFile> newImages) {
         logger.info("상품 ID {}번에 대한 사전 등록 정보를 업데이트를 시작합니다.", productId);
         // 상품 유효성 검사
         Product existingProduct = productRepository.findById(productId)
@@ -117,9 +117,7 @@ public class ProductService {
         existingProduct.update(request);
 
         // 이미지 저장
-        if (images != null && !images.isEmpty()) {
-            updateProductImages(existingProduct, images);
-        }
+        updateProductImages(existingProduct, request, newImages);
 
         logger.info("상품 ID {}번에 대한 사전 등록 정보를 업데이트를 완료했습니다.", productId);
         return UpdateProductResponse.from(existingProduct);
@@ -128,28 +126,25 @@ public class ProductService {
     /**
      * 상품 이미지 업데이트
      */
-    public void updateProductImages(Product product, List<MultipartFile> newImages) {
-        List<Image> existingImages = product.getImages();
-        // 기존 이미지 URL 추출
-        List<String> currentImageUrls = existingImages.stream()
-                .map(Image::getCdnPath)
+    public void updateProductImages(Product product, UpdateProductRequest request, List<MultipartFile> newImages) {
+
+        // 삭제할 이미지 처리
+        List<Image> imagesToDelete = product.getImages().stream()
+                .filter(image -> request.getDeleteImageList().contains(image.getId()))
                 .toList();
 
-        // S3에 기존 이미지 삭제
-        imageService.deleteUploadImages(currentImageUrls);
-        // DB에 기존 이미지 엔티티 삭제
-        imageRepository.deleteAll(existingImages);
-        // 상품 객체에서 이미지 리스트 초기화
-        product.clearImages();
-        logger.info("상품 ID {}번의 기존 이미지 삭제를 모두 마쳤습니다.", product.getId());
+        // TODO: 추후 soft delete 로 변경
+        imageRepository.deleteAll(imagesToDelete);
 
-        // S3에 새 이미지 업로드
-        List<String> newImageUrls = imageService.uploadImages(newImages);
-        // DB에 새 이미지 엔티티 저장
-        List<Image> newImageEntities = imageService.saveProductImageEntities(product, newImageUrls);
-        // 상품 객체에 이미지 추가
-        product.addImages(newImageEntities);
-        logger.info("상품 ID {}번의 이미지를 성공적으로 저장하였습니다.", product.getId());
+        logger.info("상품 ID {}번의 기존 이미지 처리 작업을 모두 마쳤습니다.", product.getId());
+
+        if (newImages != null && !newImages.isEmpty()) {
+            List<String> newImageUrls = imageService.uploadImages(newImages);
+            List<Image> newImageEntities = imageService.saveProductImageEntities(product, newImageUrls);
+            product.addImages(newImageEntities);
+
+            logger.info("상품 ID {}번의 새 이미지를 성공적으로 저장하였습니다.", product.getId());
+        }
     }
 
     /**
