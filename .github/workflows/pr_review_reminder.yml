@@ -1,0 +1,93 @@
+name: PR Review Reminder
+
+#on:
+#  schedule:
+#    # 매일 낮 12시와 저녁 6시에 실행
+#    - cron: '0 12 * * *'
+#    - cron: '0 18 * * *'
+on:
+  pull_request:
+    branches: ["develop"]
+
+jobs:
+  review-reminder:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v3
+
+      - name: Get open PRs with reviewers and reviews
+        id: get-prs
+        run: |
+          prs=$(gh pr list --json number,title,url,reviewRequests --jq '.[] | select(.reviewRequests | length > 0) | {number, title, url, reviewRequests}')
+          echo "PRs with reviewers: $prs"
+          prs_without_completed_reviews="[]"
+
+          for pr in $(echo "$prs" | jq -c '.[]'); do
+            pr_number=$(echo "$pr" | jq -r '.number')
+            pr_url=$(echo "$pr" | jq -r '.url')
+            pr_title=$(echo "$pr" | jq -r '.title')
+
+            # 각 PR에 대해 리뷰 상태를 가져옴
+            reviewers=$(echo "$pr" | jq -c '.reviewRequests[].login')
+            incomplete_reviewers="[]"
+
+            for reviewer in $reviewers; do
+              review_status=$(gh pr reviews $pr_number --json author,state --jq --arg user $reviewer '[.[] | select(.author.login == $user and (.state == "APPROVED" or .state == "CHANGES_REQUESTED"))] | length')
+
+              # 리뷰어가 아직 리뷰를 하지 않은 경우에만 처리
+              if [[ "$review_status" -eq 0 ]]; then
+                incomplete_reviewers=$(echo "$incomplete_reviewers" | jq --arg user $reviewer '. += [$user]')
+              fi
+            done
+
+            if [[ $(echo "$incomplete_reviewers" | jq 'length') -gt 0 ]]; then
+              # 리뷰를 완료하지 않은 리뷰어가 있는 PR을 처리
+              prs_without_completed_reviews=$(echo "$prs_without_completed_reviews" | jq --argjson reviewers "$incomplete_reviewers" --arg number "$pr_number" --arg title "$pr_title" --arg url "$pr_url" '. += [{"number": $number, "title": $title, "url": $url, "incompleteReviewers": $reviewers}]')
+            fi
+          done
+
+          echo "prs=$prs_without_completed_reviews" >> $GITHUB_ENV
+
+      - name: Map GitHub users to Discord users and notify
+        run: |
+          reviewer_map='[
+            {"github": "wonrok97", "discord": "<@wonrok97>"},
+            {"github": "subro", "discord": "<@수브로>"},
+            {"github": "iseokho", "discord": "<@이석호>"}
+          ]'
+
+          prs=$prs
+          message="리뷰 부탁드립니다.\n[리뷰하러 가기](https://github.com/CHZZK-Study/Chzz-Market-Backend/pulls)\n\n"
+
+          for pr in $(echo "$prs" | jq -c '.[]'); do
+            pr_number=$(echo "$pr" | jq -r '.number')
+            pr_title=$(echo "$pr" | jq -r '.title')
+            pr_url=$(echo "$pr" | jq -r '.url')
+            incomplete_reviewers=$(echo "$pr" | jq -r '.incompleteReviewers[]')
+
+            for reviewer in $incomplete_reviewers; do
+              # 리뷰어와 Discord 사용자 매핑
+              discord_user=$(echo "$reviewer_map" | jq --arg user "$reviewer" -r '.[] | select(.github == $user) | .discord')
+
+              if [ -n "$discord_user" ]; then
+                message+="${discord_user}님이 리뷰할 PR 목록:\n"
+                message+="- [PR #$pr_number: $pr_title]($pr_url)\n"
+              fi
+            done
+          done
+
+          # PR이 없을 때 메시지 전송 방지
+          if [[ "$prs" == "[]" ]]; then
+            echo "No PRs to review."
+            exit 0
+          fi
+
+          # 메시지 전송
+          if [ -n "$message" ]; then
+            curl -H "Content-Type: application/json" \
+                 -X POST \
+                 -d "{\"content\": \"$message\", \"embeds\": [{\"image\": {\"url\": \"https://your-image-url.com/your-image.png\"}}]}" \
+                 ${{ secrets.DISCORD_WEBHOOK_URL }}
+          fi
