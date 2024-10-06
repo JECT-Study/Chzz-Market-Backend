@@ -1,10 +1,10 @@
 package org.chzz.market.domain.product.dto;
 
 import com.querydsl.core.annotations.QueryProjection;
-import lombok.Getter;
-
 import java.time.LocalDateTime;
 import java.util.List;
+import lombok.Getter;
+import org.chzz.market.domain.image.dto.ImageResponse;
 import org.chzz.market.domain.product.entity.Product.Category;
 
 /**
@@ -22,7 +22,7 @@ public class ProductDetailsResponse {
     private final Boolean isLiked;
     private final Boolean isSeller;
     private final Category category;
-    private List<String> imageUrls;
+    private List<ImageResponse> images;
 
     @QueryProjection
     public ProductDetailsResponse(Long productId, String productName, String sellerNickname,
@@ -40,7 +40,7 @@ public class ProductDetailsResponse {
         this.category = category;
     }
 
-    public void addImageList(List<String> imageUrls) {
-        this.imageUrls = imageUrls;
+    public void addImageList(List<ImageResponse> images) {
+        this.images = images;
     }
 }
