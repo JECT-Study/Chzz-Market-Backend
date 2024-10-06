@@ -9,6 +9,7 @@ import static org.chzz.market.domain.product.error.ProductErrorCode.PRODUCT_NOT_
 import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.image.repository.ImageRepository;
@@ -25,8 +26,6 @@ import org.chzz.market.domain.product.entity.Product.Category;
 import org.chzz.market.domain.product.error.ProductException;
 import org.chzz.market.domain.product.repository.ProductRepository;
 import org.chzz.market.domain.user.repository.UserRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.TransientDataAccessException;
 import org.springframework.data.domain.Page;
@@ -37,12 +36,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class ProductService {
-
-    private static final Logger logger = LoggerFactory.getLogger(ProductService.class);
 
     private final ImageService imageService;
     private final ProductRepository productRepository;
@@ -99,7 +97,7 @@ public class ProductService {
     @Transactional
     public UpdateProductResponse updateProduct(Long userId, Long productId, UpdateProductRequest request,
                                                List<MultipartFile> newImages) {
-        logger.info("상품 ID {}번에 대한 사전 등록 정보를 업데이트를 시작합니다.", productId);
+        log.info("상품 ID {}번에 대한 사전 등록 정보를 업데이트를 시작합니다.", productId);
         // 상품 유효성 검사
         Product existingProduct = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductException(PRODUCT_NOT_FOUND));
@@ -119,7 +117,7 @@ public class ProductService {
         // 이미지 저장
         updateProductImages(existingProduct, request, newImages);
 
-        logger.info("상품 ID {}번에 대한 사전 등록 정보를 업데이트를 완료했습니다.", productId);
+        log.info("상품 ID {}번에 대한 사전 등록 정보를 업데이트를 완료했습니다.", productId);
         return UpdateProductResponse.from(existingProduct);
     }
 
@@ -136,14 +134,14 @@ public class ProductService {
         // TODO: 추후 soft delete 로 변경
         imageRepository.deleteAll(imagesToDelete);
 
-        logger.info("상품 ID {}번의 기존 이미지 처리 작업을 모두 마쳤습니다.", product.getId());
+        log.info("상품 ID {}번의 기존 이미지 처리 작업을 모두 마쳤습니다.", product.getId());
 
         if (newImages != null && !newImages.isEmpty()) {
             List<String> newImageUrls = imageService.uploadImages(newImages);
             List<Image> newImageEntities = imageService.saveProductImageEntities(product, newImageUrls);
             product.addImages(newImageEntities);
 
-            logger.info("상품 ID {}번의 새 이미지를 성공적으로 저장하였습니다.", product.getId());
+            log.info("상품 ID {}번의 새 이미지를 성공적으로 저장하였습니다.", product.getId());
         }
     }
 
@@ -157,12 +155,12 @@ public class ProductService {
     )
     @Transactional
     public DeleteProductResponse deleteProduct(Long productId, Long userId) {
-        logger.info("상품 ID {}번에 해당하는 상품 삭제 프로세스를 시작합니다.", productId);
+        log.info("상품 ID {}번에 해당하는 상품 삭제 프로세스를 시작합니다.", productId);
 
         // 상품 유효성 검사
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> {
-                    logger.info("상품 ID {}번에 해당하는 상품을 찾을 수 없습니다.", productId);
+                    log.info("상품 ID {}번에 해당하는 상품을 찾을 수 없습니다.", productId);
                     return new ProductException(PRODUCT_NOT_FOUND);
                 });
 
@@ -172,7 +170,7 @@ public class ProductService {
 
         // 경매 등록 여부 확인
         if (auctionRepository.existsByProductId(productId)) {
-            logger.info("상품 ID {}번은 이미 경매로 등록되어 삭제할 수 없습니다.", productId);
+            log.info("상품 ID {}번은 이미 경매로 등록되어 삭제할 수 없습니다.", productId);
             throw new ProductException(PRODUCT_ALREADY_AUCTIONED);
         }
 
@@ -191,7 +189,7 @@ public class ProductService {
                             null)); // TODO: 사전 등록 취소 (soft delete 로 변경시 이미지 추가)
         }
 
-        logger.info("사전 등록 상품 ID{}번에 해당하는 상품을 성공적으로 삭제하였습니다. (좋아요 누른 사용자 수: {})", productId, likedUserIds.size());
+        log.info("사전 등록 상품 ID{}번에 해당하는 상품을 성공적으로 삭제하였습니다. (좋아요 누른 사용자 수: {})", productId, likedUserIds.size());
 
         return DeleteProductResponse.ofPreRegistered(product, likedUserIds.size());
     }
@@ -205,6 +203,6 @@ public class ProductService {
                 .toList();
 
         imageService.deleteUploadImages(imageUrls);
-        logger.info("상품 ID {}번에 해당하는 상품의 이미지를 모두 삭제하였습니다.", product.getId());
+        log.info("상품 ID {}번에 해당하는 상품의 이미지를 모두 삭제하였습니다.", product.getId());
     }
 }
