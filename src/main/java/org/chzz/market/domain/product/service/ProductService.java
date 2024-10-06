@@ -126,13 +126,19 @@ public class ProductService {
      */
     public void updateProductImages(Product product, UpdateProductRequest request, List<MultipartFile> newImages) {
 
-        // 삭제할 이미지 처리
+        // 삭제할 이미지 객체 리스트 추출 및 Hard delete 처리
         List<Image> imagesToDelete = product.getImages().stream()
                 .filter(image -> request.getDeleteImageList().contains(image.getId()))
                 .toList();
 
         // TODO: 추후 soft delete 로 변경
+        product.removeImage(imagesToDelete);
         imageRepository.deleteAll(imagesToDelete);
+
+        // 기존 이미지 삭제 리스트 S3 Temp 디렉토리로 이동
+        if (request.getDeleteImageList() != null && !request.getDeleteImageList().isEmpty()) {
+            imageService.deleteImagesToTemp(imagesToDelete);
+        }
 
         log.info("상품 ID {}번의 기존 이미지 처리 작업을 모두 마쳤습니다.", product.getId());
 
