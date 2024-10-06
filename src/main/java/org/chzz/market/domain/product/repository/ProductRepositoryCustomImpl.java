@@ -24,6 +24,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.util.QuerydslOrder;
 import org.chzz.market.common.util.QuerydslOrderProvider;
+import org.chzz.market.domain.image.dto.ImageResponse;
+import org.chzz.market.domain.image.dto.QImageResponse;
 import org.chzz.market.domain.image.entity.QImage;
 import org.chzz.market.domain.product.dto.ProductDetailsResponse;
 import org.chzz.market.domain.product.dto.ProductResponse;
@@ -102,13 +104,13 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
                 .fetchOne());
 
         return result.map(response -> {
-            List<String> imageUrls = jpaQueryFactory
-                    .select(image.cdnPath)
+            List<ImageResponse> images = jpaQueryFactory
+                    .select(new QImageResponse(image.id, image.cdnPath))
                     .from(image)
                     .where(image.product.id.eq(productId))
                     .orderBy(image.id.asc())
                     .fetch();
-            response.addImageList(imageUrls);
+            response.addImageList(images);
             return response;
         });
     }
