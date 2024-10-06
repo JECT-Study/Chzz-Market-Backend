@@ -1,11 +1,15 @@
 package org.chzz.market.domain.product.dto;
 
+import static org.chzz.market.domain.product.entity.Product.Category;
+
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
-import lombok.*;
+import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.chzz.market.common.validation.annotation.ThousandMultiple;
-
-import static org.chzz.market.domain.product.entity.Product.*;
 
 @Getter
 @Builder
@@ -23,4 +27,6 @@ public class UpdateProductRequest {
     @ThousandMultiple
     @Min(value = 1000, message = "시작 가격은 최소 1,000원 이상, 1000의 배수이어야 합니다")
     private Integer minPrice;
+
+    private List<Long> deleteImageList;
 }
