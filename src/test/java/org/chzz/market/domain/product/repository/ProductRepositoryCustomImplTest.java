@@ -276,9 +276,9 @@ class ProductRepositoryCustomImplTest {
 
             // then
             assertThat(result).isPresent();
-            assertThat(result.get().getCreatedAt()).isNotNull();
+            assertThat(result.get().getUpdatedAt()).isNotNull();
             // 생성 시간이 현재 시간보다 과거인지 확인
-            assertThat(result.get().getCreatedAt()).isBefore(LocalDateTime.now());
+            assertThat(result.get().getUpdatedAt()).isBefore(LocalDateTime.now());
         }
 
         @Test
