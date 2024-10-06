@@ -91,7 +91,7 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
                         product.name,
                         user.nickname,
                         product.minPrice,
-                        product.createdAt,
+                        product.updatedAt,
                         product.description,
                         product.likes.size().longValue(),
                         isProductLikedByUser(userId),

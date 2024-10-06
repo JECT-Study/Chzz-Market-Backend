@@ -16,7 +16,7 @@ public class ProductDetailsResponse {
     private final String productName;
     private final String sellerNickname;
     private final Integer minPrice;
-    private final LocalDateTime createdAt;
+    private final LocalDateTime updatedAt;
     private final String description;
     private final Long likeCount;
     private final Boolean isLiked;
@@ -26,13 +26,13 @@ public class ProductDetailsResponse {
 
     @QueryProjection
     public ProductDetailsResponse(Long productId, String productName, String sellerNickname,
-                                  Integer minPrice, LocalDateTime createdAt, String description,
+                                  Integer minPrice, LocalDateTime updatedAt, String description,
                                   Long likeCount, Boolean isLiked, Boolean isSeller, Category category) {
         this.productId = productId;
         this.productName = productName;
         this.sellerNickname = sellerNickname;
         this.minPrice = minPrice;
-        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
         this.description = description;
         this.likeCount = likeCount;
         this.isLiked = isLiked;
