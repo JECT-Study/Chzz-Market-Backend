@@ -120,6 +120,10 @@ public class Product extends BaseTimeEntity {
         this.images.addAll(images);
     }
 
+    public void removeImage(List<Image> images) {
+        this.images.removeAll(images);
+    }
+
     public Image getFirstImage() {
         return images.stream().findFirst().orElse(null);
     }
