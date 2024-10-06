@@ -111,7 +111,8 @@ class ProductRepositoryCustomImplTest {
             Pageable pageable = PageRequest.of(0, 10, Sort.by("expensive"));
 
             // when
-            Page<ProductResponse> result = productRepository.findProductsByCategory(ELECTRONICS, user1.getId(), pageable);
+            Page<ProductResponse> result = productRepository.findProductsByCategory(ELECTRONICS, user1.getId(),
+                    pageable);
 
             // then
             assertThat(result).isNotNull();
@@ -134,7 +135,8 @@ class ProductRepositoryCustomImplTest {
             Pageable pageable = PageRequest.of(0, 10, Sort.by("like"));
 
             // when
-            Page<ProductResponse> result = productRepository.findProductsByCategory(ELECTRONICS, user1.getId(), pageable);
+            Page<ProductResponse> result = productRepository.findProductsByCategory(ELECTRONICS, user1.getId(),
+                    pageable);
 
             // then
             assertThat(result.getContent()).isNotEmpty();
@@ -155,7 +157,8 @@ class ProductRepositoryCustomImplTest {
             Pageable pageable = PageRequest.of(0, 10, Sort.by("product-newest"));
 
             // when
-            Page<ProductResponse> result = productRepository.findProductsByCategory(ELECTRONICS, user1.getId(), pageable);
+            Page<ProductResponse> result = productRepository.findProductsByCategory(ELECTRONICS, user1.getId(),
+                    pageable);
 
             // then
             assertThat(result.getContent()).isNotEmpty();
@@ -195,7 +198,8 @@ class ProductRepositoryCustomImplTest {
         @DisplayName("1. 유효한 상품 ID로 상세 정보 조회")
         void findProductDetailsById() {
             // when
-            Optional<ProductDetailsResponse> result = productRepository.findProductDetailsById(product1.getId(), user2.getId());
+            Optional<ProductDetailsResponse> result = productRepository.findProductDetailsById(product1.getId(),
+                    user2.getId());
 
             // then
             assertThat(result).isPresent();
@@ -203,9 +207,13 @@ class ProductRepositoryCustomImplTest {
             assertThat(result.get().getMinPrice()).isEqualTo(10000);
             assertThat(result.get().getLikeCount()).isEqualTo(2);
             assertThat(result.get().getIsLiked()).isTrue(); // user2가 좋아요 한 상품
-            assertThat(result.get().getImageUrls()).contains("path/to/image1.jpg");
             assertThat(result.get().getIsSeller()).isFalse();
             assertThat(result.get().getCategory()).isEqualTo(ELECTRONICS);
+
+            assertThat(result.get().getImages()).isNotEmpty();
+            assertThat(result.get().getImages()).anySatisfy(imageResponse -> {
+                assertThat(imageResponse.imageUrl()).isEqualTo("path/to/image1.jpg");
+            });
         }
 
         @Test
@@ -222,7 +230,8 @@ class ProductRepositoryCustomImplTest {
         @DisplayName("3. 좋아요 하지 않은 사용자가 조회 시 'isLiked' false 반환")
         void findProductDetailsWithoutLike() {
             // when
-            Optional<ProductDetailsResponse> result = productRepository.findProductDetailsById(product3.getId(), user3.getId());
+            Optional<ProductDetailsResponse> result = productRepository.findProductDetailsById(product3.getId(),
+                    user3.getId());
 
             // then
             assertThat(result).isPresent();
@@ -238,7 +247,8 @@ class ProductRepositoryCustomImplTest {
             );
 
             // when
-            Optional<ProductDetailsResponse> result = productRepository.findProductDetailsById(productWithoutLikes.getId(), user1.getId());
+            Optional<ProductDetailsResponse> result = productRepository.findProductDetailsById(
+                    productWithoutLikes.getId(), user1.getId());
 
             // then
             assertThat(result).isPresent();
@@ -249,7 +259,8 @@ class ProductRepositoryCustomImplTest {
         @DisplayName("5. 다른 사용자의 상품 정보도 정상적으로 조회")
         void findProductDetailsOfOtherUser() {
             // when
-            Optional<ProductDetailsResponse> result = productRepository.findProductDetailsById(product2.getId(), user3.getId());
+            Optional<ProductDetailsResponse> result = productRepository.findProductDetailsById(product2.getId(),
+                    user3.getId());
 
             // then
             assertThat(result).isPresent();
@@ -260,7 +271,8 @@ class ProductRepositoryCustomImplTest {
         @DisplayName("6. 상품 정보에 생성 시간이 정확히 포함")
         void findProductDetailsWithCorrectCreatedAt() {
             // when
-            Optional<ProductDetailsResponse> result = productRepository.findProductDetailsById(product1.getId(), user1.getId());
+            Optional<ProductDetailsResponse> result = productRepository.findProductDetailsById(product1.getId(),
+                    user1.getId());
 
             // then
             assertThat(result).isPresent();
@@ -281,9 +293,14 @@ class ProductRepositoryCustomImplTest {
             assertThat(result.get().getMinPrice()).isEqualTo(10000);
             assertThat(result.get().getLikeCount()).isEqualTo(2);
             assertThat(result.get().getIsLiked()).isFalse(); // user2가 좋아요 한 상품
-            assertThat(result.get().getImageUrls()).contains("path/to/image1.jpg");
             assertThat(result.get().getIsSeller()).isFalse();
             assertThat(result.get().getCategory()).isEqualTo(ELECTRONICS);
+
+            // 이미지 확인
+            assertThat(result.get().getImages()).isNotEmpty();
+            assertThat(result.get().getImages()).anySatisfy(imageResponse -> {
+                assertThat(imageResponse.imageUrl()).isEqualTo("path/to/image1.jpg");
+            });
         }
 
     }
@@ -314,7 +331,8 @@ class ProductRepositoryCustomImplTest {
         void findMyProductsByUserIdWithNoProducts() {
             // given
             Pageable pageable = PageRequest.of(0, 10);
-            User newUser = userRepository.save(User.builder().providerId("9999").nickname("새로운사용자").email("new@test.com").build());
+            User newUser = userRepository.save(
+                    User.builder().providerId("9999").nickname("새로운사용자").email("new@test.com").build());
 
             // when
             Page<ProductResponse> result = productRepository.findProductsByNickname(newUser.getNickname(), pageable);
@@ -331,8 +349,10 @@ class ProductRepositoryCustomImplTest {
             Pageable secondPage = PageRequest.of(1, 2, Sort.by("expensive"));
 
             // when
-            Page<ProductResponse> firstResult = productRepository.findProductsByCategory(ELECTRONICS, user1.getId(), firstPage);
-            Page<ProductResponse> secondResult = productRepository.findProductsByCategory(ELECTRONICS, user1.getId(), secondPage);
+            Page<ProductResponse> firstResult = productRepository.findProductsByCategory(ELECTRONICS, user1.getId(),
+                    firstPage);
+            Page<ProductResponse> secondResult = productRepository.findProductsByCategory(ELECTRONICS, user1.getId(),
+                    secondPage);
 
             // then
             assertThat(firstResult.getContent()).hasSize(2);
@@ -350,8 +370,10 @@ class ProductRepositoryCustomImplTest {
             Pageable expensivePageable = PageRequest.of(0, 10, Sort.by("expensive"));
 
             // when
-            Page<ProductResponse> newestResult = productRepository.findProductsByNickname(user1.getNickname(), newestPageable);
-            Page<ProductResponse> expensiveResult = productRepository.findProductsByNickname(user1.getNickname(), expensivePageable);
+            Page<ProductResponse> newestResult = productRepository.findProductsByNickname(user1.getNickname(),
+                    newestPageable);
+            Page<ProductResponse> expensiveResult = productRepository.findProductsByNickname(user1.getNickname(),
+                    expensivePageable);
 
             // then
             assertThat(newestResult.getContent()).extracting("productName")
