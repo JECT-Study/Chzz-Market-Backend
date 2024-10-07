@@ -4,6 +4,7 @@ import static org.chzz.market.domain.product.entity.Product.Category;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,5 +29,6 @@ public class UpdateProductRequest {
     @Min(value = 1000, message = "시작 가격은 최소 1,000원 이상, 1000의 배수이어야 합니다")
     private Integer minPrice;
 
-    private List<Long> deleteImageList;
+    @Builder.Default
+    private List<Long> deleteImageList = new ArrayList<>();
 }
