@@ -135,11 +135,6 @@ public class ProductService {
         product.removeImage(imagesToDelete);
         imageRepository.deleteAll(imagesToDelete);
 
-        // 기존 이미지 삭제 리스트 S3 Temp 디렉토리로 이동
-        if (request.getDeleteImageList() != null && !request.getDeleteImageList().isEmpty()) {
-            imageService.deleteImagesToTemp(imagesToDelete);
-        }
-
         log.info("상품 ID {}번의 기존 이미지 처리 작업을 모두 마쳤습니다.", product.getId());
 
         if (newImages != null && !newImages.isEmpty()) {

@@ -2,7 +2,6 @@ package org.chzz.market.domain.image.service;
 
 import static org.chzz.market.domain.image.error.ImageErrorCode.IMAGE_DELETE_FAILED;
 import static org.chzz.market.domain.image.error.ImageErrorCode.INVALID_IMAGE_EXTENSION;
-import static org.chzz.market.domain.image.error.ImageErrorCode.INVALID_IMAGE_URL;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
@@ -97,26 +96,6 @@ public class ImageService {
             amazonS3Client.deleteObject(bucket, key);
         } catch (AmazonServiceException | MalformedURLException e) {
             throw new ImageException(IMAGE_DELETE_FAILED);
-        }
-    }
-
-    public void deleteImagesToTemp(List<Image> imagesToDelete) {
-        for (Image image : imagesToDelete) {
-            String fileName = extractFileNameFromUrl(image.getCdnPath());
-            s3ImageUploader.moveToTemp(fileName);
-        }
-    }
-
-    /*
-     * 이미지 URL 에서 파일 이름 추출
-     */
-    private String extractFileNameFromUrl(String imageUrl) {
-        try {
-            URL url = new URL(imageUrl);
-            String uuidPath = url.getPath();
-            return uuidPath.substring(uuidPath.lastIndexOf("/") + 1);
-        } catch (MalformedURLException e) {
-            throw new ImageException(INVALID_IMAGE_URL);
         }
     }
 
