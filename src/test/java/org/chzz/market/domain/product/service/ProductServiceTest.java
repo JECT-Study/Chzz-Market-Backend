@@ -65,8 +65,9 @@ public class ProductServiceTest {
     @InjectMocks
     private ProductService productService;
 
-    private UpdateProductRequest updateRequest;
-    private Product existingProduct;
+    private UpdateProductRequest updateRequest, updateRequest2;
+    private Product existingProduct, existingProduct2;
+    private Image image;
     private Product product;
     private User user;
 
@@ -76,6 +77,11 @@ public class ProductServiceTest {
                 .id(1L)
                 .email("test@naver.com")
                 .nickname("테스트 유저")
+                .build();
+
+        image = Image.builder()
+                .product(existingProduct)
+                .cdnPath("path/to/image.jpg")
                 .build();
 
         product = Product.builder()
@@ -98,12 +104,30 @@ public class ProductServiceTest {
                 .images(new ArrayList<>())
                 .build();
 
+        existingProduct2 = Product.builder()
+                .id(1L)
+                .user(user)
+                .name("기존 상품")
+                .description("기존 설명")
+                .category(ELECTRONICS)
+                .minPrice(10000)
+                .images(new ArrayList<>(List.of(image)))
+                .build();
+
         updateRequest = UpdateProductRequest.builder()
                 .productName("수정된 상품")
                 .description("수정된 설명")
                 .category(HOME_APPLIANCES)
                 .minPrice(20000)
                 .deleteImageList(List.of(1L, 2L))
+                .build();
+
+        updateRequest2 = UpdateProductRequest.builder()
+                .productName("수정된 상품")
+                .description("수정된 설명")
+                .category(HOME_APPLIANCES)
+                .minPrice(20000)
+                .deleteImageList(Collections.emptyList())
                 .build();
 
         System.setProperty("org.mockito.logging.verbosity", "all");
@@ -178,15 +202,16 @@ public class ProductServiceTest {
         }
 
         @Test
-        @DisplayName("4. 이미지 없이 상품 정보만 수정 성공")
+        @DisplayName("4. 이미지 수정 없이 상품 정보만 수정 성공")
         void updateProduct_WithoutImages() {
             // given
             when(productRepository.findById(anyLong())).thenReturn(
-                    Optional.of(existingProduct));
+                    Optional.of(existingProduct2));
             when(auctionRepository.existsByProductId(anyLong())).thenReturn(false);
 
             // when
-            UpdateProductResponse response = productService.updateProduct(user.getId(), 1L, updateRequest, null);
+            UpdateProductResponse response = productService.updateProduct(user.getId(), 1L, updateRequest2,
+                    Collections.emptyList());
 
             // then
             assertThat(response).isNotNull();
@@ -194,6 +219,7 @@ public class ProductServiceTest {
             assertThat(response.description()).isEqualTo("수정된 설명");
             assertThat(response.category()).isEqualTo(HOME_APPLIANCES);
             assertThat(response.minPrice()).isEqualTo(20000);
+            assertEquals(1, response.imageUrls().size());
         }
 
         @Test
@@ -277,36 +303,6 @@ public class ProductServiceTest {
             assertThatThrownBy(() -> productService.updateProduct(2L, 1L, updateRequest, null))
                     .isInstanceOf(ProductException.class)
                     .hasMessageContaining("상품에 접근할 수 없습니다.");
-        }
-
-        @Test
-        @DisplayName("9. 이미지 변경 없이 상품 정보만 수정")
-        void updateProduct_OnlyInfoChange() {
-            // given
-            UpdateProductRequest requestWithoutImageChanges = UpdateProductRequest.builder()
-                    .productName("수정된 상품")
-                    .description("수정된 설명")
-                    .category(HOME_APPLIANCES)
-                    .minPrice(20000)
-                    .build();
-
-            when(productRepository.findById(anyLong())).thenReturn(Optional.of(existingProduct));
-            when(auctionRepository.existsByProductId(anyLong())).thenReturn(false);
-
-            // when
-            UpdateProductResponse response = productService.updateProduct(
-                    user.getId(),
-                    1L,
-                    requestWithoutImageChanges,
-                    null
-            );
-
-            // then
-            assertThat(response.productName()).isEqualTo("수정된 상품");
-            assertThat(response.productName()).isEqualTo("수정된 상품");
-            assertThat(response.description()).isEqualTo("수정된 설명");
-            assertThat(response.category()).isEqualTo(HOME_APPLIANCES);
-            assertThat(response.minPrice()).isEqualTo(20000);
         }
 
         @Test

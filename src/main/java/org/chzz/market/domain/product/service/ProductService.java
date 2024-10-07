@@ -1,8 +1,7 @@
 package org.chzz.market.domain.product.service;
 
-import static org.chzz.market.domain.image.error.ImageErrorCode.INVALID_IMAGE_COUNT;
 import static org.chzz.market.domain.image.error.ImageErrorCode.MAX_IMAGE_COUNT_EXCEEDED;
-import static org.chzz.market.domain.image.error.ImageErrorCode.MIN_IMAGE_COUNT_NOT_MET;
+import static org.chzz.market.domain.image.error.ImageErrorCode.NO_IMAGES_PROVIDED;
 import static org.chzz.market.domain.notification.entity.NotificationType.PRE_AUCTION_CANCELED;
 import static org.chzz.market.domain.product.error.ProductErrorCode.ALREADY_IN_AUCTION;
 import static org.chzz.market.domain.product.error.ProductErrorCode.FORBIDDEN_PRODUCT_ACCESS;
@@ -129,7 +128,6 @@ public class ProductService {
      * 상품 이미지 업데이트
      */
     private void updateProductImages(Product product, List<Long> deleteImageIds, List<MultipartFile> newImages) {
-        int currentImageCount = product.getImages().size();
 
         // 삭제 이미지 처리
         if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
@@ -137,26 +135,23 @@ public class ProductService {
                     .filter(image -> deleteImageIds.contains(image.getId()))
                     .toList();
 
-            // 삭제 후 남은 이미지 수 확인
-            if (currentImageCount - imagesToDelete.size() < 1) {
-                throw new ImageException(MIN_IMAGE_COUNT_NOT_MET);
-            }
-
             // TODO: 추후 soft delete 로 변경
             product.removeImage(imagesToDelete);
             imageRepository.deleteAll(imagesToDelete);
-            currentImageCount -= imagesToDelete.size();
         }
 
         log.info("상품 ID {}번의 기존 이미지 처리 작업을 모두 마쳤습니다.", product.getId());
 
+        // 남은 기존 이미지 수 확인
+        int remainingImageCount = product.getImages().size();
+        // 새로 추가할 수 있는 이미지 최대 개수 개산
+        int maxNewImages = 5 - remainingImageCount;
+        // 새 이미지 개수 확인 및 예외 처리
+        if (newImages != null && newImages.size() > maxNewImages) {
+            throw new ImageException(MAX_IMAGE_COUNT_EXCEEDED);
+        }
         // 새 이미지 추가
         if (newImages != null && !newImages.isEmpty()) {
-            int maxNewImages = 5 - currentImageCount;
-            if (newImages.size() > maxNewImages) {
-                throw new ImageException(MAX_IMAGE_COUNT_EXCEEDED);
-            }
-
             List<String> newImageUrls = imageService.uploadImages(newImages);
             List<Image> newImageEntities = imageService.saveProductImageEntities(product, newImageUrls);
             product.addImages(newImageEntities);
@@ -164,11 +159,9 @@ public class ProductService {
             log.info("상품 ID {}번의 새 이미지를 성공적으로 저장하였습니다.", product.getId());
         }
         // 최종 이미지 개수 확인
-        if (product.getImages().isEmpty() || product.getImages().size() > 5) {
-            throw new ImageException(INVALID_IMAGE_COUNT);
+        if (product.getImages().isEmpty()) {
+            throw new ImageException(NO_IMAGES_PROVIDED);
         }
-
-        log.info("상품 ID {}번의 이미지 업데이트를 완료했습니다. 현재 이미지 수: {}", product.getId(), product.getImages().size());
     }
 
     /**
