@@ -2,8 +2,6 @@ package org.chzz.market.domain.user.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
@@ -12,21 +10,15 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import org.chzz.market.domain.auction.entity.Auction;
-import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.auction.type.AuctionStatus;
-import org.chzz.market.domain.bank_account.entity.BankAccount;
 import org.chzz.market.domain.bid.entity.Bid;
+import org.chzz.market.domain.image.service.ImageService;
 import org.chzz.market.domain.product.entity.Product;
-import org.chzz.market.domain.product.repository.ProductRepository;
 import org.chzz.market.domain.user.dto.request.UpdateUserProfileRequest;
 import org.chzz.market.domain.user.dto.request.UserCreateRequest;
 import org.chzz.market.domain.user.dto.response.NicknameAvailabilityResponse;
-import org.chzz.market.domain.user.dto.response.ParticipationCountsResponse;
-import org.chzz.market.domain.user.dto.response.UpdateProfileResponse;
 import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.entity.User.ProviderType;
 import org.chzz.market.domain.user.entity.User.UserRole;
@@ -41,30 +33,24 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.mock.web.MockMultipartFile;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
     @Mock
     private UserRepository userRepository;
-
     @Mock
-    private AuctionRepository auctionRepository;
-
-    @Mock
-    private ProductRepository productRepository;
-
+    private ImageService imageService;
     @InjectMocks
     private UserService userService;
 
-    private User user1, user2;
+    private User user1, user2, user3;
     private Product product1, product2, product3, product4, product5, product6;
-    private Product preRegisteredProduct1, preRegisteredProduct2, auctionProduct1, auctionProduct2;
+    private Product auctionProduct1, auctionProduct2;
     private Auction auction1, auction2, auction3, auction4, auction5, auction6, auction7, auction8;
     private Bid bid1, bid2, bid3, bid4, bid5, bid6;
 
     private UpdateUserProfileRequest updateUserProfileRequest;
-    private ParticipationCountsResponse counts;
 
     @BeforeEach
     void setUp() {
@@ -78,6 +64,13 @@ class UserServiceTest {
                 .id(2L)
                 .nickname("닉네임 2")
                 .bio("자기소개 2")
+                .build());
+
+        user3 = spy(User.builder()
+                .id(3L)
+                .nickname("닉네임 3")
+                .bio("자기소개 3")
+                .profileImageUrl("https://test")
                 .build());
 
         product1 = Product.builder().id(1L).name("제품1").user(user2).minPrice(1000).build();
@@ -114,9 +107,6 @@ class UserServiceTest {
         auction5.registerBid(bid5);
         auction6.registerBid(bid6);
 
-        preRegisteredProduct1 = Product.builder().id(7L).name("사전등록상품1").user(user1).minPrice(7000).build();
-        preRegisteredProduct2 = Product.builder().id(8L).name("사전등록상품2").user(user1).minPrice(8000).build();
-
         auctionProduct1 = Product.builder().id(9L).name("경매상품1").user(user1).minPrice(9000).build();
         auctionProduct2 = Product.builder().id(10L).name("경매상품2").user(user1).minPrice(10000).build();
 
@@ -130,13 +120,6 @@ class UserServiceTest {
                 .bio("수정된 자기 소개")
                 .link("수정된 URL")
                 .build();
-
-        counts = new ParticipationCountsResponse(5L, 2L, 3L);
-
-        List<Bid> user1Bids = Arrays.asList(bid1, bid2, bid3, bid4, bid5, bid6);
-        ReflectionTestUtils.setField(user1, "bids", user1Bids);
-
-        System.setProperty("org.mockito.logging.verbosity", "all");
     }
 
     @Nested
@@ -262,35 +245,115 @@ class UserServiceTest {
 
     @Nested
     @DisplayName("유저 프로필 수정")
-    class userProfile_Update {
+    class UserProfileUpdateTest {
+
         @Test
-        @DisplayName("1. 유저 프로필 수정 성공")
+        @DisplayName("1.성공 - 유저 프로필 수정")
         void updateUserProfile_Success() {
             // given
             when(userRepository.findById(any())).thenReturn(Optional.of(user1));
             when(userRepository.findByNickname(any())).thenReturn(Optional.empty());
 
             // when
-            UpdateProfileResponse response = userService.updateUserProfile(user1.getId(), updateUserProfileRequest);
+            userService.updateUserProfile(user1.getId(), null, updateUserProfileRequest);
 
             // then
-            assertNotNull(response);
-            assertEquals("수정된 닉네임", response.nickname());
-            assertEquals("수정된 자기 소개", response.bio());
-            assertEquals("수정된 URL", response.url());
-
-            assertEquals("수정된 닉네임", user1.getNickname());
-            assertEquals("수정된 자기 소개", user1.getBio());
-            assertEquals("수정된 URL", user1.getLink());
+            assertThat(user1.getNickname()).isEqualTo("수정된 닉네임");
+            assertThat(user1.getBio()).isEqualTo("수정된 자기 소개");
+            assertThat(user1.getLink()).isEqualTo("수정된 URL");
         }
 
         @Test
-        @DisplayName("2. 유저 프로필 수정 실패 - 유저를 찾을 수 없음")
+        @DisplayName("2.성공 - 파일 포함 프로필 수정")
+        void updateUserProfile_Success_WithFile() {
+            // given
+            when(userRepository.findById(any())).thenReturn(Optional.of(user1));
+            when(userRepository.findByNickname(any())).thenReturn(Optional.empty());
+
+            MockMultipartFile file = new MockMultipartFile(
+                    "profileImage",
+                    "image.jpg",
+                    "image/jpeg",
+                    "test image content".getBytes()
+            );
+
+            when(imageService.uploadImage(file)).thenReturn("https://cdn.example.com/image.jpg");
+
+            // when
+            userService.updateUserProfile(user1.getId(), file, updateUserProfileRequest);
+
+            // then
+            assertThat(user1.getNickname()).isEqualTo("수정된 닉네임");
+            assertThat(user1.getBio()).isEqualTo("수정된 자기 소개");
+            assertThat(user1.getLink()).isEqualTo("수정된 URL");
+            assertThat(user1.getProfileImageUrl()).isEqualTo("https://cdn.example.com/image.jpg");
+        }
+
+        @Test
+        @DisplayName("3.성공 - 기존 이미지에서 기본 이미지로 변경")
+        void updateUserProfile_WithExistingImage_SetToDefaultImage() {
+            // given
+            when(userRepository.findById(any())).thenReturn(Optional.of(user3));
+            when(userRepository.findByNickname(any())).thenReturn(Optional.empty());
+
+            UpdateUserProfileRequest request = UpdateUserProfileRequest.builder()
+                    .nickname("수정된 닉네임")
+                    .bio("수정된 자기 소개")
+                    .link("수정된 URL")
+                    .useDefaultImage(true)
+                    .build();
+
+            // when
+            userService.updateUserProfile(user3.getId(), null, request);
+
+            // then
+            assertThat(user3.getProfileImageUrl()).isNull(); // 기본 이미지로 변경 시 URL은 null
+            assertThat(user3.getNickname()).isEqualTo("수정된 닉네임");
+            assertThat(user3.getBio()).isEqualTo("수정된 자기 소개");
+            assertThat(user3.getLink()).isEqualTo("수정된 URL");
+        }
+
+        @Test
+        @DisplayName("4.성공 - 기존 이미지에서 새 이미지 업로드")
+        void updateUserProfile_WithExistingImage_UploadNewImage() {
+            // given
+            when(userRepository.findById(any())).thenReturn(Optional.of(user3));
+            when(userRepository.findByNickname(any())).thenReturn(Optional.empty());
+
+            MockMultipartFile file = new MockMultipartFile(
+                    "profileImage",
+                    "image.jpg",
+                    "image/jpeg",
+                    "test image content".getBytes()
+            );
+
+            when(imageService.uploadImage(file)).thenReturn("https://cdn.example.com/new-image.jpg");
+
+            UpdateUserProfileRequest request = UpdateUserProfileRequest.builder()
+                    .nickname("수정된 닉네임")
+                    .bio("수정된 자기 소개")
+                    .link("수정된 URL")
+                    .build();
+
+            // when
+            userService.updateUserProfile(user3.getId(), file, request);
+
+            // then
+            assertThat(user3.getProfileImageUrl()).isEqualTo("https://cdn.example.com/new-image.jpg");
+            assertThat(user3.getNickname()).isEqualTo("수정된 닉네임");
+            assertThat(user3.getBio()).isEqualTo("수정된 자기 소개");
+            assertThat(user3.getLink()).isEqualTo("수정된 URL");
+        }
+
+        @Test
+        @DisplayName("5.실패 - 유저를 찾을 수 없음")
         void updateUserProfile_Fail_UserNotFound() {
             // given
+            when(userRepository.findById(any())).thenReturn(Optional.empty());
+
             // when, then
             assertThrows(UserException.class, () ->
-                    userService.updateUserProfile(999L, updateUserProfileRequest)
+                    userService.updateUserProfile(999L, null, updateUserProfileRequest)
             );
         }
     }

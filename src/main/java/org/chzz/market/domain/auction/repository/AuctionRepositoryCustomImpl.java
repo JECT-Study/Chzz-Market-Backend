@@ -140,6 +140,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                 .select(new QAuctionDetailsResponse(
                         product.id,
                         user.nickname,
+                        user.profileImageUrl,
                         product.name,
                         product.description,
                         product.minPrice,

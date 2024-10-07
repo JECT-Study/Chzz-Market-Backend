@@ -17,6 +17,10 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
+      - name: Display GitHub Actor
+        run: |
+          echo "Actor: ${{ github.actor }}"
+
       - name: Validate PR Title
         uses: Slashgear/action-check-pr-title@v4.3.0
         with:

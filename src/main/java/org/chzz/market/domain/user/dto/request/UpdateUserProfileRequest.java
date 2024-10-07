@@ -21,4 +21,7 @@ public class UpdateUserProfileRequest {
 
     @Pattern(regexp = "^(http|https)://.*$|^$", message = "링크는 유효한 URL 형식이어야 합니다.")
     private String link;
+
+    @Builder.Default
+    private Boolean useDefaultImage = false;
 }

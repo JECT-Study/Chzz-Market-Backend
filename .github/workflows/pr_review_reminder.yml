@@ -1,0 +1,132 @@
+name: PR Review Reminder
+
+on:
+  schedule:
+    # 한국 시간 12시에 실행 (UTC 기준 03시)
+    - cron: '0 3 * * *'
+    # 한국 시간 18시에 실행 (UTC 기준 09시)
+    - cron: '0 9 * * *'
+
+  workflow_dispatch:
+
+jobs:
+  review-reminder:
+    runs-on: ubuntu-latest
+
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      OWNER: ${{ github.repository_owner }}
+      REPO: ${{ github.event.repository.name }}
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v3
+
+      - name: Get open PRs and requested reviewers
+        id: get-prs
+        run: |
+          prs=$(gh api graphql -F owner=$OWNER -F repo=$REPO -f query='
+            query($owner: String!, $repo: String!) {
+              repository(owner: $owner, name: $repo) {
+                pullRequests(states: OPEN, first: 100) {
+                  edges {
+                    node {
+                      number
+                      title
+                      url
+                    }
+                  }
+                }
+              }
+            }
+          ' --jq '.data.repository.pullRequests.edges | map({number: .node.number, title: .node.title, url: .node.url})')
+          
+          prs_without_completed_reviews="[]"
+          while read -r pr; do
+            pr_number=$(echo "$pr" | jq -r '.number')
+            pr_url=$(echo "$pr" | jq -r '.url')
+            pr_title=$(echo "$pr" | jq -r '.title')
+            reviewers=$(gh api repos/$OWNER/$REPO/pulls/$pr_number/requested_reviewers \
+                        -H "Authorization: Bearer $GH_TOKEN" \
+                        -H "Accept: application/vnd.github+json" \
+                        --jq '.users | map(.login)')
+          
+            if [ -n "$reviewers" ]; then
+              pr=$(echo "$pr" | jq --argjson reviewers "$reviewers" '. + {incompleteReviewers: $reviewers}')
+              prs_without_completed_reviews=$(echo "$prs_without_completed_reviews" | jq --argjson pr "$pr" '. += [$pr]')
+            fi
+          done < <(echo "$prs" | jq -c '.[]')
+          echo "$prs_without_completed_reviews" > prs.json
+
+      - name: Map GitHub users to Discord users and notify
+        run: |
+          reviewer_map='[
+            {"github": "junest66", "discord": "<@444811214623735839>"},
+            {"github": "viaunixue", "discord": "<@386917108455309316>"},
+            {"github": "YeaChan05", "discord": "<@391487793995579403>"}
+          ]'
+          prs=$(cat prs.json)
+          embed_fields="[]"
+          reviewers_processed=()
+          while read -r pr; do
+            pr_number=$(echo "$pr" | jq -r '.number')
+            pr_title=$(echo "$pr" | jq -r '.title')
+            pr_url=$(echo "$pr" | jq -r '.url')
+            incomplete_reviewers=$(echo "$pr" | jq -r '.incompleteReviewers[]')
+            for reviewer in $incomplete_reviewers; do
+              if [[ ! " ${reviewers_processed[@]} " =~ " ${reviewer} " ]]; then
+                reviewers_processed+=("$reviewer")
+                discord_user=$(echo "$reviewer_map" | jq --arg user "$reviewer" -r '.[] | select(.github == $user) | .discord')
+                if [ -n "$discord_user" ]; then
+                  github_user=$(echo "$reviewer_map" | jq --arg user "$reviewer" -r '.[] | select(.github == $user) | .github')
+                  pr_list=""
+                  while read -r pr_item; do
+                    pr_num=$(echo "$pr_item" | jq -r '.number')
+                    pr_title=$(echo "$pr_item" | jq -r '.title')
+                    pr_url=$(echo "$pr_item" | jq -r '.url')
+                    pr_list+="- [PR #$pr_num: \"$pr_title\"]($pr_url)\n"
+                  done < <(echo "$prs" | jq -c --arg user "$reviewer" '.[] | select(.incompleteReviewers[] == $user)')
+                  pr_count=$(echo "$prs" | jq --arg user "$reviewer" '[.[] | select(.incompleteReviewers[] == $user)] | length')
+                  fire_count=$(printf ' 🔥%.0s' $(seq 1 $pr_count))
+                  embed_fields=$(echo "$embed_fields" | jq --arg name "$github_user $fire_count ($pr_count건)" --arg value "$discord_user\n$pr_list" '. += [{"name": $name, "value": ($value | gsub("\\\\n"; "\n")), "inline": false}]')
+                fi
+              fi
+            done
+          done < <(echo "$prs" | jq -c '.[]')
+
+          current_time=$(date --utc +%Y-%m-%dT%H:%M:%SZ)
+          embed=$(jq -n \
+            --arg title "리뷰를 기다리고 있어요!!" \
+            --arg description "[리뷰하러 가기](https://github.com/$OWNER/$REPO/pulls)" \
+            --argjson fields "$embed_fields" \
+            --arg thumbnail "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRidSZL4BdECVb3sL0ZQ2jZSYIWNDQTiTcJJQ&usqp=CAU" \
+            --arg author_name "PR BOT" \
+            --arg author_icon "https://avatars.githubusercontent.com/u/9919?s=200&v=4" \
+            --arg footer_text "Chzz-Market" \
+            --arg footer_icon "https://github.com/user-attachments/assets/234444a3-bcd3-4ab3-bd2e-18ee8ed7cb22" \
+            --arg timestamp "$current_time" \
+            '{
+              "embeds": [{
+                "title": $title,
+                "description": $description,
+                "color": 15258703,
+                "fields": $fields,
+                "thumbnail": {"url": $thumbnail},
+                "author": {
+                  "name": $author_name,
+                  "icon_url": $author_icon
+                },
+                "footer": {
+                  "text": $footer_text,
+                  "icon_url": $footer_icon
+                },
+                "timestamp": $timestamp
+              }]
+            }')
+          echo "$embed" > embed.json
+
+      - name: Send Discord Notification
+        run: |
+          curl -H "Content-Type: application/json" \
+            -d @embed.json \
+            ${{ secrets.DISCORD_WEBHOOK_URL }}
