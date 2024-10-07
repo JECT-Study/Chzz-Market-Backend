@@ -124,7 +124,7 @@ public class ProductService {
     /**
      * 상품 이미지 업데이트
      */
-    public void updateProductImages(Product product, UpdateProductRequest request, List<MultipartFile> newImages) {
+    private void updateProductImages(Product product, UpdateProductRequest request, List<MultipartFile> newImages) {
 
         // 삭제할 이미지 객체 리스트 추출 및 Hard delete 처리
         List<Image> imagesToDelete = product.getImages().stream()
