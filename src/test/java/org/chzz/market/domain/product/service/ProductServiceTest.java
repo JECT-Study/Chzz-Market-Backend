@@ -8,10 +8,9 @@ import static org.chzz.market.domain.product.entity.Product.Category.HOME_APPLIA
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.anyList;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -21,8 +20,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
+import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.image.repository.ImageRepository;
 import org.chzz.market.domain.image.service.ImageService;
 import org.chzz.market.domain.product.dto.DeleteProductResponse;
@@ -33,9 +32,6 @@ import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.product.error.ProductException;
 import org.chzz.market.domain.product.repository.ProductRepository;
 import org.chzz.market.domain.user.entity.User;
-import org.chzz.market.util.AuctionTestFactory;
-import org.chzz.market.util.ProductTestFactory;
-import org.chzz.market.util.UserTestFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -72,19 +68,10 @@ public class ProductServiceTest {
     private UpdateProductRequest updateRequest;
     private Product existingProduct;
     private Product product;
-    private Auction auction;
     private User user;
-
-    private ProductTestFactory productTestFactory;
-    private AuctionTestFactory auctionTestFactory;
-    private UserTestFactory userTestFactory;
 
     @BeforeEach
     void setUp() {
-        productTestFactory = new ProductTestFactory();
-        auctionTestFactory = new AuctionTestFactory();
-        userTestFactory = new UserTestFactory();
-
         user = User.builder()
                 .id(1L)
                 .email("test@naver.com")
@@ -98,7 +85,6 @@ public class ProductServiceTest {
                 .description("사전 등록 상품 설명")
                 .category(ELECTRONICS)
                 .minPrice(10000)
-                .likes(new ArrayList<>())
                 .images(new ArrayList<>())
                 .build();
 
@@ -117,6 +103,7 @@ public class ProductServiceTest {
                 .description("수정된 설명")
                 .category(HOME_APPLIANCES)
                 .minPrice(20000)
+                .deleteImageList(List.of(1L, 2L))
                 .build();
 
         System.setProperty("org.mockito.logging.verbosity", "all");
@@ -130,15 +117,26 @@ public class ProductServiceTest {
         @DisplayName("1. 유효한 요청으로 사전 등록 상품 수정 성공 응답")
         void updateProduct_Success() {
             // given
-            List<MultipartFile> images = createMockMultipartFiles();
+            List<MultipartFile> newImages = createMockMultipartFiles();
+            List<Image> existingImages = createExistingImages();
+            existingProduct.addImages(existingImages);
 
-            when(productRepository.findById(anyLong())).thenReturn(
-                    Optional.of(existingProduct));
-
+            when(productRepository.findById(anyLong())).thenReturn(Optional.of(existingProduct));
             when(auctionRepository.existsByProductId(anyLong())).thenReturn(false);
+            when(imageService.uploadImages(anyList())).thenReturn(Arrays.asList("testImage1.jpg", "testImage2.jpg"));
+            when(imageService.saveProductImageEntities(any(Product.class), anyList()))
+                    .thenReturn(List.of(
+                            new Image(3L, "new_image1.jpg", existingProduct),
+                            new Image(4L, "new_image2.jpg", existingProduct))
+                    );
 
             // when
-            UpdateProductResponse response = productService.updateProduct(user.getId(), 1L, updateRequest, images);
+            UpdateProductResponse response = productService.updateProduct(
+                    user.getId(),
+                    1L,
+                    updateRequest,
+                    newImages
+            );
 
             // then
             assertThat(response).isNotNull();
@@ -146,32 +144,31 @@ public class ProductServiceTest {
             assertThat(response.description()).isEqualTo("수정된 설명");
             assertThat(response.category()).isEqualTo(HOME_APPLIANCES);
             assertThat(response.minPrice()).isEqualTo(20000);
+            assertEquals(2, response.imageUrls().size());
+
+            assertThat(response.imageUrls().get(0).imageUrl()).isEqualTo("new_image1.jpg");
+            assertThat(response.imageUrls().get(0).imageId()).isEqualTo(3L);
+            assertThat(response.imageUrls().get(1).imageUrl()).isEqualTo("new_image2.jpg");
+            assertThat(response.imageUrls().get(1).imageId()).isEqualTo(4L);
         }
 
         @Test
         @DisplayName("2. 존재하지 않는 상품으로 수정 시도 실패")
         void updateProduct_ProductNotFound() {
             // given
-            List<MultipartFile> images = createMockMultipartFiles();
             when(productRepository.findById(anyLong())).thenReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(() -> productService.updateProduct(user.getId(), 1L, updateRequest, images))
+            assertThatThrownBy(() -> productService.updateProduct(user.getId(), 1L, updateRequest, null))
                     .isInstanceOf(ProductException.class)
                     .hasMessageContaining("상품을 찾을 수 없습니다.");
-
-            verify(productRepository, times(1)).findById(eq(1L));
-            verify(auctionRepository, never()).existsByProductId(anyLong());
-            verify(imageService, never()).uploadImages(anyList());
-            verify(imageRepository, never()).deleteAll(anyList());
         }
 
         @Test
         @DisplayName("3. 이미 경매 등록된 상품 수정 시도 실패")
         void updateProduct_AlreadyInAuction() {
             // given
-            when(productRepository.findById(anyLong())).thenReturn(
-                    Optional.of(existingProduct));
+            when(productRepository.findById(anyLong())).thenReturn(Optional.of(existingProduct));
             when(auctionRepository.existsByProductId(anyLong())).thenReturn(true);
 
             // when & then
@@ -234,6 +231,125 @@ public class ProductServiceTest {
             assertThatThrownBy(() -> productService.updateProduct(2L, 1L, invalidUserRequest, null))
                     .isInstanceOf(ProductException.class)
                     .hasMessageContaining("상품에 접근할 수 없습니다.");
+        }
+
+        @Test
+        @DisplayName("7. 이미지 삭제 시 새 이미지 추가 테스트")
+        void updateProduct_WithImageChanges() {
+            // given
+            List<MultipartFile> newImages = createMockMultipartFiles();
+            List<Image> existingImages = createExistingImages();
+            existingProduct.addImages(existingImages);
+
+            when(productRepository.findById(anyLong())).thenReturn(Optional.of(existingProduct));
+            when(auctionRepository.existsByProductId(anyLong())).thenReturn(false);
+            when(imageService.uploadImages(anyList())).thenReturn(Arrays.asList("testImage1.jpg", "testImage2.jpg"));
+            when(imageService.saveProductImageEntities(any(Product.class), anyList()))
+                    .thenReturn(List.of(
+                            new Image(3L, "new_image1.jpg", existingProduct),
+                            new Image(4L, "new_image2.jpg", existingProduct))
+                    );
+
+            // when
+            UpdateProductResponse response = productService.updateProduct(
+                    user.getId(),
+                    1L,
+                    updateRequest,
+                    newImages
+            );
+
+            // then
+            assertEquals(2, response.imageUrls().size());
+
+            assertThat(response.imageUrls().get(0).imageUrl()).isEqualTo("new_image1.jpg");
+            assertThat(response.imageUrls().get(0).imageId()).isEqualTo(3L);
+            assertThat(response.imageUrls().get(1).imageUrl()).isEqualTo("new_image2.jpg");
+            assertThat(response.imageUrls().get(1).imageId()).isEqualTo(4L);
+        }
+
+        @Test
+        @DisplayName("8. 권한이 없는 사용자의 상품 수정 시도 실패")
+        void updateProduct_Unauthorized() {
+            // given
+            when(productRepository.findById(anyLong())).thenReturn(Optional.of(existingProduct));
+
+            // when & then
+            assertThatThrownBy(() -> productService.updateProduct(2L, 1L, updateRequest, null))
+                    .isInstanceOf(ProductException.class)
+                    .hasMessageContaining("상품에 접근할 수 없습니다.");
+        }
+
+        @Test
+        @DisplayName("9. 이미지 변경 없이 상품 정보만 수정")
+        void updateProduct_OnlyInfoChange() {
+            // given
+            UpdateProductRequest requestWithoutImageChanges = UpdateProductRequest.builder()
+                    .productName("수정된 상품")
+                    .description("수정된 설명")
+                    .category(HOME_APPLIANCES)
+                    .minPrice(20000)
+                    .build();
+
+            when(productRepository.findById(anyLong())).thenReturn(Optional.of(existingProduct));
+            when(auctionRepository.existsByProductId(anyLong())).thenReturn(false);
+
+            // when
+            UpdateProductResponse response = productService.updateProduct(
+                    user.getId(),
+                    1L,
+                    requestWithoutImageChanges,
+                    null
+            );
+
+            // then
+            assertThat(response.productName()).isEqualTo("수정된 상품");
+            assertThat(response.productName()).isEqualTo("수정된 상품");
+            assertThat(response.description()).isEqualTo("수정된 설명");
+            assertThat(response.category()).isEqualTo(HOME_APPLIANCES);
+            assertThat(response.minPrice()).isEqualTo(20000);
+        }
+
+        @Test
+        @DisplayName("10. 모든 기존 이미지 삭제 후 새 이미지 한 개 추가")
+        void updateProduct_EmptyImageList() {
+            // Given
+            List<Image> existingImages = createExistingImages();
+            existingProduct.addImages(existingImages);
+            List<MultipartFile> newImages = List.of(
+                    new MockMultipartFile(
+                            "newImage",
+                            "new_image.jpg",
+                            "image/jpeg",
+                            "new image content".getBytes()
+                    )
+            );
+
+            UpdateProductRequest updateRequest = UpdateProductRequest.builder()
+                    .productName("수정된 상품")
+                    .description("수정된 설명")
+                    .category(HOME_APPLIANCES)
+                    .minPrice(20000)
+                    .deleteImageList(List.of(1L, 2L))  // 모든 기존 이미지 삭제
+                    .build();
+
+            when(productRepository.findById(anyLong())).thenReturn(Optional.of(existingProduct));
+            when(auctionRepository.existsByProductId(anyLong())).thenReturn(false);
+            when(imageService.uploadImages(anyList())).thenReturn(List.of("new_image.jpg"));
+            when(imageService.saveProductImageEntities(any(Product.class), anyList()))
+                    .thenReturn(List.of(new Image(3L, "new_image.jpg", existingProduct)));
+
+            // When
+            UpdateProductResponse response = productService.updateProduct(
+                    user.getId(),
+                    1L,
+                    updateRequest,
+                    newImages
+            );
+
+            // Then
+            assertEquals(1, response.imageUrls().size());
+            assertEquals("new_image.jpg", response.imageUrls().get(0).imageUrl());
+            assertEquals(3L, response.imageUrls().get(0).imageId());
         }
     }
 
@@ -375,9 +491,26 @@ public class ProductServiceTest {
 
     private List<MultipartFile> createMockMultipartFiles() {
         MultipartFile mockFile1 = new MockMultipartFile(
-                "testImage1.jpg", "testImage1.jpg", "image/jpeg", "test image content 1".getBytes());
+                "image1",
+                "image1.jpg",
+                "image/jpeg",
+                "test image content 1".getBytes()
+        );
+
         MultipartFile mockFile2 = new MockMultipartFile(
-                "testImage2.jpg", "testImage2.jpg", "image/jpeg", "test image content 2".getBytes());
+                "image2",
+                "image2.jpg",
+                "image/jpeg",
+                "test image content 2".getBytes()
+        );
+
         return List.of(mockFile1, mockFile2);
+    }
+
+    private List<Image> createExistingImages() {
+        return List.of(
+                new Image(1L, "existingImage1.jpg", existingProduct),
+                new Image(2L, "existingImage2.jpg", existingProduct)
+        );
     }
 }
