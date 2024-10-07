@@ -28,9 +28,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.chzz.market.domain.bank_account.entity.BankAccount;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
-import org.chzz.market.domain.like.entity.Like;
-import org.chzz.market.domain.payment.entity.Payment;
-import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.user.dto.request.UpdateUserProfileRequest;
 import org.chzz.market.domain.user.dto.request.UserCreateRequest;
 import org.chzz.market.domain.user.error.exception.UserException;
@@ -77,18 +74,6 @@ public class User extends BaseTimeEntity {
 
     @Column(columnDefinition = "binary(16)", unique = true, nullable = false)
     private UUID customerKey;
-
-    @Builder.Default
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    private List<Product> products = new ArrayList<>();
-
-    @Builder.Default
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    private List<Like> likes = new ArrayList<>();
-
-    @Builder.Default
-    @OneToMany(mappedBy = "payer", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    private List<Payment> payments = new ArrayList<>();
 
     @Builder.Default
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
