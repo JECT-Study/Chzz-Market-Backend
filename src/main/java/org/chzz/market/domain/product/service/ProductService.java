@@ -1,5 +1,7 @@
 package org.chzz.market.domain.product.service;
 
+import static org.chzz.market.domain.image.error.ImageErrorCode.MAX_IMAGE_COUNT_EXCEEDED;
+import static org.chzz.market.domain.image.error.ImageErrorCode.NO_IMAGES_PROVIDED;
 import static org.chzz.market.domain.notification.entity.NotificationType.PRE_AUCTION_CANCELED;
 import static org.chzz.market.domain.product.error.ProductErrorCode.ALREADY_IN_AUCTION;
 import static org.chzz.market.domain.product.error.ProductErrorCode.FORBIDDEN_PRODUCT_ACCESS;
@@ -12,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.image.entity.Image;
+import org.chzz.market.domain.image.error.exception.ImageException;
 import org.chzz.market.domain.image.repository.ImageRepository;
 import org.chzz.market.domain.image.service.ImageService;
 import org.chzz.market.domain.notification.event.NotificationEvent;
@@ -115,7 +118,7 @@ public class ProductService {
         existingProduct.update(request);
 
         // 이미지 저장
-        updateProductImages(existingProduct, request, newImages);
+        updateProductImages(existingProduct, request.getDeleteImageList(), newImages);
 
         log.info("상품 ID {}번에 대한 사전 등록 정보를 업데이트를 완료했습니다.", productId);
         return UpdateProductResponse.from(existingProduct);
@@ -124,25 +127,40 @@ public class ProductService {
     /**
      * 상품 이미지 업데이트
      */
-    private void updateProductImages(Product product, UpdateProductRequest request, List<MultipartFile> newImages) {
+    private void updateProductImages(Product product, List<Long> deleteImageIds, List<MultipartFile> newImages) {
 
-        // 삭제할 이미지 객체 리스트 추출 및 Hard delete 처리
-        List<Image> imagesToDelete = product.getImages().stream()
-                .filter(image -> request.getDeleteImageList().contains(image.getId()))
-                .toList();
+        // 삭제 이미지 처리
+        if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
+            List<Image> imagesToDelete = product.getImages().stream()
+                    .filter(image -> deleteImageIds.contains(image.getId()))
+                    .toList();
 
-        // TODO: 추후 soft delete 로 변경
-        product.removeImage(imagesToDelete);
-        imageRepository.deleteAll(imagesToDelete);
+            // TODO: 추후 soft delete 로 변경
+            product.removeImage(imagesToDelete);
+            imageRepository.deleteAll(imagesToDelete);
+        }
 
         log.info("상품 ID {}번의 기존 이미지 처리 작업을 모두 마쳤습니다.", product.getId());
 
+        // 남은 기존 이미지 수 확인
+        int remainingImageCount = product.getImages().size();
+        // 새로 추가할 수 있는 이미지 최대 개수 개산
+        int maxNewImages = 5 - remainingImageCount;
+        // 새 이미지 개수 확인 및 예외 처리
+        if (newImages != null && newImages.size() > maxNewImages) {
+            throw new ImageException(MAX_IMAGE_COUNT_EXCEEDED);
+        }
+        // 새 이미지 추가
         if (newImages != null && !newImages.isEmpty()) {
             List<String> newImageUrls = imageService.uploadImages(newImages);
             List<Image> newImageEntities = imageService.saveProductImageEntities(product, newImageUrls);
             product.addImages(newImageEntities);
 
             log.info("상품 ID {}번의 새 이미지를 성공적으로 저장하였습니다.", product.getId());
+        }
+        // 최종 이미지 개수 확인
+        if (product.getImages().isEmpty()) {
+            throw new ImageException(NO_IMAGES_PROVIDED);
         }
     }
 
