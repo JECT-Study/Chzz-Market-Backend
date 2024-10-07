@@ -388,6 +388,11 @@ class AuctionRepositoryCustomImplTest {
         // then
         assertThat(responses.getContent())
                 .isSortedAccordingTo(Comparator.comparingLong(BaseAuctionDto::getMinPrice).reversed());
+        assertThat(responses.getContent())
+                .allMatch(auctionResponse -> {
+                    Auction auction = auctionRepository.findById(auctionResponse.getAuctionId()).get();
+                    return auction.getStatus().equals(PROCEEDING);
+                });
     }
 
     @Test
@@ -401,6 +406,11 @@ class AuctionRepositoryCustomImplTest {
         // then
         assertThat(responses.getContent()).isSortedAccordingTo(
                 Comparator.comparingLong(BaseAuctionDto::getParticipantCount).reversed());
+        assertThat(responses.getContent())
+                .allMatch(auctionResponse -> {
+                    Auction auction = auctionRepository.findById(auctionResponse.getAuctionId()).get();
+                    return auction.getStatus().equals(PROCEEDING);
+                });
     }
 
     @Test
@@ -414,6 +424,11 @@ class AuctionRepositoryCustomImplTest {
         // then
         assertThat(responses.getContent()).isSortedAccordingTo(
                 Comparator.comparingLong(BaseAuctionDto::getTimeRemaining));
+        assertThat(responses.getContent())
+                .allMatch(auctionResponse -> {
+                    Auction auction = auctionRepository.findById(auctionResponse.getAuctionId()).get();
+                    return auction.getStatus().equals(PROCEEDING);
+                });
     }
 
     @Test
