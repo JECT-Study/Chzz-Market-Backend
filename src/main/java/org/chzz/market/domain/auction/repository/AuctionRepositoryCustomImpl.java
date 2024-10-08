@@ -495,6 +495,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
         return jpaQueryFactory.select(image.cdnPath)
                 .from(image)
                 .where(image.product.id.eq(productId))
+                .orderBy(image.sequence.asc())
                 .fetch();
     }
 

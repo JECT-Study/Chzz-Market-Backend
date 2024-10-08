@@ -110,7 +110,7 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
                     .select(new QImageResponse(image.id, image.cdnPath))
                     .from(image)
                     .where(image.product.id.eq(productId))
-                    .orderBy(image.id.asc())
+                    .orderBy(image.sequence.asc())
                     .fetch();
             response.addImageList(images);
             return response;
