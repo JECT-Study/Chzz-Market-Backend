@@ -181,8 +181,7 @@ public class ProductService {
         }
 
         //imageSequence에 없는 ID에 해당하는 이미지 삭제 후 시퀀스 update
-        imageService.deleteImagesNotContainsIdsOf(product.getId(), request.getImageSequence().keySet());//제거될 id들을 받아서 삭제
-        imageService.updateSequence(request.getImageSequence());// 남아있는 시퀀스 매김
+        imageService.updateExistingImages(product,request);
 
         if (!newImages.isEmpty()) {// 새 이미지가 온 경우
             List<Image> newImageEntities = imageService.uploadSequentialImages(newImages);
