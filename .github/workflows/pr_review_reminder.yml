@@ -51,7 +51,7 @@ jobs:
                         -H "Accept: application/vnd.github+json" \
                         --jq '.users | map(.login)')
           
-            if [ -n "$reviewers" ]; then
+            if [ -n "$reviewers" ] && [ "$reviewers" != "[]" ]; then
               pr=$(echo "$pr" | jq --argjson reviewers "$reviewers" '. + {incompleteReviewers: $reviewers}')
               prs_without_completed_reviews=$(echo "$prs_without_completed_reviews" | jq --argjson pr "$pr" '. += [$pr]')
             fi
@@ -59,6 +59,7 @@ jobs:
           echo "$prs_without_completed_reviews" > prs.json
 
       - name: Map GitHub users to Discord users and notify
+        id: map-github-users
         run: |
           reviewer_map='[
             {"github": "junest66", "discord": "<@444811214623735839>"},
@@ -94,38 +95,45 @@ jobs:
             done
           done < <(echo "$prs" | jq -c '.[]')
 
-          current_time=$(date --utc +%Y-%m-%dT%H:%M:%SZ)
-          embed=$(jq -n \
-            --arg title "리뷰를 기다리고 있어요!!" \
-            --arg description "[리뷰하러 가기](https://github.com/$OWNER/$REPO/pulls)" \
-            --argjson fields "$embed_fields" \
-            --arg thumbnail "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRidSZL4BdECVb3sL0ZQ2jZSYIWNDQTiTcJJQ&usqp=CAU" \
-            --arg author_name "PR BOT" \
-            --arg author_icon "https://avatars.githubusercontent.com/u/9919?s=200&v=4" \
-            --arg footer_text "Chzz-Market" \
-            --arg footer_icon "https://github.com/user-attachments/assets/234444a3-bcd3-4ab3-bd2e-18ee8ed7cb22" \
-            --arg timestamp "$current_time" \
-            '{
-              "embeds": [{
-                "title": $title,
-                "description": $description,
-                "color": 15258703,
-                "fields": $fields,
-                "thumbnail": {"url": $thumbnail},
-                "author": {
-                  "name": $author_name,
-                  "icon_url": $author_icon
-                },
-                "footer": {
-                  "text": $footer_text,
-                  "icon_url": $footer_icon
-                },
-                "timestamp": $timestamp
-              }]
-            }')
-          echo "$embed" > embed.json
+          if [ "$(echo "$embed_fields" | jq length)" -eq 0 ]; then
+            echo "No reviewers to notify."
+            echo "has_notifications=false" >> $GITHUB_OUTPUT
+          else
+            current_time=$(date --utc +%Y-%m-%dT%H:%M:%SZ)
+            embed=$(jq -n \
+              --arg title "리뷰를 기다리고 있어요!!" \
+              --arg description "[리뷰하러 가기](https://github.com/$OWNER/$REPO/pulls)" \
+              --argjson fields "$embed_fields" \
+              --arg thumbnail "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRidSZL4BdECVb3sL0ZQ2jZSYIWNDQTiTcJJQ&usqp=CAU" \
+              --arg author_name "PR BOT" \
+              --arg author_icon "https://avatars.githubusercontent.com/u/9919?s=200&v=4" \
+              --arg footer_text "Chzz-Market" \
+              --arg footer_icon "https://github.com/user-attachments/assets/234444a3-bcd3-4ab3-bd2e-18ee8ed7cb22" \
+              --arg timestamp "$current_time" \
+              '{
+                "embeds": [{
+                  "title": $title,
+                  "description": $description,
+                  "color": 15258703,
+                  "fields": $fields,
+                  "thumbnail": {"url": $thumbnail},
+                  "author": {
+                    "name": $author_name,
+                    "icon_url": $author_icon
+                  },
+                  "footer": {
+                    "text": $footer_text,
+                    "icon_url": $footer_icon
+                  },
+                  "timestamp": $timestamp
+                }]
+              }')
+            echo "$embed" > embed.json
+            echo "has_notifications=true" >> $GITHUB_OUTPUT
+          fi
 
       - name: Send Discord Notification
+        if: steps.map-github-users.outputs.has_notifications == 'true'
         run: |
           curl -H "Content-Type: application/json" \
             -d @embed.json \
