@@ -82,7 +82,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                         isParticipating(userId)
                 ))
                 .leftJoin(bid).on(bid.auction.id.eq(auction.id).and(bid.status.eq(ACTIVE)))
-                .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId())))
+                .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId(product.id))))
                 .groupBy(auction.id, product.name, image.cdnPath, auction.createdAt, product.minPrice)
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
@@ -115,7 +115,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                         auction.product.minPrice.longValue(),
                         getBidCount()
                 ))
-                .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId())))
+                .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId(product.id))))
                 .where(auction.status.eq(PROCEEDING).and(auction.endDateTime.after(LocalDateTime.now())))
                 .groupBy(auction.id, product.name, image.cdnPath)
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
@@ -184,7 +184,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                 ))
                 .from(auction)
                 .join(auction.product, product)
-                .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId())))
+                .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId(product.id))))
                 .leftJoin(bid).on(bid.auction.id.eq(auctionId).and(bid.status.eq(ACTIVE)))
                 .where(auction.id.eq(auctionId))
                 .groupBy(product.name, image.cdnPath, product.minPrice)
@@ -239,7 +239,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
 
         List<UserAuctionResponse> content = contentQuery
                 .leftJoin(image).on(image.product.id.eq(product.id)
-                        .and(image.id.eq(getFirstImageId())))
+                        .and(image.id.eq(getFirstImageId(product.id))))
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -269,7 +269,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                         product.minPrice.longValue(),
                         bid.countDistinct())
                 )
-                .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId())))
+                .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId(product.id))))
                 .leftJoin(bid).on(bid.auction.id.eq(auction.id).and(bid.status.ne(CANCELLED)))
                 .groupBy(auction.id, product.name, image.cdnPath, auction.createdAt, product.minPrice)
                 .offset(0)
@@ -300,7 +300,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                         product.minPrice.longValue(),
                         bid.countDistinct())
                 )
-                .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId())))
+                .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId(product.id))))
                 .leftJoin(bid).on(bid.auction.id.eq(auction.id).and(bid.status.ne(CANCELLED)))
                 .groupBy(auction.id, product.name, image.cdnPath)
                 .offset(0)
@@ -332,7 +332,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                         auction.endDateTime,
                         bid.amount
                 ))
-                .leftJoin(image).on(image.product.eq(product).and(image.id.eq(getFirstImageId())))
+                .leftJoin(image).on(image.product.eq(product).and(image.id.eq(getFirstImageId(product.id))))
                 .groupBy(auction.id, product.name, image.cdnPath, product.minPrice, bid.amount)
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
@@ -356,7 +356,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
     public Page<LostAuctionResponse> findLostAuctionHistoryByUserId(Long userId, Pageable pageable) {
         JPAQuery<?> baseQuery = getActualParticipatedAuction(userId)
                 .join(auction.product, product)
-                .leftJoin(image).on(image.product.eq(product).and(image.id.eq(getFirstImageId())))
+                .leftJoin(image).on(image.product.eq(product).and(image.id.eq(getFirstImageId(product.id))))
                 .where(auction.winnerId.ne(userId).and(auction.status.eq(ENDED)));
 
         List<LostAuctionResponse> query = baseQuery
@@ -452,11 +452,12 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
      *
      * @return 첫 번째 이미지 ID
      */
-    private JPQLQuery<Long> getFirstImageId() {
+    private JPQLQuery<Long> getFirstImageId(NumberExpression<Long> productId) {
         QImage imageSub = new QImage("imageSub");
         return JPAExpressions.select(imageSub.id)
                 .from(imageSub)
-                .where(imageSub.sequence.eq(Expressions.asNumber(1L)));
+                .where(imageSub.product.id.eq(productId)
+                        , imageSub.sequence.eq(Expressions.asNumber(1)));
     }
 
     /**
