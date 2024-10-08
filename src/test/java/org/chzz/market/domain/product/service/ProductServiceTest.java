@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.image.service.ImageService;
@@ -269,6 +268,14 @@ public class ProductServiceTest {
                             new Image(2L, "new_image2.jpg", 1, existingProduct)
                     ));
 
+            UpdateProductRequest updateRequest = UpdateProductRequest.builder()
+                    .productName("수정된 상품")
+                    .description("수정된 설명")
+                    .category(HOME_APPLIANCES)
+                    .minPrice(20000)
+                    .imageSequence(Collections.emptyMap())
+                    .build();
+
             // when
             UpdateProductResponse response = productService.updateProduct(
                     user.getId(),
@@ -279,9 +286,7 @@ public class ProductServiceTest {
 
             // then
             assertEquals(2, response.imageUrls().size());
-            verify(imageService).deleteImagesNotContainsIdsOf(existingProduct.getId(),
-                    existingProduct.getImages().stream()
-                            .map(Image::getId).collect(Collectors.toSet()));
+            verify(imageService).updateExistingImages(existingProduct, updateRequest);
 
             assertThat(response.imageUrls().get(0).imageUrl()).isEqualTo("new_image1.jpg");
             assertThat(response.imageUrls().get(0).imageId()).isEqualTo(1L);
@@ -333,8 +338,7 @@ public class ProductServiceTest {
             );
 
             // Then
-            verify(imageService).deleteImagesNotContainsIdsOf(existingProduct.getId(), Collections.emptySet());
-            verify(imageService).updateSequence(updateRequest.getImageSequence());
+            verify(imageService).updateExistingImages(existingProduct, updateRequest);
         }
     }
 
