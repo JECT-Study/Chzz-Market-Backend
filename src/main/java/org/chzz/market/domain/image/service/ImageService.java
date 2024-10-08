@@ -105,7 +105,7 @@ public class ImageService {
         imageRepository.deleteImagesNotContainsIdsOf(productId,imageIds);
         long count = imageRepository.countByProductId(productId);
         // 삭제 연산 이후 갯수 확인
-        if(count<=0){
+        if(count<0){
             throw new ImageException(NO_IMAGES_PROVIDED);
         }
     }
