@@ -2,6 +2,7 @@ package org.chzz.market.domain.image.service;
 
 import static org.chzz.market.domain.image.error.ImageErrorCode.IMAGE_DELETE_FAILED;
 import static org.chzz.market.domain.image.error.ImageErrorCode.INVALID_IMAGE_EXTENSION;
+import static org.chzz.market.domain.image.error.ImageErrorCode.MAX_IMAGE_COUNT_EXCEEDED;
 import static org.chzz.market.domain.image.error.ImageErrorCode.NOT_FOUND;
 import static org.chzz.market.domain.image.error.ImageErrorCode.NO_IMAGES_PROVIDED;
 
@@ -31,6 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ImageService {
     private final ImageUploader imageUploader;
     private final ImageRepository imageRepository;
@@ -51,6 +53,19 @@ public class ImageService {
                 .toList();
         log.info("업로드 된 이미지 리스트: {}", uploadedUrls);
         return uploadedUrls;
+    }
+
+    /**
+     * 이미지 갯수의 범위 확인
+     */
+    public void validateImageSize(Long productId) {
+        long count = imageRepository.countByProductId(productId);
+        // 삭제 연산 이후 갯수 확인
+        if (count < 0) {
+            throw new ImageException(NO_IMAGES_PROVIDED);
+        } else if (count > 5) {
+            throw new ImageException(MAX_IMAGE_COUNT_EXCEEDED);
+        }
     }
 
     /**
@@ -98,16 +113,11 @@ public class ImageService {
 
     /**
      * @param productId 상품 ID
-     * @param imageIds 남아있을 이미지 ID
+     * @param imageIds  남아있을 이미지 ID
      */
     @Transactional
     public void deleteImagesNotContainsIdsOf(Long productId, Set<Long> imageIds) {
-        imageRepository.deleteImagesNotContainsIdsOf(productId,imageIds);
-        long count = imageRepository.countByProductId(productId);
-        // 삭제 연산 이후 갯수 확인
-        if(count<0){
-            throw new ImageException(NO_IMAGES_PROVIDED);
-        }
+        imageRepository.deleteImagesNotContainsIdsOf(productId, imageIds);
     }
 
     /**
