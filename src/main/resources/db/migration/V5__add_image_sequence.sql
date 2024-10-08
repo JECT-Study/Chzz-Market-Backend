@@ -5,4 +5,4 @@
 --      적용된 후에는 절대 수정할 수 없으므로, 수정이 필요한 경우에는 새로운 마이그레이션 파일을 작성해 주세요.
 
 ALTER TABLE `image`
-    ADD COLUMN `sequence` INT NOT NULL;
+    ADD COLUMN `sequence` INT NOT NULL AFTER `cdn_path`;
