@@ -62,7 +62,7 @@ public class ImageService {
     public void validateImageSize(Long productId) {
         long count = imageRepository.countByProductId(productId);
         // 삭제 연산 이후 갯수 확인
-        if (count < 0) {
+        if (count < 1) {
             throw new ImageException(NO_IMAGES_PROVIDED);
         } else if (count > 5) {
             throw new ImageException(MAX_IMAGE_COUNT_EXCEEDED);

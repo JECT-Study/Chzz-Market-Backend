@@ -186,9 +186,9 @@ public class ProductService {
         if (!newImages.isEmpty()) {// 새 이미지가 온 경우
             List<Image> newImageEntities = imageService.uploadSequentialImages(newImages);
             product.addImages(newImageEntities);
-            imageService.validateImageSize(product.getId());
             log.info("상품 ID {}번의 새 이미지를 성공적으로 저장하였습니다.", product.getId());
         }
+        imageService.validateImageSize(product.getId());
     }
 
     /**
