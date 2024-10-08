@@ -13,6 +13,7 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -64,7 +65,7 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
                         product.likes.size().longValue(),
                         isProductLikedByUser(userId)
                 ))
-                .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId())))
+                .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId(product.id))))
                 .groupBy(product.id, product.name, image.cdnPath, product.minPrice)
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
@@ -158,7 +159,7 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
                         like.isNotNull()
                 ))
                 .leftJoin(image).on(image.product.id.eq(product.id)
-                        .and(image.id.eq(getFirstImageId())))
+                        .and(image.id.eq(getFirstImageId(product.id))))
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -195,7 +196,7 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
                         product.likes.size().longValue()
                 ))
                 .leftJoin(image).on(image.product.id.eq(product.id)
-                        .and(image.id.eq(getFirstImageId())))
+                        .and(image.id.eq(getFirstImageId(product.id))))
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -207,11 +208,12 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
 
-    private JPQLQuery<Long> getFirstImageId() {
+    private JPQLQuery<Long> getFirstImageId(NumberPath<Long> productId) {
         QImage imageSub = new QImage("imageSub");
         return JPAExpressions.select(imageSub.id)
                 .from(imageSub)
-                .where(imageSub.sequence.eq(Expressions.asNumber(1L)));
+                .where(imageSub.product.id.eq(productId)
+                        , imageSub.sequence.eq(Expressions.asNumber(1)));
     }
 
     /**
