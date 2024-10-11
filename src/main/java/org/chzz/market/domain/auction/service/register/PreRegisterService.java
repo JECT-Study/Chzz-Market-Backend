@@ -35,7 +35,7 @@ public class PreRegisterService implements AuctionRegistrationService {
         List<Image> saveImages = imageService.saveProductImageEntities(imageUrls);
         product.addImages(saveImages);
         Product savedProduct = productRepository.save(product);
-        imageService.validateImageSize(product.getId());
+        savedProduct.validateImageSize();
         return PreRegisterResponse.of(savedProduct.getId());
     }
 

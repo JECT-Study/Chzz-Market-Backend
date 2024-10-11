@@ -41,7 +41,7 @@ public class AuctionRegisterService implements AuctionRegistrationService {
         List<Image> saveImages = imageService.saveProductImageEntities(imageUrls);
         product.addImages(saveImages);
         Product savedProduct = productRepository.save(product);
-        imageService.validateImageSize(product.getId());
+        savedProduct.validateImageSize();
 
         Auction auction = createAuction(savedProduct);
         auctionRepository.save(auction);

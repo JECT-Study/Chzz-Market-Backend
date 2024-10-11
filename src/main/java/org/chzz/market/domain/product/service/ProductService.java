@@ -190,7 +190,7 @@ public class ProductService {
         if (!newImages.isEmpty()) {
             uploadAndAddNewImages(product, newImages);
         }
-        imageService.validateImageSize(product.getId());
+        product.validateImageSize();
     }
 
     /**
@@ -240,7 +240,6 @@ public class ProductService {
                 imagesToRemove.add(image); // 삭제할 이미지
             }
         });
-
         product.removeImages(imagesToRemove); // 삭제할 이미지 처리
         imageService.updateImageSequences(imagesToUpdate, imageSequence); // 시퀀스 업데이트할 이미지 처리
     }
