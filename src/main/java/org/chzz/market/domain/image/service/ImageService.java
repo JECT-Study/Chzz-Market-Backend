@@ -96,8 +96,11 @@ public class ImageService {
         return images;
     }
 
+    /**
+     * 상품 수정 시 새로운 이미지 생성 및 저장
+     */
     @Transactional
-    public List<Image> uploadSequentialImages(Map<String, MultipartFile> newImages) {
+    public List<Image> uploadSequentialImages(Product product, Map<String, MultipartFile> newImages) {
         List<Image> images = newImages.entrySet().stream()
                 .map(entry -> {
                     int sequence = Integer.parseInt(entry.getKey());
@@ -106,6 +109,7 @@ public class ImageService {
                     return Image.builder()
                             .sequence(sequence)
                             .cdnPath(cdnPath)
+                            .product(product)
                             .build();
                 }).toList();
         imageRepository.saveAll(images);
