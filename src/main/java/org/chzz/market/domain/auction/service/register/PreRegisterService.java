@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.chzz.market.domain.auction.dto.request.BaseRegisterRequest;
 import org.chzz.market.domain.auction.dto.response.PreRegisterResponse;
 import org.chzz.market.domain.auction.dto.response.RegisterResponse;
+import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.image.service.ImageService;
 import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.product.repository.ProductRepository;
@@ -29,15 +30,12 @@ public class PreRegisterService implements AuctionRegistrationService {
     public RegisterResponse register(Long userId, BaseRegisterRequest request, List<MultipartFile> images) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(USER_NOT_FOUND));
-
         Product product = createProduct(request, user);
+        List<String> imageUrls = imageService.uploadImages(images);
+        List<Image> saveImages = imageService.saveProductImageEntities(imageUrls);
+        product.addImages(saveImages);
         Product savedProduct = productRepository.save(product);
-
-        if (images != null && !images.isEmpty()) {
-            List<String> imageUrls = imageService.uploadImages(images);
-            imageService.saveProductImageEntities(savedProduct, imageUrls);
-        }
-
+        imageService.validateImageSize(product.getId());
         return PreRegisterResponse.of(savedProduct.getId());
     }
 

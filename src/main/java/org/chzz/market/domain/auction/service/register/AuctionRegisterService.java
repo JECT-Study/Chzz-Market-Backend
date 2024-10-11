@@ -10,6 +10,7 @@ import org.chzz.market.domain.auction.dto.response.RegisterAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.RegisterResponse;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
+import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.image.service.ImageService;
 import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.product.repository.ProductRepository;
@@ -36,11 +37,10 @@ public class AuctionRegisterService implements AuctionRegistrationService {
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
         Product product = createProduct(request, user);
-        Product savedProduct = productRepository.save(product);
-
         List<String> imageUrls = imageService.uploadImages(images);
-        imageService.saveProductImageEntities(savedProduct, imageUrls);
-
+        List<Image> saveImages = imageService.saveProductImageEntities(imageUrls);
+        product.addImages(saveImages);
+        Product savedProduct = productRepository.save(product);
         imageService.validateImageSize(product.getId());
 
         Auction auction = createAuction(savedProduct);
