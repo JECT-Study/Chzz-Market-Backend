@@ -102,7 +102,6 @@ public class Product extends BaseTimeEntity {
         likes.remove(like);
     }
 
-
     public void update(UpdateProductRequest modifiedProduct) {
         this.name = modifiedProduct.getProductName();
         this.description = modifiedProduct.getDescription();
@@ -114,11 +113,9 @@ public class Product extends BaseTimeEntity {
         return this.user.getId().equals(userId);
     }
 
-
     public void addImages(List<Image> images) {
         this.images.addAll(images);
     }
-
 
     public Image getFirstImage() {
         return images.stream()
