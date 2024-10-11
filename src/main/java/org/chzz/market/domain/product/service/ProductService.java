@@ -109,6 +109,9 @@ public class ProductService {
             throw new ProductException(ALREADY_IN_AUCTION);
         }
 
+        // 상품 정보 업데이트
+        existingProduct.update(request);
+
         // 이미지 저장
         updateProductImages(existingProduct, request, newImages);
 
@@ -171,8 +174,6 @@ public class ProductService {
     private void updateProductImages(Product product,
                                      UpdateProductRequest request,
                                      Map<String, MultipartFile> newImages) {
-        // 상품 정보 업데이트
-        product.update(request);
 
         // 총 이미지 수 검증
         int sequenceSize = request.getImageSequence() != null ? request.getImageSequence().size() : 0;
