@@ -1,5 +1,8 @@
 package org.chzz.market.domain.product.entity;
 
+import static org.chzz.market.domain.image.error.ImageErrorCode.MAX_IMAGE_COUNT_EXCEEDED;
+import static org.chzz.market.domain.image.error.ImageErrorCode.NO_IMAGES_PROVIDED;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -23,6 +26,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
 import org.chzz.market.domain.image.entity.Image;
+import org.chzz.market.domain.image.error.exception.ImageException;
 import org.chzz.market.domain.like.entity.Like;
 import org.chzz.market.domain.product.dto.UpdateProductRequest;
 import org.chzz.market.domain.product.error.ProductErrorCode;
@@ -143,6 +147,15 @@ public class Product extends BaseTimeEntity {
                 .map(like -> like.getUser().getId())
                 .distinct()
                 .toList();
+    }
+
+    public void validateImageSize() {
+        long count = this.images.size();
+        if (count < 1) {
+            throw new ImageException(NO_IMAGES_PROVIDED);
+        } else if (count > 5) {
+            throw new ImageException(MAX_IMAGE_COUNT_EXCEEDED);
+        }
     }
 
 }
