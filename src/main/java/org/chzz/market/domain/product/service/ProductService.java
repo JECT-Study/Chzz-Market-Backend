@@ -8,6 +8,7 @@ import static org.chzz.market.domain.product.error.ProductErrorCode.FORBIDDEN_PR
 import static org.chzz.market.domain.product.error.ProductErrorCode.PRODUCT_ALREADY_AUCTIONED;
 import static org.chzz.market.domain.product.error.ProductErrorCode.PRODUCT_NOT_FOUND;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -176,21 +177,18 @@ public class ProductService {
                                      UpdateProductRequest request,
                                      Map<String, MultipartFile> images) {
         Map<String, MultipartFile> newImages = removeRequestKey(images);
-        int sequenceSize = Optional.ofNullable(request.getImageSequence())
-                .map(Map::size)
-                .orElse(0);
+        Map<Long, Integer> imageSequence = Optional.ofNullable(request.getImageSequence())
+                .orElse(Collections.emptyMap());
 
         // 요청에 대한 총 이미지 수 검증
-        validateTotalImageCount(sequenceSize + newImages.size());
+        validateTotalImageCount(imageSequence.size() + newImages.size());
 
-        //imageSequence에 없는 ID에 해당하는 이미지 삭제 후 기존 이미지 시퀀스 update
-        imageService.updateExistingImages(product, request.getImageSequence());
+        // 기존 이미지 처리 (업데이트할 이미지와 삭제할 이미지 구분)
+        processExistingImages(product, imageSequence);
 
         // 새 이미지가 있는 경우
         if (!newImages.isEmpty()) {
-            List<Image> newImageEntities = imageService.uploadSequentialImages(product, newImages);
-            product.addImages(newImageEntities);
-            log.info("상품 ID {}번의 새 이미지를 성공적으로 저장하였습니다.", product.getId());
+            uploadAndAddNewImages(product, newImages);
         }
         imageService.validateImageSize(product.getId());
     }
@@ -226,5 +224,33 @@ public class ProductService {
         } else if (totalSize == 0) {
             throw new ProductException(INVALID_IMAGE_COUNT);
         }
+    }
+
+    /**
+     * 기존 이미지 업데이트 및 삭제 처리
+     */
+    private void processExistingImages(Product product, Map<Long, Integer> imageSequence) {
+        List<Image> imagesToUpdate = new ArrayList<>();
+        List<Image> imagesToRemove = new ArrayList<>();
+
+        product.getImages().forEach(image -> {
+            if (imageSequence.containsKey(image.getId())) {
+                imagesToUpdate.add(image); // 업데이트할 이미지
+            } else {
+                imagesToRemove.add(image); // 삭제할 이미지
+            }
+        });
+
+        product.removeImages(imagesToRemove); // 삭제할 이미지 처리
+        imageService.updateImageSequences(imagesToUpdate, imageSequence); // 시퀀스 업데이트할 이미지 처리
+    }
+
+    /**
+     * 상품 수정 시 새로운 이미지 업로드
+     */
+    private void uploadAndAddNewImages(Product product, Map<String, MultipartFile> newImages) {
+        List<Image> newImageEntities = imageService.uploadSequentialImages(product, newImages);
+        product.addImages(newImageEntities);
+        log.info("상품 ID {}번의 새 이미지를 성공적으로 저장하였습니다.", product.getId());
     }
 }
