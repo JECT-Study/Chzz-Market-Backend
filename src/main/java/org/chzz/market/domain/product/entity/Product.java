@@ -69,7 +69,7 @@ public class Product extends BaseTimeEntity {
     private List<Like> likes = new ArrayList<>();
 
     @Builder.Default
-    @OneToMany(mappedBy = "product", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "product", cascade = {CascadeType.REMOVE, CascadeType.PERSIST}, orphanRemoval = true)
     private List<Image> images = new ArrayList<>();
 
     @Getter
@@ -114,7 +114,21 @@ public class Product extends BaseTimeEntity {
     }
 
     public void addImages(List<Image> images) {
-        this.images.addAll(images);
+        images.forEach(this::addImage);
+    }
+
+    public void removeImages(List<Image> images) {
+        images.forEach(this::removeImage);
+    }
+
+    private void addImage(Image image) {
+        images.add(image);
+        image.specifyProduct(this);
+    }
+
+    private void removeImage(Image image) {
+        images.remove(image);
+        image.specifyProduct(null);
     }
 
     public Image getFirstImage() {
