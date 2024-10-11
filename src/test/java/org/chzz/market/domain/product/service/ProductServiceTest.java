@@ -63,7 +63,7 @@ public class ProductServiceTest {
     @InjectMocks
     private ProductService productService;
 
-    private UpdateProductRequest updateRequest, updateRequest2;
+    private UpdateProductRequest updateRequest, updateRequest2, updateRequest3;
     private Product existingProduct, existingProduct2;
     private Image image;
     private Product product;
@@ -128,6 +128,15 @@ public class ProductServiceTest {
                 .minPrice(20000)
                 .imageSequence(Map.of(1L, 1, 2L, 2))
                 .build();
+
+        updateRequest3 = UpdateProductRequest.builder()
+                .productName("수정된 상품")
+                .description("수정된 설명")
+                .category(HOME_APPLIANCES)
+                .minPrice(20000)
+                .imageSequence(Collections.emptyMap())
+                .build();
+
 
         System.setProperty("org.mockito.logging.verbosity", "all");
     }
@@ -311,35 +320,31 @@ public class ProductServiceTest {
         @Test
         @DisplayName("9. 모든 기존 이미지 삭제 후 새 이미지 한 개 추가")
         void updateProduct_EmptyImageList() {
-            // Given
-            Map<String, MultipartFile> newImages = new HashMap<>();
-            newImages.put("1", new MockMultipartFile(
-                    "newImage",
-                    "new_image.jpg",
-                    "image/jpeg",
-                    "new image content".getBytes()
-            ));
-
-            UpdateProductRequest updateRequest = UpdateProductRequest.builder()
-                    .productName("수정된 상품")
-                    .description("수정된 설명")
-                    .category(HOME_APPLIANCES)
-                    .minPrice(20000)
-                    .imageSequence(Collections.emptyMap())
-                    .build();
+            // given
+            Map<String, MultipartFile> newImages = createMockMultipartFiles();
+            List<Image> existingImages = createExistingImages();
+            existingProduct.addImages(existingImages);
 
             when(productRepository.findProductByIdWithImage(anyLong())).thenReturn(Optional.of(existingProduct));
             when(auctionRepository.existsByProductId(anyLong())).thenReturn(false);
-            // When
-            productService.updateProduct(
+
+            when(imageService.uploadSequentialImages(eq(existingProduct), anyMap()))
+                    .thenReturn(List.of(
+                            new Image(3L, "new_image1.jpg", 1, existingProduct) // 새로 추가될 이미지
+                    ));
+
+            // when
+            UpdateProductResponse response = productService.updateProduct(
                     user.getId(),
                     1L,
-                    updateRequest,
-                    newImages
+                    updateRequest3,
+                    newImages // 새로운 이미지가 추가됨
             );
 
-            // Then
-            verify(imageService).updateImageSequences(new ArrayList<>(), updateRequest.getImageSequence());
+            // 이미지가 하나만 존재해야 함 (기존 이미지는 모두 삭제되고 새로운 이미지만 추가됨)
+            assertEquals(1, response.imageUrls().size());
+            assertThat(response.imageUrls().get(0).imageUrl()).isEqualTo("new_image1.jpg");
+            assertThat(response.imageUrls().get(0).imageId()).isEqualTo(3L);
         }
     }
 
