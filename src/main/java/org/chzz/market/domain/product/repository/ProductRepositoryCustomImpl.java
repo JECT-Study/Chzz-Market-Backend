@@ -32,6 +32,7 @@ import org.chzz.market.domain.product.dto.ProductDetailsResponse;
 import org.chzz.market.domain.product.dto.ProductResponse;
 import org.chzz.market.domain.product.dto.QProductDetailsResponse;
 import org.chzz.market.domain.product.dto.QProductResponse;
+import org.chzz.market.domain.product.entity.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
@@ -205,6 +206,15 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
                 .select(like.count());
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+    }
+
+    @Override
+    public Optional<Product> findProductByIdWithImage(Long productId) {
+        return Optional.ofNullable(jpaQueryFactory.selectFrom(product)
+                .leftJoin(product.images, image)
+                .fetchJoin()
+                .where(product.id.eq(productId))
+                .fetchOne());
     }
 
     private JPQLQuery<Long> getFirstImageId() {

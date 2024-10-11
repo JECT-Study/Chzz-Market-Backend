@@ -1,5 +1,6 @@
 package org.chzz.market.domain.product.service;
 
+import static org.chzz.market.domain.image.error.ImageErrorCode.INVALID_IMAGE_COUNT;
 import static org.chzz.market.domain.image.error.ImageErrorCode.MAX_IMAGE_COUNT_EXCEEDED;
 import static org.chzz.market.domain.notification.entity.NotificationType.PRE_AUCTION_CANCELED;
 import static org.chzz.market.domain.product.error.ProductErrorCode.ALREADY_IN_AUCTION;
@@ -10,6 +11,7 @@ import static org.chzz.market.domain.product.error.ProductErrorCode.PRODUCT_NOT_
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
@@ -95,7 +97,7 @@ public class ProductService {
     public UpdateProductResponse updateProduct(Long userId, Long productId, UpdateProductRequest request,
                                                Map<String, MultipartFile> newImages) {
         // 상품 유효성 검사
-        Product existingProduct = productRepository.findById(productId)
+        Product existingProduct = productRepository.findProductByIdWithImage(productId)
                 .orElseThrow(() -> new ProductException(PRODUCT_NOT_FOUND));
 
         if (!existingProduct.isOwner(userId)) {
@@ -106,9 +108,6 @@ public class ProductService {
         if (auctionRepository.existsByProductId(productId)) {
             throw new ProductException(ALREADY_IN_AUCTION);
         }
-
-        // 상품 정보 업데이트
-        existingProduct.update(request);
 
         // 이미지 저장
         updateProductImages(existingProduct, request, newImages);
@@ -172,18 +171,24 @@ public class ProductService {
     private void updateProductImages(Product product,
                                      UpdateProductRequest request,
                                      Map<String, MultipartFile> newImages) {
+        // 상품 정보 업데이트
+        product.update(request);
+
         // 총 이미지 수 검증
-        int totalSize = request.getImageSequence().size() + newImages.size();
+        int sequenceSize = request.getImageSequence() != null ? request.getImageSequence().size() : 0;
+        int newImageSize = newImages != null ? newImages.size() : 0;
+        int totalSize = sequenceSize + newImageSize;
+
         if (totalSize > 5) {
             throw new ProductException(MAX_IMAGE_COUNT_EXCEEDED);
-        } else if (totalSize <= 0) {
-            return;//이미지 없으면 메서드 종료
+        } else if (totalSize == 0) {
+            throw new ProductException(INVALID_IMAGE_COUNT);
         }
 
         //imageSequence에 없는 ID에 해당하는 이미지 삭제 후 시퀀스 update
-        imageService.updateExistingImages(product,request);
+        imageService.updateExistingImages(product, request);
 
-        if (!newImages.isEmpty()) {// 새 이미지가 온 경우
+        if (!Objects.requireNonNull(newImages).isEmpty()) {// 새 이미지가 온 경우
             List<Image> newImageEntities = imageService.uploadSequentialImages(newImages);
             product.addImages(newImageEntities);
             log.info("상품 ID {}번의 새 이미지를 성공적으로 저장하였습니다.", product.getId());

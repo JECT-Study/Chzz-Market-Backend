@@ -5,6 +5,7 @@ import static org.chzz.market.domain.product.entity.Product.Category;
 import java.util.Optional;
 import org.chzz.market.domain.product.dto.ProductDetailsResponse;
 import org.chzz.market.domain.product.dto.ProductResponse;
+import org.chzz.market.domain.product.entity.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -48,4 +49,11 @@ public interface ProductRepositoryCustom {
      * @return         페이징된 사전 경매 리스트
      */
     Page<ProductResponse> findLikedProductsByUserId(Long userId, Pageable pageable);
+
+    /**
+     * 이미지를 fetch한 상품 조회
+     * @param productId 조회할 상품 ID
+     * @return
+     */
+    Optional<Product> findProductByIdWithImage(Long productId);
 }
