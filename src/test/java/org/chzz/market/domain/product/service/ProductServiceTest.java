@@ -79,6 +79,7 @@ public class ProductServiceTest {
 
         image = Image.builder()
                 .product(existingProduct)
+                .id(1L)
                 .cdnPath("path/to/image.jpg")
                 .build();
 
@@ -287,7 +288,7 @@ public class ProductServiceTest {
 
             // then
             assertEquals(2, response.imageUrls().size());
-            verify(imageService).updateExistingImages(existingProduct, updateRequest.getImageSequence());
+            verify(imageService).updateImageSequences(new ArrayList<>(), updateRequest.getImageSequence());
 
             assertThat(response.imageUrls().get(0).imageUrl()).isEqualTo("new_image1.jpg");
             assertThat(response.imageUrls().get(0).imageId()).isEqualTo(1L);
@@ -338,7 +339,7 @@ public class ProductServiceTest {
             );
 
             // Then
-            verify(imageService).updateExistingImages(existingProduct, updateRequest.getImageSequence());
+            verify(imageService).updateImageSequences(new ArrayList<>(), updateRequest.getImageSequence());
         }
     }
 
