@@ -41,6 +41,7 @@ import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.auction.service.register.AuctionRegisterService;
 import org.chzz.market.domain.auction.service.register.PreRegisterService;
+import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.image.service.ImageService;
 import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.product.error.ProductErrorCode;
@@ -154,6 +155,7 @@ class AuctionServiceTest {
             List<MultipartFile> images = createMockMultipartFiles();
 
             Product savedProduct = ProductTestFactory.createProduct(preRegisterRequest, user);
+            savedProduct.addImages(createExistingImages(savedProduct));
             ReflectionTestUtils.setField(savedProduct, "id", productId);
 
             when(productRepository.save(any(Product.class))).thenReturn(savedProduct);
@@ -217,6 +219,7 @@ class AuctionServiceTest {
             List<MultipartFile> images = createMockMultipartFiles();
 
             Product product = ProductTestFactory.createProduct(registerAuctionRequest, user);
+            product.addImages(createExistingImages(product));
             ReflectionTestUtils.setField(product, "id", productId);
 
             Auction auction = AuctionTestFactory.createAuction(product, registerAuctionRequest, PROCEEDING);
@@ -707,5 +710,12 @@ class AuctionServiceTest {
         MultipartFile mockFile2 = new MockMultipartFile(
                 "testImage2.jpg", "testImage2.jpg", "image/jpeg", "test image content 2".getBytes());
         return List.of(mockFile1, mockFile2);
+    }
+
+    private List<Image> createExistingImages(Product product) {
+        return List.of(
+                new Image(1L, "existingImage1.jpg", 1, product),
+                new Image(2L, "existingImage2.jpg", 2, product)
+        );
     }
 }
