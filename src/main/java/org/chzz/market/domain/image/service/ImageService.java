@@ -22,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.image.error.exception.ImageException;
 import org.chzz.market.domain.image.repository.ImageRepository;
-import org.chzz.market.domain.product.dto.UpdateProductRequest;
 import org.chzz.market.domain.product.entity.Product;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -140,9 +139,9 @@ public class ImageService {
     /**
      * 기존 이미지중 제거할 이미지 삭제 후 시퀀스 수정
      */
-    public void updateExistingImages(Product product, UpdateProductRequest request) {
-        deleteImagesNotContainsIdsOf(product.getId(), request.getImageSequence().keySet());//제거될 id들을 받아서 삭제
-        updateSequence(request.getImageSequence());// 남아있는 시퀀스 매김
+    public void updateExistingImages(Product product, Map<Long, Integer> imageSequence) {
+        deleteImagesNotContainsIdsOf(product.getId(), imageSequence.keySet());//제거될 id들을 받아서 삭제
+        updateSequence(imageSequence);// 남아있는 시퀀스 매김
     }
 
     /**
