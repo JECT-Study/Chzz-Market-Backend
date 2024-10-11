@@ -12,7 +12,6 @@ categories:
 change-template: '- $TITLE #$NUMBER @$AUTHOR '
 template: |
   ## 이번 버전의 변경사항은 아래와 같아요
-  ---
   $CHANGES
 no-changes-template: '변경사항이 없어요'
 version-resolver:
