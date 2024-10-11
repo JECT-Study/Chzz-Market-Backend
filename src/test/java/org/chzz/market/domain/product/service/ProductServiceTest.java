@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -262,7 +263,7 @@ public class ProductServiceTest {
             when(productRepository.findProductByIdWithImage(anyLong())).thenReturn(Optional.of(existingProduct));
             when(auctionRepository.existsByProductId(anyLong())).thenReturn(false);
 
-            when(imageService.uploadSequentialImages(anyMap()))
+            when(imageService.uploadSequentialImages(eq(existingProduct), anyMap()))
                     .thenReturn(List.of(
                             new Image(1L, "new_image1.jpg", 2, existingProduct),
                             new Image(2L, "new_image2.jpg", 1, existingProduct)
@@ -286,7 +287,7 @@ public class ProductServiceTest {
 
             // then
             assertEquals(2, response.imageUrls().size());
-            verify(imageService).updateExistingImages(existingProduct, updateRequest);
+            verify(imageService).updateExistingImages(existingProduct, updateRequest.getImageSequence());
 
             assertThat(response.imageUrls().get(0).imageUrl()).isEqualTo("new_image1.jpg");
             assertThat(response.imageUrls().get(0).imageId()).isEqualTo(1L);
@@ -310,14 +311,13 @@ public class ProductServiceTest {
         @DisplayName("9. 모든 기존 이미지 삭제 후 새 이미지 한 개 추가")
         void updateProduct_EmptyImageList() {
             // Given
-            Map<String, MultipartFile> newImages = Map.of("1",
-                    new MockMultipartFile(
-                            "newImage",
-                            "new_image.jpg",
-                            "image/jpeg",
-                            "new image content".getBytes()
-                    )
-            );
+            Map<String, MultipartFile> newImages = new HashMap<>();
+            newImages.put("1", new MockMultipartFile(
+                    "newImage",
+                    "new_image.jpg",
+                    "image/jpeg",
+                    "new image content".getBytes()
+            ));
 
             UpdateProductRequest updateRequest = UpdateProductRequest.builder()
                     .productName("수정된 상품")
@@ -338,7 +338,7 @@ public class ProductServiceTest {
             );
 
             // Then
-            verify(imageService).updateExistingImages(existingProduct, updateRequest);
+            verify(imageService).updateExistingImages(existingProduct, updateRequest.getImageSequence());
         }
     }
 
@@ -479,6 +479,8 @@ public class ProductServiceTest {
     }
 
     private Map<String, MultipartFile> createMockMultipartFiles() {
+        Map<String, MultipartFile> images = new HashMap<>();
+
         MultipartFile mockFile1 = new MockMultipartFile(
                 "image1",
                 "image1.jpg",
@@ -492,8 +494,9 @@ public class ProductServiceTest {
                 "image/jpeg",
                 "test image content 2".getBytes()
         );
-
-        return Map.of("1", mockFile1, "2", mockFile2);
+        images.put("1", mockFile1);
+        images.put("2", mockFile2);
+        return images;
     }
 
     private List<Image> createExistingImages() {
