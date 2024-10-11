@@ -124,7 +124,7 @@ public class ProductServiceTest {
                 .description("수정된 설명")
                 .category(HOME_APPLIANCES)
                 .minPrice(20000)
-                .imageSequence(Collections.emptyMap())
+                .imageSequence(Map.of(1L, 1, 2L, 2))
                 .build();
 
         System.setProperty("org.mockito.logging.verbosity", "all");
@@ -142,7 +142,7 @@ public class ProductServiceTest {
             List<Image> existingImages = createExistingImages();
             existingProduct.addImages(existingImages);
 
-            when(productRepository.findById(anyLong())).thenReturn(Optional.of(existingProduct));
+            when(productRepository.findProductByIdWithImage(anyLong())).thenReturn(Optional.of(existingProduct));
 
             // when
             UpdateProductResponse response = productService.updateProduct(
@@ -171,7 +171,7 @@ public class ProductServiceTest {
         @DisplayName("2. 존재하지 않는 상품으로 수정 시도 실패")
         void updateProduct_ProductNotFound() {
             // given
-            when(productRepository.findById(anyLong())).thenReturn(Optional.empty());
+            when(productRepository.findProductByIdWithImage(anyLong())).thenReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> productService.updateProduct(user.getId(), 1L, updateRequest, null))
@@ -183,7 +183,7 @@ public class ProductServiceTest {
         @DisplayName("3. 이미 경매 등록된 상품 수정 시도 실패")
         void updateProduct_AlreadyInAuction() {
             // given
-            when(productRepository.findById(anyLong())).thenReturn(Optional.of(existingProduct));
+            when(productRepository.findProductByIdWithImage(anyLong())).thenReturn(Optional.of(existingProduct));
             when(auctionRepository.existsByProductId(anyLong())).thenReturn(true);
 
             // when & then
@@ -196,7 +196,7 @@ public class ProductServiceTest {
         @DisplayName("4. 이미지 수정 없이 상품 정보만 수정 성공")
         void updateProduct_WithoutImages() {
             // given
-            when(productRepository.findById(anyLong())).thenReturn(
+            when(productRepository.findProductByIdWithImage(anyLong())).thenReturn(
                     Optional.of(existingProduct2));
             when(auctionRepository.existsByProductId(anyLong())).thenReturn(false);
 
@@ -244,7 +244,7 @@ public class ProductServiceTest {
                     .minPrice(20000)
                     .build();
 
-            when(productRepository.findById(anyLong())).thenReturn(
+            when(productRepository.findProductByIdWithImage(anyLong())).thenReturn(
                     Optional.of(existingProduct));
 
             // when & then
@@ -259,7 +259,7 @@ public class ProductServiceTest {
             // given
             Map<String, MultipartFile> newImages = createMockMultipartFiles();
 
-            when(productRepository.findById(anyLong())).thenReturn(Optional.of(existingProduct));
+            when(productRepository.findProductByIdWithImage(anyLong())).thenReturn(Optional.of(existingProduct));
             when(auctionRepository.existsByProductId(anyLong())).thenReturn(false);
 
             when(imageService.uploadSequentialImages(anyMap()))
@@ -298,7 +298,7 @@ public class ProductServiceTest {
         @DisplayName("8. 권한이 없는 사용자의 상품 수정 시도 실패")
         void updateProduct_Unauthorized() {
             // given
-            when(productRepository.findById(anyLong())).thenReturn(Optional.of(existingProduct));
+            when(productRepository.findProductByIdWithImage(anyLong())).thenReturn(Optional.of(existingProduct));
 
             // when & then
             assertThatThrownBy(() -> productService.updateProduct(2L, 1L, updateRequest, null))
@@ -327,7 +327,7 @@ public class ProductServiceTest {
                     .imageSequence(Collections.emptyMap())
                     .build();
 
-            when(productRepository.findById(anyLong())).thenReturn(Optional.of(existingProduct));
+            when(productRepository.findProductByIdWithImage(anyLong())).thenReturn(Optional.of(existingProduct));
             when(auctionRepository.existsByProductId(anyLong())).thenReturn(false);
             // When
             productService.updateProduct(
