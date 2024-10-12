@@ -499,16 +499,6 @@ erDiagram
 <table >
   <tr height="30px">
     <td align="center" width="160px">
-      <b>Frontend</b>
-    </td>
-    </td>
-    <td align="center" width="160px">
-      <b>Frontend</b>
-    </td>
-    <td align="center" width="160px">
-      <b>Frontend</b>
-    </td>
-    <td align="center" width="160px">
       <b>Backend</b>
     </td>
     <td align="center" width="160px">
@@ -516,24 +506,9 @@ erDiagram
     </td>
     <td align="center" width="160px">
       <b>Backend</b>
-    </td>
-    <td align="center" width="160px">
-      <b>Designer</b>
-    </td>
-    <td align="center" width="160px">
-      <b>Designer</b>
     </td>
   </tr>
   <tr height="120px">
-    <td align="center" width="160px">
-      <a href="https://github.com/CLOUDoort"><img src="https://avatars.githubusercontent.com/u/93777385?v=4" style="border-radius:50%"/></a>
-    </td>
-    <td align="center" width="160px">
-      <a href="https://github.com/aquaman122"><img src="https://avatars.githubusercontent.com/u/89385423?v=4" style="border-radius:50%"/></a>
-    </td>
-    <td align="center" width="160px">
-      <a href="https://github.com/luminox93"><img src="https://avatars.githubusercontent.com/u/169774207?v=4" style="border-radius:50%" /></a>
-    </td>
     <td align="center" width="160px">
       <a href="https://github.com/viaunixue"><img src="https://avatars.githubusercontent.com/u/77084379?v=4" style="border-radius:50%"/></a>
     </td>
@@ -543,23 +518,8 @@ erDiagram
     <td align="center" width="160px">
       <a href="https://github.com/YeaChan05"><img src="https://avatars.githubusercontent.com/u/88381563?v=4" style="border-radius:50%" /></a>
     </td>
-    <td align="center" width="160px">
-      <a href="https://www.figma.com/design/7XgEebNTV6xZVSSrqHoFEa/%EC%B9%98%EC%A6%88%EB%A7%88%EC%BC%93-%EB%94%94%EC%9E%90%EC%9D%B8?node-id=0-1&node-type=canvas&t=7zAlnT1X7v4Rgevo-0"><img src="https://github.com/user-attachments/assets/50679084-13f2-42a9-a4eb-9a69ef5b06f7" style="border-radius:50%"/></a>
-    </td>
-    <td align="center" width="160px">
-      <a href="https://www.figma.com/design/7XgEebNTV6xZVSSrqHoFEa/%EC%B9%98%EC%A6%88%EB%A7%88%EC%BC%93-%EB%94%94%EC%9E%90%EC%9D%B8?node-id=0-1&node-type=canvas&t=7zAlnT1X7v4Rgevo-0"><img src="https://github.com/user-attachments/assets/8620e338-022b-408f-9edb-84b11acb314c" style="border-radius:50%" /></a>
-    </td>
   </tr>
   <tr height="30px">
-    <td align="center" width="160px">
-      <a href="https://github.com/CLOUDoort">최동현</a>
-    </td>
-    <td align="center" width="160px">
-      <a href="https://github.com/aquaman122">강준석</a>
-    </td>
-    <td align="center" width="160px">
-      <a href="https://github.com/luminox93">장석원</a>
-    </td>
     <td align="center" width="160px">
       <a href="https://github.com/viaunixue">정종현</a>
     </td>
@@ -568,12 +528,6 @@ erDiagram
     </td>
     <td align="center" width="160px">
       <a href="https://github.com/swwho96">신예찬</a>
-    </td>
-    <td align="center" width="160px">
-      <a href="https://www.figma.com/design/7XgEebNTV6xZVSSrqHoFEa/%EC%B9%98%EC%A6%88%EB%A7%88%EC%BC%93-%EB%94%94%EC%9E%90%EC%9D%B8?node-id=0-1&node-type=canvas&t=7zAlnT1X7v4Rgevo-0">별</a>
-    </td>
-    <td align="center" width="160px">
-      <a href="https://www.figma.com/design/7XgEebNTV6xZVSSrqHoFEa/%EC%B9%98%EC%A6%88%EB%A7%88%EC%BC%93-%EB%94%94%EC%9E%90%EC%9D%B8?node-id=0-1&node-type=canvas&t=7zAlnT1X7v4Rgevo-0">한지수</a>
     </td>
   </tr>
 </table>
