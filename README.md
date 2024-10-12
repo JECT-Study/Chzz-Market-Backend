@@ -159,6 +159,9 @@ border-radius: 20px;" >
 
 ## ⚙️ 시스템 아키텍처
 
+> 아래 링크를 통해 아키텍처 업데이트 상황을 실시간으로 확인할 수 있습니다.
+https://drive.google.com/file/d/1P1NHGCFjykOrYnZZ6GkgyZ3XS0P8NAx8/view
+
 ![diagram-export-2024 -10 -12 -오후-7_14_47](https://github.com/user-attachments/assets/c3ad878b-7739-4322-b5d4-2b7cec6a95f5)
 
 <br>
