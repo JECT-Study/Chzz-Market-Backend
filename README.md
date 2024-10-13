@@ -27,6 +27,8 @@ border-radius: 20px;" >
 
 [✨ <치즈마켓> 사용해보기](https://www.xn--910b8hh6hdsz.com/)
 
+[📄 API 문서 바로가기](https://app.swaggerhub.com/apis-docs/CHLWNDKS333_1/chzz-market-api/1.0.0#/Products)
+
 [🔗 Notion 바로가기](https://www.notion.so/b5153d7acbcc407b8c58e2efcd527dca?pvs=4)
 
 <br>
@@ -66,15 +68,6 @@ border-radius: 20px;" >
         </tr>
     </thead>
     <tbody>
-        <tr>
-            <td>
-                  <p>프론트엔드</p>
-            </td>
-            <td>
-                <img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=React&logoColor=white">
-                <img src="https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=Next.js&logoColor=white">
-            </td>
-        </tr>
         <tr>
             <td>
                 <p>백엔드</p>
@@ -139,19 +132,6 @@ border-radius: 20px;" >
                 <img src="https://img.shields.io/badge/jwt-CC0200?style=for-the-badge&logo=jwt&logoColor=white">
             </td>
         </tr>
-        <tr>
-            <td>
-                <p>협업</p>
-            </td>
-            <td>
-                <img src="https://img.shields.io/badge/Jira-0052CC?style=for-the-badge&logo=Jira">
-                <img src="https://img.shields.io/badge/Notion-000000?style=for-the-badge&logo=Notion">
-                <img src="https://img.shields.io/badge/Figma-F24E1E?style=for-the-badge&logo=Figma&logoColor=ffffff">
-                <img src="https://img.shields.io/badge/Slack-4A154B?style=for-the-badge&logo=Slack&logoColor=ffffff">
-                <img src="https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=Swagger&logoColor=black">
-                <img src="https://img.shields.io/badge/eraser-EC2C40?style=for-the-badge&logo=eraser&logoColor=black">
-            </td>
-        </tr>
     </tbody>
 </table>
 
@@ -159,10 +139,7 @@ border-radius: 20px;" >
 
 ## ⚙️ 시스템 아키텍처
 
-> 아래 링크를 통해 아키텍처 업데이트 상황을 실시간으로 확인할 수 있습니다.
-https://drive.google.com/file/d/1P1NHGCFjykOrYnZZ6GkgyZ3XS0P8NAx8/view
-
-![diagram-export-2024 -10 -12 -오후-7_14_47](https://github.com/user-attachments/assets/c3ad878b-7739-4322-b5d4-2b7cec6a95f5)
+<img src="https://drive.google.com/uc?export=download&id=1kdNWWF1Cz-PFgvb6VbEMUaV6VKrHLvZf"/>
 
 <br>
 
@@ -170,332 +147,7 @@ https://drive.google.com/file/d/1P1NHGCFjykOrYnZZ6GkgyZ3XS0P8NAx8/view
 
 ![diagram-export-2024 -10 -12 -오후-6_18_00](https://github.com/user-attachments/assets/c8be0873-0497-4b92-94ce-56a74f659504)
 
-```mermaid
-erDiagram
-    user {
-        bigint id PK
-        varchar email
-        varchar(20) nickname
-        varchar role
-        varchar provider
-        datetime created_at
-    }
-    auction {
-        bigint id PK
-        bigint winner_id FK
-        bigint product_id FK
-        int min_price
-        varchar status
-        datetime created_at
-        datetime updated_at
-    }
-    bid {
-        bigint id PK
-        bigint bidder_id FK
-        bigint auction_id FK
-        int amount
-        int bid_count
-        datetime created_at
-    }
-    payment {
-        bigint id PK
-        bigint payer_id FK
-        int amount
-        varchar payment_method
-        bigint auction_id
-        datetime created_at
-    }
-    image {
-        bigint id PK
-        varchar cdn_path
-        varchar product_id FK
-        datetime created_at
-        datetime updated_at
-    }
-    address {
-        bigint id PK
-        bigint user_id FK
-        varchar street_addr
-        varchar detail_addr
-        varchar sido
-        varchar sigungu
-        varchar eupmyondong
-        varchar zipcode
-        datetime created_at
-    }
-    product {
-        bigint id PK
-        varchar name
-        bigint user_id FK
-        varchar(1000) description
-        varchar category
-        datetime created_at
-        datetime updated_at
-    }
-    bank_account {
-        bigint id PK
-        bigint user_id FK
-        varchar user_bank_account_number
-        varchar user_bank_name
-    }
-    like {
-        bigint id PK
-        bigint user_id FK
-        bigint product_id FK
-        datetime created_at
-    }
-
-    user ||--o{ bid : "bidder"
-    user ||--o{ address : "has"
-    user ||--o{ payment : "payer"
-    auction ||--o{ bid : "has"
-    product ||--o{ image : "has"
-    payment ||--|| auction : "for"
-    auction ||--|| product : "for"
-    user ||--o{ bank_account : "has"
-    product ||--o{ like : "receives"
-    user ||--o{ like : "gives"
-    user ||--o{ auction : "winner"
-```
-
 <br>
-
-## 🛎️ 주요 API 엔드포인트 (v1.0.0)
-
-> Swagger UI: https://app.swaggerhub.com/apis-docs/CHLWNDKS333_1/chzz-market-api/1.0.0#/Products
-
-### Users API
-
-| Method | Endpoint                         | Description      | Auth Required |
-|--------|----------------------------------|------------------|:-------------:|
-| GET    | /users                           | 사용자 프로필 조회       |       ✅       |
-| POST   | /users                           | 회원가입             |       ✅       |
-| POST   | /users/profile                   | 내 프로필 수정         |       ✅       |
-| POST   | /users/tokens/reissue            | 토큰 재발급           |               |
-| POST   | /users/logout                    | 로그아웃             |               |
-| GET    | /users/customer-key              | 내 customerKey 조회 |       ✅       |
-| GET    | /users/{nickname}                | 특정 사용자 프로필 조회    |               |
-| GET    | /users/check/nickname/{nickname} | 닉네임 중복 확인        |               |
-
-### Products API
-
-| Method | Endpoint                    | Description       | Auth Required |
-|--------|-----------------------------|-------------------|:-------------:|
-| PATCH  | /products/{productId}       | 사전 등록 상품 수정       |       ✅       |
-| DELETE | /products/{productId}       | 사전 등록 상품 삭제       |       ✅       |
-| GET    | /products/{productId}       | 사전 등록 상품 상세 정보 조회 |       ✅       |
-| POST   | /products/{productId}/likes | 상품 좋아요 토글         |       ✅       |
-| GET    | /products                   | 사전 등록 상품 목록 조회    |       ✅       |
-| GET    | /products/categories        | 상품 카테고리 목록 조회     |               |
-| GET    | /products/users/{nickname}  | 나의 사전 등록 상품 목록 조회 |               |
-| GET    | /products/history           | 내가 참여한 사전경매 조회    |       ✅       |
-
-### Auctions API
-
-| Method | Endpoint                   | Description          | Auth Required |
-|--------|----------------------------|----------------------|:-------------:|
-| POST   | /auctions                  | 경매 등록                |       ✅       |
-| GET    | /auctions                  | 경매 목록 조회             |       ✅       |
-| POST   | /auctions/start            | 경매 상품으로 전환           |       ✅       |
-| GET    | /auctions/{auctionId}      | 경매 상세 조회             |       ✅       |
-| GET    | /auctions/history          | 경매 입찰 내역 조회          |       ✅       |
-| GET    | /auctions/won              | 내가 성공한 경매 조회         |       ✅       |
-| GET    | /auctions/lost             | 내가 실패한 경매 조회         |       ✅       |
-| GET    | /auctions/users/{nickname} | 사용자 경매 상품 목록 조회      |               |
-| GET    | /auctions/best             | Best 경매 상품 목록 조회     |               |
-| GET    | /auctions/imminent         | Imminent 경매 상품 목록 조회 |               |
-| GET    | /auctions/{auctionId}/bids | 경매 입찰 목록 조회          |       ✅       |
-
-### Bids API
-
-| Method | Endpoint             | Description | Auth Required |
-|--------|----------------------|-------------|:-------------:|
-| GET    | /bids                | 입찰 내역 조회    |       ✅       |
-| POST   | /bids                | 입찰 요청 및 수정  |       ✅       |
-| PATCH  | /bids/{bidId}/cancel | 입찰 취소       |       ✅       |
-
-### Payment API
-
-| Method | Endpoint           | Description | Auth Required |
-|--------|--------------------|-------------|:-------------:|
-| POST   | /payments/approval | 결제 승인       |       ✅       |
-| POST   | /payments/order-id | 결제 주문 ID 생성 |               |
-
-### Addresses API
-
-| Method | Endpoint   | Description | Auth Required |
-|--------|------------|-------------|:-------------:|
-| POST   | /addresses | 주소 등록       |       ✅       |
-| GET    | /addresses | 주소 목록 조회    |       ✅       |
-
-### Notifications API
-
-| Method | Endpoint                             | Description | Produces          | Auth Required |
-|--------|--------------------------------------|-------------|-------------------|:-------------:|
-| GET    | /notifications                       | 알림 목록 조회    | application/json  |       ✅       |
-| GET    | /notifications/subscribe             | 실시간 알림 구독   | text/event-stream |       ✅       |
-| POST   | /notifications/{notificationId}/read | 알림 읽음 처리    | application/json  |       ✅       |
-| DELETE | /notifications/{notificationId}      | 알림 삭제       | application/json  |       ✅       |
-
-<br>
-
-## 🚗 배포 전략
-
-> 추후 추가
-
-<br>
-
-## 🌲 프로젝트 구조
-
-```
-📦src
- ┣ 📂main
- ┃ ┣ 📂java
- ┃ ┃ ┗ 📂org
- ┃ ┃ ┃ ┗ 📂chzz
- ┃ ┃ ┃ ┃ ┗ 📂market
- ┃ ┃ ┃ ┃ ┃ ┣ 📂common
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂config
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂logging
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂dto
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂error
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂exception
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂handler
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂filter
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂quartz
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂util
- ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂validation
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂annotation
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂validator
- ┃ ┃ ┃ ┃ ┃ ┣ 📂domain
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂address
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂controller
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂dto
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂request
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂entity
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂repository
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂service
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂auction
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂controller
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂dto
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂request
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂response
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂entity
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂listener
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂error
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂repository
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂schedule
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂service
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂register
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂type
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂bank_account
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂entity
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂base
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂entity
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂bid
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂controller
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂dto
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂query
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂response
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂entity
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂error
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂repository
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂service
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂image
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂dto
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂entity
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂error
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂repository
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂service
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂like
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂dto
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂entity
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂error
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂repository
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂service
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂notification
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂controller
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂dto
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂response
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂entity
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂error
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂event
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂repository
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂service
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂payment
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂controller
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂dto
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂request
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂response
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂entity
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂error
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂repository
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂service
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂product
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂controller
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂dto
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂entity
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂error
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂repository
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂service
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂token
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂dto
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂entity
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂error
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂repository
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂service
- ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂user
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂controller
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂dto
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂request
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂response
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂entity
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂error
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂oauth2
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂repository
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂service
- ┃ ┃ ┃ ┃ ┃ ┗ 📜MarketApplication.java
- ┃ ┗ 📂resources
- ┃ ┃ ┣ 📂db
- ┃ ┃ ┃ ┣ 📂migration
- ┃ ┃ ┃ ┃ ┣ 📜V1__init.sql
- ┃ ┃ ┃ ┃ ┣ 📜V2__update_default_count_value.sql
- ┃ ┃ ┃ ┃ ┣ 📜V3__reorder_columns.sql
- ┃ ┃ ┃ ┃ ┗ 📜V4__add_profile_image_url_to_users.sql
- ┃ ┃ ┃ ┣ 📜data.sql
- ┃ ┃ ┃ ┗ 📜quartz-create.sql
- ┃ ┃ ┣ 📜application-test.yml
- ┃ ┃ ┗ 📜application.yml
- ┗ 📂test
- ┃ ┗ 📂java
- ┃ ┃ ┗ 📂org
- ┃ ┃ ┃ ┗ 📂chzz
- ┃ ┃ ┃ ┃ ┗ 📂market
- ┃ ┃ ┃ ┃ ┃ ┣ 📂common
- ┃ ┃ ┃ ┃ ┃ ┣ 📂domain
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂auction
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂controller
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂repository
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂service
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂bid
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂repository
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂service
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂like
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂service
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂notification
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂repository
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂service
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂product
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂repository
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂service
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂token
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂service
- ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂user
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂oauth2
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂service
- ┃ ┃ ┃ ┃ ┃ ┣ 📂util
- ┃ ┃ ┃ ┃ ┃ ┗ 📜MarketApplicationTests.java
-```
 
 ## 👨‍👩‍👧‍👦 팀원 소개
 
@@ -527,10 +179,10 @@ erDiagram
       <a href="https://github.com/viaunixue">정종현</a>
     </td>
     <td align="center" width="160px">
-      <a href="https://github.com/keem-hyun">최준</a>
+      <a href="https://github.com/junest66">최준</a>
     </td>
     <td align="center" width="160px">
-      <a href="https://github.com/swwho96">신예찬</a>
+      <a href="https://github.com/YeaChan05">신예찬</a>
     </td>
   </tr>
 </table>
