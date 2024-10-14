@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import org.chzz.market.common.DatabaseTest;
+import org.chzz.market.domain.auction.entity.Auction;
+import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.image.repository.ImageRepository;
 import org.chzz.market.domain.like.entity.Like;
@@ -55,17 +57,22 @@ class ProductRepositoryCustomImplTest {
     @Autowired
     LikeRepository likeRepository;
 
+    @Autowired
+    AuctionRepository auctionRepository;
+
     @PersistenceContext
     EntityManager entityManager;
 
     private static User user1, user2, user3;
-    private static Product product1, product2, product3, product4, product5;
-    private static Image image1, image2, image3, image4, image5;
+    private static Product product1, product2, product3, product4, product5, product6;
+    private static Image image1, image2, image3, image4, image5, image6;
     private static Like like1, like2, like3;
+    private static Auction auction1;
 
     @BeforeAll
     static void setUpOnce(@Autowired UserRepository userRepository,
                           @Autowired ProductRepository productRepository,
+                          @Autowired AuctionRepository auctionRepository,
                           @Autowired ImageRepository imageRepository,
                           @Autowired LikeRepository likeRepository) {
         user1 = User.builder().providerId("1234").nickname("닉네임1").email("user1@test.com").build();
@@ -83,19 +90,24 @@ class ProductRepositoryCustomImplTest {
         ReflectionTestUtils.setField(product4, "createdAt", LocalDateTime.now().minusDays(2));
         product5 = Product.builder().user(user3).name("사전등록상품5").category(FASHION_AND_CLOTHING).minPrice(50000).build();
         ReflectionTestUtils.setField(product5, "createdAt", LocalDateTime.now().minusDays(1));
-        productRepository.saveAll(List.of(product1, product2, product3, product4, product5));
+        product6 = Product.builder().user(user3).name("사전등록상품6").category(FASHION_AND_CLOTHING).minPrice(50000).build();
+        productRepository.saveAll(List.of(product1, product2, product3, product4, product5, product6));
 
         image1 = Image.builder().product(product1).cdnPath("path/to/image1.jpg").sequence(1).build();
         image2 = Image.builder().product(product2).cdnPath("path/to/image2.jpg").sequence(1).build();
         image3 = Image.builder().product(product3).cdnPath("path/to/image3.jpg").sequence(1).build();
         image4 = Image.builder().product(product4).cdnPath("path/to/image4.jpg").sequence(1).build();
         image5 = Image.builder().product(product5).cdnPath("path/to/image5.jpg").sequence(1).build();
-        imageRepository.saveAll(List.of(image1, image2, image3, image4, image5));
+        image6 = Image.builder().product(product6).cdnPath("path/to/image6.jpg").sequence(1).build();
+        imageRepository.saveAll(List.of(image1, image2, image3, image4, image5, image6));
 
         like1 = Like.builder().user(user2).product(product1).build();
         like2 = Like.builder().user(user3).product(product1).build();
         like3 = Like.builder().user(user1).product(product3).build();
         likeRepository.saveAll(List.of(like1, like2, like3));
+
+        auction1 = Auction.toEntity(product6);
+        auctionRepository.save(auction1);
     }
 
     @AfterEach
@@ -104,6 +116,7 @@ class ProductRepositoryCustomImplTest {
         imageRepository.deleteAll();
         productRepository.deleteAll();
         userRepository.deleteAll();
+        auctionRepository.deleteAll();
     }
 
     @Nested
@@ -306,6 +319,14 @@ class ProductRepositoryCustomImplTest {
             assertThat(result.get().getImages()).anySatisfy(imageResponse -> {
                 assertThat(imageResponse.imageUrl()).isEqualTo("path/to/image1.jpg");
             });
+        }
+
+        @Test
+        @DisplayName("8. 정식 경매 상품의 사전 경매 조회 불가")
+        void findPreAuctionDetailsForRegularAuctionProduct() {
+            Optional<ProductDetailsResponse> result = productRepository.findProductDetailsById(
+                    product6.getId(), null);
+            assertThat(result).isEmpty();
         }
 
     }
