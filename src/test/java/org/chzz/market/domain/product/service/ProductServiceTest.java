@@ -5,6 +5,10 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.chzz.market.domain.product.entity.Product.Category.ELECTRONICS;
 import static org.chzz.market.domain.product.entity.Product.Category.HOME_APPLIANCES;
+import static org.chzz.market.domain.product.error.ProductErrorCode.ALREADY_IN_AUCTION;
+import static org.chzz.market.domain.product.error.ProductErrorCode.FORBIDDEN_PRODUCT_ACCESS;
+import static org.chzz.market.domain.product.error.ProductErrorCode.PRODUCT_ALREADY_AUCTIONED;
+import static org.chzz.market.domain.product.error.ProductErrorCode.PRODUCT_NOT_FOUND;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -137,7 +141,6 @@ public class ProductServiceTest {
                 .imageSequence(Collections.emptyMap())
                 .build();
 
-
         System.setProperty("org.mockito.logging.verbosity", "all");
     }
 
@@ -187,7 +190,7 @@ public class ProductServiceTest {
             // when & then
             assertThatThrownBy(() -> productService.updateProduct(user.getId(), 1L, updateRequest, null))
                     .isInstanceOf(ProductException.class)
-                    .hasMessageContaining("상품을 찾을 수 없습니다.");
+                    .hasMessageContaining(PRODUCT_NOT_FOUND.getMessage());
         }
 
         @Test
@@ -200,7 +203,7 @@ public class ProductServiceTest {
             // when & then
             assertThatThrownBy(() -> productService.updateProduct(user.getId(), 1L, updateRequest, null))
                     .isInstanceOf(ProductException.class)
-                    .hasMessageContaining("이미 경매가 진행 중인 상품입니다.");
+                    .hasMessageContaining(ALREADY_IN_AUCTION.getMessage());
         }
 
         @Test
@@ -241,7 +244,7 @@ public class ProductServiceTest {
             // when & then
             assertThatThrownBy(() -> productService.updateProduct(999L, 1L, invalidUserRequest, null))
                     .isInstanceOf(ProductException.class)
-                    .hasMessageContaining("상품을 찾을 수 없습니다.");
+                    .hasMessageContaining(PRODUCT_NOT_FOUND.getMessage());
         }
 
         @Test
@@ -261,7 +264,7 @@ public class ProductServiceTest {
             // when & then
             assertThatThrownBy(() -> productService.updateProduct(2L, 1L, invalidUserRequest, null))
                     .isInstanceOf(ProductException.class)
-                    .hasMessageContaining("상품에 접근할 수 없습니다.");
+                    .hasMessageContaining(FORBIDDEN_PRODUCT_ACCESS.getMessage());
         }
 
         @Test
@@ -314,7 +317,7 @@ public class ProductServiceTest {
             // when & then
             assertThatThrownBy(() -> productService.updateProduct(2L, 1L, updateRequest, null))
                     .isInstanceOf(ProductException.class)
-                    .hasMessageContaining("상품에 접근할 수 없습니다.");
+                    .hasMessageContaining(FORBIDDEN_PRODUCT_ACCESS.getMessage());
         }
 
         @Test
@@ -378,7 +381,7 @@ public class ProductServiceTest {
             // When & Then
             assertThatThrownBy(() -> productService.deleteProduct(1L, 1L))
                     .isInstanceOf(ProductException.class)
-                    .hasMessage("상품이 이미 경매로 등록되어 삭제할 수 없습니다.");
+                    .hasMessage(PRODUCT_ALREADY_AUCTIONED.getMessage());
         }
 
         @Test
@@ -390,7 +393,7 @@ public class ProductServiceTest {
             // When & Then
             assertThatThrownBy(() -> productService.deleteProduct(1L, 1L))
                     .isInstanceOf(ProductException.class)
-                    .hasMessage("상품을 찾을 수 없습니다.");
+                    .hasMessage(PRODUCT_NOT_FOUND.getMessage());
         }
     }
 
