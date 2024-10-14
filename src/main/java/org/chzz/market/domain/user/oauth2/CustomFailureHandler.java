@@ -20,7 +20,7 @@ public class CustomFailureHandler extends SimpleUrlAuthenticationFailureHandler 
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
                                         AuthenticationException exception) throws IOException {
+        log.error("Social login failure - User-Agent: {}, Error: {}", request.getHeader("User-Agent"), exception.getMessage());
         response.sendRedirect(clientUrl + REDIRECT_URL_FAILURE);
-        log.error("social login failure");
     }
 }
