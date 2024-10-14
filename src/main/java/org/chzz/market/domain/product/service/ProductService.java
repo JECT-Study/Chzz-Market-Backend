@@ -61,6 +61,9 @@ public class ProductService {
      * 상품 상세 정보 조회
      */
     public ProductDetailsResponse getProductDetails(Long productId, Long userId) {
+        if (auctionRepository.existsByProductId(productId)) {
+            throw new ProductException(ALREADY_IN_AUCTION);
+        }
         return productRepository.findProductDetailsById(productId, userId)
                 .orElseThrow(() -> new ProductException(PRODUCT_NOT_FOUND));
     }
