@@ -11,7 +11,7 @@ on:
 
 jobs:
   validate-title-and-branch:
-    if: ${{ !(startsWith(github.head_ref, 'release/') && github.base_ref == 'develop') && github.actor != 'jira[bot]' }} # release/* -> develop일 때는 실행하지 않음, 또한 Jira Bot이 실행하는 경우 무시
+    if: ${{ !(startsWith(github.head_ref, 'release/') && github.base_ref == 'develop')}} # release/* -> develop일 때는 실행하지 않음
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
