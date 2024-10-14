@@ -45,10 +45,13 @@ public class TestService {
         Image image1 = Image.builder()
                 .cdnPath("https://picsum.photos/id/" + randomIndex + "/200/200")
                 .product(product)
+                .sequence(1)
                 .build();
+
         Image image2 = Image.builder()
                 .cdnPath("https://picsum.photos/id/" + randomIndex1 + "/200/200")
                 .product(product)
+                .sequence(2)
                 .build();
         imageRepository.save(image1);
         imageRepository.save(image2);
