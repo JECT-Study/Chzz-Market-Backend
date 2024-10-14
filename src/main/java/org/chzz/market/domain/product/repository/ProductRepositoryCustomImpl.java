@@ -102,8 +102,9 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
                         product.category
                 ))
                 .from(product)
+                .leftJoin(auction).on(auction.product.id.eq(product.id))
                 .join(product.user, user)
-                .where(product.id.eq(productId))
+                .where(auction.id.isNull().and(product.id.eq(productId)))
                 .fetchOne());
 
         return result.map(response -> {
