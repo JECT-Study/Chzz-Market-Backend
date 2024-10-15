@@ -7,6 +7,7 @@ import org.chzz.market.domain.auction.dto.response.AuctionResponse;
 import org.chzz.market.domain.auction.dto.response.LostAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.SimpleAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.UserAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.UserEndedAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.WonAuctionResponse;
 import org.chzz.market.domain.product.entity.Product.Category;
 import org.chzz.market.domain.user.dto.response.ParticipationCountsResponse;
@@ -112,4 +113,13 @@ public interface AuctionRepositoryCustom {
      * @return 진행 중인 경매 목록을 포함한 페이징 결과
      */
     Page<UserAuctionResponse> findProceedingAuctionByUserId(Long userId, Pageable pageable);
+
+    /**
+     * 사용자 ID에 해당하는 종료된 경매 목록을 페이징항여 조회합니다.
+     *
+     * @param userId   경매를 조회할 사용자 ID
+     * @param pageable 페이징 정보 (페이지 번호, 페이지 크기 등)
+     * @return 종료된 경매 목록을 포함한 페이징 결과
+     */
+    Page<UserEndedAuctionResponse> findEndedAuctionByUserId(Long userId, Pageable pageable);
 }
