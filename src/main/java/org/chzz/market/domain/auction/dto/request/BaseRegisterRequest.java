@@ -27,7 +27,7 @@ import org.chzz.market.domain.auction.type.AuctionRegisterType;
 public abstract class BaseRegisterRequest {
 
     @NotBlank
-    @Size(min = 2, message = "제목은 최소 2글자 이상이어야 합니다")
+    @Size(min = 2, max = 30, message = "제목은 최소 2글자 이상 30자 이하여야 합니다")
     protected String productName;
 
     @NotNull
