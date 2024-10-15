@@ -152,6 +152,15 @@ public class AuctionController {
     }
 
     /**
+     * 사용자의 종료된 경매 목록 조회
+     */
+    @GetMapping("/users/ended")
+    public ResponseEntity<?> getEndedAuctions(@LoginUser Long userId,
+                                              @PageableDefault(sort = "newest") Pageable pageable) {
+        return ResponseEntity.ok(auctionService.getEndedAuctionListByUserId(userId, pageable));
+    }
+
+    /**
      * 경매 등록
      */
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
