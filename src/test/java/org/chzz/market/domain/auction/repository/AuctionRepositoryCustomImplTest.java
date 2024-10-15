@@ -610,4 +610,21 @@ class AuctionRepositoryCustomImplTest {
             assertThat(counts.failedAuctionCount()).isEqualTo(2);
         }
     }
+
+    @Test
+    @DisplayName("사용자의 진행 중인 경매 목록 조회")
+    void testFindProceedingAuctionByUserId() {
+        // given
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // when
+        Page<UserAuctionResponse> result = auctionRepository.findProceedingAuctionByUserId(user1.getId(), pageable);
+
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).hasSize(2); // user1이 진행 중인 경매는 2개
+        assertThat(result.getContent().get(0).getStatus()).isEqualTo(PROCEEDING);
+        assertThat(result.getContent().get(0).getProductName()).isIn("제품1", "제품2");
+        assertThat(result.getContent().get(1).getStatus()).isEqualTo(PROCEEDING);
+    }
 }
