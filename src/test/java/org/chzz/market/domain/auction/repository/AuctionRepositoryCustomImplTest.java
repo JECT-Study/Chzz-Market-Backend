@@ -378,60 +378,6 @@ class AuctionRepositoryCustomImplTest {
     }
 
     @Test
-    @DisplayName("내가 참여한 경매 목록 조회 -  가격순")
-    void testFindParticipatingAuctionRecordWithExpensive() {
-        // given
-        Pageable pageable = PageRequest.of(0, 10, Sort.by("expensive"));
-        Page<AuctionResponse> responses = auctionRepository.findParticipatingAuctionRecord(user1.getId(), pageable);
-        // when
-
-        // then
-        assertThat(responses.getContent())
-                .isSortedAccordingTo(Comparator.comparingLong(BaseAuctionDto::getMinPrice).reversed());
-        assertThat(responses.getContent())
-                .allMatch(auctionResponse -> {
-                    Auction auction = auctionRepository.findById(auctionResponse.getAuctionId()).get();
-                    return auction.getStatus().equals(PROCEEDING);
-                });
-    }
-
-    @Test
-    @DisplayName("내가 참여한 경매 목록 조회 -  인기순")
-    void testFindParticipatingAuctionRecordWithPopularity() {
-        // given
-        Pageable pageable = PageRequest.of(0, 10, Sort.by("popularity"));
-        Page<AuctionResponse> responses = auctionRepository.findParticipatingAuctionRecord(user1.getId(), pageable);
-        // when
-
-        // then
-        assertThat(responses.getContent()).isSortedAccordingTo(
-                Comparator.comparingLong(BaseAuctionDto::getParticipantCount).reversed());
-        assertThat(responses.getContent())
-                .allMatch(auctionResponse -> {
-                    Auction auction = auctionRepository.findById(auctionResponse.getAuctionId()).get();
-                    return auction.getStatus().equals(PROCEEDING);
-                });
-    }
-
-    @Test
-    @DisplayName("내가 참여한 경매 목록 조회 -  남은 시간순")
-    void testFindParticipatingAuctionRecordWithTime() {
-        // given
-        Pageable pageable = PageRequest.of(0, 10, Sort.by("newest"));
-        Page<AuctionResponse> responses = auctionRepository.findParticipatingAuctionRecord(user1.getId(), pageable);
-        // when
-
-        // then
-        assertThat(responses.getContent()).isSortedAccordingTo(
-                Comparator.comparingLong(BaseAuctionDto::getTimeRemaining));
-        assertThat(responses.getContent())
-                .allMatch(auctionResponse -> {
-                    Auction auction = auctionRepository.findById(auctionResponse.getAuctionId()).get();
-                    return auction.getStatus().equals(PROCEEDING);
-                });
-    }
-
-    @Test
     @DisplayName("사용자의 실패한 경매 조회")
     void testGetLostAuctionHistory() {
         // given

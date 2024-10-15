@@ -93,13 +93,6 @@ public class AuctionService {
     }
 
     /**
-     * 사용자가 참여한(입찰한) 경매 상세 정보를 조회
-     */
-    public Page<AuctionResponse> getAuctionHistory(Long userId, Pageable pageable) {
-        return auctionRepository.findParticipatingAuctionRecord(userId, pageable);
-    }
-
-    /**
      * 내가 성공한 경매 조회
      */
     public Page<WonAuctionResponse> getWonAuctionHistory(Long userId, Pageable pageable) {

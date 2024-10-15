@@ -95,40 +95,6 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
     }
 
     /**
-     * 사용자의 경매 참여 기록을 조회합니다
-     *
-     * @param userId   사용자 ID
-     * @param pageable 페이징 정보
-     * @return 회원의 경매 참여 기록
-     */
-    @Override
-    public Page<AuctionResponse> findParticipatingAuctionRecord(Long userId, Pageable pageable) {
-        JPAQuery<?> baseQuery = getActualParticipatedAuction(userId)
-                .join(auction.product, product);
-
-        List<AuctionResponse> content = baseQuery
-                .select(new QAuctionResponse(
-                        auction.id,
-                        product.name,
-                        image.cdnPath,
-                        timeRemaining().longValue(),
-                        auction.product.minPrice.longValue(),
-                        getBidCount()
-                ))
-                .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId())))
-                .where(auction.status.eq(PROCEEDING).and(auction.endDateTime.after(LocalDateTime.now())))
-                .groupBy(auction.id, product.name, image.cdnPath)
-                .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .fetch();
-
-        JPAQuery<Long> countQuery = baseQuery
-                .select(auction.id.countDistinct());
-        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchCount);
-    }
-
-    /**
      * 경매 ID와 사용자 ID로 경매 상세 정보를 조회합니다.
      *
      * @param auctionId 경매 ID

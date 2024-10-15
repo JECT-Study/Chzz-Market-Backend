@@ -75,14 +75,6 @@ public class AuctionController {
     }
 
     /**
-     * 경매 입찰 내역 조회
-     */
-    @GetMapping("/history")
-    public ResponseEntity<?> getAuctionHistory(@LoginUser Long userId, Pageable pageable) {
-        return ResponseEntity.ok(auctionService.getAuctionHistory(userId, pageable));
-    }
-
-    /**
      * 내가 성공한 경매 조회
      */
     @GetMapping("/won")
