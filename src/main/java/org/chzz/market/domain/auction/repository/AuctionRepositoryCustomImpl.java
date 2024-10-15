@@ -435,6 +435,39 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
         );
     }
 
+    @Override
+    public Page<UserAuctionResponse> findProceedingAuctionByUserId(Long userId, Pageable pageable) {
+        JPAQuery<?> baseQuery = jpaQueryFactory
+                .from(auction)
+                .join(auction.product, product)
+                .where(product.user.id.eq(userId).and(auction.status.eq(PROCEEDING)));
+
+        // 진행 중인 경매 조회 쿼리
+        List<UserAuctionResponse> result = baseQuery
+                .select(new QUserAuctionResponse(
+                        auction.id,
+                        product.name,
+                        image.cdnPath,
+                        timeRemaining().longValue(),
+                        product.minPrice.longValue(),
+                        getBidCount(),
+                        auction.status,
+                        auction.createdAt
+                ))
+                .leftJoin(image).on(image.product.id.eq(product.id)
+                        .and(image.id.eq(getFirstImageId())))
+                .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        // 전체 경매 수를 계산하는 쿼리
+        JPAQuery<Long> countQuery = baseQuery
+                .select(auction.count());
+
+        return PageableExecutionUtils.getPage(result, pageable, countQuery::fetchOne);
+    }
+
     /**
      * @param userId 사용자 pk
      * @return 실제 사용자가 참여한 경매(취소된 입찰 제외)
