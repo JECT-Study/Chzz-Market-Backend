@@ -1,11 +1,14 @@
 package org.chzz.market.domain.bid.repository;
 
+import static org.chzz.market.common.util.QuerydslUtil.nullSafeBuilderIgnore;
 import static org.chzz.market.domain.auction.entity.QAuction.auction;
+import static org.chzz.market.domain.bid.entity.Bid.BidStatus.ACTIVE;
 import static org.chzz.market.domain.bid.entity.QBid.bid;
 import static org.chzz.market.domain.image.entity.QImage.image;
 import static org.chzz.market.domain.product.entity.QProduct.product;
 import static org.chzz.market.domain.user.entity.QUser.user;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
@@ -22,12 +25,12 @@ import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.util.QuerydslOrder;
 import org.chzz.market.common.util.QuerydslOrderProvider;
 import org.chzz.market.domain.auction.entity.Auction;
+import org.chzz.market.domain.auction.type.AuctionStatus;
 import org.chzz.market.domain.bid.dto.query.BiddingRecord;
 import org.chzz.market.domain.bid.dto.query.QBiddingRecord;
 import org.chzz.market.domain.bid.dto.response.BidInfoResponse;
 import org.chzz.market.domain.bid.dto.response.QBidInfoResponse;
 import org.chzz.market.domain.bid.entity.Bid;
-import org.chzz.market.domain.bid.entity.Bid.BidStatus;
 import org.chzz.market.domain.image.entity.QImage;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,17 +41,35 @@ public class BidRepositoryCustomImpl implements BidRepositoryCustom {
     private final JPAQueryFactory jpaQueryFactory;
     private final QuerydslOrderProvider querydslOrderProvider;
 
-    public Page<BiddingRecord> findUsersBidHistory(Long userId, Pageable pageable) {
-        QImage firstImage = new QImage("firstImage");
+    public Page<BiddingRecord> findUsersBidHistory(Long userId, Pageable pageable, AuctionStatus auctionStatus) {
+        // 공통된 부분을 baseQuery로 추출
+        JPAQuery<?> baseQuery = jpaQueryFactory
+                .from(bid)
+                .join(bid.auction, auction).on(bid.bidder.id.eq(userId).and(bid.status.eq(ACTIVE)
+                        .and(auctionStatusEqIgnoreNull(auctionStatus))));
 
-        JPQLQuery<BiddingRecord> baseQuery = getBaseQuery(firstImage, userId);
-        List<BiddingRecord> content = baseQuery
+        List<BiddingRecord> result = baseQuery
+                .select(new QBiddingRecord(
+                        auction.id,
+                        product.name,
+                        product.minPrice.longValue(),
+                        bid.amount,
+                        getBidCount(),
+                        image.cdnPath,
+                        timeRemaining().longValue()
+                ))
+                .leftJoin(auction.product, product)
+                .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId())))
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        return PageableExecutionUtils.getPage(content, pageable, getCount(userId)::fetchOne);
+        // 카운트 쿼리 작성
+        JPAQuery<Long> countQuery = baseQuery
+                .select(bid.count());
+
+        return PageableExecutionUtils.getPage(result, pageable, countQuery::fetchOne);
     }
 
     @Override
@@ -57,7 +78,7 @@ public class BidRepositoryCustomImpl implements BidRepositoryCustom {
                 .selectFrom(bid)
                 .leftJoin(bid.bidder).fetchJoin()
                 .where(
-                        bid.auction.eq(auction).and(bid.status.eq(BidStatus.ACTIVE))
+                        bid.auction.eq(auction).and(bid.status.eq(ACTIVE))
                 )
                 .orderBy(bid.amount.desc(), bid.updatedAt.asc())
                 .fetch();
@@ -65,10 +86,11 @@ public class BidRepositoryCustomImpl implements BidRepositoryCustom {
 
     @Override
     public Page<BidInfoResponse> findBidsByAuctionId(Long auctionId, Pageable pageable) {
-        BooleanExpression isWinner = auction.winnerId.isNotNull().and(auction.winnerId.eq(user.id)).or(auction.winnerId.isNull().and(Expressions.FALSE));
+        BooleanExpression isWinner = auction.winnerId.isNotNull().and(auction.winnerId.eq(user.id))
+                .or(auction.winnerId.isNull().and(Expressions.FALSE));
 
         JPAQuery<?> baseQuery = jpaQueryFactory.from(bid)
-                .join(bid.auction, auction).on(auction.id.eq(auctionId).and(bid.status.eq(BidStatus.ACTIVE)));
+                .join(bid.auction, auction).on(auction.id.eq(auctionId).and(bid.status.eq(ACTIVE)));
 
         List<BidInfoResponse> content = baseQuery.select(new QBidInfoResponse(
                         bid.amount,
@@ -83,51 +105,30 @@ public class BidRepositoryCustomImpl implements BidRepositoryCustom {
 
         JPAQuery<Long> countQuery = baseQuery.
                 select(bid.count());
-
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchCount);
     }
 
-    private JPQLQuery<BiddingRecord> getBaseQuery(QImage firstImage, Long userId) {
-        return jpaQueryFactory
-                .select(new QBiddingRecord(
-                        product.name,
-                        product.minPrice.longValue(),
-                        bid.amount,
-                        auction.bids.size().longValue(),
-                        firstImage.cdnPath,
-                        timeRemaining().longValue()
-                ))
-                .from(bid)
-                .join(bid.auction, auction)
-                .on(bid.bidder.id.eq(userId).and(bid.status.eq(BidStatus.ACTIVE)))
-                .leftJoin(auction.product, product)
-                .leftJoin(firstImage)
-                .on(firstImage.product.eq(product).and(firstImage.id.eq(
-                        JPAExpressions
-                                .select(image.id.min())
-                                .from(image)
-                                .where(image.product.eq(product))
-                )))
-                .groupBy(product.name,
-                        product.minPrice,
-                        bid.amount,
-                        auction.bids.size(),
-                        firstImage.cdnPath,
-                        auction.createdAt,
-                        auction.id);
+    private JPQLQuery<Long> getFirstImageId() {
+        QImage imageSub = new QImage("imageSub");
+        return JPAExpressions.select(imageSub.id)
+                .from(imageSub)
+                .where(imageSub.product.id.eq(product.id), imageSub.sequence.eq(Expressions.asNumber(1)));
     }
 
-    private JPAQuery<Long> getCount(Long userId) {
-        return jpaQueryFactory
+    private JPQLQuery<Long> getBidCount() {
+        return JPAExpressions
                 .select(bid.count())
                 .from(bid)
-                .join(bid.auction, auction)
-                .on(bid.bidder.id.eq(userId).and(bid.status.eq(BidStatus.ACTIVE)));
+                .where(bid.auction.id.eq(auction.id).and(bid.status.eq(ACTIVE)));
     }
 
     private static NumberExpression<Integer> timeRemaining() {
         return Expressions.numberTemplate(Integer.class,
                 "GREATEST(0, TIMESTAMPDIFF(SECOND, CURRENT_TIMESTAMP, {0}))", auction.endDateTime); // 음수면 0으로 처리
+    }
+
+    private BooleanBuilder auctionStatusEqIgnoreNull(AuctionStatus status) {
+        return nullSafeBuilderIgnore(() -> auction.status.eq(status));
     }
 
     @Getter
