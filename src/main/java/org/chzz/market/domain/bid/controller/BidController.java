@@ -5,6 +5,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.config.LoginUser;
+import org.chzz.market.domain.auction.type.AuctionStatus;
 import org.chzz.market.domain.bid.dto.BidCreateRequest;
 import org.chzz.market.domain.bid.dto.query.BiddingRecord;
 import org.chzz.market.domain.bid.service.BidService;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -27,14 +29,19 @@ public class BidController {
     private final BidService bidService;
 
     /**
-     * 입찰 내역 조회
+     * 나의 입찰 목록 조회
+     *
+     * @param status 경매 상태 필터링 파라미터
+     *                - 전체 조회: 값이 없거나 null인 경우
+     *                - 진행 중인 경매의 입찰만 조회: 'proceeding' 값을 사용할 때
+     *                - 종료된 경매의 입찰만 조회: 'ended' 값을 사용할 때
      */
     @GetMapping
     public ResponseEntity<?> findUsersBidHistory(
             @LoginUser Long userId,
-            @PageableDefault
-            Pageable pageable) {
-        Page<BiddingRecord> records = bidService.inquireBidHistory(userId, pageable);
+            @PageableDefault(sort = "time-remaining") Pageable pageable,
+            @RequestParam(value = "status", required = false) AuctionStatus status) {
+        Page<BiddingRecord> records = bidService.inquireBidHistory(userId, pageable, status);
         return ResponseEntity.ok(records);
     }
 
