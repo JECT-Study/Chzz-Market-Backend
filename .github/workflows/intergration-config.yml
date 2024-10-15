@@ -44,7 +44,7 @@ jobs:
 
       # Gradle 빌드 (테스트 제외)
       - name: Build with Gradle
-        run: ./gradlew build -x test --no-daemon --info
+        run: ./gradlew build -x test --no-daemon
 
       # 테스트 실행
       - name: Test with Gradle
