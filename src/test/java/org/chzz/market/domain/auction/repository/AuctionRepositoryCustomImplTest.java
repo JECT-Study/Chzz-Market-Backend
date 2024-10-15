@@ -3,24 +3,33 @@ package org.chzz.market.domain.auction.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.chzz.market.domain.auction.type.AuctionStatus.ENDED;
 import static org.chzz.market.domain.auction.type.AuctionStatus.PROCEEDING;
+import static org.chzz.market.domain.payment.entity.Status.DONE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.chzz.market.common.DatabaseTest;
 import org.chzz.market.domain.auction.dto.BaseAuctionDto;
 import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.AuctionResponse;
 import org.chzz.market.domain.auction.dto.response.LostAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.UserAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.UserEndedAuctionResponse;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.bid.entity.Bid;
 import org.chzz.market.domain.bid.repository.BidRepository;
 import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.image.repository.ImageRepository;
+import org.chzz.market.domain.payment.dto.response.TossPaymentResponse;
+import org.chzz.market.domain.payment.entity.Payment;
+import org.chzz.market.domain.payment.entity.Payment.PaymentMethod;
+import org.chzz.market.domain.payment.repository.PaymentRepository;
 import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.product.entity.Product.Category;
 import org.chzz.market.domain.product.repository.ProductRepository;
@@ -47,8 +56,8 @@ class AuctionRepositoryCustomImplTest {
     AuctionRepository auctionRepository;
 
     private static User user1, user2, user3, user4;
-    private static Product product1, product2, product3, product4, product5, product6, product7, product8;
-    private static Auction auction1, auction2, auction3, auction4, auction5, auction6, auction7, auction8;
+    private static Product product1, product2, product3, product4, product5, product6, product7, product8, product9;
+    private static Auction auction1, auction2, auction3, auction4, auction5, auction6, auction7, auction8, auction9;
 
     private static Image image1, image2, image3, image4, image5, image6;
     private static Bid bid1, bid2, bid3, bid4, bid5, bid6, bid7, bid8, bid9, bid10, bid11, bid12, bid13, bid14;
@@ -58,7 +67,8 @@ class AuctionRepositoryCustomImplTest {
                           @Autowired ProductRepository productRepository,
                           @Autowired AuctionRepository auctionRepository,
                           @Autowired ImageRepository imageRepository,
-                          @Autowired BidRepository bidRepository) {
+                          @Autowired BidRepository bidRepository,
+                          @Autowired PaymentRepository paymentRepository) {
         user1 = User.builder().providerId("1234").nickname("닉네임1").email("asd@naver.com").build();
         user2 = User.builder().providerId("12345").nickname("닉네임2").email("asd1@naver.com").build();
         user3 = User.builder().providerId("123456").nickname("닉네임3").email("asd12@naver.com").build();
@@ -81,8 +91,10 @@ class AuctionRepositoryCustomImplTest {
                 .build();
         product8 = Product.builder().user(user2).name("제품8").category(Category.OTHER).minPrice(75000)
                 .build();
+        product9 = Product.builder().user(user2).name("제품9").category(Category.OTHER).minPrice(80000).build();
+
         productRepository.saveAll(
-                List.of(product1, product2, product3, product4, product5, product6, product7, product8));
+                List.of(product1, product2, product3, product4, product5, product6, product7, product8, product9));
 
         auction1 = Auction.builder().product(product1).status(PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusDays(1)).build();
@@ -100,8 +112,23 @@ class AuctionRepositoryCustomImplTest {
                 .endDateTime(LocalDateTime.now().plusSeconds(700)).build();
         auction8 = Auction.builder().product(product8).status(ENDED).winnerId(user4.getId())
                 .endDateTime(LocalDateTime.now().minusDays(1)).build();
+        // auction9 생성 (종료되었지만 낙찰자가 없는 경매)
+        auction9 = Auction.builder()
+                .product(product9)
+                .status(ENDED)
+                .endDateTime(LocalDateTime.now().minusDays(1))
+                .build();
         auctionRepository.saveAll(
-                List.of(auction1, auction2, auction3, auction4, auction5, auction6, auction7, auction8));
+                List.of(auction1, auction2, auction3, auction4, auction5, auction6, auction7, auction8, auction9));
+
+        // auction8에 대한 결제 데이터 추가 (결제 완료된 경매)
+        TossPaymentResponse tossPaymentResponse = new TossPaymentResponse();
+        tossPaymentResponse.setTotalAmount(250000L);
+        tossPaymentResponse.setMethod(PaymentMethod.CARD);
+        tossPaymentResponse.setStatus(DONE);
+        tossPaymentResponse.setOrderId("order_" + auction8.getId());
+        tossPaymentResponse.setPaymentKey("paymentKey_" + auction8.getId());
+        paymentRepository.save(Payment.of(user4, tossPaymentResponse, auction8));
 
         image1 = Image.builder().product(product1).cdnPath("path/to/image1_1.jpg").sequence(1).build();
         image2 = Image.builder().product(product1).cdnPath("path/to/image1_2.jpg").sequence(2).build();
@@ -627,4 +654,70 @@ class AuctionRepositoryCustomImplTest {
         assertThat(result.getContent().get(0).getProductName()).isIn("제품1", "제품2");
         assertThat(result.getContent().get(1).getStatus()).isEqualTo(PROCEEDING);
     }
+
+    @Test
+    @DisplayName("사용자의 종료된 경매 목록 조회")
+    void testFindEndedAuctionByUserId() {
+        // given
+        Long userId = user2.getId(); // user2이 판매자로 등록한 경매를 조회
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // when
+        Page<UserEndedAuctionResponse> result = auctionRepository.findEndedAuctionByUserId(userId, pageable);
+
+        // then
+        assertNotNull(result);
+        assertThat(result.getContent()).isNotEmpty();
+        assertThat(result.getContent()).hasSize(3); // user2의 종료된 경매는 2개
+    }
+
+    @Test
+    @DisplayName("사용자의 종료된 경매 목록 조회 - 다양한 상황 처리")
+    void testFindEndedAuctionByUserId_MultipleScenarios() {
+        // given
+        Long userId = user2.getId(); // user2의 종료된 경매 조회
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // when
+        Page<UserEndedAuctionResponse> result = auctionRepository.findEndedAuctionByUserId(userId, pageable);
+
+        // then
+        assertNotNull(result);
+        List<UserEndedAuctionResponse> content = result.getContent();
+
+        // 총 3개의 종료된 경매가 있어야 함 (auction4, auction8, auction9)
+        assertThat(content).hasSize(3);
+
+        // 각각의 경매를 확인하기 위해 맵으로 변환
+        Map<Long, UserEndedAuctionResponse> auctionResponseMap = content.stream()
+                .collect(Collectors.toMap(UserEndedAuctionResponse::auctionId, Function.identity()));
+
+        // auction4 검증 (결제 전 낙찰자 있음)
+        UserEndedAuctionResponse auction4Response = auctionResponseMap.get(auction4.getId());
+        assertNotNull(auction4Response);
+        assertThat(auction4Response.productName()).isEqualTo("제품4");
+        assertThat(auction4Response.winningBidAmount()).isEqualTo(25000L); // 최고 입찰가
+        assertThat(auction4Response.isWon()).isTrue();
+        assertThat(auction4Response.isPaid()).isFalse(); // 결제 전
+        assertThat(auction4Response.participantCount()).isEqualTo(2); // bid11, bid12
+
+        // auction8 검증 (결제 후 낙찰자 있음)
+        UserEndedAuctionResponse auction8Response = auctionResponseMap.get(auction8.getId());
+        assertNotNull(auction8Response);
+        assertThat(auction8Response.productName()).isEqualTo("제품8");
+        assertThat(auction8Response.winningBidAmount()).isEqualTo(250000L); // 최고 입찰가
+        assertThat(auction8Response.isWon()).isTrue();
+        assertThat(auction8Response.isPaid()).isTrue(); // 결제 완료
+        assertThat(auction8Response.participantCount()).isEqualTo(2); // bid13, bid14
+
+        // auction9 검증 (낙찰자 없음)
+        UserEndedAuctionResponse auction9Response = auctionResponseMap.get(auction9.getId());
+        assertNotNull(auction9Response);
+        assertThat(auction9Response.productName()).isEqualTo("제품9");
+        assertThat(auction9Response.winningBidAmount()).isEqualTo(0L); // 입찰 없음
+        assertThat(auction9Response.isWon()).isFalse();
+        assertThat(auction9Response.isPaid()).isFalse(); // 결제 없음
+        assertThat(auction9Response.participantCount()).isEqualTo(0); // 입찰 없음
+    }
+
 }
