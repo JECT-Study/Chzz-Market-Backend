@@ -142,6 +142,13 @@ public class AuctionService {
     }
 
     /**
+     * 사용자가 등록한 종료된 경매 목록 조회
+     */
+    public Page<?> getEndedAuctionListByUserId(Long userId, Pageable pageable) {
+        return auctionRepository.findEndedAuctionByUserId(userId, pageable);
+    }
+
+    /**
      * 사전 등록 상품 경매 전환 처리
      */
     @Transactional
