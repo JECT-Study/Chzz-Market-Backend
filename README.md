@@ -25,9 +25,9 @@ border-radius: 20px;" >
 
 </br>
 
-[✨ <치즈마켓> 사용해보기](https://www.xn--910b8hh6hdsz.com/)
+[✨ <치즈마켓> 사용해보기](https://chzzmarket.vercel.app/)
 
-[📄 API 문서 바로가기](https://app.swaggerhub.com/apis-docs/CHLWNDKS333_1/chzz-market-api/1.0.0#/Products)
+[//]: # ([📄 API 문서 바로가기]&#40;https://app.swaggerhub.com/apis-docs/CHLWNDKS333_1/chzz-market-api/1.0.0#/Products&#41;)
 
 [🔗 Notion 바로가기](https://www.notion.so/b5153d7acbcc407b8c58e2efcd527dca?pvs=4)
 
@@ -53,7 +53,6 @@ border-radius: 20px;" >
 * 결제 시스템 연동 (토스페이먼츠 API 활용)
 * 알림 서비스 (SSE를 이용한 실시간 알림)
 * 이미지 업로드 및 CDN 연동 (AWS S3, CloudFront 활용)
-* 검색 기능 및 카테고리 관리
 * 사용자 프로필 및 거래 내역 관리
 
 <br>
@@ -139,13 +138,13 @@ border-radius: 20px;" >
 
 ## ⚙️ 시스템 아키텍처
 
-<img src="https://drive.google.com/uc?export=download&id=1kdNWWF1Cz-PFgvb6VbEMUaV6VKrHLvZf"/>
+<img src="https://drive.google.com/uc?export=download&id=16VASXkZ-iDVkuoOgd3BgB6PkYalfZFSI"/>
 
 <br>
 
 ## 🛢️ ERD
 
-![diagram-export-2024 -10 -12 -오후-6_18_00](https://github.com/user-attachments/assets/c8be0873-0497-4b92-94ce-56a74f659504)
+> 추후 업데이트 예정
 
 <br>
 
