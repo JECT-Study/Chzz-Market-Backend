@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
+import org.chzz.market.domain.auction.type.AuctionStatus;
 import org.chzz.market.domain.bid.dto.BidCreateRequest;
 import org.chzz.market.domain.bid.dto.query.BiddingRecord;
 import org.chzz.market.domain.bid.dto.response.BidInfoResponse;
@@ -37,11 +38,36 @@ public class BidService {
     private final BidRepository bidRepository;
     private final UserRepository userRepository;
 
-
-    public Page<BiddingRecord> inquireBidHistory(Long userId, Pageable pageable) {
-        return bidRepository.findUsersBidHistory(userId, pageable);
+    /**
+     * 나의 입찰 목록 조회
+     */
+    public Page<BiddingRecord> inquireBidHistory(Long userId, Pageable pageable, AuctionStatus status) {
+        return bidRepository.findUsersBidHistory(userId, pageable, status);
     }
 
+    /**
+     * 특정 경매의 모든 입찰 조회
+     */
+    public List<Bid> findAllBidsByAuction(Auction auction) {
+        return bidRepository.findAllBidsByAuction(auction);
+    }
+
+    /**
+     * 종료된 특정 경매의 입찰 현황 조회
+     */
+    public Page<BidInfoResponse> getBidsByAuctionId(Long userId, Long auctionId, Pageable pageable) {
+        Auction auction = auctionRepository.findById(auctionId)
+                .orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
+        if (!auction.getProduct().isOwner(userId)) {
+            throw new AuctionException(FORBIDDEN_AUCTION_ACCESS);
+        }
+        auction.validateAuctionEnded();
+        return bidRepository.findBidsByAuctionId(auctionId, pageable);
+    }
+
+    /**
+     * 입찰 완료 및 수정
+     */
     @Transactional
     public void createBid(final BidCreateRequest bidCreateRequest, Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(USER_NOT_FOUND));
@@ -57,6 +83,9 @@ public class BidService {
                 );
     }
 
+    /**
+     * 입찰 취소
+     */
     @Transactional
     public void cancelBid(Long bidId, Long userId) {
         Bid bid = bidRepository.findById(bidId).orElseThrow(() -> new BidException(BID_NOT_FOUND));
@@ -69,20 +98,9 @@ public class BidService {
         log.info("입찰이 취소되었습니다. 입찰 ID: {}, 사용자 ID: {}, 경매 ID: {}", bid.getId(), userId, auction.getId());
     }
 
-    public List<Bid> findAllBidsByAuction(Auction auction) {
-        return bidRepository.findAllBidsByAuction(auction);
-    }
-
-    public Page<BidInfoResponse> getBidsByAuctionId(Long userId, Long auctionId, Pageable pageable) {
-        Auction auction = auctionRepository.findById(auctionId)
-                .orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
-        if (!auction.getProduct().isOwner(userId)) {
-            throw new AuctionException(FORBIDDEN_AUCTION_ACCESS);
-        }
-        auction.validateAuctionEnded();
-        return bidRepository.findBidsByAuctionId(auctionId, pageable);
-    }
-
+    /**
+     * 입찰 상태 유효성 검사
+     */
     private void validateBidConditions(BidCreateRequest bidCreateRequest, Long userId, Auction auction) {
         // 경매 등록자가 입찰할 때
         if (auction.getProduct().isOwner(userId)) {
