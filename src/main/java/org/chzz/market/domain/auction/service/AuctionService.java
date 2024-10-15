@@ -125,7 +125,20 @@ public class AuctionService {
      */
     public List<AuctionResponse> getImminentAuctionList() {
         return auctionRepository.findImminentAuctions();
+    }
 
+    /**
+     * 사용자가 등록한 모든 경매 목록 조회
+     */
+    public Page<UserAuctionResponse> getAuctionListByUserId(Long userId, Pageable pageable) {
+        return auctionRepository.findAuctionsByUserId(userId, pageable);
+    }
+
+    /**
+     * 사용자가 등록한 진행중인 경매 목록 조회
+     */
+    public Page<UserAuctionResponse> getProceedingAuctionListByUserId(Long userId, Pageable pageable) {
+        return auctionRepository.findProceedingAuctionByUserId(userId, pageable);
     }
 
     /**
@@ -241,9 +254,5 @@ public class AuctionService {
             eventPublisher.publishEvent(NotificationEvent.createSimpleNotification(nonWinnerIds, AUCTION_NON_WINNER,
                     AUCTION_NON_WINNER.getMessage(productName), firstImage)); // 미낙찰자 알림 이벤트
         }
-    }
-
-    public Page<UserAuctionResponse> getAuctionListByUserId(Long userId, Pageable pageable) {
-        return auctionRepository.findAuctionsByUserId(userId, pageable);
     }
 }
