@@ -44,6 +44,7 @@ import org.chzz.market.domain.auction.dto.response.QWonAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.SimpleAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.UserAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.WonAuctionResponse;
+import org.chzz.market.domain.bid.entity.QBid;
 import org.chzz.market.domain.image.entity.QImage;
 import org.chzz.market.domain.product.entity.Product.Category;
 import org.chzz.market.domain.user.dto.response.ParticipationCountsResponse;
@@ -103,6 +104,8 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
      */
     @Override
     public Optional<AuctionDetailsResponse> findAuctionDetailsById(Long auctionId, Long userId) {
+        QBid activeBid = new QBid("bidActive");
+        QBid canceledBid = new QBid("bidCanceled");
         Optional<AuctionDetailsResponse> auctionDetailsResponse = Optional.ofNullable(jpaQueryFactory
                 .select(new QAuctionDetailsResponse(
                         product.id,
@@ -116,15 +119,23 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                         auction.status,
                         userIdEq(userId),
                         getBidCount(),
-                        bid.id.isNotNull(),
-                        bid.id,
-                        bid.amount.coalesce(0L),
-                        bid.count.coalesce(3)
+                        activeBid.id.isNotNull(),
+                        activeBid.id,
+                        activeBid.amount.coalesce(0L),
+                        activeBid.count.coalesce(3),
+                        canceledBid.id.isNotNull()
                 ))
                 .from(auction)
                 .join(auction.product, product)
                 .join(product.user, user)
-                .leftJoin(bid).on(bid.auction.id.eq(auctionId).and(bid.status.eq(ACTIVE)).and(bidderIdEq(userId)))
+                // 활성화된 입찰 조인
+                .leftJoin(activeBid).on(activeBid.auction.id.eq(auctionId)
+                        .and(activeBid.status.eq(ACTIVE)) // ACTIVE 상태인 입찰만 조인
+                        .and(bidderIdEqSub(activeBid, userId)))
+                // 취소된 입찰 조인
+                .leftJoin(canceledBid).on(canceledBid.auction.id.eq(auctionId)
+                        .and(canceledBid.status.eq(CANCELLED)) // CANCELED 상태인 입찰 조인
+                        .and(bidderIdEqSub(canceledBid, userId)))
                 .where(auction.id.eq(auctionId))
                 .fetchOne());
 
@@ -476,6 +487,10 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
 
     private BooleanBuilder bidderIdEq(Long userId) {
         return nullSafeBuilder(() -> bid.bidder.id.eq(userId));
+    }
+
+    private BooleanBuilder bidderIdEqSub(QBid qBid, Long userId) {
+        return nullSafeBuilder(() -> qBid.bidder.id.eq(userId));
     }
 
     @Getter
