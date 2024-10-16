@@ -168,8 +168,8 @@ public class AuctionController {
      */
     @PostMapping("/test")
     public ResponseEntity<?> testEndAuction(@LoginUser Long userId,
-                                            @RequestParam("minutes") int minutes) {
-        testService.test(userId, minutes);
+                                            @RequestParam("seconds") int seconds) {
+        testService.test(userId, seconds);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }

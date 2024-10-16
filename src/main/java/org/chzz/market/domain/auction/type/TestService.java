@@ -28,7 +28,7 @@ public class TestService {
     private final UserRepository userRepository;
 
     @Transactional
-    public void test(Long userId, int minutes) {
+    public void test(Long userId, int seconds) {
         Random random = new Random();
         int randomIndex = random.nextInt(1000) + 1;  // 1부터 1000까지 랜덤 숫자 생성
         int randomIndex1 = random.nextInt(1000) + 1;  // 1부터 1000까지 랜덤 숫자 생성
@@ -58,7 +58,7 @@ public class TestService {
         product.addImages(List.of(image1, image2));
         auctionRepository.save(Auction.builder()
                 .status(AuctionStatus.PROCEEDING)
-                .endDateTime(LocalDateTime.now().plusMinutes(minutes))
+                .endDateTime(LocalDateTime.now().plusSeconds(seconds))
                 .product(product)
                 .build());
     }
