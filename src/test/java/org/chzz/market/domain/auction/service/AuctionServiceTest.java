@@ -355,7 +355,7 @@ class AuctionServiceTest {
             Long existingAuctionId = 1L;
             Long userId = 1L;
             AuctionDetailsResponse auctionDetails = new AuctionDetailsResponse(1L, "닉네임2", "null", "제품1", null, 1000,
-                    ELECTRONICS, 123L, PROCEEDING, false, 0L, false, null, 0L, 0);
+                    ELECTRONICS, 123L, PROCEEDING, false, 0L, false, null, 0L, 0, false);
 
             // when
             when(auctionRepository.findAuctionDetailsById(anyLong(), anyLong())).thenReturn(
