@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
  * 경매 시작 (사전 등록 -> 경매 등록 전환) DTO
  */
 public record StartAuctionResponse(
-        Long auctionId,
+        Long auctionId, // 사전 경매 전환 시 응답 값에 auctionId 사용
         Long productId,
         AuctionStatus status,
         LocalDateTime endDateTime,
