@@ -1,6 +1,7 @@
 package org.chzz.market.domain.address.service;
 
 import static org.chzz.market.domain.address.error.AddressErrorCode.ADDRESS_NOT_FOUND;
+import static org.chzz.market.domain.address.error.AddressErrorCode.CANNOT_DELETE_DEFAULT_ADDRESS;
 import static org.chzz.market.domain.user.error.UserErrorCode.USER_NOT_FOUND;
 
 import lombok.RequiredArgsConstructor;
@@ -48,5 +49,17 @@ public class AddressService {
         address.update(addressDto);
     }
 
+    @Transactional
+    public void deleteAddress(Long userId, Long addressId) {
+        Address address = addressRepository.findByIdAndUserId(addressId, userId)
+                .orElseThrow(() -> new AddressException(ADDRESS_NOT_FOUND));
+
+        // 기본 배송지는 삭제할 수 없음
+        if (address.isDefault()) {
+            throw new AddressException(CANNOT_DELETE_DEFAULT_ADDRESS);
+        }
+
+        addressRepository.delete(address);
+    }
 
 }
