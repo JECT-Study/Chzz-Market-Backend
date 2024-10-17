@@ -3,6 +3,7 @@ package org.chzz.market.domain.address.controller;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.config.LoginUser;
 import org.chzz.market.domain.address.dto.request.AddressDto;
+import org.chzz.market.domain.address.dto.request.DeliveryDto;
 import org.chzz.market.domain.address.service.AddressService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -34,7 +35,7 @@ public class AddressController {
             @LoginUser Long userId,
             @RequestBody AddressDto addressDto
     ) {
-        addressService.save(userId, addressDto);
+        addressService.addAddress(userId, addressDto);
         return ResponseEntity.ok().build();//TODO 2024 09 11 16:42:57 : redirect
     }
 
@@ -42,9 +43,9 @@ public class AddressController {
     public ResponseEntity<Void> updateAddress(
             @LoginUser Long userId,
             @PathVariable Long addressId,
-            @RequestBody AddressDto addressDto
+            @RequestBody DeliveryDto deliveryDto
     ) {
-        addressService.updateAddress(userId, addressId, addressDto);
+        addressService.updateDelivery(userId, addressId, deliveryDto);
         return ResponseEntity.ok().build();
     }
 
@@ -53,7 +54,7 @@ public class AddressController {
             @LoginUser Long userId,
             @PathVariable Long addressId
     ) {
-        addressService.deleteAddress(userId, addressId);
+        addressService.deleteDelivery(userId, addressId);
         return ResponseEntity.noContent().build();
     }
 }

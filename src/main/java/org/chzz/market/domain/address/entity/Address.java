@@ -13,6 +13,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.chzz.market.domain.address.dto.request.AddressDto;
+import org.chzz.market.domain.address.dto.request.DeliveryDto;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
 import org.chzz.market.domain.user.entity.User;
 
@@ -56,25 +57,28 @@ public class Address extends BaseTimeEntity {
     private boolean isDefault;
 
     public static Address toEntity(User user, AddressDto dto) {
-        return new Address(user, dto.roadAddress(), dto.jibun(), dto.zipcode(), dto.detailAddress());
+        return new Address(user, dto.roadAddress(), dto.jibun(), dto.zipcode(), dto.detailAddress(), dto.isDefault());
     }
 
-    private Address(User user, String roadAddress, String jibun, String zipcode, String detailAddress) {
+    private Address(User user, String roadAddress, String jibun, String zipcode, String detailAddress,
+                    boolean isDefault) {
         this.user = user;
         this.roadAddress = roadAddress;
         this.jibun = jibun;
         this.zipcode = zipcode;
         this.detailAddress = detailAddress;
+        this.isDefault = isDefault;
     }
 
-    public void update(AddressDto dto) {
-        this.roadAddress = dto.roadAddress();
-        this.jibun = dto.jibun();
-        this.zipcode = dto.zipcode();
-        this.detailAddress = dto.detailAddress();
+    public void update(DeliveryDto dto) {
+        AddressDto addressDto = dto.addressDto();
+        this.roadAddress = addressDto.roadAddress();
+        this.jibun = addressDto.jibun();
+        this.zipcode = addressDto.zipcode();
+        this.detailAddress = addressDto.detailAddress();
         this.recipientName = dto.recipientName();
         this.phoneNumber = dto.phoneNumber();
         this.deliveryMemo = dto.deliveryMemo();
-        this.isDefault = dto.isDefault();
+        this.isDefault = addressDto.isDefault();
     }
 }

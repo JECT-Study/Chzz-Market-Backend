@@ -4,7 +4,6 @@ public record DeliveryDto(
         AddressDto addressDto,
         String recipientName,
         String phoneNumber,
-        String deliveryMemo,
-        boolean isDefault
+        String deliveryMemo
 ) {
 }

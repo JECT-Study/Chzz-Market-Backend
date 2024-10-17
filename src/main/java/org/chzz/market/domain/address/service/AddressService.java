@@ -6,6 +6,7 @@ import static org.chzz.market.domain.user.error.UserErrorCode.USER_NOT_FOUND;
 
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.domain.address.dto.request.AddressDto;
+import org.chzz.market.domain.address.dto.request.DeliveryDto;
 import org.chzz.market.domain.address.entity.Address;
 import org.chzz.market.domain.address.error.AddressException;
 import org.chzz.market.domain.address.repository.AddressRepository;
@@ -29,7 +30,7 @@ public class AddressService {
     }
 
     @Transactional
-    public void save(Long userId, AddressDto addressDto) {
+    public void addAddress(Long userId, AddressDto addressDto) {
         userRepository.findById(userId)
                 .ifPresentOrElse(user -> addressRepository.save(Address.toEntity(user, addressDto)), () -> {
                     throw new UserException(USER_NOT_FOUND);
@@ -37,20 +38,20 @@ public class AddressService {
     }
 
     @Transactional
-    public void updateAddress(Long userId, Long addressId, AddressDto addressDto) {
+    public void updateDelivery(Long userId, Long addressId, DeliveryDto deliveryDto) {
         Address address = addressRepository.findByIdAndUserId(addressId, userId)
                 .orElseThrow(() -> new AddressException(ADDRESS_NOT_FOUND));
 
         // 기본 배송지로 설정한 경우, 기존의 기본 배송지를 해제
-        if (addressDto.isDefault()) {
+        if (deliveryDto.isDefault()) {
             addressRepository.updateAllDefaultToFalse(userId);
         }
 
-        address.update(addressDto);
+        address.update(deliveryDto);
     }
 
     @Transactional
-    public void deleteAddress(Long userId, Long addressId) {
+    public void deleteDelivery(Long userId, Long addressId) {
         Address address = addressRepository.findByIdAndUserId(addressId, userId)
                 .orElseThrow(() -> new AddressException(ADDRESS_NOT_FOUND));
 
