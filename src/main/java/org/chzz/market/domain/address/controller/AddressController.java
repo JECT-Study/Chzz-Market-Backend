@@ -39,8 +39,17 @@ public class AddressController {
         return ResponseEntity.ok().build();//TODO 2024 09 11 16:42:57 : redirect
     }
 
-    @PutMapping("/{addressId}")
-    public ResponseEntity<Void> updateAddress(
+    @PostMapping("/delivery")
+    public ResponseEntity<Long> addDelivery(
+            @LoginUser Long userId,
+            @RequestBody DeliveryDto deliveryDto
+    ) {
+        addressService.addDelivery(userId, deliveryDto);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/delivery/{addressId}")
+    public ResponseEntity<Void> updateDelivery(
             @LoginUser Long userId,
             @PathVariable Long addressId,
             @RequestBody DeliveryDto deliveryDto
@@ -49,8 +58,8 @@ public class AddressController {
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/{addressId}")
-    public ResponseEntity<Void> deleteAddress(
+    @DeleteMapping("/delivery/{addressId}")
+    public ResponseEntity<Void> deleteDelivery(
             @LoginUser Long userId,
             @PathVariable Long addressId
     ) {
