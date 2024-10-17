@@ -44,7 +44,7 @@ public class Address extends BaseTimeEntity {
     @Column(nullable = false)
     private String detailAddress;
 
-    @Column(nullable = false)
+    @Column
     private String recipientName;
 
     @Column(nullable = false)
@@ -56,8 +56,17 @@ public class Address extends BaseTimeEntity {
     @Column(nullable = false)
     private boolean isDefault;
 
-    public static Address toEntity(User user, AddressDto dto) {
-        return new Address(user, dto.roadAddress(), dto.jibun(), dto.zipcode(), dto.detailAddress(), dto.isDefault());
+    public static Address initialAddress(User user, AddressDto dto) {
+        return new Address(user, dto.roadAddress(), dto.jibun(), dto.zipcode(), dto.detailAddress(), true);
+    }
+
+    public static Address deliveryAddress(User user, DeliveryDto dto) {
+        Address address = new Address(user, dto.addressDto().roadAddress(), dto.addressDto().jibun(),
+                dto.addressDto().zipcode(), dto.addressDto().detailAddress(), dto.addressDto().isDefault());
+        address.recipientName = dto.recipientName();
+        address.phoneNumber = dto.phoneNumber();
+        address.deliveryMemo = dto.deliveryMemo();
+        return address;
     }
 
     private Address(User user, String roadAddress, String jibun, String zipcode, String detailAddress,
@@ -70,7 +79,7 @@ public class Address extends BaseTimeEntity {
         this.isDefault = isDefault;
     }
 
-    public void update(DeliveryDto dto) {
+    public void updateAsDeliveryAddress(DeliveryDto dto) {
         AddressDto addressDto = dto.addressDto();
         this.roadAddress = addressDto.roadAddress();
         this.jibun = addressDto.jibun();
