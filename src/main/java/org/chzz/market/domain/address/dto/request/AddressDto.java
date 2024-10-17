@@ -4,5 +4,10 @@ public record AddressDto(
         String roadAddress,
         String jibun,
         String zipcode,
-        String detailAddress) {
+        String detailAddress,
+        String recipientName,
+        String phoneNumber,
+        String deliveryMemo,
+        boolean isDefault
+) {
 }
