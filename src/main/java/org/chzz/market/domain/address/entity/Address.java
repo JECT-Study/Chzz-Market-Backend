@@ -10,6 +10,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.chzz.market.domain.address.dto.request.AddressDto;
@@ -19,7 +21,9 @@ import org.chzz.market.domain.user.entity.User;
 
 @Getter
 @Entity
+@Builder
 @Table
+@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Address extends BaseTimeEntity {
 
@@ -47,7 +51,7 @@ public class Address extends BaseTimeEntity {
     @Column
     private String recipientName;
 
-    @Column(nullable = false)
+    @Column
     private String phoneNumber;
 
     @Column

@@ -40,7 +40,7 @@ public class AddressController {
     }
 
     @PostMapping("/delivery")
-    public ResponseEntity<Long> addDelivery(
+    public ResponseEntity<Void> addDelivery(
             @LoginUser Long userId,
             @RequestBody DeliveryDto deliveryDto
     ) {
