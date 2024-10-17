@@ -3,6 +3,7 @@ package org.chzz.market.common.error.handler;
 
 import static org.chzz.market.common.error.GlobalErrorCode.EXTERNAL_API_ERROR;
 
+import java.io.IOException;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.common.error.ErrorCode;
@@ -31,7 +32,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     private static final String LOG_FORMAT = "\nException Class = {}\nResponse Code = {}\nMessage = {}";
 
     // 1. 커스텀 예외 핸들러
-
     /**
      * 비즈니스 로직에서 정의한 예외가 발생할 때 처리
      */
@@ -71,8 +71,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(errorCode);
     }
 
-    // 2. ResponseEntityExceptionHandler에서 오버라이드된 핸들러
+    @ExceptionHandler(IOException.class)
+    public ResponseEntity<Object> handleIOException(IOException e) {
+        if (e.getMessage().contains("Broken pipe")) {
+            return null; // 연결이 끊어진 경우 응답을 하지 않음
+        } else {
+            GlobalErrorCode errorCode = GlobalErrorCode.INTERNAL_SERVER_ERROR;
+            logException(e, errorCode);
+            return handleExceptionInternal(errorCode);
+        }
+    }
 
+    // 2. ResponseEntityExceptionHandler에서 오버라이드된 핸들러
     /**
      * 필수 요청 매개변수가 누락된 경우 발생
      */
