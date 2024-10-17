@@ -1,10 +1,12 @@
 package org.chzz.market.domain.notification.controller;
 
+import static org.chzz.market.common.error.GlobalErrorCode.AUTHENTICATION_REQUIRED;
 import static org.springframework.http.MediaType.TEXT_EVENT_STREAM_VALUE;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.config.LoginUser;
+import org.chzz.market.common.error.GlobalException;
 import org.chzz.market.domain.notification.service.NotificationService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +31,9 @@ public class NotificationController {
 
     @GetMapping(value = "/subscribe", produces = TEXT_EVENT_STREAM_VALUE)
     public SseEmitter subscribe(@LoginUser Long userId, HttpServletResponse response) {
+        if (userId == null) {
+            throw new GlobalException(AUTHENTICATION_REQUIRED);
+        }
         response.setHeader("X-Accel-Buffering", "no");
         return notificationService.subscribe(userId);
     }
