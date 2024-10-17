@@ -5,9 +5,6 @@ public record AddressDto(
         String jibun,
         String zipcode,
         String detailAddress,
-        String recipientName,
-        String phoneNumber,
-        String deliveryMemo,
         boolean isDefault
 ) {
 }
