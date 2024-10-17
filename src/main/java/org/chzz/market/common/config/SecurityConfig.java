@@ -67,6 +67,7 @@ public class SecurityConfig {
                                 "/api/v1/products/categories",
                                 "/api/v1/products/{productId:\\d+}",
                                 "/api/v1/products/users/*",
+                                "/api/v1/notifications/subscribe",
                                 "/api/v1/users/*",
                                 "/api/v1/users/check/nickname/*").permitAll()
                         .requestMatchers(POST,
