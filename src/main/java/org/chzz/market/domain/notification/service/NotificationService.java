@@ -60,7 +60,7 @@ public class NotificationService {
                 log.info("SSE 전송: userId: {}, sseResponse: {}", userId, sseResponse);
             } catch (IOException e) {
                 // 내부에서 추가로 IOException이 발생하므로, 프레임워크의 예외 처리 핸들러에 처리
-                log.info("사용자 ID {}의 SSE 끊어진 연결을 정리합니다.", userId);
+                log.info("사용자 ID {}의 끊어진 SSE 연결을 정리합니다.", userId);
             }
         });
     }
