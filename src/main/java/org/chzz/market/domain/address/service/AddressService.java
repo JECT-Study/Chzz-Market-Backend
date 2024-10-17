@@ -32,7 +32,20 @@ public class AddressService {
     @Transactional
     public void addAddress(Long userId, AddressDto addressDto) {
         userRepository.findById(userId)
-                .ifPresentOrElse(user -> addressRepository.save(Address.toEntity(user, addressDto)), () -> {
+                .ifPresentOrElse(user -> addressRepository.save(Address.initialAddress(user, addressDto)), () -> {
+                    throw new UserException(USER_NOT_FOUND);
+                });
+    }
+
+    @Transactional
+    public void addDelivery(Long userId, DeliveryDto deliveryDto) {
+        // 기본 배송지로 설정한 경우, 기존의 기본 배송지를 해제
+        if (deliveryDto.addressDto().isDefault()) {
+            addressRepository.updateAllDefaultToFalse(userId);
+        }
+
+        userRepository.findById(userId)
+                .ifPresentOrElse(user -> addressRepository.save(Address.deliveryAddress(user, deliveryDto)), () -> {
                     throw new UserException(USER_NOT_FOUND);
                 });
     }
@@ -43,11 +56,11 @@ public class AddressService {
                 .orElseThrow(() -> new AddressException(ADDRESS_NOT_FOUND));
 
         // 기본 배송지로 설정한 경우, 기존의 기본 배송지를 해제
-        if (deliveryDto.isDefault()) {
+        if (deliveryDto.addressDto().isDefault()) {
             addressRepository.updateAllDefaultToFalse(userId);
         }
 
-        address.update(deliveryDto);
+        address.updateAsDeliveryAddress(deliveryDto);
     }
 
     @Transactional
