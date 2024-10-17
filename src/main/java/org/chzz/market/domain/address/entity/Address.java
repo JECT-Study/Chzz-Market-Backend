@@ -31,17 +31,29 @@ public class Address extends BaseTimeEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column
+    @Column(nullable = false)
     private String roadAddress;
 
     @Column
     private String jibun;
 
-    @Column
+    @Column(nullable = false)
     private String zipcode;
 
-    @Column
+    @Column(nullable = false)
     private String detailAddress;
+
+    @Column(nullable = false)
+    private String recipientName;
+
+    @Column(nullable = false)
+    private String phoneNumber;
+
+    @Column
+    private String deliveryMemo;
+
+    @Column(nullable = false)
+    private boolean isDefault;
 
     public static Address toEntity(User user, AddressDto dto) {
         return new Address(user, dto.roadAddress(), dto.jibun(), dto.zipcode(), dto.detailAddress());
@@ -53,5 +65,16 @@ public class Address extends BaseTimeEntity {
         this.jibun = jibun;
         this.zipcode = zipcode;
         this.detailAddress = detailAddress;
+    }
+
+    public void update(AddressDto dto) {
+        this.roadAddress = dto.roadAddress();
+        this.jibun = dto.jibun();
+        this.zipcode = dto.zipcode();
+        this.detailAddress = dto.detailAddress();
+        this.recipientName = dto.recipientName();
+        this.phoneNumber = dto.phoneNumber();
+        this.deliveryMemo = dto.deliveryMemo();
+        this.isDefault = dto.isDefault();
     }
 }
