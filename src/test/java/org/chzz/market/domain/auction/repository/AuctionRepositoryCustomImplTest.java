@@ -25,6 +25,7 @@ import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.bid.entity.Bid;
 import org.chzz.market.domain.bid.entity.Bid.BidStatus;
 import org.chzz.market.domain.bid.repository.BidRepository;
+import org.chzz.market.domain.image.dto.ImageResponse;
 import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.image.repository.ImageRepository;
 import org.chzz.market.domain.payment.dto.response.TossPaymentResponse;
@@ -258,7 +259,10 @@ class AuctionRepositoryCustomImplTest {
         assertThat(result.get().getBidAmount()).isEqualTo(0);
         assertThat(result.get().getIsParticipated()).isFalse();
         assertThat(result.get().getBidId()).isNull();
-        assertThat(result.get().getImageUrls()).containsOnly(image1.getCdnPath(), image2.getCdnPath());
+        assertThat(result.get().getImages())
+                .hasSize(2)
+                .extracting(ImageResponse::imageUrl)
+                .containsExactlyInAnyOrder(image1.getCdnPath(), image2.getCdnPath());
         assertThat(result.get().getIsCancelled()).isFalse();
     }
 
@@ -306,7 +310,10 @@ class AuctionRepositoryCustomImplTest {
         assertThat(response.getBidAmount()).isEqualTo(6000L); // user3의 최신 입찰액
         assertThat(response.getBidId()).isNotNull();
         assertThat(response.getParticipantCount()).isGreaterThanOrEqualTo(2); // 최소 2명 (user2, user3)
-        assertThat(response.getImageUrls()).contains("path/to/image2.jpg");
+        assertThat(result.get().getImages())
+                .hasSize(1)
+                .extracting(ImageResponse::imageUrl)
+                .containsExactlyInAnyOrder(image3.getCdnPath());
         assertThat(response.getIsCancelled()).isFalse();
     }
 
