@@ -49,6 +49,8 @@ import org.chzz.market.domain.auction.dto.response.UserAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.UserEndedAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.WonAuctionResponse;
 import org.chzz.market.domain.bid.entity.QBid;
+import org.chzz.market.domain.image.dto.ImageResponse;
+import org.chzz.market.domain.image.dto.QImageResponse;
 import org.chzz.market.domain.image.entity.QImage;
 import org.chzz.market.domain.product.entity.Product.Category;
 import org.chzz.market.domain.user.dto.response.ParticipationCountsResponse;
@@ -143,7 +145,8 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                 .where(auction.id.eq(auctionId))
                 .fetchOne());
 
-        auctionDetailsResponse.ifPresent(response -> response.addImageList(getImageList(response.getProductId())));
+        auctionDetailsResponse.ifPresent(
+                response -> response.addImageList(getImagesByProductId(response.getProductId())));
 
         return auctionDetailsResponse;
     }
@@ -535,12 +538,10 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
 
     /**
      * 상품의 이미지 리스트를 조회합니다.
-     *
-     * @param productId 상품 ID
-     * @return 이미지 경로 리스트
      */
-    private List<String> getImageList(Long productId) {
-        return jpaQueryFactory.select(image.cdnPath)
+    private List<ImageResponse> getImagesByProductId(Long productId) {
+        return jpaQueryFactory
+                .select(new QImageResponse(image.id, image.cdnPath))
                 .from(image)
                 .where(image.product.id.eq(productId))
                 .orderBy(image.sequence.asc())
