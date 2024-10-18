@@ -314,7 +314,7 @@ class AuctionRepositoryCustomImplTest {
     @DisplayName("경매 상세 조회 - 없는 경매인 경우")
     public void testFindAuctionDetailsById_NonExistentAuction() throws Exception {
         //given
-        Long auctionId = 10L;
+        Long auctionId = 100L;
         Long userId = user1.getId();
 
         //when
@@ -413,17 +413,17 @@ class AuctionRepositoryCustomImplTest {
         assertThat(result.getContent()).hasSize(0);
     }
 
-//    @Test
-//    @DisplayName("베스트 경매 조회")
-//    void testFindBestAuctions() {
-//        // given
-//        List<AuctionResponse> bestAuctions = auctionRepository.findBestAuctions();
-//        // when
-//
-//        // then
-//        assertThat(bestAuctions).isSortedAccordingTo(
-//                Comparator.comparingLong(AuctionResponse::getParticipantCount).reversed());
-//    }
+    @Test
+    @DisplayName("베스트 경매 조회")
+    void testFindBestAuctions() {
+        // given
+        List<AuctionResponse> bestAuctions = auctionRepository.findBestAuctions();
+        // when
+
+        // then
+        assertThat(bestAuctions).isSortedAccordingTo(
+                Comparator.comparingLong(AuctionResponse::getParticipantCount).reversed());
+    }
 
     @Test
     @DisplayName("마감 임박 경매 조회")
