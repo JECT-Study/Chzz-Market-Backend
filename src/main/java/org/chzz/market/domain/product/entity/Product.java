@@ -38,7 +38,7 @@ import org.hibernate.annotations.DynamicUpdate;
 @Entity
 @Builder
 @Table(indexes = {
-        @Index(name = "idx_product_id_name", columnList = "product_id, productName")
+        @Index(name = "idx_product_id_name", columnList = "product_id, name")
 })
 @DynamicUpdate
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
