@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
 import org.chzz.market.domain.auction.type.AuctionStatus;
+import org.chzz.market.domain.image.dto.ImageResponse;
 import org.chzz.market.domain.product.entity.Product.Category;
 
 @Getter
@@ -25,7 +26,7 @@ public class AuctionDetailsResponse {
     private final Long bidAmount;
     private final int remainingBidCount;
     private final Boolean isCancelled;
-    private List<String> imageUrls = new ArrayList<>();
+    private List<ImageResponse> images = new ArrayList<>();
 
     @QueryProjection
     public AuctionDetailsResponse(Long productId, String sellerNickname, String sellerProfileImageUrl,
@@ -52,7 +53,7 @@ public class AuctionDetailsResponse {
         this.isCancelled = isCancelled;
     }
 
-    public void addImageList(List<String> imageList) {
-        this.imageUrls = imageList;
+    public void addImageList(List<ImageResponse> images) {
+        this.images = images;
     }
 }
