@@ -526,11 +526,11 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
      *
      * @return 참여자 수
      */
-    private JPQLQuery<Long> getBidCount() {
-        return JPAExpressions
+    private static NumberExpression<Long> getBidCount() {
+        return Expressions.asNumber(JPAExpressions
                 .select(bid.count())
                 .from(bid)
-                .where(bid.auction.id.eq(auction.id).and(bid.status.eq(ACTIVE)));
+                .where(bid.auction.id.eq(auction.id).and(bid.status.eq(ACTIVE))));
     }
 
     /**
@@ -581,7 +581,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
     @Getter
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public enum AuctionOrder implements QuerydslOrder {
-        POPULARITY("popularity", auction.bids.size().desc()),
+        POPULARITY("popularity", getBidCount().desc()),
         EXPENSIVE("expensive", product.minPrice.desc()),
         CHEAP("cheap", product.minPrice.asc()),
         NEWEST("newest", auction.createdAt.desc());
