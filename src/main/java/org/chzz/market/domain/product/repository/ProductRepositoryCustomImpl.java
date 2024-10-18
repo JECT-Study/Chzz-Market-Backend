@@ -107,16 +107,9 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
                 .where(auction.id.isNull().and(product.id.eq(productId)))
                 .fetchOne());
 
-        return result.map(response -> {
-            List<ImageResponse> images = jpaQueryFactory
-                    .select(new QImageResponse(image.id, image.cdnPath))
-                    .from(image)
-                    .where(image.product.id.eq(productId))
-                    .orderBy(image.sequence.asc())
-                    .fetch();
-            response.addImageList(images);
-            return response;
-        });
+        // 이미지 목록 추가
+        result.ifPresent(response -> response.addImageList(getImagesByProductId(productId)));
+        return result;
     }
 
     /**
@@ -216,6 +209,18 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
                 .fetchJoin()
                 .where(product.id.eq(productId))
                 .fetchOne());
+    }
+
+    /**
+     * 제품의 이미지 리스트를 조회
+     */
+    private List<ImageResponse> getImagesByProductId(Long productId) {
+        return jpaQueryFactory
+                .select(new QImageResponse(image.id, image.cdnPath))
+                .from(image)
+                .where(image.product.id.eq(productId))
+                .orderBy(image.sequence.asc())
+                .fetch();
     }
 
     private JPQLQuery<Long> getFirstImageId() {
