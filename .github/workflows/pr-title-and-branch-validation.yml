@@ -37,7 +37,7 @@ jobs:
           BRANCH_NAME="${{ github.head_ref }}"
           
           # PR 브랜치 이름 검사
-          if [[ "$BRANCH_NAME" =~ ^(feat|fix|docs|refactor|style|test|chore|design|move)/.+$ ]]; then
+          if [[ "$BRANCH_NAME" =~ ^feat/.+$ ]]; then
             echo "✅ Branch name follows the feature branch convention!"
           elif [[ "$BRANCH_NAME" =~ ^(release|hotfix)/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "✅ Branch name follows the release or hotfix versioning convention!"
