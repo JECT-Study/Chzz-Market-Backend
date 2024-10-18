@@ -117,7 +117,7 @@ public class AuctionController {
     }
 
     /**
-     * 사용자 경매 상품 목록 조회 (토큰)
+     * 사용자가 등록한 모든 경매 목록 조회 현재 사용 X
      */
     @GetMapping("/users")
     public ResponseEntity<?> getUserRegisteredAuction(@LoginUser Long userId,
@@ -126,12 +126,30 @@ public class AuctionController {
     }
 
     /**
-     * 사용자 경매 상품 목록 조회 (닉네임)
+     * 사용자 경매 상품 목록 조회 (닉네임) 현재 사용 X
      */
     @GetMapping("/users/{nickname}")
     public ResponseEntity<Page<UserAuctionResponse>> getUserAuctionList(@PathVariable String nickname,
                                                                         @PageableDefault(sort = "newest") Pageable pageable) {
         return ResponseEntity.ok(auctionService.getAuctionListByNickname(nickname, pageable));
+    }
+
+    /**
+     * 사용자의 진행 중인 경매 목록 조회
+     */
+    @GetMapping("/users/proceeding")
+    public ResponseEntity<?> getProceedingAuctions(@LoginUser Long userId,
+                                                   @PageableDefault(sort = "newest") Pageable pageable) {
+        return ResponseEntity.ok(auctionService.getProceedingAuctionListByUserId(userId, pageable));
+    }
+
+    /**
+     * 사용자의 종료된 경매 목록 조회
+     */
+    @GetMapping("/users/ended")
+    public ResponseEntity<?> getEndedAuctions(@LoginUser Long userId,
+                                              @PageableDefault(sort = "newest") Pageable pageable) {
+        return ResponseEntity.ok(auctionService.getEndedAuctionListByUserId(userId, pageable));
     }
 
     /**

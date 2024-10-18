@@ -43,12 +43,12 @@ public class PaymentService {
         if (auction.getWinnerId() == null || !userId.equals(auction.getWinnerId())) {
             throw new AuctionException(AuctionErrorCode.NOT_WINNER);
         }
-        savaPayment(user, tossPaymentResponse, auction);
+        savePayment(user, tossPaymentResponse, auction);
         return ApprovalResponse.of(tossPaymentResponse);
     }
 
     @Transactional
-    public void savaPayment(User payer, TossPaymentResponse tossPaymentResponse, Auction auction) {
+    public void savePayment(User payer, TossPaymentResponse tossPaymentResponse, Auction auction) {
         Payment payment = Payment.of(payer, tossPaymentResponse, auction);
         paymentRepository.save(payment);
     }

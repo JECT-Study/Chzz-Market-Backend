@@ -1,10 +1,10 @@
-name: CD
-run-name: Running
+name: CI/CD Workflow
+run-name: Running CI and CD
+
 on:
-  push:
+  pull_request:
     branches:
-      - release/*
-      - hotfix/*
+      - main
 
 env:
   AWS_REGION: ap-northeast-2
@@ -12,10 +12,67 @@ env:
   ECS_SERVICE: chzz-market
 
 jobs:
+  # CI 단계: 코드 빌드 및 테스트
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      # 소스 코드 체크아웃
+      - uses: actions/checkout@v4
+
+      # JDK 설정
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'corretto'
+          cache: 'gradle'
+
+      # Gradle 설정 및 캐시 최적화
+      - name: Cache Gradle packages
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      # Gradle 실행 권한 부여
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # Redis 서버 실행
+      - name: Redis Server in GitHub Actions
+        uses: supercharge/redis-github-action@1.8.0
+
+      # Gradle 빌드 (테스트 제외)
+      - name: Build with Gradle
+        run: ./gradlew build -x test --no-daemon
+
+      # 테스트 실행
+      - name: Test with Gradle
+        run: |
+          ./gradlew -Dspring.profiles.active=test \
+          -Dcloud.aws.credentials.access-key=${{ secrets.S3_AWS_ACCESS_KEY_ID }} \
+          -Dcloud.aws.credentials.secret-key=${{ secrets.S3_AWS_SECRET_ACCESS_KEY }} \
+          -Dcloud.aws.region.static=${{ secrets.AWS_REGION }} \
+          -Dcloud.aws.s3.bucket=${{ secrets.AWS_S3_BUCKET }} \
+          -Dcloud.aws.cloudfront.domain=${{ secrets.AWS_CLOUDFRONT_DOMAIN }} \
+          -Dpayment.toss.client-key=${{ secrets.TEST_CLIENT_KEY }} \
+          -Dpayment.toss.security-key=${{ secrets.TEST_SECRET_KEY }} \
+          -Dspring.data.redis.host=${{ secrets.TEST_REDIS_HOST }} \
+          -Dspring.data.redis.port=${{ secrets.TEST_REDIS_PORT }} \
+          test
+
+  # CD 단계: 배포 작업
   deploy:
+    needs: build  # CI 단계가 성공한 후에 배포 진행
     runs-on: ubuntu-latest
     steps:
-      - name: check out
+      - name: Check out
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -39,13 +96,7 @@ jobs:
             exit 1
           fi
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'corretto'
-
-      - name: AWS credential 설정
+      - name: AWS credentials 설정
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-region: ${{ env.AWS_REGION }}
@@ -61,12 +112,7 @@ jobs:
           aws s3 cp s3://chzzmarket-production-storage/chzz-production-properties/application-prod.yml \
           ./src/main/resources/application-prod.yml
 
-      - name: gradle 실행 권한 부여
-        run: chmod +x ./gradlew
-
-      - name: gradle 빌드
-        run: ./gradlew build -x test
-
+      # Docker 이미지 빌드 및 ECR 배포
       - name: Docker 이미지 빌드 및 ECR 배포
         id: build-image
         env:
@@ -80,11 +126,11 @@ jobs:
       - name: EC2로 파일 복사 (compose.yaml 및 nginx.conf 포함)
         uses: appleboy/scp-action@master
         with:
-            host: ${{ secrets.EC2_IP }}
-            username: ${{ secrets.EC2_USERNAME }}
-            key: ${{ secrets.EC2_SSH_KEY }}
-            source: './compose.yaml,./nginx.conf'
-            target: '/home/ec2-user'
+          host: ${{ secrets.EC2_IP }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: './compose.yaml,./nginx.conf'
+          target: '/home/ec2-user'
 
       - name: EC2에서 Docker Compose를 통한 애플리케이션 실행
         uses: appleboy/ssh-action@master

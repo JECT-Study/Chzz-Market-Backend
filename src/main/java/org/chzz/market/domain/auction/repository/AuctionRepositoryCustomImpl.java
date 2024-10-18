@@ -9,6 +9,8 @@ import static org.chzz.market.domain.bid.entity.Bid.BidStatus.ACTIVE;
 import static org.chzz.market.domain.bid.entity.Bid.BidStatus.CANCELLED;
 import static org.chzz.market.domain.bid.entity.QBid.bid;
 import static org.chzz.market.domain.image.entity.QImage.image;
+import static org.chzz.market.domain.payment.entity.QPayment.payment;
+import static org.chzz.market.domain.payment.entity.Status.DONE;
 import static org.chzz.market.domain.product.entity.QProduct.product;
 import static org.chzz.market.domain.user.entity.QUser.user;
 
@@ -40,9 +42,11 @@ import org.chzz.market.domain.auction.dto.response.QAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.QLostAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.QSimpleAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.QUserAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.QUserEndedAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.QWonAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.SimpleAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.UserAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.UserEndedAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.WonAuctionResponse;
 import org.chzz.market.domain.bid.entity.QBid;
 import org.chzz.market.domain.image.entity.QImage;
@@ -296,7 +300,6 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
     public Page<WonAuctionResponse> findWonAuctionHistoryByUserId(Long userId, Pageable pageable) {
         JPAQuery<?> baseQuery = getActualParticipatedAuction(userId)
                 .join(auction.product, product)
-//                .join(product.user, user)//?? 안쓰는데
                 .where(auction.winnerId.eq(userId)
                         .and(auction.status.eq(ENDED)));
 
@@ -412,6 +415,74 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
         );
     }
 
+    @Override
+    public Page<UserAuctionResponse> findProceedingAuctionByUserId(Long userId, Pageable pageable) {
+        JPAQuery<?> baseQuery = jpaQueryFactory
+                .from(auction)
+                .join(auction.product, product)
+                .where(product.user.id.eq(userId).and(auction.status.eq(PROCEEDING)));
+
+        // 진행 중인 경매 조회 쿼리
+        List<UserAuctionResponse> result = baseQuery
+                .select(new QUserAuctionResponse(
+                        auction.id,
+                        product.name,
+                        image.cdnPath,
+                        timeRemaining().longValue(),
+                        product.minPrice.longValue(),
+                        getBidCount(),
+                        auction.status,
+                        auction.createdAt
+                ))
+                .leftJoin(image).on(image.product.id.eq(product.id)
+                        .and(image.id.eq(getFirstImageId())))
+                .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        // 전체 경매 수를 계산하는 쿼리
+        JPAQuery<Long> countQuery = baseQuery
+                .select(auction.count());
+
+        return PageableExecutionUtils.getPage(result, pageable, countQuery::fetchOne);
+    }
+
+    @Override
+    public Page<UserEndedAuctionResponse> findEndedAuctionByUserId(Long userId, Pageable pageable) {
+        JPAQuery<?> baseQuery = jpaQueryFactory
+                .from(auction)
+                .join(auction.product, product)
+                .where(product.user.id.eq(userId).and(auction.status.eq(ENDED)));
+
+        // 종료된 경매 조회 쿼리
+        List<UserEndedAuctionResponse> result = baseQuery
+                .select(new QUserEndedAuctionResponse(
+                        auction.id,
+                        product.name,
+                        image.cdnPath,
+                        product.minPrice.longValue(),
+                        getBidCount(),
+                        getWinningBidAmount(),
+                        auction.winnerId.isNotNull(),
+                        payment.id.isNotNull(),
+                        auction.createdAt
+                ))
+                .leftJoin(image).on(image.product.id.eq(product.id)
+                        .and(image.id.eq(getFirstImageId())))
+                .leftJoin(payment).on(payment.auction.id.eq(auction.id).and(payment.status.eq(DONE)))
+                .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        // 전체 경매 수를 계산하는 쿼리
+        JPAQuery<Long> countQuery = baseQuery
+                .select(auction.count());
+
+        return PageableExecutionUtils.getPage(result, pageable, countQuery::fetchOne);
+    }
+
     /**
      * @param userId 사용자 pk
      * @return 실제 사용자가 참여한 경매(취소된 입찰 제외)
@@ -479,6 +550,20 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
     private static NumberExpression<Integer> timeRemaining() {
         return Expressions.numberTemplate(Integer.class,
                 "GREATEST(0, TIMESTAMPDIFF(SECOND, CURRENT_TIMESTAMP, {0}))", auction.endDateTime); // 음수면 0으로 처리
+    }
+
+    /**
+     * 경매의 낙찰 금액을 조회합니다.
+     *
+     * @return 낙찰금액
+     */
+    private JPQLQuery<Long> getWinningBidAmount() {
+        return JPAExpressions.select(bid.amount.max().coalesce(0L))
+                .from(bid)
+                .where(
+                        bid.auction.id.eq(auction.id),
+                        bid.status.eq(ACTIVE)
+                );
     }
 
     private BooleanBuilder userIdEq(Long userId) {
