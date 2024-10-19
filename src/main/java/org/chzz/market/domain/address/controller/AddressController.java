@@ -1,5 +1,6 @@
 package org.chzz.market.domain.address.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.config.LoginUser;
 import org.chzz.market.domain.address.dto.DeliveryRequest;
@@ -49,7 +50,7 @@ public class AddressController {
     @PostMapping("/")
     public ResponseEntity<Void> addDelivery(
             @LoginUser Long userId,
-            @RequestBody DeliveryRequest deliveryRequest
+            @Valid @RequestBody DeliveryRequest deliveryRequest
     ) {
         addressService.addDelivery(userId, deliveryRequest);
         return ResponseEntity.status(HttpStatus.CREATED).build();
@@ -67,7 +68,7 @@ public class AddressController {
     public ResponseEntity<Void> updateDelivery(
             @LoginUser Long userId,
             @PathVariable Long addressId,
-            @RequestBody DeliveryRequest deliveryRequest
+            @Valid @RequestBody DeliveryRequest deliveryRequest
     ) {
         addressService.updateDelivery(userId, addressId, deliveryRequest);
         return ResponseEntity.ok().build();
