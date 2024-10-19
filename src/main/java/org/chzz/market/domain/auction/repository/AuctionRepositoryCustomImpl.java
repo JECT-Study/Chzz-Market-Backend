@@ -51,7 +51,6 @@ import org.chzz.market.domain.auction.dto.response.WonAuctionResponse;
 import org.chzz.market.domain.bid.entity.QBid;
 import org.chzz.market.domain.image.dto.ImageResponse;
 import org.chzz.market.domain.image.dto.QImageResponse;
-import org.chzz.market.domain.image.entity.QImage;
 import org.chzz.market.domain.product.entity.Product.Category;
 import org.chzz.market.domain.user.dto.response.ParticipationCountsResponse;
 import org.springframework.data.domain.Page;
@@ -89,7 +88,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                         isParticipating(userId)
                 ))
                 .leftJoin(bid).on(bid.auction.id.eq(auction.id).and(bid.status.eq(ACTIVE)))
-                .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId())))
+                .leftJoin(image).on(image.product.eq(product).and(isRepresentativeImage()))
                 .groupBy(auction.id, product.name, image.cdnPath, auction.createdAt, product.minPrice)
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
@@ -168,7 +167,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                 ))
                 .from(auction)
                 .join(auction.product, product)
-                .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId())))
+                .leftJoin(image).on(image.product.eq(product).and(isRepresentativeImage()))
                 .leftJoin(bid).on(bid.auction.id.eq(auctionId).and(bid.status.eq(ACTIVE)))
                 .where(auction.id.eq(auctionId))
                 .groupBy(product.name, image.cdnPath, product.minPrice)
@@ -222,8 +221,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                         auction.createdAt));
 
         List<UserAuctionResponse> content = contentQuery
-                .leftJoin(image).on(image.product.id.eq(product.id)
-                        .and(image.id.eq(getFirstImageId())))
+                .leftJoin(image).on(image.product.eq(product).and(isRepresentativeImage()))
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -253,7 +251,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                         product.minPrice.longValue(),
                         bid.countDistinct())
                 )
-                .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId())))
+                .leftJoin(image).on(image.product.eq(product).and(isRepresentativeImage()))
                 .leftJoin(bid).on(bid.auction.id.eq(auction.id).and(bid.status.ne(CANCELLED)))
                 .groupBy(auction.id, product.name, image.cdnPath, auction.createdAt, product.minPrice)
                 .offset(0)
@@ -284,7 +282,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                         product.minPrice.longValue(),
                         bid.countDistinct())
                 )
-                .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId())))
+                .leftJoin(image).on(image.product.eq(product).and(isRepresentativeImage()))
                 .leftJoin(bid).on(bid.auction.id.eq(auction.id).and(bid.status.ne(CANCELLED)))
                 .groupBy(auction.id, product.name, image.cdnPath)
                 .offset(0)
@@ -315,7 +313,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                         auction.endDateTime,
                         bid.amount
                 ))
-                .leftJoin(image).on(image.product.eq(product).and(image.id.eq(getFirstImageId())))
+                .leftJoin(image).on(image.product.eq(product).and(isRepresentativeImage()))
                 .groupBy(auction.id, product.name, image.cdnPath, product.minPrice, bid.amount)
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
@@ -339,7 +337,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
     public Page<LostAuctionResponse> findLostAuctionHistoryByUserId(Long userId, Pageable pageable) {
         JPAQuery<?> baseQuery = getActualParticipatedAuction(userId)
                 .join(auction.product, product)
-                .leftJoin(image).on(image.product.eq(product).and(image.id.eq(getFirstImageId())))
+                .leftJoin(image).on(image.product.eq(product).and(isRepresentativeImage()))
                 .where(auction.winnerId.ne(userId).and(auction.status.eq(ENDED)));
 
         List<LostAuctionResponse> query = baseQuery
@@ -437,8 +435,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                         auction.status,
                         auction.createdAt
                 ))
-                .leftJoin(image).on(image.product.id.eq(product.id)
-                        .and(image.id.eq(getFirstImageId())))
+                .leftJoin(image).on(image.product.eq(product).and(isRepresentativeImage()))
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -471,8 +468,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                         payment.id.isNotNull(),
                         auction.createdAt
                 ))
-                .leftJoin(image).on(image.product.id.eq(product.id)
-                        .and(image.id.eq(getFirstImageId())))
+                .leftJoin(image).on(image.product.eq(product).and(isRepresentativeImage()))
                 .leftJoin(payment).on(payment.auction.id.eq(auction.id).and(payment.status.eq(DONE)))
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
@@ -502,8 +498,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                         .and(auction.id.eq(auctionId))
                         .and(auction.winnerId.eq(bid.bidder.id)))
                 .join(auction.product, product)
-                .leftJoin(image).on(image.product.id.eq(product.id)
-                        .and(image.id.eq(getFirstImageId())))
+                .leftJoin(image).on(image.product.eq(product).and(isRepresentativeImage()))
                 .fetchOne());
     }
 
@@ -520,16 +515,12 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
     }
 
     /**
-     * 상품의 첫 번째 이미지를 조회합니다.
+     * 상품의 대표 이미지를 조회하기 위한 조건을 반환합니다.
      *
-     * @return 첫 번째 이미지 ID
+     * @return 대표 이미지(첫 번째 이미지)의 sequence가 1인 조건식
      */
-    private JPQLQuery<Long> getFirstImageId() {
-        QImage imageSub = new QImage("imageSub");
-        return JPAExpressions.select(imageSub.id)
-                .from(imageSub)
-                .where(imageSub.product.id.eq(product.id)
-                        , imageSub.sequence.eq(Expressions.asNumber(1)));
+    private BooleanExpression isRepresentativeImage() {
+        return image.sequence.eq(1);
     }
 
     /**
