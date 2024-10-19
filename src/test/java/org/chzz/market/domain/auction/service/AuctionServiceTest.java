@@ -1,6 +1,7 @@
 package org.chzz.market.domain.auction.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_ALREADY_REGISTERED;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_FOUND;
 import static org.chzz.market.domain.auction.type.AuctionRegisterType.PRE_REGISTER;
@@ -701,6 +702,44 @@ class AuctionServiceTest {
             assertThat(resultPage.getContent().get(1).highestAmount()).isEqualTo(25000L);
 
             verify(auctionRepository, times(1)).findLostAuctionHistoryByUserId(userId, pageable);
+        }
+    }
+
+    @Nested
+    @DisplayName("낙찰 정보 조회 테스트")
+    class GetWinningBidTest {
+        @Test
+        @DisplayName("정상적으로 낙찰 정보를 조회한다.")
+        public void getWinningBidByAuctionId_Success() throws Exception {
+            //given
+            Auction auction = Auction.builder()
+                    .id(1L)
+                    .winnerId(user.getId())
+                    .build();
+
+            //when
+            when(auctionRepository.findById(auction.getId())).thenReturn(Optional.of(auction));
+            when(auctionRepository.findWinningBidById(auction.getId())).thenReturn(
+                    Optional.of(mock(WonAuctionResponse.class)));
+
+            //then
+            assertDoesNotThrow(() -> auctionService.getWinningBidByAuctionId(user.getId(), auction.getId()));
+        }
+
+        @Test
+        @DisplayName("사용자가 낙찰자가 아니면 AuctionException 발생")
+        void getWinningBidByAuctionId_NotWinner() {
+            // given
+            Auction auction = Auction.builder()
+                    .id(1L)
+                    .winnerId(user.getId() + 1) // user가 낙찰자가 될 수 없음
+                    .build();
+
+            when(auctionRepository.findById(auction.getId())).thenReturn(Optional.of(auction));
+
+            // then
+            assertThatThrownBy(() -> auctionService.getWinningBidByAuctionId(user.getId(), auction.getId()))
+                    .isInstanceOf(AuctionException.class);
         }
     }
 
