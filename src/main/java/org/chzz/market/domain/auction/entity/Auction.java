@@ -126,6 +126,6 @@ public class Auction extends BaseTimeEntity {
      * 낙찰자인지 확인
      */
     public boolean isWinner(Long userId) {
-        return userId.equals(winnerId);
+        return winnerId != null && winnerId.equals(userId);
     }
 }
