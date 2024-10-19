@@ -39,7 +39,7 @@ public class Address extends BaseTimeEntity {
     @Column(nullable = false)
     private String roadAddress;
 
-    @Column
+    @Column(nullable = false)
     private String jibun;
 
     @Column(nullable = false)
@@ -48,14 +48,11 @@ public class Address extends BaseTimeEntity {
     @Column(nullable = false)
     private String detailAddress;
 
-    @Column
+    @Column(nullable = false)
     private String recipientName;
 
-    @Column
+    @Column(nullable = false)
     private String phoneNumber;
-
-    @Column
-    private String deliveryMemo;
 
     @Column(nullable = false)
     private boolean isDefault;
@@ -69,7 +66,6 @@ public class Address extends BaseTimeEntity {
                 dto.addressDto().zipcode(), dto.addressDto().detailAddress(), dto.addressDto().isDefault());
         address.recipientName = dto.recipientName();
         address.phoneNumber = dto.phoneNumber();
-        address.deliveryMemo = dto.deliveryMemo();
         return address;
     }
 
@@ -91,7 +87,6 @@ public class Address extends BaseTimeEntity {
         this.detailAddress = addressDto.detailAddress();
         this.recipientName = dto.recipientName();
         this.phoneNumber = dto.phoneNumber();
-        this.deliveryMemo = dto.deliveryMemo();
         this.isDefault = addressDto.isDefault();
     }
 }
