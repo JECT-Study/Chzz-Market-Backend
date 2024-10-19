@@ -117,6 +117,14 @@ public class AuctionController {
     }
 
     /**
+     * 낙찰 정보 조회
+     */
+    @GetMapping("/{auctionId}/winning-bid")
+    public ResponseEntity<WonAuctionResponse> getWinningBid(@LoginUser Long userId, @PathVariable Long auctionId) {
+        return ResponseEntity.ok(auctionService.getWinningBidByAuctionId(userId, auctionId));
+    }
+
+    /**
      * 사용자가 등록한 모든 경매 목록 조회 현재 사용 X
      */
     @GetMapping("/users")
