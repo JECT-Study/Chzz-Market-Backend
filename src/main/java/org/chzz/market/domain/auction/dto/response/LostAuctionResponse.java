@@ -9,8 +9,9 @@ public record LostAuctionResponse (
         String productName,
         String imageUrl,
         Integer minPrice,
+        Long participantCount,
         LocalDateTime endDateTime,
-        Long highestAmount
+        Long bidAmount
 ) {
     @QueryProjection
     public LostAuctionResponse {}
