@@ -1,4 +1,4 @@
-package org.chzz.market.domain.address.dto.request;
+package org.chzz.market.domain.address.dto;
 
 import lombok.Builder;
 import org.chzz.market.domain.address.entity.Address;
@@ -27,15 +27,15 @@ public record DeliveryRequest(
                 .build();
     }
 
-    public static DeliveryRequest fromEntity(Address address) {
-        return DeliveryRequest.builder()
-                .roadAddress(address.getRoadAddress())
-                .jibun(address.getJibun())
-                .zipcode(address.getZipcode())
-                .detailAddress(address.getDetailAddress())
-                .recipientName(address.getRecipientName())
-                .phoneNumber(address.getPhoneNumber())
-                .isDefault(address.isDefault())
-                .build();
+    public DeliveryRequest withIdDefault(boolean isDefault) {
+        return new DeliveryRequest(
+                roadAddress,
+                jibun,
+                zipcode,
+                detailAddress,
+                recipientName,
+                phoneNumber,
+                isDefault
+        );
     }
 }
