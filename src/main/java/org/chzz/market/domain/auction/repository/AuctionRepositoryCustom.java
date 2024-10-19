@@ -8,6 +8,7 @@ import org.chzz.market.domain.auction.dto.response.LostAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.SimpleAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.UserAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.UserEndedAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.WonAuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.WonAuctionResponse;
 import org.chzz.market.domain.product.entity.Product.Category;
 import org.chzz.market.domain.user.dto.response.ParticipationCountsResponse;
@@ -117,5 +118,5 @@ public interface AuctionRepositoryCustom {
     /**
      * 낙찰 정보 조회합니다.
      */
-    Optional<WonAuctionResponse> findWinningBidById(Long auctionId);
+    Optional<WonAuctionDetailsResponse> findWinningBidById(Long auctionId);
 }

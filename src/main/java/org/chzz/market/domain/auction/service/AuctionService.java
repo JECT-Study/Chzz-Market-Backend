@@ -24,6 +24,7 @@ import org.chzz.market.domain.auction.dto.response.LostAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.SimpleAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.StartAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.UserAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.WonAuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.WonAuctionResponse;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.error.AuctionException;
@@ -139,9 +140,9 @@ public class AuctionService {
     /**
      * 낙찰 정보 조회
      */
-    public WonAuctionResponse getWinningBidByAuctionId(Long userId, Long auctionId) {
+    public WonAuctionDetailsResponse getWinningBidByAuctionId(Long userId, Long auctionId) {
         Auction auction = getAuctionById(auctionId);
-        if (!auction.isWinner(userId)) {
+        if (!auction.isWinner(userId) || auction.getProduct().isOwner(userId)) {
             throw new AuctionException(NOT_WINNER);
         }
         return auctionRepository.findWinningBidById(auctionId)
