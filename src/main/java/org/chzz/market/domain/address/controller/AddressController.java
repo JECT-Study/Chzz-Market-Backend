@@ -2,10 +2,12 @@ package org.chzz.market.domain.address.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.config.LoginUser;
-import org.chzz.market.domain.address.dto.request.AddressDto;
-import org.chzz.market.domain.address.dto.request.DeliveryDto;
+import org.chzz.market.domain.address.dto.DeliveryRequest;
+import org.chzz.market.domain.address.dto.DeliveryResponse;
 import org.chzz.market.domain.address.service.AddressService;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,7 +32,7 @@ public class AddressController {
      * @return 주소 목록이 담긴 Page 객체
      */
     @GetMapping
-    public ResponseEntity<?> getAddresses(
+    public ResponseEntity<Page<DeliveryResponse>> getAddresses(
             @LoginUser Long userId,
             Pageable pageable
     ) {
@@ -38,52 +40,36 @@ public class AddressController {
     }
 
     /**
-     * 새로운 주소를 추가합니다.
-     *
-     * @param userId     현재 로그인한 사용자의 ID
-     * @param addressDto 추가할 주소 정보
-     * @return 응답 상태
-     */
-    @PostMapping
-    public ResponseEntity<?> addAddress(
-            @LoginUser Long userId,
-            @RequestBody AddressDto addressDto
-    ) {
-        addressService.addAddress(userId, addressDto);
-        return ResponseEntity.ok().build();//TODO 2024 09 11 16:42:57 : redirect
-    }
-
-    /**
      * 새로운 배송지 주소를 추가합니다.
      *
-     * @param userId      현재 로그인한 사용자의 ID
-     * @param deliveryDto 추가할 주소 정보
+     * @param userId          현재 로그인한 사용자의 ID
+     * @param deliveryRequest 추가할 주소 정보
      * @return 생성된 주소의 ID
      */
-    @PostMapping("/delivery")
+    @PostMapping("/")
     public ResponseEntity<Void> addDelivery(
             @LoginUser Long userId,
-            @RequestBody DeliveryDto deliveryDto
+            @RequestBody DeliveryRequest deliveryRequest
     ) {
-        addressService.addDelivery(userId, deliveryDto);
-        return ResponseEntity.ok().build();
+        addressService.addDelivery(userId, deliveryRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     /**
      * 기존 배송지 주소를 수정합니다.
      *
-     * @param userId      현재 로그인한 사용자의 ID
-     * @param addressId   수정할 주소의 ID
-     * @param deliveryDto 수정할 주소 정보
+     * @param userId          현재 로그인한 사용자의 ID
+     * @param addressId       수정할 주소의 ID
+     * @param deliveryRequest 수정할 주소 정보
      * @return 응답 상태
      */
-    @PutMapping("/delivery/{addressId}")
+    @PutMapping("/{addressId}")
     public ResponseEntity<Void> updateDelivery(
             @LoginUser Long userId,
             @PathVariable Long addressId,
-            @RequestBody DeliveryDto deliveryDto
+            @RequestBody DeliveryRequest deliveryRequest
     ) {
-        addressService.updateDelivery(userId, addressId, deliveryDto);
+        addressService.updateDelivery(userId, addressId, deliveryRequest);
         return ResponseEntity.ok().build();
     }
 
@@ -94,7 +80,7 @@ public class AddressController {
      * @param addressId 삭제할 주소의 ID
      * @return 응답 상태
      */
-    @DeleteMapping("/delivery/{addressId}")
+    @DeleteMapping("/{addressId}")
     public ResponseEntity<Void> deleteDelivery(
             @LoginUser Long userId,
             @PathVariable Long addressId
