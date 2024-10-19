@@ -28,6 +28,12 @@ public class NotFoundFilter extends OncePerRequestFilter {
     }
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String requestUri = request.getRequestURI();
+        return requestUri.startsWith("/api-docs") || requestUri.startsWith("/swagger-ui");
+    }
+
+    @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
