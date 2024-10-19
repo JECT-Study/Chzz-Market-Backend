@@ -9,6 +9,7 @@ public record WonAuctionResponse (
         String productName,
         String imageUrl,
         Integer minPrice,
+        Long participantCount,
         LocalDateTime endDateTime,
         Long winningAmount
 ) {
