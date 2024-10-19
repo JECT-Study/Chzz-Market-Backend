@@ -21,6 +21,7 @@ import org.chzz.market.domain.auction.dto.response.AuctionResponse;
 import org.chzz.market.domain.auction.dto.response.LostAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.UserAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.UserEndedAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.WonAuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.WonAuctionResponse;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.bid.entity.Bid;
@@ -468,7 +469,7 @@ class AuctionRepositoryCustomImplTest {
         assertThat(firstLost.productName()).isEqualTo("제품4");
         assertThat(firstLost.imageUrl()).isEqualTo("path/to/image4.jpg");
         assertThat(firstLost.minPrice()).isEqualTo(40000);
-        assertThat(firstLost.highestAmount()).isEqualTo(25000L); // 최고 입찰가 (user4의 입찰)
+        assertThat(firstLost.bidAmount()).isEqualTo(15000L);
 
         // 두 번째 실패한 경매
         LostAuctionResponse secondLost = result.getContent().get(1);
@@ -476,7 +477,7 @@ class AuctionRepositoryCustomImplTest {
         assertThat(secondLost.productName()).isEqualTo("제품8");
         assertThat(secondLost.imageUrl()).isEqualTo("path/to/image5.jpg");
         assertThat(secondLost.minPrice()).isEqualTo(75000);
-        assertThat(secondLost.highestAmount()).isEqualTo(250000L); // 최고 입찰가 (user3의 입찰)
+        assertThat(secondLost.bidAmount()).isEqualTo(150000L);
 
         // 정렬 순서 확인 (종료 시간 기준 내림차순)
         assertThat(result.getContent()).isSortedAccordingTo(
@@ -717,8 +718,8 @@ class AuctionRepositoryCustomImplTest {
         Long auctionId = auction8.getId();
 
         //when
-        Optional<WonAuctionResponse> result = auctionRepository.findWinningBidById(auctionId);
-        WonAuctionResponse response = result.get();
+        Optional<WonAuctionDetailsResponse> result = auctionRepository.findWinningBidById(auctionId);
+        WonAuctionDetailsResponse response = result.get();
         //then
         assertThat(response.auctionId()).isEqualTo(auction8.getId());
         assertThat(response.productName()).isEqualTo(product8.getName());
@@ -732,7 +733,7 @@ class AuctionRepositoryCustomImplTest {
         Long auctionId = auction9.getId();
 
         //when
-        Optional<WonAuctionResponse> result = auctionRepository.findWinningBidById(auctionId);
+        Optional<WonAuctionDetailsResponse> result = auctionRepository.findWinningBidById(auctionId);
         assertThat(result).isEmpty();
     }
 
