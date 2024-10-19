@@ -14,7 +14,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.chzz.market.domain.address.dto.request.DeliveryRequest;
+import org.chzz.market.domain.address.dto.DeliveryRequest;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
 import org.chzz.market.domain.user.entity.User;
 
@@ -55,6 +55,10 @@ public class Address extends BaseTimeEntity {
 
     @Column(nullable = false)
     private boolean isDefault;
+
+    public void markAsDefault() {
+        this.isDefault = true;
+    }
 
     public boolean isOwner(Long userId) {
         return this.user.getId().equals(userId);
