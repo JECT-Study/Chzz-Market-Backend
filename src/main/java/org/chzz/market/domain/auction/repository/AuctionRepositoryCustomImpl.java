@@ -498,7 +498,9 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                                 bid.amount
                         ))
                 .from(auction)
-                .join(bid).on(bid.bidder.id.eq(auction.winnerId))
+                .join(bid).on(bid.auction.eq(auction)
+                        .and(auction.id.eq(auctionId))
+                        .and(auction.winnerId.eq(bid.bidder.id)))
                 .join(auction.product, product)
                 .leftJoin(image).on(image.product.id.eq(product.id)
                         .and(image.id.eq(getFirstImageId())))
