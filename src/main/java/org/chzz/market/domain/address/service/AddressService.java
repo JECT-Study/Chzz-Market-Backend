@@ -5,11 +5,11 @@ import static org.chzz.market.domain.address.error.AddressErrorCode.CANNOT_DELET
 import static org.chzz.market.domain.user.error.UserErrorCode.USER_NOT_FOUND;
 
 import lombok.RequiredArgsConstructor;
-import org.chzz.market.domain.address.dto.request.AddressDto;
-import org.chzz.market.domain.address.dto.request.DeliveryDto;
+import org.chzz.market.domain.address.dto.DeliveryRequest;
 import org.chzz.market.domain.address.entity.Address;
 import org.chzz.market.domain.address.error.AddressException;
 import org.chzz.market.domain.address.repository.AddressRepository;
+import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.error.exception.UserException;
 import org.chzz.market.domain.user.repository.UserRepository;
 import org.springframework.data.domain.Page;
@@ -30,38 +30,34 @@ public class AddressService {
     }
 
     @Transactional
-    public void addAddress(Long userId, AddressDto addressDto) {
-        userRepository.findById(userId)
-                .ifPresentOrElse(user -> addressRepository.save(Address.initialAddress(user, addressDto)), () -> {
-                    throw new UserException(USER_NOT_FOUND);
-                });
-    }
+    public void addDelivery(Long userId, DeliveryRequest deliveryRequest) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserException(USER_NOT_FOUND));
 
-    @Transactional
-    public void addDelivery(Long userId, DeliveryDto deliveryDto) {
-        userRepository.findById(userId)
-                .ifPresentOrElse(user -> addressRepository.save(Address.deliveryAddress(user, deliveryDto)), () -> {
-                    throw new UserException(USER_NOT_FOUND);
-                });
+        // 첫 배송지 추가 시, 기본 배송지로 설정
+        boolean shouldBeDefault = !addressRepository.existsById(userId) || deliveryRequest.isDefault();
 
-        // 기본 배송지로 설정한 경우, 기존의 기본 배송지를 해제
-        if (deliveryDto.addressDto().isDefault()) {
+        if (shouldBeDefault) {
             addressRepository.updateAllDefaultToFalse(userId);
-        }
-    }
-
-    @Transactional
-    public void updateDelivery(Long userId, Long addressId, DeliveryDto deliveryDto) {
-        Address address = addressRepository.findByIdAndUserId(addressId, userId)
-                .orElseThrow(() -> new AddressException(ADDRESS_NOT_FOUND));
-
-        // 기본 배송지로 설정한 경우, 기존의 기본 배송지를 해제
-        if (deliveryDto.addressDto().isDefault()) {
-            addressRepository.updateAllDefaultToFalse(userId);
+            deliveryRequest = deliveryRequest.withIdDefault(true);
         }
 
-        address.updateAsDeliveryAddress(deliveryDto);
+        Address address = DeliveryRequest.toEntity(user, deliveryRequest);
+        addressRepository.save(address);
     }
+
+//    @Transactional
+//    public void updateDelivery(Long userId, Long addressId, DeliveryDto deliveryDto) {
+//        Address address = addressRepository.findByIdAndUserId(addressId, userId)
+//                .orElseThrow(() -> new AddressException(ADDRESS_NOT_FOUND));
+//
+//        // 기본 배송지로 설정한 경우, 기존의 기본 배송지를 해제
+//        if (deliveryDto.addressDto().isDefault()) {
+//            addressRepository.updateAllDefaultToFalse(userId);
+//        }
+//
+//        address.updateAsDeliveryAddress(deliveryDto);
+//    }
 
     @Transactional
     public void deleteDelivery(Long userId, Long addressId) {
