@@ -1,6 +1,7 @@
 package org.chzz.market.domain.address.service;
 
 import static org.chzz.market.domain.address.error.AddressErrorCode.ADDRESS_NOT_FOUND;
+import static org.chzz.market.domain.address.error.AddressErrorCode.CANNOT_DELETE_DEFAULT_ADDRESS;
 import static org.chzz.market.domain.address.error.AddressErrorCode.FORBIDDEN_ADDRESS_ACCESS;
 import static org.chzz.market.domain.user.error.UserErrorCode.USER_NOT_FOUND;
 
@@ -43,7 +44,7 @@ public class AddressService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(USER_NOT_FOUND));
 
-        // 첫 배송지 추가 시, 기본 배송지로 설정
+        // 사용자의 첫 배송지거나 이 배송지를 기본 배송지로 설정하려고 하는 경우
         boolean shouldBeDefault = !addressRepository.existsByUserId(userId) || deliveryRequest.isDefault();
 
         if (shouldBeDefault) {
@@ -64,8 +65,9 @@ public class AddressService {
             throw new AddressException(FORBIDDEN_ADDRESS_ACCESS);
         }
 
-        // 첫 배송지 추가 시, 기본 배송지로 설정
+        // 이미 기본 배송지인 경우 다시 기본 배송지로 설정하는 불필요한 연산 방지
         boolean shouldBeDefault = deliveryRequest.isDefault() && !address.isDefault();
+
         if (shouldBeDefault) {
             addressRepository.updateDefaultToFalse(userId);
         }
@@ -75,22 +77,16 @@ public class AddressService {
 
     @Transactional
     public void deleteDelivery(Long userId, Long addressId) {
-        Address address = addressRepository.findById(userId)
+        Address address = addressRepository.findById(addressId)
                 .orElseThrow(() -> new AddressException(ADDRESS_NOT_FOUND));
 
         if (!address.isOwner(userId)) {
             throw new AddressException(FORBIDDEN_ADDRESS_ACCESS);
         }
 
+        // 기본 배송지인 경우 삭제 불가
         if (address.isDefault()) {
-            long otherAddressCount = addressRepository.countByUserIdAndIdNot(userId, addressId);
-            if (otherAddressCount > 0) {
-                // 가장 최근 생성된 주소 새로운 기본 배송지로 설정
-                Address newDefaultAddress = addressRepository.findFirstByUserIdAndIdNotOrderByCreatedAtDesc(userId,
-                                addressId)
-                        .orElseThrow(() -> new AddressException(ADDRESS_NOT_FOUND));
-                newDefaultAddress.markAsDefault();
-            }
+            throw new AddressException(CANNOT_DELETE_DEFAULT_ADDRESS);
         }
 
         addressRepository.delete(address);
