@@ -21,6 +21,7 @@ import org.chzz.market.domain.auction.dto.response.AuctionResponse;
 import org.chzz.market.domain.auction.dto.response.LostAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.UserAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.UserEndedAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.WonAuctionResponse;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.bid.entity.Bid;
 import org.chzz.market.domain.bid.entity.Bid.BidStatus;
@@ -128,7 +129,8 @@ class AuctionRepositoryCustomImplTest {
                 .endDateTime(LocalDateTime.now().minusDays(1))
                 .build();
         auctionRepository.saveAll(
-                List.of(auction1, auction2, auction3, auction4, auction5, auction6, auction7, auction8, auction9, auction10));
+                List.of(auction1, auction2, auction3, auction4, auction5, auction6, auction7, auction8, auction9,
+                        auction10));
 
         // auction8에 대한 결제 데이터 추가 (결제 완료된 경매)
         TossPaymentResponse tossPaymentResponse = new TossPaymentResponse();
@@ -706,6 +708,32 @@ class AuctionRepositoryCustomImplTest {
         assertThat(auction9Response.isWon()).isFalse();
         assertThat(auction9Response.isPaid()).isFalse(); // 결제 없음
         assertThat(auction9Response.participantCount()).isEqualTo(0); // 입찰 없음
+    }
+
+    @Test
+    @DisplayName("낙찰정보 조회에 성공한다.")
+    public void findWinningBidById_Success() {
+        //given
+        Long auctionId = auction8.getId();
+
+        //when
+        Optional<WonAuctionResponse> result = auctionRepository.findWinningBidById(auctionId);
+        WonAuctionResponse response = result.get();
+        //then
+        assertThat(response.auctionId()).isEqualTo(auction8.getId());
+        assertThat(response.productName()).isEqualTo(product8.getName());
+        assertThat(response.winningAmount()).isEqualTo(250000L);
+    }
+
+    @Test
+    @DisplayName("낙찰정보가 없는 경매조회시 빈 Optional를 반환한다.")
+    public void findWinningBidById_EmptyOptional_WhenNoWinningBid() {
+        //given
+        Long auctionId = auction9.getId();
+
+        //when
+        Optional<WonAuctionResponse> result = auctionRepository.findWinningBidById(auctionId);
+        assertThat(result).isEmpty();
     }
 
 }
