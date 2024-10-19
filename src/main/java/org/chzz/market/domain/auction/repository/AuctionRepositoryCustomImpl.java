@@ -486,6 +486,25 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
         return PageableExecutionUtils.getPage(result, pageable, countQuery::fetchOne);
     }
 
+    @Override
+    public Optional<WonAuctionResponse> findWinningBidById(Long auctionId) {
+        return Optional.ofNullable(jpaQueryFactory.select(
+                        new QWonAuctionResponse(
+                                auction.id,
+                                product.name,
+                                image.cdnPath,
+                                product.minPrice,
+                                auction.endDateTime,
+                                bid.amount
+                        ))
+                .from(auction)
+                .join(bid).on(bid.bidder.id.eq(auction.winnerId))
+                .join(auction.product, product)
+                .leftJoin(image).on(image.product.id.eq(product.id)
+                        .and(image.id.eq(getFirstImageId())))
+                .fetchOne());
+    }
+
     /**
      * @param userId 사용자 pk
      * @return 실제 사용자가 참여한 경매(취소된 입찰 제외)
