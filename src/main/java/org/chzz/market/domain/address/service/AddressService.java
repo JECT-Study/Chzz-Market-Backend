@@ -2,6 +2,7 @@ package org.chzz.market.domain.address.service;
 
 import static org.chzz.market.domain.address.error.AddressErrorCode.ADDRESS_NOT_FOUND;
 import static org.chzz.market.domain.address.error.AddressErrorCode.CANNOT_DELETE_DEFAULT_ADDRESS;
+import static org.chzz.market.domain.address.error.AddressErrorCode.FORBIDDEN_ADDRESS_ACCESS;
 import static org.chzz.market.domain.user.error.UserErrorCode.USER_NOT_FOUND;
 
 import lombok.RequiredArgsConstructor;
@@ -46,18 +47,23 @@ public class AddressService {
         addressRepository.save(address);
     }
 
-//    @Transactional
-//    public void updateDelivery(Long userId, Long addressId, DeliveryDto deliveryDto) {
-//        Address address = addressRepository.findByIdAndUserId(addressId, userId)
-//                .orElseThrow(() -> new AddressException(ADDRESS_NOT_FOUND));
-//
-//        // 기본 배송지로 설정한 경우, 기존의 기본 배송지를 해제
-//        if (deliveryDto.addressDto().isDefault()) {
-//            addressRepository.updateAllDefaultToFalse(userId);
-//        }
-//
-//        address.updateAsDeliveryAddress(deliveryDto);
-//    }
+    @Transactional
+    public void updateDelivery(Long userId, Long addressId, DeliveryRequest deliveryRequest) {
+        Address address = addressRepository.findById(addressId)
+                .orElseThrow(() -> new AddressException(ADDRESS_NOT_FOUND));
+
+        if (!address.isOwner(userId)) {
+            throw new AddressException(FORBIDDEN_ADDRESS_ACCESS);
+        }
+
+        // 첫 배송지 추가 시, 기본 배송지로 설정
+        boolean shouldBeDefault = deliveryRequest.isDefault() && !address.isDefault();
+        if (shouldBeDefault) {
+            addressRepository.updateAllDefaultToFalse(userId);
+        }
+
+        address.update(deliveryRequest);
+    }
 
     @Transactional
     public void deleteDelivery(Long userId, Long addressId) {
