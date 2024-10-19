@@ -43,10 +43,12 @@ import org.chzz.market.domain.auction.dto.response.QLostAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.QSimpleAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.QUserAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.QUserEndedAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.QWonAuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.QWonAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.SimpleAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.UserAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.UserEndedAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.WonAuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.WonAuctionResponse;
 import org.chzz.market.domain.bid.entity.QBid;
 import org.chzz.market.domain.image.dto.ImageResponse;
@@ -111,6 +113,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
     public Optional<AuctionDetailsResponse> findAuctionDetailsById(Long auctionId, Long userId) {
         QBid activeBid = new QBid("bidActive");
         QBid canceledBid = new QBid("bidCanceled");
+        // TODO: 사용자가 낙찰자인지 여부, 경매의 낙찰 여부, 낙찰자와 판매자에 한 해서 주문 여부 추가 - 다른 사용자는 null로 해야하지 않나??
         Optional<AuctionDetailsResponse> auctionDetailsResponse = Optional.ofNullable(jpaQueryFactory
                 .select(new QAuctionDetailsResponse(
                         product.id,
@@ -299,17 +302,20 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
      */
     @Override
     public Page<WonAuctionResponse> findWonAuctionHistoryByUserId(Long userId, Pageable pageable) {
-        JPAQuery<?> baseQuery = getActualParticipatedAuction(userId)
+        JPAQuery<?> baseQuery = jpaQueryFactory
+                .from(auction)
+                .join(auction.bids, bid).on(bid.bidder.id.eq(userId).and(bid.status.eq(ACTIVE)))
                 .join(auction.product, product)
-                .where(auction.winnerId.eq(userId)
-                        .and(auction.status.eq(ENDED)));
+                .where(auction.winnerId.eq(userId).and(auction.status.eq(ENDED)));
 
+        // TODO: leftJoin(Order) 추가 및 필드(주문여부, 주문ID)추가
         List<WonAuctionResponse> content = baseQuery
                 .select(new QWonAuctionResponse(
                         auction.id,
                         product.name,
                         image.cdnPath,
                         product.minPrice,
+                        getBidCount(),
                         auction.endDateTime,
                         bid.amount
                 ))
@@ -335,9 +341,9 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
      */
     @Override
     public Page<LostAuctionResponse> findLostAuctionHistoryByUserId(Long userId, Pageable pageable) {
-        JPAQuery<?> baseQuery = getActualParticipatedAuction(userId)
-                .join(auction.product, product)
-                .leftJoin(image).on(image.product.eq(product).and(isRepresentativeImage()))
+        JPAQuery<?> baseQuery = jpaQueryFactory
+                .from(auction)
+                .join(auction.bids, bid).on(bid.bidder.id.eq(userId).and(bid.status.eq(ACTIVE)))
                 .where(auction.winnerId.ne(userId).and(auction.status.eq(ENDED)));
 
         List<LostAuctionResponse> query = baseQuery
@@ -346,11 +352,12 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                         product.name,
                         image.cdnPath,
                         product.minPrice,
+                        getBidCount(),
                         auction.endDateTime,
-                        JPAExpressions.select(bid.amount.max())
-                                .from(bid)
-                                .where(bid.auction.eq(auction))
+                        bid.amount
                 ))
+                .join(auction.product, product)
+                .leftJoin(image).on(image.product.eq(product).and(isRepresentativeImage()))
                 .groupBy(auction.id, product.name, image.cdnPath, product.minPrice, auction.endDateTime)
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
@@ -455,7 +462,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                 .join(auction.product, product)
                 .where(product.user.id.eq(userId).and(auction.status.eq(ENDED)));
 
-        // 종료된 경매 조회 쿼리
+        // 종료된 경매 조회 쿼리  TODO: leftJoin(Order)로 변경 결제여부에서 주문여부로 변경
         List<UserEndedAuctionResponse> result = baseQuery
                 .select(new QUserEndedAuctionResponse(
                         auction.id,
@@ -483,35 +490,20 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
     }
 
     @Override
-    public Optional<WonAuctionResponse> findWinningBidById(Long auctionId) {
+    public Optional<WonAuctionDetailsResponse> findWinningBidById(Long auctionId) {
         return Optional.ofNullable(jpaQueryFactory.select(
-                        new QWonAuctionResponse(
+                        new QWonAuctionDetailsResponse(
                                 auction.id,
                                 product.name,
                                 image.cdnPath,
-                                product.minPrice,
-                                auction.endDateTime,
                                 bid.amount
                         ))
                 .from(auction)
-                .join(bid).on(bid.auction.eq(auction)
-                        .and(auction.id.eq(auctionId))
-                        .and(auction.winnerId.eq(bid.bidder.id)))
+                .join(bid)
+                .on(bid.auction.eq(auction).and(auction.id.eq(auctionId)).and(auction.winnerId.eq(bid.bidder.id)))
                 .join(auction.product, product)
                 .leftJoin(image).on(image.product.eq(product).and(isRepresentativeImage()))
                 .fetchOne());
-    }
-
-    /**
-     * @param userId 사용자 pk
-     * @return 실제 사용자가 참여한 경매(취소된 입찰 제외)
-     */
-    private JPAQuery<?> getActualParticipatedAuction(Long userId) {
-        return jpaQueryFactory
-                .from(auction)
-                .join(auction.bids, bid)
-                .on(bid.bidder.id.eq(userId)
-                        .and(bid.status.eq(ACTIVE)));
     }
 
     /**
