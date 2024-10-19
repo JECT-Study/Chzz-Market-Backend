@@ -56,10 +56,6 @@ public class Address extends BaseTimeEntity {
     @Column(nullable = false)
     private boolean isDefault;
 
-    public void markAsDefault() {
-        this.isDefault = true;
-    }
-
     public boolean isOwner(Long userId) {
         return this.user.getId().equals(userId);
     }

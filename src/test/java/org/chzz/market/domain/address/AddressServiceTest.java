@@ -1,14 +1,22 @@
 package org.chzz.market.domain.address;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
-import org.chzz.market.domain.address.dto.request.AddressDto;
-import org.chzz.market.domain.address.dto.request.DeliveryDto;
+import org.chzz.market.domain.address.dto.DeliveryRequest;
+import org.chzz.market.domain.address.dto.DeliveryResponse;
 import org.chzz.market.domain.address.entity.Address;
 import org.chzz.market.domain.address.error.AddressException;
 import org.chzz.market.domain.address.repository.AddressRepository;
@@ -23,6 +31,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @ExtendWith(MockitoExtension.class)
 public class AddressServiceTest {
@@ -37,29 +49,13 @@ public class AddressServiceTest {
     private AddressService addressService;
 
     private User testUser;
-    private AddressDto testAddressDto;
-    private DeliveryDto testDeliveryDto;
-    private Address testAddress;
+    private DeliveryRequest testDeliveryRequest;
+    private Address testAddress, address1, address2, address3;
 
     @BeforeEach
     void setUp() {
         testUser = User.builder()
                 .id(1L)
-                .build();
-
-        testAddressDto = AddressDto.builder()
-                .roadAddress("서울시 강남구")
-                .jibun("강남대로 123")
-                .zipcode("12345")
-                .detailAddress("상세주소")
-                .isDefault(true)
-                .build();
-
-        testDeliveryDto = DeliveryDto.builder()
-                .addressDto(testAddressDto)
-                .recipientName("홍길동")
-                .phoneNumber("01012345678")
-                .deliveryMemo("문 앞에 놔주세요")
                 .build();
 
         testAddress = Address.builder()
@@ -69,11 +65,81 @@ public class AddressServiceTest {
                 .jibun("강남대로 123")
                 .zipcode("12345")
                 .detailAddress("상세주소")
-                .recipientName("홍길동")
-                .phoneNumber("01012345678")
-                .deliveryMemo("문 앞에 놔주세요")
                 .isDefault(true)
                 .build();
+
+        address1 = Address.builder()
+                .id(1L)
+                .user(testUser)
+                .roadAddress("Address 1")
+                .detailAddress("Detail 1")
+                .zipcode("12345")
+                .isDefault(true)
+                .build();
+
+        address2 = Address.builder()
+                .id(2L)
+                .user(testUser)
+                .roadAddress("Address 2")
+                .detailAddress("Detail 2")
+                .zipcode("23456")
+                .isDefault(false)
+                .build();
+
+        address3 = Address.builder()
+                .id(3L)
+                .user(testUser)
+                .roadAddress("Address 3")
+                .detailAddress("Detail 3")
+                .zipcode("34567")
+                .isDefault(false)
+                .build();
+
+        testDeliveryRequest = new DeliveryRequest(
+                "서울시 강남구",
+                "강남대로 123",
+                "12345",
+                "상세주소",
+                "홍길동",
+                "01012345678",
+                true
+        );
+    }
+
+    @Test
+    @DisplayName("배송지 목록 조회 성공")
+    void getAddresses_Success() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Address> addressePage = new PageImpl<>(Collections.singletonList(testAddress));
+        when(addressRepository.findByUserId(eq(1L), any(Pageable.class))).thenReturn(addressePage);
+
+        Page<DeliveryResponse> result = addressService.getAddresses(1L, pageable);
+
+        assertNotNull(result);
+        assertEquals(1, result.getContent().size());
+    }
+
+    @Test
+    @DisplayName("배송지 목록 조회 정렬 확인")
+    void getAddresses_SortCorrectly() {
+        Pageable pageable = PageRequest.of(0, 10);
+
+        List<Address> addresses = Arrays.asList(address1, address2, address3);
+        Page<Address> addressPage = new PageImpl<>(addresses);
+
+        when(addressRepository.findByUserId(eq(1L), any(Pageable.class))).thenReturn(addressPage);
+
+        Page<DeliveryResponse> result = addressService.getAddresses(1L, pageable);
+
+        assertNotNull(result);
+        assertEquals(3, result.getContent().size());
+
+        // 정렬 순서 확인
+        assertTrue(result.getContent().get(0).isDefault());
+        assertFalse(result.getContent().get(1).isDefault());
+        assertFalse(result.getContent().get(2).isDefault());
+
+        assertEquals("Address 1", result.getContent().get(0).roadAddress());
     }
 
     @Test
@@ -82,9 +148,9 @@ public class AddressServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
         when(addressRepository.save(any(Address.class))).thenReturn(testAddress);
 
-        assertDoesNotThrow(() -> addressService.addDelivery(1L, testDeliveryDto));
+        assertDoesNotThrow(() -> addressService.addDelivery(1L, testDeliveryRequest));
 
-        verify(addressRepository).updateAllDefaultToFalse(1L);
+        verify(addressRepository).updateDefaultToFalse(1L);
         verify(addressRepository).save(any(Address.class));
     }
 
@@ -93,26 +159,50 @@ public class AddressServiceTest {
     void addDelivery_UserNotFound() {
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(UserException.class, () -> addressService.addDelivery(1L, testDeliveryDto));
+        assertThrows(UserException.class, () -> addressService.addDelivery(1L, testDeliveryRequest));
     }
 
     @Test
     @DisplayName("배송지 수정 성공")
     void updateDelivery_Success() {
-        when(addressRepository.findByIdAndUserId(1L, 1L)).thenReturn(Optional.of(testAddress));
+        Address addressToUpdate = Address.builder()
+                .id(1L)
+                .user(testUser)
+                .roadAddress("기존 주소")
+                .jibun("기존 지번")
+                .zipcode("12345")
+                .detailAddress("기존 상세주소")
+                .recipientName("기존 수령인")
+                .phoneNumber("01012345678")
+                .isDefault(false)
+                .build();
 
-        assertDoesNotThrow(() -> addressService.updateDelivery(1L, 1L, testDeliveryDto));
+        when(addressRepository.findById(1L)).thenReturn(Optional.of(addressToUpdate));
 
-        verify(addressRepository).updateAllDefaultToFalse(1L);
-        verify(addressRepository).findByIdAndUserId(1L, 1L);
+        DeliveryRequest updateRequest = new DeliveryRequest(
+                "새로운 주소", "새로운 지번", "54321", "새로운 상세주소",
+                "새로운 수령인", "01087654321", true);
+
+        addressService.updateDelivery(1L, 1L, updateRequest);
+
+        assertEquals("새로운 주소", addressToUpdate.getRoadAddress());
+        assertEquals("새로운 지번", addressToUpdate.getJibun());
+        assertEquals("54321", addressToUpdate.getZipcode());
+        assertEquals("새로운 상세주소", addressToUpdate.getDetailAddress());
+        assertEquals("새로운 수령인", addressToUpdate.getRecipientName());
+        assertEquals("01087654321", addressToUpdate.getPhoneNumber());
+        assertTrue(addressToUpdate.isDefault());
+
+        verify(addressRepository).findById(1L);
+        verify(addressRepository).updateDefaultToFalse(1L);
     }
 
     @Test
     @DisplayName("배송지 수정 실패 - 배송지를 찾을 수 없음")
     void updateDelivery_AddressNotFound() {
-        when(addressRepository.findByIdAndUserId(1L, 1L)).thenReturn(Optional.empty());
+        when(addressRepository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(AddressException.class, () -> addressService.updateDelivery(1L, 1L, testDeliveryDto));
+        assertThrows(AddressException.class, () -> addressService.updateDelivery(1L, 1L, testDeliveryRequest));
     }
 
     @Test
@@ -127,11 +217,10 @@ public class AddressServiceTest {
                 .detailAddress("상세주소")
                 .recipientName("홍길동")
                 .phoneNumber("01012345678")
-                .deliveryMemo("문 앞에 놔주세요")
                 .isDefault(false)
                 .build();
 
-        when(addressRepository.findByIdAndUserId(2L, 1L)).thenReturn(Optional.of(nonDefaultAddress));
+        when(addressRepository.findById(2L)).thenReturn(Optional.of(nonDefaultAddress));
 
         assertDoesNotThrow(() -> addressService.deleteDelivery(1L, 2L));
 
@@ -141,7 +230,7 @@ public class AddressServiceTest {
     @Test
     @DisplayName("배송지 삭제 실패 - 배송지를 찾을 수 없음")
     void deleteDelivery_AddressNotFound() {
-        when(addressRepository.findByIdAndUserId(1L, 1L)).thenReturn(Optional.empty());
+        when(addressRepository.findById(1L)).thenReturn(Optional.empty());
 
         assertThrows(AddressException.class, () -> addressService.deleteDelivery(1L, 1L));
     }
@@ -149,7 +238,7 @@ public class AddressServiceTest {
     @Test
     @DisplayName("배송지 삭제 실패 - 기본 배송지 삭제 시도")
     void deleteDelivery_CannotDeleteDefaultAddress() {
-        when(addressRepository.findByIdAndUserId(1L, 1L)).thenReturn(Optional.of(testAddress));
+        when(addressRepository.findById(1L)).thenReturn(Optional.of(testAddress));
 
         assertThrows(AddressException.class, () -> addressService.deleteDelivery(1L, 1L));
     }
