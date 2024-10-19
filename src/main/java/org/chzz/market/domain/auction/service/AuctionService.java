@@ -142,7 +142,7 @@ public class AuctionService {
      */
     public WonAuctionDetailsResponse getWinningBidByAuctionId(Long userId, Long auctionId) {
         Auction auction = getAuctionById(auctionId);
-        if (!auction.isWinner(userId) || auction.getProduct().isOwner(userId)) {
+        if (!auction.isWinner(userId)) {
             throw new AuctionException(NOT_WINNER);
         }
         return auctionRepository.findWinningBidById(auctionId)
