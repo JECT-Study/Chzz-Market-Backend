@@ -7,17 +7,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.common.config.LoginUser;
 import org.chzz.market.domain.auction.dto.request.BaseRegisterRequest;
 import org.chzz.market.domain.auction.dto.request.StartAuctionRequest;
+import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.AuctionResponse;
 import org.chzz.market.domain.auction.dto.response.LostAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.RegisterResponse;
 import org.chzz.market.domain.auction.dto.response.StartAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.UserAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.UserEndedAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.WonAuctionResponse;
 import org.chzz.market.domain.auction.service.AuctionRegistrationServiceFactory;
 import org.chzz.market.domain.auction.service.AuctionService;
 import org.chzz.market.domain.auction.service.register.AuctionRegistrationService;
-import org.chzz.market.domain.auction.type.AuctionViewType;
 import org.chzz.market.domain.auction.type.TestService;
+import org.chzz.market.domain.bid.dto.response.BidInfoResponse;
 import org.chzz.market.domain.bid.service.BidService;
 import org.chzz.market.domain.product.entity.Product.Category;
 import org.springframework.data.domain.Page;
@@ -40,7 +42,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/auctions")
-public class AuctionController {
+public class AuctionController implements AuctionApi {
     private final AuctionService auctionService;
     private final BidService bidService;
     private final TestService testService;
@@ -49,18 +51,20 @@ public class AuctionController {
     /**
      * 경매 목록 조회
      */
+    @Override
     @GetMapping
-    public ResponseEntity<?> getAuctionList(@RequestParam Category category,
-                                            @LoginUser Long userId,
-                                            Pageable pageable) {
+    public ResponseEntity<Page<AuctionResponse>> getAuctionList(@RequestParam Category category,
+                                                                @LoginUser Long userId,
+                                                                Pageable pageable) {
         return ResponseEntity.ok(auctionService.getAuctionListByCategory(category, userId, pageable));
     }
 
     /**
      * Best 경매 상품 목록 조회
      */
+    @Override
     @GetMapping("/best")
-    public ResponseEntity<?> bestAuctionList() {
+    public ResponseEntity<List<AuctionResponse>> bestAuctionList() {
         List<AuctionResponse> bestAuctionList = auctionService.getBestAuctionList();
         return ResponseEntity.ok(bestAuctionList);
     }
@@ -68,8 +72,9 @@ public class AuctionController {
     /**
      * Imminent 경매 상품 목록 조회
      */
+    @Override
     @GetMapping("/imminent")
-    public ResponseEntity<?> imminentAuctionList() {
+    public ResponseEntity<List<AuctionResponse>> imminentAuctionList() {
         List<AuctionResponse> imminentAuctionList = auctionService.getImminentAuctionList();
         return ResponseEntity.ok(imminentAuctionList);
     }
@@ -77,6 +82,7 @@ public class AuctionController {
     /**
      * 내가 성공한 경매 조회
      */
+    @Override
     @GetMapping("/won")
     public ResponseEntity<Page<WonAuctionResponse>> getWonAuctionHistory(
             @LoginUser Long userId,
@@ -87,6 +93,7 @@ public class AuctionController {
     /**
      * 내가 실패한 경매 조회
      */
+    @Override
     @GetMapping("/lost")
     public ResponseEntity<Page<LostAuctionResponse>> getLostAuctionHistory(
             @LoginUser Long userId,
@@ -95,39 +102,40 @@ public class AuctionController {
     }
 
     /**
-     * 경매 상세 조회 (simple 일 경우 간단 정보만 조회)
+     * 경매 상세 조회
      */
+    @Override
     @GetMapping("/{auctionId}")
-    public ResponseEntity<?> getAuctionDetails(
+    public ResponseEntity<AuctionDetailsResponse> getAuctionDetails(
             @PathVariable Long auctionId,
-            @RequestParam(defaultValue = "FULL") AuctionViewType type,
             @LoginUser Long userId) {
-        return switch (type) {
-            case FULL -> ResponseEntity.ok(auctionService.getFullAuctionDetails(auctionId, userId));
-            case SIMPLE -> ResponseEntity.ok(auctionService.getSimpleAuctionDetails(auctionId));
-        };
+        return ResponseEntity.ok(auctionService.getFullAuctionDetails(auctionId, userId));
     }
 
     /**
      * 경매 입찰 목록 조회
      */
+    @Override
     @GetMapping("/{auctionId}/bids")
-    public ResponseEntity<?> getBids(@LoginUser Long userId, @PathVariable Long auctionId, Pageable pageable) {
+    public ResponseEntity<Page<BidInfoResponse>> getBids(@LoginUser Long userId, @PathVariable Long auctionId,
+                                                         Pageable pageable) {
         return ResponseEntity.ok(bidService.getBidsByAuctionId(userId, auctionId, pageable));
     }
 
     /**
      * 사용자가 등록한 모든 경매 목록 조회 현재 사용 X
      */
+    @Override
     @GetMapping("/users")
-    public ResponseEntity<?> getUserRegisteredAuction(@LoginUser Long userId,
-                                                      Pageable pageable) {
+    public ResponseEntity<Page<UserAuctionResponse>> getUserRegisteredAuction(@LoginUser Long userId,
+                                                                              Pageable pageable) {
         return ResponseEntity.ok(auctionService.getAuctionListByUserId(userId, pageable));
     }
 
     /**
      * 사용자 경매 상품 목록 조회 (닉네임) 현재 사용 X
      */
+    @Override
     @GetMapping("/users/{nickname}")
     public ResponseEntity<Page<UserAuctionResponse>> getUserAuctionList(@PathVariable String nickname,
                                                                         @PageableDefault(sort = "newest") Pageable pageable) {
@@ -137,24 +145,27 @@ public class AuctionController {
     /**
      * 사용자의 진행 중인 경매 목록 조회
      */
+    @Override
     @GetMapping("/users/proceeding")
-    public ResponseEntity<?> getProceedingAuctions(@LoginUser Long userId,
-                                                   @PageableDefault(sort = "newest") Pageable pageable) {
+    public ResponseEntity<Page<UserAuctionResponse>> getProceedingAuctions(@LoginUser Long userId,
+                                                                           @PageableDefault(sort = "newest") Pageable pageable) {
         return ResponseEntity.ok(auctionService.getProceedingAuctionListByUserId(userId, pageable));
     }
 
     /**
      * 사용자의 종료된 경매 목록 조회
      */
+    @Override
     @GetMapping("/users/ended")
-    public ResponseEntity<?> getEndedAuctions(@LoginUser Long userId,
-                                              @PageableDefault(sort = "newest") Pageable pageable) {
+    public ResponseEntity<Page<UserEndedAuctionResponse>> getEndedAuctions(@LoginUser Long userId,
+                                                                           @PageableDefault(sort = "newest") Pageable pageable) {
         return ResponseEntity.ok(auctionService.getEndedAuctionListByUserId(userId, pageable));
     }
 
     /**
      * 경매 등록
      */
+    @Override
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<RegisterResponse> registerAuction(
             @LoginUser Long userId,
@@ -171,6 +182,7 @@ public class AuctionController {
     /**
      * 경매 상품으로 전환
      */
+    @Override
     @PostMapping("/start")
     public ResponseEntity<StartAuctionResponse> startAuction(@LoginUser Long userId,
                                                              @RequestBody @Valid StartAuctionRequest request) {
@@ -184,9 +196,10 @@ public class AuctionController {
     /**
      * 경매 종료 테스트 API (삭제 필요)
      */
+    @Override
     @PostMapping("/test")
-    public ResponseEntity<?> testEndAuction(@LoginUser Long userId,
-                                            @RequestParam("seconds") int seconds) {
+    public ResponseEntity<Void> testEndAuction(@LoginUser Long userId,
+                                               @RequestParam("seconds") int seconds) {
         testService.test(userId, seconds);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
