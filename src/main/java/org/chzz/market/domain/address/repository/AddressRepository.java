@@ -1,5 +1,6 @@
 package org.chzz.market.domain.address.repository;
 
+import java.util.Optional;
 import org.chzz.market.domain.address.entity.Address;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,5 +17,5 @@ public interface AddressRepository extends JpaRepository<Address, Long> {
     @Query("UPDATE Address a SET a.isDefault = false WHERE a.user.id = :userId AND a.isDefault = true")
     void updateDefaultToFalse(@Param("userId") Long userId);
 
-    boolean existsByUserId(Long userId);
+    Optional<Address> findByUserIdAndIsDefaultTrue(Long userId);
 }
