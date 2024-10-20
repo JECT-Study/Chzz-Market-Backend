@@ -1,6 +1,8 @@
 package org.chzz.market.domain.product.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +43,11 @@ public interface ProductApi {
     ResponseEntity<Page<ProductResponse>> getLikedProductList(Long userId, @ParameterObject Pageable pageable);
 
     @Operation(summary = "사전 경매 수정")
+    @Parameter(
+            name = "sequence (예: 1)",
+            description = "key: 이미지 순서(1~5), value: 업로드할 이미지 파일",
+            schema = @Schema(type = "string", format = "binary")
+    )
     ResponseEntity<UpdateProductResponse> updateProduct(Long userId, Long productId, UpdateProductRequest request,
                                                         Map<String, MultipartFile> images);
 
