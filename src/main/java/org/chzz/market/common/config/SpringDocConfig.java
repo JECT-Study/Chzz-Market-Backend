@@ -4,7 +4,6 @@ import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.chzz.market.common.springdoc.ApiExceptionExplainParser;
 import org.springdoc.core.customizers.OpenApiCustomizer;
@@ -36,7 +35,6 @@ public class SpringDocConfig {
                                 .type(SecurityScheme.Type.HTTP)
                                 .scheme("bearer")
                                 .bearerFormat("JWT")))  // JWT 토큰 설정
-                .addSecurityItem(new SecurityRequirement().addList("BearerAuth")) // 모든 경로에 적용
                 .info(info);
     }
 
