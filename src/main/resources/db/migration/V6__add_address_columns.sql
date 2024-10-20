@@ -8,11 +8,11 @@
 ALTER TABLE `address`
     ADD COLUMN `recipient_name` VARCHAR(255) NOT NULL AFTER `detail_address`,
     ADD COLUMN `phone_number`   VARCHAR(20)  NOT NULL AFTER `recipient_name`,
-    ADD COLUMN `is_default`     BOOLEAN      NOT NULL DEFAULT FALSE AFTER `phone_number`;
+    ADD COLUMN `is_default`     BIT(1)       NOT NULL DEFAULT 0 AFTER `phone_number`;
 
 -- 기존 필드에 nullable = false 추가
 ALTER TABLE `address`
-    MODIFY COLUMN `roadAddress` VARCHAR(255) NOT NULL,
+    MODIFY COLUMN `road_address` VARCHAR(255) NOT NULL,
     MODIFY COLUMN `jibun` VARCHAR(255) NOT NULL,
     MODIFY COLUMN `zipcode` VARCHAR(20) NOT NULL,
-    MODIFY COLUMN `detailAddress` VARCHAR(255) NOT NULL;
+    MODIFY COLUMN `detail_address` VARCHAR(255) NOT NULL;
