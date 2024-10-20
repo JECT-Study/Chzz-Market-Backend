@@ -55,7 +55,7 @@ public class AddressService {
             throw new AddressException(FORBIDDEN_ADDRESS_ACCESS);
         }
 
-        if (deliveryRequest.isDefault() && !address.isDefault()) {
+        if (deliveryRequest.isDefault() && Boolean.FALSE.equals(address.getIsDefault())) {
             addressRepository.findByUserIdAndIsDefaultTrue(userId)
                     .ifPresent(Address::unmarkAsDefault);
         }
@@ -73,7 +73,7 @@ public class AddressService {
         }
 
         // 기본 배송지인 경우 삭제 불가
-        if (address.isDefault()) {
+        if (Boolean.TRUE.equals(address.getIsDefault())) {
             throw new AddressException(CANNOT_DELETE_DEFAULT_ADDRESS);
         }
 

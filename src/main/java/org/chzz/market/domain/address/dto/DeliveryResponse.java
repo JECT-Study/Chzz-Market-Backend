@@ -21,7 +21,7 @@ public record DeliveryResponse(
                 address.getDetailAddress(),
                 address.getRecipientName(),
                 address.getPhoneNumber(),
-                address.isDefault()
+                address.getIsDefault()
         );
     }
 }

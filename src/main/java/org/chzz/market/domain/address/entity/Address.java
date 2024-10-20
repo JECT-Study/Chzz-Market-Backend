@@ -56,7 +56,7 @@ public class Address extends BaseTimeEntity {
     private String phoneNumber;
 
     @Column(nullable = false)
-    private boolean isDefault;
+    private Boolean isDefault;
 
     public void unmarkAsDefault() {
         this.isDefault = false;
