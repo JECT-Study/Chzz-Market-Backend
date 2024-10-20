@@ -25,19 +25,20 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/bids")
-public class BidController {
+public class BidController implements BidApi {
     private final BidService bidService;
 
     /**
      * 나의 입찰 목록 조회
      *
      * @param status 경매 상태 필터링 파라미터
-     *                - 전체 조회: 값이 없거나 null인 경우
-     *                - 진행 중인 경매의 입찰만 조회: 'proceeding' 값을 사용할 때
-     *                - 종료된 경매의 입찰만 조회: 'ended' 값을 사용할 때
+     *               - 전체 조회: 값이 없거나 null인 경우
+     *               - 진행 중인 경매의 입찰만 조회: 'proceeding' 값을 사용할 때
+     *               - 종료된 경매의 입찰만 조회: 'ended' 값을 사용할 때
      */
+    @Override
     @GetMapping
-    public ResponseEntity<?> findUsersBidHistory(
+    public ResponseEntity<Page<BiddingRecord>> findUsersBidHistory(
             @LoginUser Long userId,
             @PageableDefault(sort = "time-remaining") Pageable pageable,
             @RequestParam(value = "status", required = false) AuctionStatus status) {
@@ -48,9 +49,10 @@ public class BidController {
     /**
      * 입찰 요청 및 수정
      */
+    @Override
     @PostMapping
-    public ResponseEntity<?> createBid(@Valid @RequestBody BidCreateRequest bidCreateRequest,
-                                       @LoginUser Long userId) {
+    public ResponseEntity<Void> createBid(@Valid @RequestBody BidCreateRequest bidCreateRequest,
+                                          @LoginUser Long userId) {
         bidService.createBid(bidCreateRequest, userId);
         return ResponseEntity.status(CREATED).build();
     }
@@ -58,9 +60,10 @@ public class BidController {
     /**
      * 입찰 취소
      */
+    @Override
     @PatchMapping("/{bidId}/cancel")
-    public ResponseEntity<?> cancelBid(@PathVariable Long bidId,
-                                       @LoginUser Long userId) {
+    public ResponseEntity<Void> cancelBid(@PathVariable Long bidId,
+                                          @LoginUser Long userId) {
         bidService.cancelBid(bidId, userId);
         return ResponseEntity.ok().build();
     }
