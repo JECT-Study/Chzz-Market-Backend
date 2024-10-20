@@ -21,6 +21,7 @@ import org.chzz.market.domain.auction.dto.response.LostAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.SimpleAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.StartAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.UserAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.UserEndedAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.WonAuctionResponse;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.error.AuctionException;
@@ -137,7 +138,7 @@ public class AuctionService {
     /**
      * 사용자가 등록한 종료된 경매 목록 조회
      */
-    public Page<?> getEndedAuctionListByUserId(Long userId, Pageable pageable) {
+    public Page<UserEndedAuctionResponse> getEndedAuctionListByUserId(Long userId, Pageable pageable) {
         return auctionRepository.findEndedAuctionByUserId(userId, pageable);
     }
 
