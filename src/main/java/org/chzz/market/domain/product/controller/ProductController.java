@@ -39,13 +39,14 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/products")
-public class ProductController {
+public class ProductController implements ProductApi {
     private final ProductService productService;
     private final LikeService likeService;
 
     /**
      * 사전 등록 상품 목록 조회
      */
+    @Override
     @GetMapping
     public ResponseEntity<Page<ProductResponse>> getProductList(
             @RequestParam(required = false) Category category,
@@ -57,6 +58,7 @@ public class ProductController {
     /**
      * 상품 카테고리 목록 조회
      */
+    @Override
     @GetMapping("/categories")
     public ResponseEntity<List<CategoryResponse>> getCategoryList() {
         return ResponseEntity.ok(productService.getCategories());
@@ -65,6 +67,7 @@ public class ProductController {
     /**
      * 사전 등록 상품 상세 정보 조회
      */
+    @Override
     @GetMapping("/{productId}")
     public ResponseEntity<ProductDetailsResponse> getProductDetails(
             @PathVariable Long productId,
@@ -74,8 +77,9 @@ public class ProductController {
     }
 
     /**
-     * 나의 사전 등록 상품 목록 조회
+     * 특정 닉네임 사용자의 사전 경매 목록 조회 (현재 사용 x)
      */
+    @Override
     @GetMapping("/users/{nickname}")
     public ResponseEntity<Page<ProductResponse>> getMyProductList(
             @PathVariable String nickname,
@@ -83,6 +87,10 @@ public class ProductController {
         return ResponseEntity.ok(productService.getProductListByNickname(nickname, pageable));
     }
 
+    /**
+     * 나의 사전 경매 목록 조회
+     */
+    @Override
     @GetMapping("/users")
     public ResponseEntity<Page<ProductResponse>> getRegisteredProductList(
             @LoginUser Long userId,
@@ -93,6 +101,7 @@ public class ProductController {
     /**
      * 내가 참여한 사전경매 조회
      */
+    @Override
     @GetMapping("/history")
     public ResponseEntity<Page<ProductResponse>> getLikedProductList(
             @LoginUser Long userId,
@@ -103,6 +112,7 @@ public class ProductController {
     /**
      * 사전 등록 상품 수정
      */
+    @Override
     @PatchMapping(value = "/{productId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UpdateProductResponse> updateProduct(
             @LoginUser Long userId,
@@ -116,6 +126,7 @@ public class ProductController {
     /**
      * 사전 등록 상품 삭제
      */
+    @Override
     @DeleteMapping("/{productId}")
     public ResponseEntity<DeleteProductResponse> deleteProduct(
             @PathVariable Long productId,
@@ -128,6 +139,7 @@ public class ProductController {
     /**
      * 상품 좋아요 토글
      */
+    @Override
     @PostMapping("/{productId}/likes")
     public ResponseEntity<LikeResponse> toggleProductLike(
             @PathVariable Long productId,
