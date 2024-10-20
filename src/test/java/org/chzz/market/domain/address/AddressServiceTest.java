@@ -35,6 +35,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 
 @ExtendWith(MockitoExtension.class)
 public class AddressServiceTest {
@@ -143,6 +145,42 @@ public class AddressServiceTest {
     }
 
     @Test
+    @DisplayName("기본 배송지만 조회 성공 확인")
+    void getAddresses_ShouldReturnOnlyDefaultAddressWhenSizeIsOne() {
+        Long userId = 1L;
+        Address defaultAddress = Address.builder()
+                .id(1L)
+                .roadAddress("서울시 강남구")
+                .jibun("강남대로 123")
+                .zipcode("12345")
+                .detailAddress("상세주소")
+                .recipientName("홍길동")
+                .phoneNumber("01012345678")
+                .isDefault(true)
+                .build();
+
+        Page<Address> addressPage = new PageImpl<>(Collections.singletonList(defaultAddress));
+
+        Pageable pageable = PageRequest.of(0, 1, Sort.by(Direction.DESC, "isDefault", "createdAt"));
+
+        when(addressRepository.findByUserId(eq(userId), any(Pageable.class))).thenReturn(addressPage);
+
+        Page<DeliveryResponse> result = addressService.getAddresses(userId, pageable);
+
+        assertNotNull(result);
+        assertEquals(1, result.getContent().size());
+        DeliveryResponse response = result.getContent().get(0);
+        assertTrue(response.isDefault());
+        assertEquals("서울시 강남구", response.roadAddress());
+        assertEquals("강남대로 123", response.jibun());
+        assertEquals("12345", response.zipcode());
+        assertEquals("상세주소", response.detailAddress());
+        assertEquals("홍길동", response.recipientName());
+        assertEquals("01012345678", response.phoneNumber());
+        
+    }
+
+    @Test
     @DisplayName("배송지 추가 성공")
     void addDelivery_Success() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
@@ -191,7 +229,7 @@ public class AddressServiceTest {
         assertEquals("새로운 상세주소", addressToUpdate.getDetailAddress());
         assertEquals("새로운 수령인", addressToUpdate.getRecipientName());
         assertEquals("01087654321", addressToUpdate.getPhoneNumber());
-        assertTrue(addressToUpdate.isDefault());
+        assertTrue(addressToUpdate.getIsDefault());
 
         verify(addressRepository).findById(1L);
         verify(addressRepository).findByUserIdAndIsDefaultTrue(1L);
