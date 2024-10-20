@@ -150,7 +150,7 @@ public class AddressServiceTest {
 
         assertDoesNotThrow(() -> addressService.addDelivery(1L, testDeliveryRequest));
 
-        verify(addressRepository).updateDefaultToFalse(1L);
+        verify(addressRepository).findByUserIdAndIsDefaultTrue(1L);
         verify(addressRepository).save(any(Address.class));
     }
 
@@ -194,7 +194,7 @@ public class AddressServiceTest {
         assertTrue(addressToUpdate.isDefault());
 
         verify(addressRepository).findById(1L);
-        verify(addressRepository).updateDefaultToFalse(1L);
+        verify(addressRepository).findByUserIdAndIsDefaultTrue(1L);
     }
 
     @Test
