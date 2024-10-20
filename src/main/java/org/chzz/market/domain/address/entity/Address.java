@@ -17,11 +17,13 @@ import lombok.NoArgsConstructor;
 import org.chzz.market.domain.address.dto.DeliveryRequest;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
 import org.chzz.market.domain.user.entity.User;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Getter
 @Entity
 @Builder
 @Table
+@DynamicUpdate
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Address extends BaseTimeEntity {
