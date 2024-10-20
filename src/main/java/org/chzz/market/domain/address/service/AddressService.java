@@ -27,7 +27,7 @@ public class AddressService {
                 });
     }
 
-    public Page<?> getAddresses(Long userId, Pageable pageable) {
+    public Page<AddressDto> getAddresses(Long userId, Pageable pageable) {
         return addressRepository.findAddressesByUserId(pageable, userId);
     }
 }
