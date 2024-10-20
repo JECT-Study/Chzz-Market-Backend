@@ -41,16 +41,4 @@ public record DeliveryRequest(
                 .isDefault(dto.isDefault())
                 .build();
     }
-
-    public DeliveryRequest withIdDefault(boolean isDefault) {
-        return new DeliveryRequest(
-                roadAddress,
-                jibun,
-                zipcode,
-                detailAddress,
-                recipientName,
-                phoneNumber,
-                isDefault
-        );
-    }
 }
