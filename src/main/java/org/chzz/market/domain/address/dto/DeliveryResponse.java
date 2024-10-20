@@ -10,7 +10,7 @@ public record DeliveryResponse(
         String detailAddress,
         String recipientName,
         String phoneNumber,
-        boolean isDefault
+        Boolean isDefault
 ) {
     public static DeliveryResponse fromEntity(Address address) {
         return new DeliveryResponse(
