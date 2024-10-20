@@ -7,7 +7,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.config.LoginUser;
 import org.chzz.market.common.error.GlobalException;
+import org.chzz.market.domain.notification.dto.response.NotificationResponse;
 import org.chzz.market.domain.notification.service.NotificationService;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,14 +23,16 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/notifications")
-public class NotificationController {
+public class NotificationController implements NotificationApi {
     private final NotificationService notificationService;
 
+    @Override
     @GetMapping
-    public ResponseEntity<?> getNotifications(@LoginUser Long userId, Pageable pageable) {
+    public ResponseEntity<Page<NotificationResponse>> getNotifications(@LoginUser Long userId, Pageable pageable) {
         return ResponseEntity.ok(notificationService.getNotifications(userId, pageable));
     }
 
+    @Override
     @GetMapping(value = "/subscribe", produces = TEXT_EVENT_STREAM_VALUE)
     public SseEmitter subscribe(@LoginUser Long userId, HttpServletResponse response) {
         if (userId == null) {
@@ -38,14 +42,16 @@ public class NotificationController {
         return notificationService.subscribe(userId);
     }
 
+    @Override
     @PostMapping("/{notificationId}/read")
-    public ResponseEntity<?> readNotification(@LoginUser Long userId, @PathVariable Long notificationId) {
+    public ResponseEntity<Void> readNotification(@LoginUser Long userId, @PathVariable Long notificationId) {
         notificationService.readNotification(userId, notificationId);
         return ResponseEntity.ok().build();
     }
 
+    @Override
     @DeleteMapping("/{notificationId}")
-    public ResponseEntity<?> deleteNotification(@LoginUser Long userId, @PathVariable Long notificationId) {
+    public ResponseEntity<Void> deleteNotification(@LoginUser Long userId, @PathVariable Long notificationId) {
         notificationService.deleteNotification(userId, notificationId);
         return ResponseEntity.ok().build();
     }
