@@ -47,7 +47,7 @@ public class AddressController {
      * @param deliveryRequest 추가할 주소 정보
      * @return 생성된 주소의 ID
      */
-    @PostMapping("/")
+    @PostMapping
     public ResponseEntity<Void> addDelivery(
             @LoginUser Long userId,
             @Valid @RequestBody DeliveryRequest deliveryRequest
