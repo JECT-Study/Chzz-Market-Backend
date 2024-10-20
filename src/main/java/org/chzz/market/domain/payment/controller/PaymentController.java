@@ -16,17 +16,19 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/payments")
-public class PaymentController {
+public class PaymentController implements PaymentApi {
     private final PaymentService paymentService;
 
+    @Override
     @PostMapping("/approval")
-    public ResponseEntity<?> approvePayment(@LoginUser Long userId, @RequestBody ApprovalRequest request) {
+    public ResponseEntity<ApprovalResponse> approvePayment(@LoginUser Long userId, @RequestBody ApprovalRequest request) {
         ApprovalResponse approval = paymentService.approval(userId, request);
         return ResponseEntity.status(HttpStatus.OK).body(approval); // TODO: redirect to payment page
     }
 
+    @Override
     @PostMapping("/order-id")
-    public ResponseEntity<?> createOrderId() { // TODO: 낙찰자에 한해서 호출 가능 API로 변경
+    public ResponseEntity<Map<String, String>> createOrderId() { // TODO: 낙찰자에 한해서 호출 가능 API로 변경
         String orderId = paymentService.createOrderId();
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("orderId", orderId));
     }
