@@ -44,12 +44,9 @@ public class AddressService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(USER_NOT_FOUND));
 
-        // 사용자의 첫 배송지거나 이 배송지를 기본 배송지로 설정하려고 하는 경우
-        boolean shouldBeDefault = !addressRepository.existsByUserId(userId) || deliveryRequest.isDefault();
-
-        if (shouldBeDefault) {
-            addressRepository.updateDefaultToFalse(userId);
-            deliveryRequest = deliveryRequest.withIdDefault(true);
+        if (deliveryRequest.isDefault()) {
+            addressRepository.findByUserIdAndIsDefaultTrue(userId)
+                    .ifPresent(Address::unmarkAsDefault);
         }
 
         Address address = DeliveryRequest.toEntity(user, deliveryRequest);
@@ -65,11 +62,9 @@ public class AddressService {
             throw new AddressException(FORBIDDEN_ADDRESS_ACCESS);
         }
 
-        // 이미 기본 배송지인 경우 다시 기본 배송지로 설정하는 불필요한 연산 방지
-        boolean shouldBeDefault = deliveryRequest.isDefault() && !address.isDefault();
-
-        if (shouldBeDefault) {
-            addressRepository.updateDefaultToFalse(userId);
+        if (deliveryRequest.isDefault() && !address.isDefault()) {
+            addressRepository.findByUserIdAndIsDefaultTrue(userId)
+                    .ifPresent(Address::unmarkAsDefault);
         }
 
         address.update(deliveryRequest);
