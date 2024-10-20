@@ -15,9 +15,7 @@ import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.error.exception.UserException;
 import org.chzz.market.domain.user.repository.UserRepository;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,13 +28,8 @@ public class AddressService {
 
 
     public Page<DeliveryResponse> getAddresses(Long userId, Pageable pageable) {
-        return addressRepository.findByUserId(userId,
-                PageRequest.of(
-                        pageable.getPageNumber(),
-                        pageable.getPageSize(),
-                        Sort.by(Sort.Direction.DESC, "isDefault", "createdAt")
-                )
-        ).map(DeliveryResponse::fromEntity);
+        return addressRepository.findByUserId(userId, pageable)
+                .map(DeliveryResponse::fromEntity);
     }
 
     @Transactional
