@@ -28,7 +28,7 @@ public class AddressService {
 
 
     public Page<DeliveryResponse> getAddresses(Long userId, Pageable pageable) {
-        return addressRepository.findByUserId(userId, pageable)
+        return addressRepository.findByUserIdOrderByIsDefaultAndCreatedAt(userId, pageable)
                 .map(DeliveryResponse::fromEntity);
     }
 

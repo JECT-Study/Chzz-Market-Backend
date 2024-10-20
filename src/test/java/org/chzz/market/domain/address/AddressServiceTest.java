@@ -113,7 +113,8 @@ public class AddressServiceTest {
     void getAddresses_Success() {
         Pageable pageable = PageRequest.of(0, 10);
         Page<Address> addressePage = new PageImpl<>(Collections.singletonList(testAddress));
-        when(addressRepository.findByUserId(eq(1L), any(Pageable.class))).thenReturn(addressePage);
+        when(addressRepository.findByUserIdOrderByIsDefaultAndCreatedAt(eq(1L), any(Pageable.class))).thenReturn(
+                addressePage);
 
         Page<DeliveryResponse> result = addressService.getAddresses(1L, pageable);
 
@@ -129,7 +130,8 @@ public class AddressServiceTest {
         List<Address> addresses = Arrays.asList(address1, address2, address3);
         Page<Address> addressPage = new PageImpl<>(addresses);
 
-        when(addressRepository.findByUserId(eq(1L), any(Pageable.class))).thenReturn(addressPage);
+        when(addressRepository.findByUserIdOrderByIsDefaultAndCreatedAt(eq(1L), any(Pageable.class))).thenReturn(
+                addressPage);
 
         Page<DeliveryResponse> result = addressService.getAddresses(1L, pageable);
 
@@ -163,7 +165,8 @@ public class AddressServiceTest {
 
         Pageable pageable = PageRequest.of(0, 1, Sort.by(Direction.DESC, "isDefault", "createdAt"));
 
-        when(addressRepository.findByUserId(eq(userId), any(Pageable.class))).thenReturn(addressPage);
+        when(addressRepository.findByUserIdOrderByIsDefaultAndCreatedAt(eq(userId), any(Pageable.class))).thenReturn(
+                addressPage);
 
         Page<DeliveryResponse> result = addressService.getAddresses(userId, pageable);
 
@@ -177,7 +180,7 @@ public class AddressServiceTest {
         assertEquals("상세주소", response.detailAddress());
         assertEquals("홍길동", response.recipientName());
         assertEquals("01012345678", response.phoneNumber());
-        
+
     }
 
     @Test

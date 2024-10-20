@@ -8,8 +8,6 @@ import org.chzz.market.domain.address.dto.DeliveryResponse;
 import org.chzz.market.domain.address.service.AddressService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort.Direction;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -37,7 +35,7 @@ public class AddressController {
     @GetMapping
     public ResponseEntity<Page<DeliveryResponse>> getAddresses(
             @LoginUser Long userId,
-            @PageableDefault(sort = {"isDefault", "createdAt"}, direction = Direction.DESC) Pageable pageable
+            Pageable pageable
     ) {
         return ResponseEntity.ok(addressService.getAddresses(userId, pageable));
     }
