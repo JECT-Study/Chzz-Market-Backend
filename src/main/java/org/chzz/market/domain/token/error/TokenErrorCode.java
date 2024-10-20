@@ -17,6 +17,17 @@ public enum TokenErrorCode implements ErrorCode {
     INVALID_TOKEN_TYPE(HttpStatus.UNAUTHORIZED, "토큰 유형이 일치하지 않습니다."),
     REFRESH_TOKEN_NOT_FOUND(HttpStatus.UNAUTHORIZED, "리프레시 토큰이 유효하지 않습니다.");
 
+    public static class Const {
+        public static final String INVALID_TOKEN = "INVALID_TOKEN";
+        public static final String EXPIRED_TOKEN = "EXPIRED_TOKEN";
+        public static final String UNSUPPORTED_TOKEN = "UNSUPPORTED_TOKEN";
+        public static final String MALFORMED_TOKEN = "MALFORMED_TOKEN";
+        public static final String SIGNATURE_EXCEPTION = "SIGNATURE_EXCEPTION";
+        public static final String TOKEN_NOT_FOUND = "TOKEN_NOT_FOUND";
+        public static final String INVALID_TOKEN_TYPE = "INVALID_TOKEN_TYPE";
+        public static final String REFRESH_TOKEN_NOT_FOUND = "REFRESH_TOKEN_NOT_FOUND";
+    }
+
     private final HttpStatus httpStatus;
     private final String message;
 }

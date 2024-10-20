@@ -23,4 +23,15 @@ public enum AuctionErrorCode implements ErrorCode {
 
     private final HttpStatus httpStatus;
     private final String message;
+
+    public static class Const {
+        public static final String AUCTION_ENDED = "AUCTION_ENDED";
+        public static final String AUCTION_NOT_FOUND = "AUCTION_NOT_FOUND";
+        public static final String INVALID_AUCTION_STATE = "INVALID_AUCTION_STATE";
+        public static final String AUCTION_ALREADY_REGISTERED = "AUCTION_ALREADY_REGISTERED";
+        public static final String UNKNOWN_AUCTION_TYPE = "UNKNOWN_AUCTION_TYPE";
+        public static final String AUCTION_NOT_ENDED = "AUCTION_NOT_ENDED";
+        public static final String NOT_WINNER = "NOT_WINNER";
+        public static final String FORBIDDEN_AUCTION_ACCESS = "FORBIDDEN_AUCTION_ACCESS";
+    }
 }

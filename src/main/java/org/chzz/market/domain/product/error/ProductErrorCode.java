@@ -19,4 +19,15 @@ public enum ProductErrorCode implements ErrorCode {
 
     private final HttpStatus httpStatus;
     private final String message;
+
+    public static class Const {
+        public static final String PRODUCT_REGISTER_FAILED = "PRODUCT_REGISTER_FAILED";
+        public static final String INVALID_PRODUCT_STATE = "INVALID_PRODUCT_STATE";
+        public static final String ALREADY_IN_AUCTION = "ALREADY_IN_AUCTION";
+        public static final String PRODUCT_ALREADY_AUCTIONED = "PRODUCT_ALREADY_AUCTIONED";
+        public static final String FORBIDDEN_PRODUCT_ACCESS = "FORBIDDEN_PRODUCT_ACCESS";
+        public static final String PRODUCT_NOT_FOUND = "PRODUCT_NOT_FOUND";
+        public static final String IMAGE_NOT_FOUND = "IMAGE_NOT_FOUND";
+        public static final String PRODUCT_NOT_FOUND_OR_IN_AUCTION = "PRODUCT_NOT_FOUND_OR_IN_AUCTION";
+    }
 }

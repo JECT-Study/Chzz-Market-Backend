@@ -19,4 +19,14 @@ public enum ImageErrorCode implements ErrorCode {
 
     private final HttpStatus httpStatus;
     private final String message;
+
+    public static class Const {
+        public static final String IMAGE_UPLOAD_FAILED = "IMAGE_UPLOAD_FAILED";
+        public static final String IMAGE_DELETE_FAILED = "IMAGE_DELETE_FAILED";
+        public static final String INVALID_IMAGE_EXTENSION = "INVALID_IMAGE_EXTENSION";
+        public static final String MAX_IMAGE_COUNT_EXCEEDED = "MAX_IMAGE_COUNT_EXCEEDED";
+        public static final String INVALID_IMAGE_COUNT = "INVALID_IMAGE_COUNT";
+        public static final String NO_IMAGES_PROVIDED = "NO_IMAGES_PROVIDED";
+        public static final String NOT_FOUND = "NOT_FOUND";
+    }
 }

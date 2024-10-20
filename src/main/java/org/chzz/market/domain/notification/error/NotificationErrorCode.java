@@ -21,4 +21,12 @@ public enum NotificationErrorCode implements ErrorCode {
 
     private final HttpStatus httpStatus;
     private final String message;
+
+    public static class Const {
+        public static final String ALREADY_READ_NOTIFICATION = "ALREADY_READ_NOTIFICATION";
+        public static final String DELETED_NOTIFICATION = "DELETED_NOTIFICATION";
+        public static final String UNAUTHORIZED_ACCESS = "UNAUTHORIZED_ACCESS";
+        public static final String NOTIFICATION_NOT_FOUND = "NOTIFICATION_NOT_FOUND";
+        public static final String REDIS_MESSAGE_SEND_FAILURE = "REDIS_MESSAGE_SEND_FAILURE";
+    }
 }

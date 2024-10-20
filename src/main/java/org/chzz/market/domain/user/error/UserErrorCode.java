@@ -16,4 +16,12 @@ public enum UserErrorCode implements ErrorCode {
 
     private final HttpStatus httpStatus;
     private final String message;
+
+    public static class Const {
+        public static final String NICKNAME_DUPLICATION = "NICKNAME_DUPLICATION";
+        public static final String USER_NOT_MATCHED = "USER_NOT_MATCHED";
+        public static final String USER_ALREADY_REGISTERED = "USER_ALREADY_REGISTERED";
+        public static final String UNAUTHORIZED_USER = "UNAUTHORIZED_USER";
+        public static final String USER_NOT_FOUND = "USER_NOT_FOUND";
+    }
 }

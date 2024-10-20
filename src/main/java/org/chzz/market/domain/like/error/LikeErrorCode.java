@@ -12,4 +12,8 @@ public enum LikeErrorCode implements ErrorCode {
 
     private final HttpStatus httpStatus;
     private final String message;
+
+    public static class Const {
+        public static final String LIKE_NOT_FOUND = "LIKE_NOT_FOUND";
+    }
 }
