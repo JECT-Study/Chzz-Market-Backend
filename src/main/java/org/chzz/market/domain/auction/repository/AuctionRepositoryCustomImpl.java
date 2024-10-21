@@ -149,7 +149,6 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                         .and(canceledBid.status.eq(CANCELLED)) // CANCELED 상태인 입찰 조인
                         .and(bidderIdEqSub(canceledBid, userId)))
                 .leftJoin(order).on(order.auction.eq(auction))
-                .on(auction.winnerId.isNotNull().and(winnerIdEq(userId).or(userIdEq(userId)))) // 낙찰자와 판매자로 제한
                 .where(auction.id.eq(auctionId))
                 .fetchOne());
 
@@ -590,7 +589,11 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
     }
 
     private BooleanBuilder winnerIdEq(Long userId) {
-        return nullSafeBuilder(() -> auction.winnerId.eq(userId));
+        return nullSafeBuilder(() -> auction.winnerId.isNotNull().and(auction.winnerId.eq(userId)));
+    }
+
+    private BooleanBuilder buyerIdEq(Long userId) {
+        return nullSafeBuilder(() -> order.buyerId.eq(userId));
     }
 
     @Getter
