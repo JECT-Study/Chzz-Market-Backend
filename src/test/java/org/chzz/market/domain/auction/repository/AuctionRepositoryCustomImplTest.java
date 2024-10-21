@@ -15,6 +15,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.chzz.market.common.DatabaseTest;
+import org.chzz.market.domain.address.entity.Address;
 import org.chzz.market.domain.auction.dto.BaseAuctionDto;
 import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.AuctionResponse;
@@ -30,6 +31,8 @@ import org.chzz.market.domain.bid.repository.BidRepository;
 import org.chzz.market.domain.image.dto.ImageResponse;
 import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.image.repository.ImageRepository;
+import org.chzz.market.domain.order.entity.Order;
+import org.chzz.market.domain.order.repository.OrderRepository;
 import org.chzz.market.domain.payment.dto.response.TossPaymentResponse;
 import org.chzz.market.domain.payment.entity.Payment;
 import org.chzz.market.domain.payment.entity.Payment.PaymentMethod;
@@ -65,6 +68,7 @@ class AuctionRepositoryCustomImplTest {
 
     private static Image image1, image2, image3, image4, image5, image6;
     private static Bid bid1, bid2, bid3, bid4, bid5, bid6, bid7, bid8, bid9, bid10, bid11, bid12, bid13, bid14, bid15;
+    private static Order order1;
 
     @BeforeAll
     static void setUpOnce(@Autowired UserRepository userRepository,
@@ -72,7 +76,8 @@ class AuctionRepositoryCustomImplTest {
                           @Autowired AuctionRepository auctionRepository,
                           @Autowired ImageRepository imageRepository,
                           @Autowired BidRepository bidRepository,
-                          @Autowired PaymentRepository paymentRepository) {
+                          @Autowired PaymentRepository paymentRepository,
+                          @Autowired OrderRepository orderRepository) {
         user1 = User.builder().providerId("1234").nickname("닉네임1").email("asd@naver.com").build();
         user2 = User.builder().providerId("12345").nickname("닉네임2").email("asd1@naver.com").build();
         user3 = User.builder().providerId("123456").nickname("닉네임3").email("asd12@naver.com").build();
@@ -140,7 +145,8 @@ class AuctionRepositoryCustomImplTest {
         tossPaymentResponse.setStatus(DONE);
         tossPaymentResponse.setOrderId("order_" + auction8.getId());
         tossPaymentResponse.setPaymentKey("paymentKey_" + auction8.getId());
-        paymentRepository.save(Payment.of(user4, tossPaymentResponse, auction8));
+        Payment payment1 = Payment.of(user4, tossPaymentResponse, auction8);
+        paymentRepository.save(payment1);
 
         image1 = Image.builder().product(product1).cdnPath("path/to/image1_1.jpg").sequence(1).build();
         image2 = Image.builder().product(product1).cdnPath("path/to/image1_2.jpg").sequence(2).build();
@@ -182,6 +188,18 @@ class AuctionRepositoryCustomImplTest {
         auction9.removeBid(bid15);
         bidRepository.saveAll(List.of(bid1, bid2, bid3, bid4, bid5, bid6, bid7, bid8, bid10, bid11, bid12, bid13,
                 bid14, bid15));
+
+        Address address = Address.builder()
+                .roadAddress("서울시 강남구")
+                .jibun("12345")
+                .zipcode("06000")
+                .detailAddress("101동 202호")
+                .recipientName("홍길동")
+                .phoneNumber("010-1234-5678")
+                .build();
+
+        order1 = Order.of(4L, payment1, address, "부재시 경비실에 맡겨주세요.");
+        orderRepository.save(order1);
     }
 
     @Test
@@ -267,6 +285,9 @@ class AuctionRepositoryCustomImplTest {
                 .extracting(ImageResponse::imageUrl)
                 .containsExactlyInAnyOrder(image1.getCdnPath(), image2.getCdnPath());
         assertThat(result.get().getIsCancelled()).isFalse();
+        assertThat(result.get().getIsWinner()).isFalse();
+        assertThat(result.get().getIsWon()).isFalse();
+        assertThat(result.get().getIsOrdered()).isFalse();
     }
 
     @Test
@@ -288,6 +309,12 @@ class AuctionRepositoryCustomImplTest {
         assertThat(result.get().getBidId()).isNull();
         assertThat(result.get().getRemainingBidCount()).isEqualTo(3);
         assertThat(result.get().getIsCancelled()).isFalse();
+        assertThat(result.get().getIsWinner()).isFalse();
+        assertThat(result.get().getIsWon()).isFalse();
+        assertThat(result.get().getIsOrdered()).isFalse();
+        assertThat(result.get().getIsWinner()).isFalse();
+        assertThat(result.get().getIsWon()).isFalse();
+        assertThat(result.get().getIsOrdered()).isFalse();
     }
 
     @Test
@@ -318,6 +345,9 @@ class AuctionRepositoryCustomImplTest {
                 .extracting(ImageResponse::imageUrl)
                 .containsExactlyInAnyOrder(image3.getCdnPath());
         assertThat(response.getIsCancelled()).isFalse();
+        assertThat(result.get().getIsWinner()).isFalse();
+        assertThat(result.get().getIsWon()).isFalse();
+        assertThat(result.get().getIsOrdered()).isFalse();
     }
 
     @Test
@@ -353,6 +383,9 @@ class AuctionRepositoryCustomImplTest {
         assertThat(result.get().getBidId()).isNull();
         assertThat(result.get().getRemainingBidCount()).isEqualTo(3);
         assertThat(result.get().getIsCancelled()).isFalse();
+        assertThat(result.get().getIsWinner()).isFalse();
+        assertThat(result.get().getIsWon()).isFalse();
+        assertThat(result.get().getIsOrdered()).isFalse();
     }
 
     @Test
@@ -374,6 +407,47 @@ class AuctionRepositoryCustomImplTest {
         assertThat(response.getIsParticipated()).isFalse();
         assertThat(response.getBidId()).isNull();
         assertThat(response.getIsCancelled()).isTrue();
+        assertThat(result.get().getIsWinner()).isFalse();
+        assertThat(result.get().getIsWon()).isFalse();
+        assertThat(result.get().getIsOrdered()).isFalse();
+    }
+
+    @Test
+    @DisplayName("주문이 있을 시 상세정보 조회를 한다")
+    public void asd() throws Exception {
+        //given
+        Long auctionId = auction8.getId();
+        Long userId = user4.getId();
+
+        //when
+        Optional<AuctionDetailsResponse> result = auctionRepository.findAuctionDetailsById(auctionId, userId);
+        AuctionDetailsResponse response = result.get();
+
+        //then
+        // 상품 ID 및 사용자 정보 검증
+        assertThat(response.getProductId()).isEqualTo(product8.getId());
+        assertThat(response.getIsSeller()).isFalse();
+        assertThat(response.getIsWinner()).isTrue();
+        assertThat(response.getIsOrdered()).isTrue();
+    }
+
+    @Test
+    @DisplayName("주문이 없을시 상세정보 조회를 한다")
+    public void asd1() throws Exception {
+        //given
+        Long auctionId = auction9.getId();
+        Long userId = null;
+
+        //when
+        Optional<AuctionDetailsResponse> result = auctionRepository.findAuctionDetailsById(auctionId, userId);
+        AuctionDetailsResponse response = result.get();
+
+        //then
+        // 상품 ID 및 사용자 정보 검증
+        assertThat(response.getProductId()).isEqualTo(product9.getId());
+        assertThat(response.getIsSeller()).isFalse();
+        assertThat(response.getIsWinner()).isFalse();
+        assertThat(response.getIsOrdered()).isFalse();
     }
 
     @Test
