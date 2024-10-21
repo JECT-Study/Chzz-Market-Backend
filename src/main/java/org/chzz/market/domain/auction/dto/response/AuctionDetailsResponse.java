@@ -1,6 +1,8 @@
 package org.chzz.market.domain.auction.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.querydsl.core.annotations.QueryProjection;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
@@ -26,9 +28,16 @@ public class AuctionDetailsResponse {
     private final Long bidAmount;
     private final int remainingBidCount;
     private final Boolean isCancelled;
+
+    @Schema(description = "낙찰자인지 여부")
     private final Boolean isWinner;
+
+    @Schema(description = "낙찰되었는지 여부")
     private final Boolean isWon;
-    private final Boolean isOrdered;
+
+    @Schema(description = "주문 여부 - 판매자와 낙찰자에게만 제공")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Boolean isOrdered;
 
     private List<ImageResponse> images = new ArrayList<>();
 
@@ -59,6 +68,12 @@ public class AuctionDetailsResponse {
         this.isWinner = isWinner;
         this.isWon = isWon;
         this.isOrdered = isOrdered;
+    }
+
+    public void clearOrderIfNotEligible() {
+        if (!isSeller && !isWinner) {
+            this.isOrdered = null;
+        }
     }
 
     public void addImageList(List<ImageResponse> images) {
