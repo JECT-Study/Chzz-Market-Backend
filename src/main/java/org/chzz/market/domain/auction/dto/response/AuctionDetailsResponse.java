@@ -26,6 +26,10 @@ public class AuctionDetailsResponse {
     private final Long bidAmount;
     private final int remainingBidCount;
     private final Boolean isCancelled;
+    private final Boolean isWinner;
+    private final Boolean isWon;
+    private final Boolean isOrdered;
+
     private List<ImageResponse> images = new ArrayList<>();
 
     @QueryProjection
@@ -34,7 +38,8 @@ public class AuctionDetailsResponse {
                                   Integer minPrice, Category category, Long timeRemaining, AuctionStatus status,
                                   Boolean isSeller,
                                   Long participantCount, Boolean isParticipated, Long bidId, Long bidAmount,
-                                  int remainingBidCount, Boolean isCancelled) {
+                                  int remainingBidCount, Boolean isCancelled, Boolean isWinner, Boolean isWon,
+                                  Boolean isOrdered) {
         this.productId = productId;
         this.sellerNickname = sellerNickname;
         this.sellerProfileImageUrl = sellerProfileImageUrl;
@@ -51,6 +56,9 @@ public class AuctionDetailsResponse {
         this.bidAmount = bidAmount;
         this.remainingBidCount = remainingBidCount;
         this.isCancelled = isCancelled;
+        this.isWinner = isWinner;
+        this.isWon = isWon;
+        this.isOrdered = isOrdered;
     }
 
     public void addImageList(List<ImageResponse> images) {
