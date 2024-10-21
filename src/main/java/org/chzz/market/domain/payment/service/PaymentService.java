@@ -7,7 +7,7 @@ import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.error.AuctionErrorCode;
 import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
-import org.chzz.market.domain.payment.dto.DeliveryRequest;
+import org.chzz.market.domain.payment.dto.ShippingAddressRequest;
 import org.chzz.market.domain.payment.dto.SuccessfulPaymentEvent;
 import org.chzz.market.domain.payment.dto.request.ApprovalRequest;
 import org.chzz.market.domain.payment.dto.response.ApprovalResponse;
@@ -41,7 +41,7 @@ public class PaymentService {
     private final ApplicationEventPublisher eventPublisher;
 
     public ApprovalResponse approval(Long userId, ApprovalRequest request) {
-        DeliveryRequest deliveryRequest = request.deliveryRequest();
+        ShippingAddressRequest shippingAddressRequest = request.shippingAddressRequest();
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
         // DONE 상태의 결제 내역이 있는경우 예외처리
         validateDuplicatePayment(userId, request.auctionId());
@@ -54,7 +54,7 @@ public class PaymentService {
             throw new AuctionException(AuctionErrorCode.NOT_WINNER);
         }
         Payment payment = savePayment(user, tossPaymentResponse, auction);
-        eventPublisher.publishEvent(new SuccessfulPaymentEvent(userId,payment,deliveryRequest));
+        eventPublisher.publishEvent(new SuccessfulPaymentEvent(userId,payment, shippingAddressRequest));
         return ApprovalResponse.of(tossPaymentResponse);
     }
 
