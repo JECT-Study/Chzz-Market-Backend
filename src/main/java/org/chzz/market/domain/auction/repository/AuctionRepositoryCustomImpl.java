@@ -9,8 +9,7 @@ import static org.chzz.market.domain.bid.entity.Bid.BidStatus.ACTIVE;
 import static org.chzz.market.domain.bid.entity.Bid.BidStatus.CANCELLED;
 import static org.chzz.market.domain.bid.entity.QBid.bid;
 import static org.chzz.market.domain.image.entity.QImage.image;
-import static org.chzz.market.domain.payment.entity.QPayment.payment;
-import static org.chzz.market.domain.payment.entity.Status.DONE;
+import static org.chzz.market.domain.order.entity.QOrder.order;
 import static org.chzz.market.domain.product.entity.QProduct.product;
 import static org.chzz.market.domain.user.entity.QUser.user;
 
@@ -18,6 +17,7 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Ops.DateTimeOps;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.DateTimeOperation;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
@@ -113,7 +113,6 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
     public Optional<AuctionDetailsResponse> findAuctionDetailsById(Long auctionId, Long userId) {
         QBid activeBid = new QBid("bidActive");
         QBid canceledBid = new QBid("bidCanceled");
-        // TODO: 사용자가 낙찰자인지 여부, 경매의 낙찰 여부, 낙찰자와 판매자에 한 해서 주문 여부 추가 - 다른 사용자는 null로 해야하지 않나??
         Optional<AuctionDetailsResponse> auctionDetailsResponse = Optional.ofNullable(jpaQueryFactory
                 .select(new QAuctionDetailsResponse(
                         product.id,
@@ -131,7 +130,11 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                         activeBid.id,
                         activeBid.amount.coalesce(0L),
                         activeBid.count.coalesce(3),
-                        canceledBid.id.isNotNull()
+                        canceledBid.id.isNotNull(),
+                        order.isNotNull(),// 주문 여부 확인
+                        new CaseBuilder().when(order.id.isNotNull())
+                                .then(order.id)// 주문한 경우 ID를 반환(추후 조회 가능하도록)
+                                .otherwise(Expressions.nullExpression()).as("orderId")// 주문여부가 없는경우 null 반환
                 ))
                 .from(auction)
                 .join(auction.product, product)
@@ -144,6 +147,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                 .leftJoin(canceledBid).on(canceledBid.auction.id.eq(auctionId)
                         .and(canceledBid.status.eq(CANCELLED)) // CANCELED 상태인 입찰 조인
                         .and(bidderIdEqSub(canceledBid, userId)))
+                .leftJoin(order).on(order.auction.eq(auction))
                 .where(auction.id.eq(auctionId))
                 .fetchOne());
 
@@ -462,7 +466,6 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                 .join(auction.product, product)
                 .where(product.user.id.eq(userId).and(auction.status.eq(ENDED)));
 
-        // 종료된 경매 조회 쿼리  TODO: leftJoin(Order)로 변경 결제여부에서 주문여부로 변경
         List<UserEndedAuctionResponse> result = baseQuery
                 .select(new QUserEndedAuctionResponse(
                         auction.id,
@@ -472,11 +475,11 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                         getBidCount(),
                         getWinningBidAmount(),
                         auction.winnerId.isNotNull(),
-                        payment.id.isNotNull(),
+                        order.isNotNull(),
                         auction.createdAt
                 ))
                 .leftJoin(image).on(image.product.eq(product).and(isRepresentativeImage()))
-                .leftJoin(payment).on(payment.auction.id.eq(auction.id).and(payment.status.eq(DONE)))
+                .leftJoin(order).on(order.auction.eq(auction))
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
