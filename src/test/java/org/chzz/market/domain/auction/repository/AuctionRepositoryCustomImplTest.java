@@ -61,9 +61,6 @@ class AuctionRepositoryCustomImplTest {
     @Autowired
     AuctionRepository auctionRepository;
 
-    @Autowired
-    OrderRepository orderRepository;
-
     private static User user1, user2, user3, user4, user5;
     private static Product product1, product2, product3, product4, product5, product6, product7, product8, product9, product10;
     private static Auction auction1, auction2, auction3, auction4, auction5, auction6, auction7, auction8, auction9, auction10;
