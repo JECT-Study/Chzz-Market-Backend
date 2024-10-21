@@ -113,7 +113,7 @@ public class AddressServiceTest {
     void getAddresses_Success() {
         Pageable pageable = PageRequest.of(0, 10);
         Page<Address> addressePage = new PageImpl<>(Collections.singletonList(testAddress));
-        when(addressRepository.findByUserIdOrderByIsDefaultAndCreatedAt(eq(1L), any(Pageable.class))).thenReturn(
+        when(addressRepository.findByUserIdOrderByIsDefaultDescCreatedAtDesc(eq(1L), any(Pageable.class))).thenReturn(
                 addressePage);
 
         Page<DeliveryResponse> result = addressService.getAddresses(1L, pageable);
@@ -130,7 +130,7 @@ public class AddressServiceTest {
         List<Address> addresses = Arrays.asList(address1, address2, address3);
         Page<Address> addressPage = new PageImpl<>(addresses);
 
-        when(addressRepository.findByUserIdOrderByIsDefaultAndCreatedAt(eq(1L), any(Pageable.class))).thenReturn(
+        when(addressRepository.findByUserIdOrderByIsDefaultDescCreatedAtDesc(eq(1L), any(Pageable.class))).thenReturn(
                 addressPage);
 
         Page<DeliveryResponse> result = addressService.getAddresses(1L, pageable);
@@ -165,7 +165,8 @@ public class AddressServiceTest {
 
         Pageable pageable = PageRequest.of(0, 1, Sort.by(Direction.DESC, "isDefault", "createdAt"));
 
-        when(addressRepository.findByUserIdOrderByIsDefaultAndCreatedAt(eq(userId), any(Pageable.class))).thenReturn(
+        when(addressRepository.findByUserIdOrderByIsDefaultDescCreatedAtDesc(eq(userId),
+                any(Pageable.class))).thenReturn(
                 addressPage);
 
         Page<DeliveryResponse> result = addressService.getAddresses(userId, pageable);
@@ -232,7 +233,7 @@ public class AddressServiceTest {
         assertEquals("새로운 상세주소", addressToUpdate.getDetailAddress());
         assertEquals("새로운 수령인", addressToUpdate.getRecipientName());
         assertEquals("01087654321", addressToUpdate.getPhoneNumber());
-        assertTrue(addressToUpdate.getIsDefault());
+        assertTrue(addressToUpdate.isDefault());
 
         verify(addressRepository).findById(1L);
         verify(addressRepository).findByUserIdAndIsDefaultTrue(1L);
