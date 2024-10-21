@@ -387,14 +387,14 @@ class AuctionServiceTest {
         }
 
         @Test
-        @DisplayName("3. 판매자이거나 낙찰자인 경우 isOrdered 값이 유지됨")
-        void testAuctionDetails_WithOrder() {
+        @DisplayName("3. 낙찰자인 경우 isOrdered 값이 유지됨")
+        void shouldMaintainIsOrderedWhenUserIsWinner() {
             // given
             Long auctionId = 1L;
             Long userId = 1L;
             AuctionDetailsResponse auctionDetails = new AuctionDetailsResponse(
                     1L, "닉네임1", "profile.jpg", "제품1", "설명", 1000,
-                    ELECTRONICS, 100L, PROCEEDING, true, 5L, true, 10L, 1000L, 3, false, true, true, true);
+                    ELECTRONICS, 100L, PROCEEDING, false, 5L, true, 10L, 1000L, 3, false, true, true, true);
 
             // 판매자이거나 낙찰자인 경우
             when(auctionRepository.findAuctionDetailsById(anyLong(), anyLong())).thenReturn(Optional.of(auctionDetails));
@@ -408,8 +408,29 @@ class AuctionServiceTest {
         }
 
         @Test
-        @DisplayName("4. 판매자도 낙찰자도 아닌 경우 isOrdered 값이 null로 초기화됨")
-        void testAuctionDetails_NotSellerOrWinner() {
+        @DisplayName("4. 판매자인 경우 isOrdered 값이 유지됨")
+        void shouldMaintainIsOrderedWhenUserIsSeller() {
+            // given
+            Long auctionId = 1L;
+            Long userId = 1L;
+            AuctionDetailsResponse auctionDetails = new AuctionDetailsResponse(
+                    1L, "닉네임1", "profile.jpg", "제품1", "설명", 1000,
+                    ELECTRONICS, 100L, PROCEEDING, true, 5L, false, null, 0L, 3, false, false, true, false);
+
+            // 판매자이거나 낙찰자인 경우
+            when(auctionRepository.findAuctionDetailsById(anyLong(), anyLong())).thenReturn(Optional.of(auctionDetails));
+
+            // when
+            AuctionDetailsResponse result = auctionService.getFullAuctionDetails(auctionId, userId);
+
+            // then
+            assertNotNull(result);
+            assertThat(result.getIsOrdered()).isFalse(); // isOrdered 값이 null로 초기화되지 않음
+        }
+
+        @Test
+        @DisplayName("5. 판매자도 낙찰자도 아닌 경우 isOrdered 값이 null로 초기화됨")
+        void shouldSetIsOrderedToNullWhenNotSellerOrWinner() {
             // given
             Long auctionId = 1L;
             Long userId = 2L; // 판매자나 낙찰자가 아닌 사용자
@@ -419,6 +440,27 @@ class AuctionServiceTest {
 
             // 판매자나 낙찰자가 아닌 경우
             when(auctionRepository.findAuctionDetailsById(anyLong(), anyLong())).thenReturn(Optional.of(auctionDetails));
+
+            // when
+            AuctionDetailsResponse result = auctionService.getFullAuctionDetails(auctionId, userId);
+
+            // then
+            assertNotNull(result);
+            assertThat(result.getIsOrdered()).isNull(); // isOrdered 값이 null로 초기화됨
+        }
+
+        @Test
+        @DisplayName("6. 비회원일 경우 isOrdered 값이 null로 초기화됨")
+        void shouldSetIsOrderedToNullForNonMember() {
+            // given
+            Long auctionId = 1L;
+            Long userId = null; // 비회원
+            AuctionDetailsResponse auctionDetails = new AuctionDetailsResponse(
+                    1L, "닉네임1", "profile.jpg", "제품1", "설명", 1000,
+                    ELECTRONICS, 100L, PROCEEDING, false, 5L, false, null, 0L, 3, false, false, false, true);
+
+            // 판매자나 낙찰자가 아닌 경우
+            when(auctionRepository.findAuctionDetailsById(auctionId, userId)).thenReturn(Optional.of(auctionDetails));
 
             // when
             AuctionDetailsResponse result = auctionService.getFullAuctionDetails(auctionId, userId);
