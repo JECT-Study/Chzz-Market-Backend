@@ -7,19 +7,19 @@
 -- order 테이블 추가
 CREATE TABLE orders (
     order_id BIGINT NOT NULL AUTO_INCREMENT,
-    amount BIGINT NOT NULL,
-    buyer_id BIGINT NOT NULL,
-    delivery_memo VARCHAR(255),
-    detail_address VARCHAR(255) NOT NULL,
-    jibun VARCHAR(255) NOT NULL,
-    method VARCHAR(30) NOT NULL,
-    order_no VARCHAR(255) NOT NULL,
-    payment_id BIGINT NOT NULL,
-    phone_number VARCHAR(255) NOT NULL,
-    recipient_name VARCHAR(255) NOT NULL,
-    road_address VARCHAR(255) NOT NULL,
-    zipcode VARCHAR(255) NOT NULL,
     auction_id BIGINT,
+    buyer_id BIGINT NOT NULL,
+    payment_id BIGINT NOT NULL,
+    amount BIGINT NOT NULL,
+    order_no VARCHAR(255) NOT NULL,
+    method VARCHAR(30) NOT NULL,
+    zipcode VARCHAR(255) NOT NULL,
+    road_address VARCHAR(255) NOT NULL,
+    jibun VARCHAR(255) NOT NULL,
+    detail_address VARCHAR(255) NOT NULL,
+    recipient_name VARCHAR(255) NOT NULL,
+    phone_number VARCHAR(255) NOT NULL,
+    delivery_memo VARCHAR(255),
     PRIMARY KEY (order_id)
 ) ENGINE=InnoDB;
 
