@@ -306,7 +306,6 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                 .join(auction.product, product)
                 .where(auction.winnerId.eq(userId).and(auction.status.eq(ENDED)));
 
-        // TODO: leftJoin(Order) 추가 및 필드(주문여부, 주문ID)추가
         List<WonAuctionResponse> content = baseQuery
                 .select(new QWonAuctionResponse(
                         auction.id,
@@ -315,9 +314,12 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                         product.minPrice,
                         getBidCount(),
                         auction.endDateTime,
-                        bid.amount
+                        bid.amount,
+                        order.isNotNull(),
+                        order.id
                 ))
                 .leftJoin(image).on(image.product.eq(product).and(isRepresentativeImage()))
+                .leftJoin(order).on(order.auction.id.eq(auction.id))
                 .groupBy(auction.id, product.name, image.cdnPath, product.minPrice, bid.amount)
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
