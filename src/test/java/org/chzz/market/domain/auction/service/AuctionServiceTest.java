@@ -1,6 +1,7 @@
 package org.chzz.market.domain.auction.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_ALREADY_REGISTERED;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_FOUND;
 import static org.chzz.market.domain.auction.type.AuctionRegisterType.PRE_REGISTER;
@@ -35,6 +36,7 @@ import org.chzz.market.domain.auction.dto.response.LostAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.RegisterResponse;
 import org.chzz.market.domain.auction.dto.response.SimpleAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.StartAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.WonAuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.WonAuctionResponse;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.error.AuctionException;
@@ -448,8 +450,8 @@ class AuctionServiceTest {
             Pageable pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "endDateTime"));
 
             List<WonAuctionResponse> wonAuctions = List.of(
-                    new WonAuctionResponse(1L, "Product 1", "image1.jpg", 10000, LocalDateTime.now(), 15000L),
-                    new WonAuctionResponse(2L, "Product 2", "image2.jpg", 20000, LocalDateTime.now(), 25000L)
+                    new WonAuctionResponse(1L, "Product 1", "image1.jpg", 10000, 3L, LocalDateTime.now(), 15000L),
+                    new WonAuctionResponse(2L, "Product 2", "image2.jpg", 20000, 3L, LocalDateTime.now(), 25000L)
             );
 
             Page<WonAuctionResponse> mockPage = new PageImpl<>(wonAuctions, pageable, wonAuctions.size());
@@ -500,8 +502,8 @@ class AuctionServiceTest {
             Pageable secondPageable = PageRequest.of(1, 1, Sort.by(Sort.Direction.DESC, "endDateTime"));
 
             List<WonAuctionResponse> allAuctions = List.of(
-                    new WonAuctionResponse(1L, "Product 1", "image1.jpg", 10000, LocalDateTime.now(), 15000L),
-                    new WonAuctionResponse(2L, "Product 2", "image2.jpg", 20000, LocalDateTime.now(), 25000L)
+                    new WonAuctionResponse(1L, "Product 1", "image1.jpg", 10000, 3L, LocalDateTime.now(), 15000L),
+                    new WonAuctionResponse(2L, "Product 2", "image2.jpg", 20000, 3L, LocalDateTime.now(), 25000L)
             );
 
             Page<WonAuctionResponse> firstPage = new PageImpl<>(allAuctions.subList(0, 1), firstPageable,
@@ -535,9 +537,9 @@ class AuctionServiceTest {
 
             LocalDateTime now = LocalDateTime.now();
             List<WonAuctionResponse> wonAuctions = List.of(
-                    new WonAuctionResponse(1L, "Product 1", "image1.jpg", 10000, now, 15000L),
-                    new WonAuctionResponse(2L, "Product 2", "image2.jpg", 20000, now.minusHours(1), 25000L),
-                    new WonAuctionResponse(3L, "Product 3", "image3.jpg", 30000, now.minusHours(2), 35000L)
+                    new WonAuctionResponse(1L, "Product 1", "image1.jpg", 10000, 3L, now, 15000L),
+                    new WonAuctionResponse(2L, "Product 2", "image2.jpg", 20000, 3L, now.minusHours(1), 25000L),
+                    new WonAuctionResponse(3L, "Product 3", "image3.jpg", 30000, 3L, now.minusHours(2), 35000L)
             );
 
             Page<WonAuctionResponse> mockPage = new PageImpl<>(wonAuctions, pageable, wonAuctions.size());
@@ -568,8 +570,8 @@ class AuctionServiceTest {
             Pageable pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "endDateTime"));
 
             List<LostAuctionResponse> LostAuctions = List.of(
-                    new LostAuctionResponse(1L, "Product 1", "image1.jpg", 10000, LocalDateTime.now(), 15000L),
-                    new LostAuctionResponse(2L, "Product 2", "image2.jpg", 20000, LocalDateTime.now(), 25000L)
+                    new LostAuctionResponse(1L, "Product 1", "image1.jpg", 10000, 3L, LocalDateTime.now(), 15000L),
+                    new LostAuctionResponse(2L, "Product 2", "image2.jpg", 20000, 3L, LocalDateTime.now(), 25000L)
             );
 
             Page<LostAuctionResponse> mockPage = new PageImpl<>(LostAuctions, pageable, LostAuctions.size());
@@ -620,8 +622,8 @@ class AuctionServiceTest {
             Pageable secondPageable = PageRequest.of(1, 1, Sort.by(Sort.Direction.DESC, "endDateTime"));
 
             List<LostAuctionResponse> allAuctions = List.of(
-                    new LostAuctionResponse(1L, "Product 1", "image1.jpg", 10000, LocalDateTime.now(), 15000L),
-                    new LostAuctionResponse(2L, "Product 2", "image2.jpg", 20000, LocalDateTime.now(), 25000L)
+                    new LostAuctionResponse(1L, "Product 1", "image1.jpg", 10000, 3L, LocalDateTime.now(), 15000L),
+                    new LostAuctionResponse(2L, "Product 2", "image2.jpg", 20000, 3L, LocalDateTime.now(), 25000L)
             );
 
             Page<LostAuctionResponse> firstPage = new PageImpl<>(allAuctions.subList(0, 1), firstPageable,
@@ -655,9 +657,9 @@ class AuctionServiceTest {
 
             LocalDateTime now = LocalDateTime.now();
             List<LostAuctionResponse> lostAuctions = List.of(
-                    new LostAuctionResponse(1L, "Product 1", "image1.jpg", 10000, now, 15000L),
-                    new LostAuctionResponse(2L, "Product 2", "image2.jpg", 20000, now.minusHours(1), 25000L),
-                    new LostAuctionResponse(3L, "Product 3", "image3.jpg", 30000, now.minusHours(2), 35000L)
+                    new LostAuctionResponse(1L, "Product 1", "image1.jpg", 10000, 3L, now, 15000L),
+                    new LostAuctionResponse(2L, "Product 2", "image2.jpg", 20000, 3L, now.minusHours(1), 25000L),
+                    new LostAuctionResponse(3L, "Product 3", "image3.jpg", 30000, 3L, now.minusHours(2), 35000L)
             );
 
             Page<LostAuctionResponse> mockPage = new PageImpl<>(lostAuctions, pageable, lostAuctions.size());
@@ -684,8 +686,8 @@ class AuctionServiceTest {
             Pageable pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "endDateTime"));
 
             List<LostAuctionResponse> lostAuctions = List.of(
-                    new LostAuctionResponse(1L, "Product 1", "image1.jpg", 10000, LocalDateTime.now(), 15000L),
-                    new LostAuctionResponse(2L, "Product 2", "image2.jpg", 20000, LocalDateTime.now(), 25000L)
+                    new LostAuctionResponse(1L, "Product 1", "image1.jpg", 10000, 3L, LocalDateTime.now(), 15000L),
+                    new LostAuctionResponse(2L, "Product 2", "image2.jpg", 20000, 3L, LocalDateTime.now(), 25000L)
             );
 
             Page<LostAuctionResponse> mockPage = new PageImpl<>(lostAuctions, pageable, lostAuctions.size());
@@ -697,10 +699,53 @@ class AuctionServiceTest {
 
             // then
             assertThat(resultPage.getContent()).hasSize(2);
-            assertThat(resultPage.getContent().get(0).highestAmount()).isEqualTo(15000L);
-            assertThat(resultPage.getContent().get(1).highestAmount()).isEqualTo(25000L);
+            assertThat(resultPage.getContent().get(0).bidAmount()).isEqualTo(15000L);
+            assertThat(resultPage.getContent().get(1).bidAmount()).isEqualTo(25000L);
 
             verify(auctionRepository, times(1)).findLostAuctionHistoryByUserId(userId, pageable);
+        }
+    }
+
+    @Nested
+    @DisplayName("낙찰 정보 조회 테스트")
+    class GetWinningBidTest {
+        @Test
+        @DisplayName("정상적으로 낙찰 정보를 조회한다.")
+        public void getWinningBidByAuctionId_Success() throws Exception {
+            Product product = Product.builder()
+                    .user(User.builder().id(user.getId() + 1).build())
+                    .build();
+
+            //given
+            Auction auction = Auction.builder()
+                    .id(1L)
+                    .product(product)
+                    .winnerId(user.getId())
+                    .build();
+
+            //when
+            when(auctionRepository.findById(auction.getId())).thenReturn(Optional.of(auction));
+            when(auctionRepository.findWinningBidById(auction.getId())).thenReturn(
+                    Optional.of(mock(WonAuctionDetailsResponse.class)));
+
+            //then
+            assertDoesNotThrow(() -> auctionService.getWinningBidByAuctionId(user.getId(), auction.getId()));
+        }
+
+        @Test
+        @DisplayName("사용자가 낙찰자가 아니면 AuctionException 발생")
+        void getWinningBidByAuctionId_NotWinner() {
+            // given
+            Auction auction = Auction.builder()
+                    .id(1L)
+                    .winnerId(user.getId() + 1) // user가 낙찰자가 될 수 없음
+                    .build();
+
+            when(auctionRepository.findById(auction.getId())).thenReturn(Optional.of(auction));
+
+            // then
+            assertThatThrownBy(() -> auctionService.getWinningBidByAuctionId(user.getId(), auction.getId()))
+                    .isInstanceOf(AuctionException.class);
         }
     }
 
