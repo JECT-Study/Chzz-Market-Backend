@@ -9,6 +9,7 @@ import static org.chzz.market.domain.bid.entity.Bid.BidStatus.ACTIVE;
 import static org.chzz.market.domain.bid.entity.Bid.BidStatus.CANCELLED;
 import static org.chzz.market.domain.bid.entity.QBid.bid;
 import static org.chzz.market.domain.image.entity.QImage.image;
+import static org.chzz.market.domain.order.entity.QOrder.order;
 import static org.chzz.market.domain.payment.entity.QPayment.payment;
 import static org.chzz.market.domain.payment.entity.Status.DONE;
 import static org.chzz.market.domain.product.entity.QProduct.product;
@@ -131,7 +132,10 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                         activeBid.id,
                         activeBid.amount.coalesce(0L),
                         activeBid.count.coalesce(3),
-                        canceledBid.id.isNotNull()
+                        canceledBid.id.isNotNull(),
+                        winnerIdEq(userId), // 낙찰자 여부
+                        auction.winnerId.isNotNull(), //경매의 낙찰 여부
+                        order.isNotNull() // 주문 여부
                 ))
                 .from(auction)
                 .join(auction.product, product)
@@ -144,6 +148,8 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                 .leftJoin(canceledBid).on(canceledBid.auction.id.eq(auctionId)
                         .and(canceledBid.status.eq(CANCELLED)) // CANCELED 상태인 입찰 조인
                         .and(bidderIdEqSub(canceledBid, userId)))
+                .leftJoin(order).on(order.auction.eq(auction))
+                .on(auction.winnerId.isNotNull().and(winnerIdEq(userId).or(userIdEq(userId)))) // 낙찰자와 판매자로 제한
                 .where(auction.id.eq(auctionId))
                 .fetchOne());
 
@@ -581,6 +587,10 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
 
     private BooleanBuilder bidderIdEqSub(QBid qBid, Long userId) {
         return nullSafeBuilder(() -> qBid.bidder.id.eq(userId));
+    }
+
+    private BooleanBuilder winnerIdEq(Long userId) {
+        return nullSafeBuilder(() -> auction.winnerId.eq(userId));
     }
 
     @Getter
