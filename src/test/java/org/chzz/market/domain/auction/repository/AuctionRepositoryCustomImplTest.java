@@ -414,7 +414,7 @@ class AuctionRepositoryCustomImplTest {
 
     @Test
     @DisplayName("주문이 있을 시 상세정보 조회를 한다")
-    public void asd() throws Exception {
+    public void shouldReturnAuctionDetailsWhenOrderExists() throws Exception {
         //given
         Long auctionId = auction8.getId();
         Long userId = user4.getId();
@@ -433,7 +433,7 @@ class AuctionRepositoryCustomImplTest {
 
     @Test
     @DisplayName("주문이 없을시 상세정보 조회를 한다")
-    public void asd1() throws Exception {
+    public void shouldReturnAuctionDetailsWhenNoOrderExists() throws Exception {
         //given
         Long auctionId = auction9.getId();
         Long userId = null;
