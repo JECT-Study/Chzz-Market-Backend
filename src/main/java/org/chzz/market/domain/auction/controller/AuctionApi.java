@@ -48,7 +48,9 @@ public interface AuctionApi {
     @Operation(summary = "내가 실패한 경매 조회")
     ResponseEntity<Page<LostAuctionResponse>> getLostAuctionHistory(Long userId, @ParameterObject Pageable pageable);
 
-    @Operation(summary = "경매 상세 조회")
+    @Operation(summary = "경매 상세 조회",
+            description = "주문 여부는 민감한 정보이므로 낙찰자와 판매자인 경우에만 해당 정보를 확인할 수 있습니다. " +
+                    "그 외의 사용자에게는 주문 여부 필드는 응답에 포함되지 않습니다.")
     ResponseEntity<AuctionDetailsResponse> getAuctionDetails(Long auctionId, Long userId);
 
     @Operation(summary = "경매 입찰 목록 조회")
