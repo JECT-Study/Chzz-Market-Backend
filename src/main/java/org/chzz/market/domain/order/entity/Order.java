@@ -74,7 +74,7 @@ public class Order {
     @JoinColumn(name = "auction_id")
     private Auction auction;
 
-    public static Order of(Long userId, Payment payment, Address address,String deliveryMemo) {
+    public static Order of(Long userId, Payment payment, Address address, String deliveryMemo) {
         return Order.builder()
                 .buyerId(userId)
                 .paymentId(payment.getId())
