@@ -31,7 +31,6 @@ import org.chzz.market.domain.bid.dto.query.QBiddingRecord;
 import org.chzz.market.domain.bid.dto.response.BidInfoResponse;
 import org.chzz.market.domain.bid.dto.response.QBidInfoResponse;
 import org.chzz.market.domain.bid.entity.Bid;
-import org.chzz.market.domain.image.entity.QImage;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
@@ -59,7 +58,7 @@ public class BidRepositoryCustomImpl implements BidRepositoryCustom {
                         timeRemaining().longValue()
                 ))
                 .leftJoin(auction.product, product)
-                .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId())))
+                .leftJoin(image).on(image.product.eq(product).and(isRepresentativeImage()))
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -108,11 +107,13 @@ public class BidRepositoryCustomImpl implements BidRepositoryCustom {
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchCount);
     }
 
-    private JPQLQuery<Long> getFirstImageId() {
-        QImage imageSub = new QImage("imageSub");
-        return JPAExpressions.select(imageSub.id)
-                .from(imageSub)
-                .where(imageSub.product.id.eq(product.id), imageSub.sequence.eq(Expressions.asNumber(1)));
+    /**
+     * 상품의 대표 이미지를 조회하기 위한 조건을 반환합니다.
+     *
+     * @return 대표 이미지(첫 번째 이미지)의 sequence가 1인 조건식
+     */
+    private BooleanExpression isRepresentativeImage() {
+        return image.sequence.eq(1);
     }
 
     private JPQLQuery<Long> getBidCount() {

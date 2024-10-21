@@ -14,6 +14,7 @@ import org.chzz.market.domain.auction.dto.response.RegisterResponse;
 import org.chzz.market.domain.auction.dto.response.StartAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.UserAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.UserEndedAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.WonAuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.WonAuctionResponse;
 import org.chzz.market.domain.auction.service.AuctionRegistrationServiceFactory;
 import org.chzz.market.domain.auction.service.AuctionService;
@@ -120,6 +121,16 @@ public class AuctionController implements AuctionApi {
     public ResponseEntity<Page<BidInfoResponse>> getBids(@LoginUser Long userId, @PathVariable Long auctionId,
                                                          Pageable pageable) {
         return ResponseEntity.ok(bidService.getBidsByAuctionId(userId, auctionId, pageable));
+    }
+
+    /**
+     * 낙찰 정보 조회
+     */
+    @Override
+    @GetMapping("/{auctionId}/winning-bid")
+    public ResponseEntity<WonAuctionDetailsResponse> getWinningBid(@LoginUser Long userId,
+                                                                   @PathVariable Long auctionId) {
+        return ResponseEntity.ok(auctionService.getWinningBidByAuctionId(userId, auctionId));
     }
 
     /**

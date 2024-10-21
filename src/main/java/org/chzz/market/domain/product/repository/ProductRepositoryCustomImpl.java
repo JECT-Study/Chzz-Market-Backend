@@ -12,9 +12,7 @@ import static org.chzz.market.domain.user.entity.QUser.user;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
-import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
@@ -27,7 +25,6 @@ import org.chzz.market.common.util.QuerydslOrder;
 import org.chzz.market.common.util.QuerydslOrderProvider;
 import org.chzz.market.domain.image.dto.ImageResponse;
 import org.chzz.market.domain.image.dto.QImageResponse;
-import org.chzz.market.domain.image.entity.QImage;
 import org.chzz.market.domain.product.dto.ProductDetailsResponse;
 import org.chzz.market.domain.product.dto.ProductResponse;
 import org.chzz.market.domain.product.dto.QProductDetailsResponse;
@@ -65,7 +62,7 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
                         product.likes.size().longValue(),
                         isProductLikedByUser(userId)
                 ))
-                .leftJoin(image).on(image.product.id.eq(product.id).and(image.id.eq(getFirstImageId())))
+                .leftJoin(image).on(image.product.eq(product).and(isRepresentativeImage()))
                 .groupBy(product.id, product.name, image.cdnPath, product.minPrice)
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
@@ -152,8 +149,7 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
                         product.likes.size().longValue(),
                         like.isNotNull()
                 ))
-                .leftJoin(image).on(image.product.id.eq(product.id)
-                        .and(image.id.eq(getFirstImageId())))
+                .leftJoin(image).on(image.product.eq(product).and(isRepresentativeImage()))
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -189,8 +185,7 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
                         product.minPrice,
                         product.likes.size().longValue()
                 ))
-                .leftJoin(image).on(image.product.id.eq(product.id)
-                        .and(image.id.eq(getFirstImageId())))
+                .leftJoin(image).on(image.product.eq(product).and(isRepresentativeImage()))
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -223,12 +218,13 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
                 .fetch();
     }
 
-    private JPQLQuery<Long> getFirstImageId() {
-        QImage imageSub = new QImage("imageSub");
-        return JPAExpressions.select(imageSub.id)
-                .from(imageSub)
-                .where(imageSub.product.id.eq(product.id)
-                        , imageSub.sequence.eq(Expressions.asNumber(1)));
+    /**
+     * 상품의 대표 이미지를 조회하기 위한 조건을 반환합니다.
+     *
+     * @return 대표 이미지(첫 번째 이미지)의 sequence가 1인 조건식
+     */
+    private BooleanExpression isRepresentativeImage() {
+        return image.sequence.eq(1);
     }
 
     /**

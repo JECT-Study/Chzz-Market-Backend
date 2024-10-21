@@ -5,6 +5,7 @@ import static org.chzz.market.domain.auction.error.AuctionErrorCode.Const.AUCTIO
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
+import org.chzz.market.common.config.LoginUser;
 import org.chzz.market.common.springdoc.ApiExceptionExplanation;
 import org.chzz.market.common.springdoc.ApiResponseExplanations;
 import org.chzz.market.domain.auction.dto.request.BaseRegisterRequest;
@@ -16,6 +17,7 @@ import org.chzz.market.domain.auction.dto.response.RegisterResponse;
 import org.chzz.market.domain.auction.dto.response.StartAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.UserAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.UserEndedAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.WonAuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.WonAuctionResponse;
 import org.chzz.market.domain.auction.error.AuctionErrorCode;
 import org.chzz.market.domain.bid.dto.response.BidInfoResponse;
@@ -24,6 +26,8 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "auctions", description = "경매 API")
@@ -49,6 +53,9 @@ public interface AuctionApi {
 
     @Operation(summary = "경매 입찰 목록 조회")
     ResponseEntity<Page<BidInfoResponse>> getBids(Long userId, Long auctionId, @ParameterObject Pageable pageable);
+
+    @Operation(summary = "낙찰 정보 조회")
+    ResponseEntity<WonAuctionDetailsResponse> getWinningBid(Long userId, Long auctionId);
 
     @Operation(summary = "내가 등록한 모든 경매 목록 조회(현재 사용 X)")
     ResponseEntity<Page<UserAuctionResponse>> getUserRegisteredAuction(Long userId, @ParameterObject Pageable pageable);
