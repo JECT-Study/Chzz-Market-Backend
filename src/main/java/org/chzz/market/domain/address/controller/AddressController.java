@@ -36,8 +36,7 @@ public class AddressController implements AddressApi {
     @GetMapping
     public ResponseEntity<Page<DeliveryResponse>> getAddresses(
             @LoginUser Long userId,
-            Pageable pageable
-    ) {
+            Pageable pageable) {
         return ResponseEntity.ok(addressService.getAddresses(userId, pageable));
     }
 
@@ -52,8 +51,7 @@ public class AddressController implements AddressApi {
     @PostMapping
     public ResponseEntity<Void> addDelivery(
             @LoginUser Long userId,
-            @Valid @RequestBody DeliveryRequest deliveryRequest
-    ) {
+            @Valid @RequestBody DeliveryRequest deliveryRequest) {
         addressService.addDelivery(userId, deliveryRequest);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
@@ -71,8 +69,7 @@ public class AddressController implements AddressApi {
     public ResponseEntity<Void> updateDelivery(
             @LoginUser Long userId,
             @PathVariable Long addressId,
-            @Valid @RequestBody DeliveryRequest deliveryRequest
-    ) {
+            @Valid @RequestBody DeliveryRequest deliveryRequest) {
         addressService.updateDelivery(userId, addressId, deliveryRequest);
         return ResponseEntity.ok().build();
     }
@@ -88,8 +85,7 @@ public class AddressController implements AddressApi {
     @DeleteMapping("/{addressId}")
     public ResponseEntity<Void> deleteDelivery(
             @LoginUser Long userId,
-            @PathVariable Long addressId
-    ) {
+            @PathVariable Long addressId) {
         addressService.deleteDelivery(userId, addressId);
         return ResponseEntity.noContent().build();
     }
