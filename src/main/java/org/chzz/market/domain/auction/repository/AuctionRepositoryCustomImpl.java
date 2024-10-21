@@ -17,7 +17,6 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Ops.DateTimeOps;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.DateTimeOperation;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
@@ -130,11 +129,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                         activeBid.id,
                         activeBid.amount.coalesce(0L),
                         activeBid.count.coalesce(3),
-                        canceledBid.id.isNotNull(),
-                        order.isNotNull(),// 주문 여부 확인
-                        new CaseBuilder().when(order.id.isNotNull())
-                                .then(order.id)// 주문한 경우 ID를 반환(추후 조회 가능하도록)
-                                .otherwise(Expressions.nullExpression()).as("orderId")// 주문여부가 없는경우 null 반환
+                        canceledBid.id.isNotNull()
                 ))
                 .from(auction)
                 .join(auction.product, product)
@@ -147,7 +142,6 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                 .leftJoin(canceledBid).on(canceledBid.auction.id.eq(auctionId)
                         .and(canceledBid.status.eq(CANCELLED)) // CANCELED 상태인 입찰 조인
                         .and(bidderIdEqSub(canceledBid, userId)))
-                .leftJoin(order).on(order.auction.eq(auction))
                 .where(auction.id.eq(auctionId))
                 .fetchOne());
 
