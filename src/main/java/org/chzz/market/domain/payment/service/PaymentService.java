@@ -7,10 +7,13 @@ import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.error.AuctionErrorCode;
 import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
+import org.chzz.market.domain.payment.dto.DeliveryRequest;
+import org.chzz.market.domain.payment.dto.SuccessfulPaymentEvent;
 import org.chzz.market.domain.payment.dto.request.ApprovalRequest;
 import org.chzz.market.domain.payment.dto.response.ApprovalResponse;
 import org.chzz.market.domain.payment.dto.response.TossPaymentResponse;
 import org.chzz.market.domain.payment.entity.Payment;
+import org.chzz.market.domain.payment.entity.Status;
 import org.chzz.market.domain.payment.error.PaymentErrorCode;
 import org.chzz.market.domain.payment.error.PaymentException;
 import org.chzz.market.domain.payment.repository.PaymentRepository;
@@ -18,6 +21,7 @@ import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.error.UserErrorCode;
 import org.chzz.market.domain.user.error.exception.UserException;
 import org.chzz.market.domain.user.repository.UserRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
@@ -34,23 +38,38 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final AuctionRepository auctionRepository;
     private final UserRepository userRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     public ApprovalResponse approval(Long userId, ApprovalRequest request) {
+        DeliveryRequest deliveryRequest = request.deliveryRequest();
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+        // DONE 상태의 결제 내역이 있는경우 예외처리
+        validateDuplicatePayment(userId, request.auctionId());
+        // 중복되거나 Toss에서 사용 불가능한 ID인 경우 예외처리
         validateOrderId(request.orderId());
+
         TossPaymentResponse tossPaymentResponse = paymentClient.confirmPayment(request);
         Auction auction = getAuction(request.auctionId());
         if (auction.getWinnerId() == null || !userId.equals(auction.getWinnerId())) {
             throw new AuctionException(AuctionErrorCode.NOT_WINNER);
         }
-        savePayment(user, tossPaymentResponse, auction);
+        Payment payment = savePayment(user, tossPaymentResponse, auction);
+        eventPublisher.publishEvent(new SuccessfulPaymentEvent(userId,payment,deliveryRequest));
         return ApprovalResponse.of(tossPaymentResponse);
     }
 
+    private void validateDuplicatePayment(Long userId, Long auctionId) {
+        paymentRepository.findByPayerIdAndAuctionId(userId, auctionId)
+                .stream().map(Payment::getStatus)
+                .filter(status -> status.equals(Status.DONE))
+                .findFirst()
+                .orElseThrow(()->new PaymentException(PaymentErrorCode.DUPLICATED_REQUEST));
+    }
+
     @Transactional
-    public void savePayment(User payer, TossPaymentResponse tossPaymentResponse, Auction auction) {
+    public Payment savePayment(User payer, TossPaymentResponse tossPaymentResponse, Auction auction) {
         Payment payment = Payment.of(payer, tossPaymentResponse, auction);
-        paymentRepository.save(payment);
+        return paymentRepository.save(payment);
     }
 
     @Transactional(readOnly = true)
