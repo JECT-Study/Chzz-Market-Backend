@@ -105,7 +105,7 @@ class AuctionRepositoryCustomImplTest {
                 .build();
         product9 = Product.builder().user(user3).name("제품9").category(Category.OTHER).minPrice(75000)
                 .build();
-        product10 = Product.builder().user(user2).name("제품9").category(Category.OTHER).minPrice(80000)
+        product10 = Product.builder().user(user2).name("제품10").category(Category.OTHER).minPrice(80000)
                 .build();
 
         productRepository.saveAll(
@@ -130,12 +130,9 @@ class AuctionRepositoryCustomImplTest {
                 .endDateTime(LocalDateTime.now().minusDays(1)).build();
         auction9 = Auction.builder().product(product9).status(PROCEEDING).winnerId(null)
                 .endDateTime(LocalDateTime.now().plusDays(1)).build();
-        // auction9 생성 (종료되었지만 낙찰자가 없는 경매)
-        auction10 = Auction.builder()
-                .product(product10)
-                .status(ENDED)
-                .endDateTime(LocalDateTime.now().minusDays(1))
-                .build();
+        // auction10 생성 (종료되었지만 낙찰자가 없는 경매)
+        auction10 = Auction.builder().product(product10).status(ENDED)
+                .endDateTime(LocalDateTime.now().minusDays(1)).build();
         auctionRepository.saveAll(
                 List.of(auction1, auction2, auction3, auction4, auction5, auction6, auction7, auction8, auction9,
                         auction10));
@@ -744,23 +741,6 @@ class AuctionRepositoryCustomImplTest {
         Long userId = user2.getId(); // user2의 종료된 경매 조회
         Pageable pageable = PageRequest.of(0, 10);
 
-        Order order1= Order.builder()
-                .amount(10000L)
-                .auction(auction8)
-                .buyerId(userId)
-                .paymentId(1L)
-                .orderNo("orderNo")
-                .detailAddress("detailAddress")
-                .deliveryMemo("deliveryMemo")
-                .jibun("jibun")
-                .roadAddress("roadAddress")
-                .phoneNumber("phoneNumber")
-                .recipientName("recipientName")
-                .zipcode("zipcode")
-                .method(PaymentMethod.ACCOUNT_TRANSFER)
-                .build();
-        orderRepository.save(order1);
-
         // when
         Page<UserEndedAuctionResponse> result = auctionRepository.findEndedAuctionByUserId(userId, pageable);
 
@@ -793,10 +773,10 @@ class AuctionRepositoryCustomImplTest {
         assertThat(auction8Response.isOrdered()).isTrue(); // 결제 완료
         assertThat(auction8Response.participantCount()).isEqualTo(2); // bid13, bid14
 
-        // auction9 검증 (낙찰자 없음)
+        // auction10 검증 (낙찰자 없음)
         UserEndedAuctionResponse auction9Response = auctionResponseMap.get(auction10.getId());
         assertNotNull(auction9Response);
-        assertThat(auction9Response.productName()).isEqualTo("제품9");
+        assertThat(auction9Response.productName()).isEqualTo("제품10");
         assertThat(auction9Response.winningBidAmount()).isEqualTo(0L); // 입찰 없음
         assertThat(auction9Response.isWon()).isFalse();
         assertThat(auction9Response.isOrdered()).isFalse(); // 결제 없음
