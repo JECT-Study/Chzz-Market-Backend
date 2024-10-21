@@ -10,15 +10,21 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.chzz.market.domain.address.dto.request.AddressDto;
+import org.chzz.market.domain.address.dto.DeliveryRequest;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
 import org.chzz.market.domain.user.entity.User;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Getter
 @Entity
+@Builder
 @Table
+@DynamicUpdate
+@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Address extends BaseTimeEntity {
 
@@ -31,27 +37,42 @@ public class Address extends BaseTimeEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column
+    @Column(nullable = false)
     private String roadAddress;
 
-    @Column
+    @Column(nullable = false)
     private String jibun;
 
-    @Column
+    @Column(nullable = false)
     private String zipcode;
 
-    @Column
+    @Column(nullable = false)
     private String detailAddress;
 
-    public static Address toEntity(User user, AddressDto dto) {
-        return new Address(user, dto.roadAddress(), dto.jibun(), dto.zipcode(), dto.detailAddress());
+    @Column(nullable = false)
+    private String recipientName;
+
+    @Column(nullable = false)
+    private String phoneNumber;
+
+    @Column(nullable = false)
+    private boolean isDefault;
+
+    public void unmarkAsDefault() {
+        this.isDefault = false;
     }
 
-    private Address(User user, String roadAddress, String jibun, String zipcode, String detailAddress) {
-        this.user = user;
-        this.roadAddress = roadAddress;
-        this.jibun = jibun;
-        this.zipcode = zipcode;
-        this.detailAddress = detailAddress;
+    public boolean isOwner(Long userId) {
+        return this.user.getId().equals(userId);
+    }
+
+    public void update(DeliveryRequest dto) {
+        this.roadAddress = dto.roadAddress();
+        this.jibun = dto.jibun();
+        this.zipcode = dto.zipcode();
+        this.detailAddress = dto.detailAddress();
+        this.recipientName = dto.recipientName();
+        this.phoneNumber = dto.phoneNumber();
+        this.isDefault = dto.isDefault();
     }
 }
