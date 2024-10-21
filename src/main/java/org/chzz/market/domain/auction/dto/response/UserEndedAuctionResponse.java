@@ -14,7 +14,7 @@ public record UserEndedAuctionResponse(
         Long participantCount,
         Long winningBidAmount,
         Boolean isWon, // 낙찰 유무
-        Boolean isPaid, // 결제 유무
+        Boolean isOrdered, // 주문 유무
         LocalDateTime createAt
 ) {
 

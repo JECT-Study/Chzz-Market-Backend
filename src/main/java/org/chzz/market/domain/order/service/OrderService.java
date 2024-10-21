@@ -7,7 +7,7 @@ import org.chzz.market.domain.address.exception.AddressException;
 import org.chzz.market.domain.address.repository.AddressRepository;
 import org.chzz.market.domain.order.entity.Order;
 import org.chzz.market.domain.order.repository.OrderRepository;
-import org.chzz.market.domain.payment.dto.DeliveryRequest;
+import org.chzz.market.domain.payment.dto.ShippingAddressRequest;
 import org.chzz.market.domain.payment.dto.SuccessfulPaymentEvent;
 import org.chzz.market.domain.payment.entity.Payment;
 import org.springframework.scheduling.annotation.Async;
@@ -25,10 +25,10 @@ public class OrderService {
     public void completedTransactionProcess(SuccessfulPaymentEvent event) {
         Long userId = event.userId();
         Payment payment = event.payment();
-        DeliveryRequest deliveryRequest = event.deliveryRequest();
-        Address address = addressRepository.findById(deliveryRequest.addressId())
+        ShippingAddressRequest shippingAddressRequest = event.shippingAddressRequest();
+        Address address = addressRepository.findById(shippingAddressRequest.addressId())
                 .orElseThrow(() -> new AddressException(AddressErrorCode.NOT_FOUND));
-        Order order = Order.of(userId, payment, address, deliveryRequest.memo());
+        Order order = Order.of(userId, payment, address, shippingAddressRequest.memo());
         orderRepository.save(order);
     }
 }

@@ -10,8 +10,6 @@ import static org.chzz.market.domain.bid.entity.Bid.BidStatus.CANCELLED;
 import static org.chzz.market.domain.bid.entity.QBid.bid;
 import static org.chzz.market.domain.image.entity.QImage.image;
 import static org.chzz.market.domain.order.entity.QOrder.order;
-import static org.chzz.market.domain.payment.entity.QPayment.payment;
-import static org.chzz.market.domain.payment.entity.Status.DONE;
 import static org.chzz.market.domain.product.entity.QProduct.product;
 import static org.chzz.market.domain.user.entity.QUser.user;
 
@@ -114,7 +112,6 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
     public Optional<AuctionDetailsResponse> findAuctionDetailsById(Long auctionId, Long userId) {
         QBid activeBid = new QBid("bidActive");
         QBid canceledBid = new QBid("bidCanceled");
-        // TODO: 사용자가 낙찰자인지 여부, 경매의 낙찰 여부, 낙찰자와 판매자에 한 해서 주문 여부 추가 - 다른 사용자는 null로 해야하지 않나??
         Optional<AuctionDetailsResponse> auctionDetailsResponse = Optional.ofNullable(jpaQueryFactory
                 .select(new QAuctionDetailsResponse(
                         product.id,
@@ -313,7 +310,6 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                 .join(auction.product, product)
                 .where(auction.winnerId.eq(userId).and(auction.status.eq(ENDED)));
 
-        // TODO: leftJoin(Order) 추가 및 필드(주문여부, 주문ID)추가
         List<WonAuctionResponse> content = baseQuery
                 .select(new QWonAuctionResponse(
                         auction.id,
@@ -322,9 +318,12 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                         product.minPrice,
                         getBidCount(),
                         auction.endDateTime,
-                        bid.amount
+                        bid.amount,
+                        order.isNotNull(),
+                        order.id
                 ))
                 .leftJoin(image).on(image.product.eq(product).and(isRepresentativeImage()))
+                .leftJoin(order).on(order.auction.id.eq(auction.id))
                 .groupBy(auction.id, product.name, image.cdnPath, product.minPrice, bid.amount)
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
@@ -467,7 +466,6 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                 .join(auction.product, product)
                 .where(product.user.id.eq(userId).and(auction.status.eq(ENDED)));
 
-        // 종료된 경매 조회 쿼리  TODO: leftJoin(Order)로 변경 결제여부에서 주문여부로 변경
         List<UserEndedAuctionResponse> result = baseQuery
                 .select(new QUserEndedAuctionResponse(
                         auction.id,
@@ -477,11 +475,11 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                         getBidCount(),
                         getWinningBidAmount(),
                         auction.winnerId.isNotNull(),
-                        payment.id.isNotNull(),
+                        order.isNotNull(),
                         auction.createdAt
                 ))
                 .leftJoin(image).on(image.product.eq(product).and(isRepresentativeImage()))
-                .leftJoin(payment).on(payment.auction.id.eq(auction.id).and(payment.status.eq(DONE)))
+                .leftJoin(order).on(order.auction.eq(auction))
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())

@@ -11,7 +11,9 @@ public record WonAuctionResponse (
         Integer minPrice,
         Long participantCount,
         LocalDateTime endDateTime,
-        Long winningAmount
+        Long winningAmount,
+        Boolean isOrdered,
+        Long orderId
 ) {
     @QueryProjection
     public WonAuctionResponse {}

@@ -492,8 +492,8 @@ class AuctionServiceTest {
             Pageable pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "endDateTime"));
 
             List<WonAuctionResponse> wonAuctions = List.of(
-                    new WonAuctionResponse(1L, "Product 1", "image1.jpg", 10000, 3L, LocalDateTime.now(), 15000L),
-                    new WonAuctionResponse(2L, "Product 2", "image2.jpg", 20000, 3L, LocalDateTime.now(), 25000L)
+                    new WonAuctionResponse(1L, "Product 1", "image1.jpg", 10000, 3L, LocalDateTime.now(), 15000L,false,null),
+                    new WonAuctionResponse(2L, "Product 2", "image2.jpg", 20000, 3L, LocalDateTime.now(), 25000L,false,null)
             );
 
             Page<WonAuctionResponse> mockPage = new PageImpl<>(wonAuctions, pageable, wonAuctions.size());
@@ -544,8 +544,8 @@ class AuctionServiceTest {
             Pageable secondPageable = PageRequest.of(1, 1, Sort.by(Sort.Direction.DESC, "endDateTime"));
 
             List<WonAuctionResponse> allAuctions = List.of(
-                    new WonAuctionResponse(1L, "Product 1", "image1.jpg", 10000, 3L, LocalDateTime.now(), 15000L),
-                    new WonAuctionResponse(2L, "Product 2", "image2.jpg", 20000, 3L, LocalDateTime.now(), 25000L)
+                    new WonAuctionResponse(1L, "Product 1", "image1.jpg", 10000, 3L, LocalDateTime.now(), 15000L,false,null),
+                    new WonAuctionResponse(2L, "Product 2", "image2.jpg", 20000, 3L, LocalDateTime.now(), 25000L,false,null)
             );
 
             Page<WonAuctionResponse> firstPage = new PageImpl<>(allAuctions.subList(0, 1), firstPageable,
@@ -579,9 +579,9 @@ class AuctionServiceTest {
 
             LocalDateTime now = LocalDateTime.now();
             List<WonAuctionResponse> wonAuctions = List.of(
-                    new WonAuctionResponse(1L, "Product 1", "image1.jpg", 10000, 3L, now, 15000L),
-                    new WonAuctionResponse(2L, "Product 2", "image2.jpg", 20000, 3L, now.minusHours(1), 25000L),
-                    new WonAuctionResponse(3L, "Product 3", "image3.jpg", 30000, 3L, now.minusHours(2), 35000L)
+                    new WonAuctionResponse(1L, "Product 1", "image1.jpg", 10000, 3L, now, 15000L,false,null),
+                    new WonAuctionResponse(2L, "Product 2", "image2.jpg", 20000, 3L, now.minusHours(1), 25000L,false,null),
+                    new WonAuctionResponse(3L, "Product 3", "image3.jpg", 30000, 3L, now.minusHours(2), 35000L,false,null)
             );
 
             Page<WonAuctionResponse> mockPage = new PageImpl<>(wonAuctions, pageable, wonAuctions.size());
