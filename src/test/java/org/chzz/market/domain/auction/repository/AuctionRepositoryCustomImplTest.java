@@ -22,7 +22,6 @@ import org.chzz.market.domain.auction.dto.response.LostAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.UserAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.UserEndedAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.WonAuctionDetailsResponse;
-import org.chzz.market.domain.auction.dto.response.WonAuctionResponse;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.bid.entity.Bid;
 import org.chzz.market.domain.bid.entity.Bid.BidStatus;
@@ -30,6 +29,8 @@ import org.chzz.market.domain.bid.repository.BidRepository;
 import org.chzz.market.domain.image.dto.ImageResponse;
 import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.image.repository.ImageRepository;
+import org.chzz.market.domain.order.entity.Order;
+import org.chzz.market.domain.order.repository.OrderRepository;
 import org.chzz.market.domain.payment.dto.response.TossPaymentResponse;
 import org.chzz.market.domain.payment.entity.Payment;
 import org.chzz.market.domain.payment.entity.Payment.PaymentMethod;
@@ -58,6 +59,9 @@ class AuctionRepositoryCustomImplTest {
 
     @Autowired
     AuctionRepository auctionRepository;
+
+    @Autowired
+    OrderRepository orderRepository;
 
     private static User user1, user2, user3, user4, user5;
     private static Product product1, product2, product3, product4, product5, product6, product7, product8, product9, product10;
@@ -132,7 +136,6 @@ class AuctionRepositoryCustomImplTest {
         auctionRepository.saveAll(
                 List.of(auction1, auction2, auction3, auction4, auction5, auction6, auction7, auction8, auction9,
                         auction10));
-
         // auction8에 대한 결제 데이터 추가 (결제 완료된 경매)
         TossPaymentResponse tossPaymentResponse = new TossPaymentResponse();
         tossPaymentResponse.setTotalAmount(250000L);
@@ -669,6 +672,23 @@ class AuctionRepositoryCustomImplTest {
         Long userId = user2.getId(); // user2의 종료된 경매 조회
         Pageable pageable = PageRequest.of(0, 10);
 
+        Order order1= Order.builder()
+                .amount(10000L)
+                .auction(auction8)
+                .buyerId(userId)
+                .paymentId(1L)
+                .orderNo("orderNo")
+                .detailAddress("detailAddress")
+                .deliveryMemo("deliveryMemo")
+                .jibun("jibun")
+                .roadAddress("roadAddress")
+                .phoneNumber("phoneNumber")
+                .recipientName("recipientName")
+                .zipcode("zipcode")
+                .method(PaymentMethod.ACCOUNT_TRANSFER)
+                .build();
+        orderRepository.save(order1);
+
         // when
         Page<UserEndedAuctionResponse> result = auctionRepository.findEndedAuctionByUserId(userId, pageable);
 
@@ -689,7 +709,7 @@ class AuctionRepositoryCustomImplTest {
         assertThat(auction4Response.productName()).isEqualTo("제품4");
         assertThat(auction4Response.winningBidAmount()).isEqualTo(25000L); // 최고 입찰가
         assertThat(auction4Response.isWon()).isTrue();
-        assertThat(auction4Response.isPaid()).isFalse(); // 결제 전
+        assertThat(auction4Response.isOrdered()).isFalse(); // 결제 전
         assertThat(auction4Response.participantCount()).isEqualTo(2); // bid11, bid12
 
         // auction8 검증 (결제 후 낙찰자 있음)
@@ -698,7 +718,7 @@ class AuctionRepositoryCustomImplTest {
         assertThat(auction8Response.productName()).isEqualTo("제품8");
         assertThat(auction8Response.winningBidAmount()).isEqualTo(250000L); // 최고 입찰가
         assertThat(auction8Response.isWon()).isTrue();
-        assertThat(auction8Response.isPaid()).isTrue(); // 결제 완료
+        assertThat(auction8Response.isOrdered()).isTrue(); // 결제 완료
         assertThat(auction8Response.participantCount()).isEqualTo(2); // bid13, bid14
 
         // auction9 검증 (낙찰자 없음)
@@ -707,7 +727,7 @@ class AuctionRepositoryCustomImplTest {
         assertThat(auction9Response.productName()).isEqualTo("제품9");
         assertThat(auction9Response.winningBidAmount()).isEqualTo(0L); // 입찰 없음
         assertThat(auction9Response.isWon()).isFalse();
-        assertThat(auction9Response.isPaid()).isFalse(); // 결제 없음
+        assertThat(auction9Response.isOrdered()).isFalse(); // 결제 없음
         assertThat(auction9Response.participantCount()).isEqualTo(0); // 입찰 없음
     }
 
