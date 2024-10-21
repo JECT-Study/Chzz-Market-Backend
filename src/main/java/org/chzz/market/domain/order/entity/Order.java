@@ -86,8 +86,8 @@ public class Order {
                 .jibun(address.getJibun())
                 .zipcode(address.getZipcode())
                 .detailAddress(address.getDetailAddress())
-//                .recipientName(address.getRecipientName())
-//                .phoneNumber(address.getPhoneNumber())
+                .recipientName(address.getRecipientName())
+                .phoneNumber(address.getPhoneNumber())
                 .deliveryMemo(deliveryMemo)
                 .build();
     }
