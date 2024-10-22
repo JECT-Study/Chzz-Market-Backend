@@ -58,14 +58,6 @@ public class PaymentService {
         return ApprovalResponse.of(tossPaymentResponse);
     }
 
-    private void validateDuplicatePayment(Long userId, Long auctionId) {
-        paymentRepository.findByPayerIdAndAuctionId(userId, auctionId)
-                .stream().map(Payment::getStatus)
-                .filter(status -> status.equals(Status.DONE))
-                .findFirst()
-                .orElseThrow(()->new PaymentException(PaymentErrorCode.DUPLICATED_REQUEST));
-    }
-
     @Transactional
     public Payment savePayment(User payer, TossPaymentResponse tossPaymentResponse, Auction auction) {
         Payment payment = Payment.of(payer, tossPaymentResponse, auction);
@@ -104,5 +96,18 @@ public class PaymentService {
     @Recover
     private void throwException() {
         throw new PaymentException(PaymentErrorCode.CREATION_FAILURE);
+    }
+
+    private void validateDuplicatePayment(Long userId, Long auctionId) {
+        paymentRepository.findByPayerIdAndAuctionId(userId, auctionId).stream()
+                .filter(this::isPaymentDone)
+                .findFirst()
+                .ifPresent(payment -> {
+                    throw new PaymentException(PaymentErrorCode.DUPLICATED_REQUEST);
+                });
+    }
+
+    private boolean isPaymentDone(Payment payment) {
+        return Status.DONE.equals(payment.getStatus());
     }
 }
