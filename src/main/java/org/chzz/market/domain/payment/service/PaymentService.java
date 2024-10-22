@@ -98,7 +98,7 @@ public class PaymentService {
         throw new PaymentException(PaymentErrorCode.CREATION_FAILURE);
     }
 
-    private void validateDuplicatePayment(Long userId, Long auctionId) {
+    void validateDuplicatePayment(Long userId, Long auctionId) {
         paymentRepository.findByPayerIdAndAuctionId(userId, auctionId).stream()
                 .filter(this::isPaymentDone)
                 .findFirst()
