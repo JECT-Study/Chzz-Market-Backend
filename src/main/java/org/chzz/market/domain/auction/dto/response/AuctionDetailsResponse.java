@@ -70,10 +70,11 @@ public class AuctionDetailsResponse {
         this.isOrdered = isOrdered;
     }
 
-    public void clearOrderIfNotEligible() {
+    public AuctionDetailsResponse clearOrderIfNotEligible() {
         if (!isSeller && !isWinner) {
             this.isOrdered = null;
         }
+        return this;
     }
 
     public void addImageList(List<ImageResponse> images) {
