@@ -324,7 +324,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                 ))
                 .leftJoin(image).on(image.product.eq(product).and(isRepresentativeImage()))
                 .leftJoin(order).on(order.auction.id.eq(auction.id))
-                .groupBy(auction.id, product.name, image.cdnPath, product.minPrice, bid.amount)
+                .groupBy(auction.id, product.name, image.cdnPath, product.minPrice, bid.amount, order.id)
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
