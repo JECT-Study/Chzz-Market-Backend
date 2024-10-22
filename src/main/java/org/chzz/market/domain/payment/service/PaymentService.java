@@ -13,7 +13,6 @@ import org.chzz.market.domain.payment.dto.request.ApprovalRequest;
 import org.chzz.market.domain.payment.dto.response.ApprovalResponse;
 import org.chzz.market.domain.payment.dto.response.TossPaymentResponse;
 import org.chzz.market.domain.payment.entity.Payment;
-import org.chzz.market.domain.payment.entity.Status;
 import org.chzz.market.domain.payment.error.PaymentErrorCode;
 import org.chzz.market.domain.payment.error.PaymentException;
 import org.chzz.market.domain.payment.repository.PaymentRepository;
@@ -98,16 +97,12 @@ public class PaymentService {
         throw new PaymentException(PaymentErrorCode.CREATION_FAILURE);
     }
 
-    void validateDuplicatePayment(Long userId, Long auctionId) {
+    private void validateDuplicatePayment(Long userId, Long auctionId) {
         paymentRepository.findByPayerIdAndAuctionId(userId, auctionId).stream()
-                .filter(this::isPaymentDone)
+                .filter(Payment::isPaymentDone)
                 .findFirst()
                 .ifPresent(payment -> {
                     throw new PaymentException(PaymentErrorCode.DUPLICATED_REQUEST);
                 });
-    }
-
-    private boolean isPaymentDone(Payment payment) {
-        return Status.DONE.equals(payment.getStatus());
     }
 }

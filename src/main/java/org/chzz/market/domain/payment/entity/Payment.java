@@ -89,6 +89,10 @@ public class Payment extends BaseTimeEntity {
                 tossPaymentResponse.getPaymentKey());
     }
 
+    public boolean isPaymentDone() {
+        return this.status == Status.DONE;
+    }
+
     @AllArgsConstructor
     public enum PaymentMethod {
         CARD("카드"),
