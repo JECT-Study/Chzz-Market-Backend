@@ -77,11 +77,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Extract version from branch name
+      - name: Extract version from PR branch name
         id: extract-version
         run: |
-          BRANCH_NAME="${{ github.ref }}"  # Full ref name, e.g., refs/heads/release/5.5.6
-          BRANCH_NAME=${BRANCH_NAME#refs/heads/}  # Remove 'refs/heads/' prefix to get 'release/5.5.6'
+          BRANCH_NAME="${{ github.head_ref }}"  # Use head_ref for PR branch name (e.g., release/5.5.6 or hotfix/5.5.6)
 
           # Display the extracted branch name for debugging
           echo "Extracted branch name: $BRANCH_NAME"
