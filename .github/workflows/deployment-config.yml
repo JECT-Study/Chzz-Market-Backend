@@ -52,6 +52,13 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build -x test --no-daemon
 
+      # 빌드 결과물 아티팩트 업로드
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: build/libs/*.jar
+
       # 테스트 실행
       - name: Test with Gradle
         run: |
@@ -110,6 +117,12 @@ jobs:
         run: |
           aws s3 cp s3://chzzmarket-production-storage/chzz-production-properties/application-prod.yml \
           ./src/main/resources/application-prod.yml
+
+      # 빌드된 아티팩트 다운로드
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
 
       # Docker 이미지 빌드 및 ECR 배포
       - name: Docker 이미지 빌드 및 ECR 배포
