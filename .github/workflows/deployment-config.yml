@@ -12,22 +12,11 @@ env:
   ECS_SERVICE: chzz-market
 
 jobs:
-  # CI 단계: 코드 빌드 및 테스트
-  build:
+  build-deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     steps:
       # 소스 코드 체크아웃
       - uses: actions/checkout@v4
-
-      # JDK 설정
-      - name: Setup JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'corretto'
-          cache: 'gradle'
 
       # Gradle 설정 및 캐시 최적화
       - name: Cache Gradle packages
@@ -40,16 +29,36 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      # Gradle 실행 권한 부여
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'corretto'
+
+      - name: AWS credential 설정
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: ECR 로그인
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: S3에서 설정파일 복사
+        run: |
+          aws s3 cp s3://chzzmarket-production-storage/chzz-production-properties/application-prod.yml \
+          ./src/main/resources/application-prod.yml
+
+      - name: gradle 실행 권한 부여
+        run: chmod +x ./gradlew
 
       # Redis 서버 실행
       - name: Redis Server in GitHub Actions
         uses: supercharge/redis-github-action@1.8.0
 
-      # Gradle 빌드 (테스트 제외)
-      - name: Build with Gradle
+      - name: gradle 빌드
         run: ./gradlew build -x test --no-daemon
 
       # 테스트 실행
@@ -67,26 +76,13 @@ jobs:
           -Dspring.data.redis.port=${{ secrets.TEST_REDIS_PORT }} \
           test
 
-  # CD 단계: 배포 작업
-  deploy:
-    needs: build  # CI 단계가 성공한 후에 배포 진행
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Extract version from branch name
+      # 버전 추출
+      - name: Extract version from PR branch name
         id: extract-version
         run: |
-          BRANCH_NAME="${{ github.ref }}"  # Full ref name, e.g., refs/heads/release/5.5.6
-          BRANCH_NAME=${BRANCH_NAME#refs/heads/}  # Remove 'refs/heads/' prefix to get 'release/5.5.6'
-
-          # Display the extracted branch name for debugging
+          BRANCH_NAME="${{ github.head_ref }}"  # Use head_ref for PR branch name (e.g., release/5.5.6 or hotfix/5.5.6)
           echo "Extracted branch name: $BRANCH_NAME"
 
-          # Check if the branch name matches the expected pattern
           if [[ "$BRANCH_NAME" =~ ^(release|hotfix)/([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
             VERSION="${BASH_REMATCH[2]}"
             echo "VERSION=$VERSION" >> $GITHUB_ENV
@@ -94,25 +90,8 @@ jobs:
           else
             echo "❌ Branch name does not match release/x.x.x or hotfix/x.x.x format."
             exit 1
-          fi
+          fi  # 여기에서 if 조건을 명확하게 종료
 
-      - name: AWS credentials 설정
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-region: ${{ env.AWS_REGION }}
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-      - name: ECR 로그인
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
-
-      - name: S3에서 설정파일 복사
-        run: |
-          aws s3 cp s3://chzzmarket-production-storage/chzz-production-properties/application-prod.yml \
-          ./src/main/resources/application-prod.yml
-
-      # Docker 이미지 빌드 및 ECR 배포
       - name: Docker 이미지 빌드 및 ECR 배포
         id: build-image
         env:
