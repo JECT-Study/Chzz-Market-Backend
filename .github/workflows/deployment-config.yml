@@ -15,8 +15,6 @@ jobs:
   # CI 단계: 코드 빌드 및 테스트
   build-deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     steps:
       # 소스 코드 체크아웃
       - uses: actions/checkout@v4
