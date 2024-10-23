@@ -90,6 +90,7 @@ jobs:
           else
             echo "❌ Branch name does not match release/x.x.x or hotfix/x.x.x format."
             exit 1
+          fi  # 여기에서 if 조건을 명확하게 종료
 
       - name: Docker 이미지 빌드 및 ECR 배포
         id: build-image
