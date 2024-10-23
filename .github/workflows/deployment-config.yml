@@ -12,7 +12,6 @@ env:
   ECS_SERVICE: chzz-market
 
 jobs:
-  # CI 단계: 코드 빌드 및 테스트
   build-deploy:
     runs-on: ubuntu-latest
     steps:
@@ -64,20 +63,14 @@ jobs:
           -Dspring.data.redis.host=${{ secrets.TEST_REDIS_HOST }} \
           -Dspring.data.redis.port=${{ secrets.TEST_REDIS_PORT }} \
           test
-            - name: Check out
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
+      # 버전 추출
       - name: Extract version from PR branch name
         id: extract-version
         run: |
           BRANCH_NAME="${{ github.head_ref }}"  # Use head_ref for PR branch name (e.g., release/5.5.6 or hotfix/5.5.6)
-
-          # Display the extracted branch name for debugging
           echo "Extracted branch name: $BRANCH_NAME"
 
-          # Check if the branch name matches the expected pattern
           if [[ "$BRANCH_NAME" =~ ^(release|hotfix)/([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
             VERSION="${BASH_REMATCH[2]}"
             echo "VERSION=$VERSION" >> $GITHUB_ENV
@@ -85,8 +78,8 @@ jobs:
           else
             echo "❌ Branch name does not match release/x.x.x or hotfix/x.x.x format."
             exit 1
-          fi
 
+      # AWS credentials 설정
       - name: AWS credentials 설정
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -94,10 +87,12 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
+      # ECR 로그인
       - name: ECR 로그인
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
+      # S3에서 설정파일 복사
       - name: S3에서 설정파일 복사
         run: |
           aws s3 cp s3://chzzmarket-production-storage/chzz-production-properties/application-prod.yml \
@@ -114,7 +109,8 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-      - name: EC2로 파일 복사 (compose.yaml 및 nginx.conf 포함)
+      # EC2로 파일 복사 (compose.yaml 및 nginx.conf 포함)
+      - name: EC2로 파일 복사
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.EC2_IP }}
@@ -123,28 +119,29 @@ jobs:
           source: './compose.yaml,./nginx.conf'
           target: '/home/ec2-user'
 
+      # EC2에서 Docker Compose를 통한 애플리케이션 실행
       - name: EC2에서 Docker Compose를 통한 애플리케이션 실행
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_IP }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            export AWS_REGION=${{ env.AWS_REGION }}
-            export ECR_URI=${{ secrets.ECR_URI }}
-            
-            # .env 파일 생성 및 ECR_IMAGE 변수 추가
-            touch /home/ec2-user/.env
-            echo ECR_IMAGE=${{ steps.build-image.outputs.image }} >> /home/ec2-user/.env
-            
-            # ECR 레지스트리에 로그인
-            aws ecr get-login-password --region $AWS_REGION | sudo docker login --username AWS --password-stdin $ECR_URI/chzz-rep
-            
-            # 기존 컨테이너 정지 및 삭제
-            sudo docker compose down
-            
-            # 최신 이미지를 pull
-            sudo docker compose pull
-            
-            # Docker Compose로 애플리케이션 실행
-            sudo docker compose up -d
+        script: |
+          export AWS_REGION=${{ env.AWS_REGION }}
+          export ECR_URI=${{ secrets.ECR_URI }}
+
+          # .env 파일 생성 및 ECR_IMAGE 변수 추가
+          touch /home/ec2-user/.env
+          echo ECR_IMAGE=${{ steps.build-image.outputs.image }} >> /home/ec2-user/.env
+
+          # ECR 레지스트리에 로그인
+          aws ecr get-login-password --region $AWS_REGION | sudo docker login --username AWS --password-stdin $ECR_URI/chzz-rep
+
+          # 기존 컨테이너 정지 및 삭제
+          sudo docker compose down
+
+          # 최신 이미지를 pull
+          sudo docker compose pull
+
+          # Docker Compose로 애플리케이션 실행
+          sudo docker compose up -d
