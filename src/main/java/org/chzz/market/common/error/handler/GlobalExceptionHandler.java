@@ -4,6 +4,7 @@ package org.chzz.market.common.error.handler;
 import static org.chzz.market.common.error.GlobalErrorCode.EXTERNAL_API_ERROR;
 
 import java.io.IOException;
+import java.util.List;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.common.error.ErrorCode;
@@ -11,6 +12,7 @@ import org.chzz.market.common.error.ErrorResponse;
 import org.chzz.market.common.error.GlobalErrorCode;
 import org.chzz.market.common.error.GlobalException;
 import org.chzz.market.common.error.exception.BusinessException;
+import org.springframework.context.MessageSourceResolvable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -32,6 +35,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     private static final String LOG_FORMAT = "\nException Class = {}\nResponse Code = {}\nMessage = {}";
 
     // 1. 커스텀 예외 핸들러
+
     /**
      * 비즈니스 로직에서 정의한 예외가 발생할 때 처리
      */
@@ -83,6 +87,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     // 2. ResponseEntityExceptionHandler에서 오버라이드된 핸들러
+
     /**
      * 필수 요청 매개변수가 누락된 경우 발생
      */
@@ -140,6 +145,39 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         logException(ex, errorCode, detailedErrorMessages);
 
         ErrorResponse errorResponse = ErrorResponse.of(errorCode, detailedErrorMessages);
+        return ResponseEntity
+                .status(errorCode.getHttpStatus())
+                .body(errorResponse);
+    }
+
+    /**
+     * @ReuqestParam, @PathVariable 에서 발생하는 유효성 검사 에러 핸들러
+     */
+    @Override
+    protected ResponseEntity<Object> handleHandlerMethodValidationException(
+            @NonNull HandlerMethodValidationException ex,
+            @NonNull HttpHeaders headers, @NonNull HttpStatusCode status,
+            @NonNull WebRequest request) {
+        GlobalErrorCode errorCode = GlobalErrorCode.VALIDATION_FAILED;
+
+        // 모든 오류를 추출
+        List<? extends MessageSourceResolvable> allErrors = ex.getAllErrors();
+        log.info("allErrors = {}", allErrors);
+
+        // 필드명과 기본 메시지를 조합하여 "필드명: 메시지" 형식으로 변환
+        String[] errorMessages = allErrors.stream()
+                .map(error -> {
+                    String[] codes = error.getCodes();
+                    String fieldName = (codes != null && codes.length > 0)
+                            ? codes[0].substring(codes[0].lastIndexOf('.') + 1) // 필드명 추출
+                            : "Unknown field";
+                    return fieldName + ": " + error.getDefaultMessage(); // 필드명과 기본 메시지 결합
+                })
+                .toArray(String[]::new);
+
+        logException(ex, errorCode, errorMessages);
+
+        ErrorResponse errorResponse = ErrorResponse.of(errorCode, errorMessages);
         return ResponseEntity
                 .status(errorCode.getHttpStatus())
                 .body(errorResponse);
