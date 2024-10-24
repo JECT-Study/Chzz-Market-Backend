@@ -20,6 +20,7 @@ import org.chzz.market.domain.user.dto.response.NicknameAvailabilityResponse;
 import org.chzz.market.domain.user.dto.response.UserProfileResponse;
 import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.service.UserService;
+import org.hibernate.validator.constraints.Length;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -72,7 +73,7 @@ public class UserController implements UserApi {
      */
     @Override
     @GetMapping("/check/nickname/{nickname}")
-    public ResponseEntity<NicknameAvailabilityResponse> checkNickname(@PathVariable String nickname) {
+    public ResponseEntity<NicknameAvailabilityResponse> checkNickname(@PathVariable @Length(min = 1, max = 15) String nickname) {
         return ResponseEntity.ok((userService.checkNickname(nickname)));
     }
 
@@ -82,8 +83,8 @@ public class UserController implements UserApi {
     @Override
     @PostMapping
     public ResponseEntity<Void> completeRegistration(@LoginUser Long userId,
-                                                  @Valid @RequestBody UserCreateRequest userCreateRequest,
-                                                  HttpServletResponse response) {
+                                                     @Valid @RequestBody UserCreateRequest userCreateRequest,
+                                                     HttpServletResponse response) {
         User user = userService.completeUserRegistration(userId, userCreateRequest);
         // 임시토큰 만료
         CookieUtil.expireCookie(response, TokenType.TEMP.name());
