@@ -1,5 +1,6 @@
 package org.chzz.market.domain.payment.controller;
 
+import jakarta.validation.Valid;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.config.LoginUser;
@@ -21,7 +22,7 @@ public class PaymentController implements PaymentApi {
 
     @Override
     @PostMapping("/approval")
-    public ResponseEntity<ApprovalResponse> approvePayment(@LoginUser Long userId, @RequestBody ApprovalRequest request) {
+    public ResponseEntity<ApprovalResponse> approvePayment(@LoginUser Long userId, @Valid @RequestBody ApprovalRequest request) {
         ApprovalResponse approval = paymentService.approval(userId, request);
         return ResponseEntity.status(HttpStatus.OK).body(approval); // TODO: redirect to payment page
     }

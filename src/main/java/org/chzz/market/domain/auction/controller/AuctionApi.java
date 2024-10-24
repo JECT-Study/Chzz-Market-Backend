@@ -4,6 +4,7 @@ import static org.chzz.market.domain.auction.error.AuctionErrorCode.Const.AUCTIO
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.List;
 import org.chzz.market.common.config.LoginUser;
 import org.chzz.market.common.springdoc.ApiExceptionExplanation;
@@ -72,7 +73,7 @@ public interface AuctionApi {
     ResponseEntity<Page<UserEndedAuctionResponse>> getEndedAuctions(Long userId, Pageable pageable);
 
     @Operation(summary = "경매 등록")
-    ResponseEntity<RegisterResponse> registerAuction(Long userId, BaseRegisterRequest request,
+    ResponseEntity<RegisterResponse> registerAuction(Long userId, @Valid BaseRegisterRequest request,
                                                      List<MultipartFile> images);
 
     @ApiResponseExplanations(
@@ -86,7 +87,7 @@ public interface AuctionApi {
             }
     )
     @Operation(summary = "정식 경매 전환")
-    ResponseEntity<StartAuctionResponse> startAuction(Long userId, StartAuctionRequest request);
+    ResponseEntity<StartAuctionResponse> startAuction(Long userId, @Valid StartAuctionRequest request);
 
     @Operation(summary = "테스트 경매 등록")
     ResponseEntity<Void> testEndAuction(Long userId, int seconds);

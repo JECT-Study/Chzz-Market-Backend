@@ -10,6 +10,7 @@ import static org.chzz.market.domain.bid.error.BidErrorCode.Const.BID_SAME_AS_PR
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.chzz.market.common.springdoc.ApiExceptionExplanation;
 import org.chzz.market.common.springdoc.ApiResponseExplanations;
 import org.chzz.market.domain.auction.error.AuctionErrorCode;
@@ -41,7 +42,7 @@ public interface BidApi {
                     @ApiExceptionExplanation(value = BidErrorCode.class, constant = BID_ALREADY_CANCELLED, name = "취소한 입찰 일때"),
             }
     )
-    ResponseEntity<Void> createBid(BidCreateRequest bidCreateRequest, Long userId);
+    ResponseEntity<Void> createBid(@Valid BidCreateRequest bidCreateRequest, Long userId);
 
     @Operation(summary = "입찰 취소")
     ResponseEntity<Void> cancelBid(Long bidId, Long userId);
