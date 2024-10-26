@@ -49,7 +49,4 @@ jobs:
       # 테스트 실행
       - name: Test with Gradle
         run: |
-          ./gradlew -Dspring.profiles.active=test \
-          -Dspring.data.redis.host=${{ secrets.TEST_REDIS_HOST }} \
-          -Dspring.data.redis.port=${{ secrets.TEST_REDIS_PORT }} \
-          test
+          ./gradlew -Dspring.profiles.active=test test
