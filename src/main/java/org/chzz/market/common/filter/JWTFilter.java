@@ -1,5 +1,6 @@
 package org.chzz.market.common.filter;
 
+import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 
 import jakarta.servlet.FilterChain;
@@ -8,8 +9,10 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.chzz.market.common.dto.ApiEndpoint;
 import org.chzz.market.common.util.CookieUtil;
 import org.chzz.market.common.util.JWTUtil;
 import org.chzz.market.domain.token.entity.TokenType;
@@ -26,14 +29,18 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JWTFilter extends OncePerRequestFilter {
     public static final String AUTHORIZATION_HEADER = "Authorization";
     public static final String BEARER_TOKEN_PREFIX = "Bearer ";
+    private static final ApiEndpoint SIGN_UP_ENDPOINT = new ApiEndpoint("/api/v1/users", POST);
+    private static final List<ApiEndpoint> EXCLUDED_ENDPOINTS = List.of(
+            new ApiEndpoint("/api/v1/auctions/best", GET),
+            new ApiEndpoint("/api/v1/auctions/imminent", GET),
+            new ApiEndpoint("/api/v1/users/tokens/reissue", POST)
+    );
 
     private final JWTUtil jwtUtil;
 
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request)
-            throws ServletException { // 해당 url에 대해서 필터를 적용 제외 (토큰 재발행)
-        return request.getRequestURI().equals("/api/v1/users/tokens/reissue") && request.getMethod()
-                .equals(POST.name());
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        return EXCLUDED_ENDPOINTS.stream().anyMatch(endpoint -> endpoint.matches(request));
     }
 
     @Override
@@ -72,6 +79,6 @@ public class JWTFilter extends OncePerRequestFilter {
     }
 
     private boolean isSignUpRequest(HttpServletRequest request) {
-        return request.getRequestURI().equals("/api/v1/users") && request.getMethod().equals(POST.name());
+        return SIGN_UP_ENDPOINT.matches(request);
     }
 }
