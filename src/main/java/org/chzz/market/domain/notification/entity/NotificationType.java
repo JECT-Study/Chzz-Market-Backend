@@ -24,7 +24,7 @@ public enum NotificationType {
             return new AuctionWinnerNotification(user, event.image(), event.message(), event.getAuctionId());
         }
     },
-    AUCTION_NON_WINNER("안타깝지만 입찰에 참여한 %s 경매에 낙찰되지 못했습니다.", Values.AUCTION_NON_WINNER) {
+    AUCTION_NON_WINNER("입찰에 참여한 %s 경매에 낙찰되지 못했습니다.", Values.AUCTION_NON_WINNER) {
         @Override
         public Notification createNotification(User user, NotificationEvent event) {
             return new AuctionNonWinnerNotification(user, event.image(), event.message());
