@@ -4,6 +4,8 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Base64;
+import org.chzz.market.common.error.GlobalErrorCode;
+import org.chzz.market.common.error.GlobalException;
 import org.chzz.market.domain.token.entity.TokenType;
 import org.springframework.http.ResponseCookie;
 import org.springframework.util.SerializationUtils;
@@ -38,6 +40,14 @@ public class CookieUtil {
             }
         }
         return null;
+    }
+
+    public static String getCookieByNameOrThrow(HttpServletRequest request, String cookieName) {
+        Cookie cookie = getCookieByName(request, cookieName);
+        if (cookie != null) {
+            return cookie.getValue();
+        }
+        throw new GlobalException(GlobalErrorCode.COOKIE_NOT_FOUND);
     }
 
     public static void expireCookie(HttpServletResponse response, String cookieName) {
