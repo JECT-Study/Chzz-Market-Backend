@@ -54,11 +54,9 @@ public class Product extends BaseTimeEntity {
     private User user;
 
     @Column(nullable = false)
-    // @Pattern(regexp = "^[가-힣a-zA-Z0-9]{2,}$",message = "invalid type of bidderNickname")
     private String name;
 
     @Column(length = 1000)
-    //TODO 2024 07 18 13:35:30 : custom validate
     private String description;
 
     @Column
