@@ -7,7 +7,7 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.Optional;
 import org.chzz.market.domain.auction.entity.Auction;
-import org.chzz.market.domain.payment.dto.ShippingAddressRequest;
+import org.chzz.market.domain.payment.dto.request.ShippingAddressRequest;
 import org.chzz.market.domain.payment.dto.request.ApprovalRequest;
 import org.chzz.market.domain.payment.dto.response.TossPaymentResponse;
 import org.chzz.market.domain.payment.entity.Payment;

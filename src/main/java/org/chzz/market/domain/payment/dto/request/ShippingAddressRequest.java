@@ -1,4 +1,4 @@
-package org.chzz.market.domain.payment.dto;
+package org.chzz.market.domain.payment.dto.request;
 
 import jakarta.annotation.Nullable;
 

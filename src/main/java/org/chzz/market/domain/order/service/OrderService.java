@@ -7,7 +7,7 @@ import org.chzz.market.domain.address.exception.AddressException;
 import org.chzz.market.domain.address.repository.AddressRepository;
 import org.chzz.market.domain.order.entity.Order;
 import org.chzz.market.domain.order.repository.OrderRepository;
-import org.chzz.market.domain.payment.dto.ShippingAddressRequest;
+import org.chzz.market.domain.payment.dto.request.ShippingAddressRequest;
 import org.chzz.market.domain.payment.dto.SuccessfulPaymentEvent;
 import org.chzz.market.domain.payment.entity.Payment;
 import org.springframework.scheduling.annotation.Async;
