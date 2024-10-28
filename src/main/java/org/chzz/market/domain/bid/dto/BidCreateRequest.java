@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.chzz.market.common.validation.annotation.ThousandMultiple;
 import org.chzz.market.domain.auction.entity.Auction;
@@ -12,6 +13,7 @@ import org.chzz.market.domain.user.entity.User;
 
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
 @Builder
 public class BidCreateRequest {
     @NotNull
