@@ -64,17 +64,7 @@ jobs:
       # 테스트 실행
       - name: Test with Gradle
         run: |
-          ./gradlew -Dspring.profiles.active=test \
-          -Dcloud.aws.credentials.access-key=${{ secrets.S3_AWS_ACCESS_KEY_ID }} \
-          -Dcloud.aws.credentials.secret-key=${{ secrets.S3_AWS_SECRET_ACCESS_KEY }} \
-          -Dcloud.aws.region.static=${{ secrets.AWS_REGION }} \
-          -Dcloud.aws.s3.bucket=${{ secrets.AWS_S3_BUCKET }} \
-          -Dcloud.aws.cloudfront.domain=${{ secrets.AWS_CLOUDFRONT_DOMAIN }} \
-          -Dpayment.toss.client-key=${{ secrets.TEST_CLIENT_KEY }} \
-          -Dpayment.toss.security-key=${{ secrets.TEST_SECRET_KEY }} \
-          -Dspring.data.redis.host=${{ secrets.TEST_REDIS_HOST }} \
-          -Dspring.data.redis.port=${{ secrets.TEST_REDIS_PORT }} \
-          test
+          ./gradlew -Dspring.profiles.active=test test
 
       # 버전 추출
       - name: Extract version from PR branch name

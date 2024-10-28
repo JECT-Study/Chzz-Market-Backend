@@ -16,6 +16,9 @@ import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+/**
+ * 기본적인 데이터 저장 및 Pub/Sub
+ */
 @Configuration
 @EnableAutoConfiguration(exclude = RedisAutoConfiguration.class)
 public class RedisConfig {

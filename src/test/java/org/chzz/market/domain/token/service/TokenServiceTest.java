@@ -95,7 +95,7 @@ class TokenServiceTest {
                 Optional.of(new TokenData("refresh-token", user.getId())));
 
         // when
-        tokenService.logout(refreshCookie);
+        tokenService.logout(refreshCookie.getValue());
 
         // then
         verify(jwtUtil, times(1)).validateToken("refresh-token", TokenType.REFRESH);
@@ -110,7 +110,7 @@ class TokenServiceTest {
         when(refreshTokenRepository.findByToken("refresh-token")).thenReturn(Optional.empty());
 
         // when & then
-        TokenException exception = assertThrows(TokenException.class, () -> tokenService.reissue(refreshCookie));
+        TokenException exception = assertThrows(TokenException.class, () -> tokenService.reissue(refreshCookie.getValue()));
         assertThat(exception.getErrorCode()).isEqualTo(TokenErrorCode.REFRESH_TOKEN_NOT_FOUND);
     }
 
@@ -122,7 +122,7 @@ class TokenServiceTest {
         when(refreshTokenRepository.findByToken("refresh-token")).thenReturn(Optional.empty());
 
         // when & then
-        TokenException exception = assertThrows(TokenException.class, () -> tokenService.logout(refreshCookie));
+        TokenException exception = assertThrows(TokenException.class, () -> tokenService.logout(refreshCookie.getValue()));
         assertThat(exception.getErrorCode()).isEqualTo(TokenErrorCode.REFRESH_TOKEN_NOT_FOUND);
     }
 }

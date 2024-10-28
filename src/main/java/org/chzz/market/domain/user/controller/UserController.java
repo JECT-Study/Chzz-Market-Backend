@@ -115,8 +115,8 @@ public class UserController implements UserApi {
     @Override
     @PostMapping("/tokens/reissue")
     public ResponseEntity<Void> reissue(HttpServletRequest request, HttpServletResponse response) {
-        Cookie refreshCookie = CookieUtil.getCookieByName(request, TokenType.REFRESH.name());
-        Map<TokenType, String> newTokens = tokenService.reissue(refreshCookie);
+        String refreshToken = CookieUtil.getCookieByNameOrThrow(request, TokenType.REFRESH.name());
+        Map<TokenType, String> newTokens = tokenService.reissue(refreshToken);
         // 새로운 리프레쉬 토큰 발급
         CookieUtil.createTokenCookie(response, newTokens.get(TokenType.REFRESH), TokenType.REFRESH);
         // 새로운 엑세스 토큰 발급
@@ -130,8 +130,8 @@ public class UserController implements UserApi {
     @Override
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
-        Cookie refreshCookie = CookieUtil.getCookieByName(request, TokenType.REFRESH.name());
-        tokenService.logout(refreshCookie);
+        String refreshToken = CookieUtil.getCookieByNameOrThrow(request, TokenType.REFRESH.name());
+        tokenService.logout(refreshToken);
         CookieUtil.expireCookie(response, TokenType.REFRESH.name());
         return ResponseEntity.ok().build();
     }

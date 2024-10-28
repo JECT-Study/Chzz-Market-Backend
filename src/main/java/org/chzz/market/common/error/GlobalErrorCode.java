@@ -11,6 +11,7 @@ public enum GlobalErrorCode implements ErrorCode {
     UNSUPPORTED_PARAMETER_TYPE(HttpStatus.BAD_REQUEST, "Unsupported type of parameter included"),
     UNSUPPORTED_PARAMETER_NAME(HttpStatus.BAD_REQUEST, "Unsupported productName of parameter included"),
     VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "Validation failed"),
+    COOKIE_NOT_FOUND(HttpStatus.BAD_REQUEST, "Required cookie is not found"),
     AUTHENTICATION_REQUIRED(HttpStatus.UNAUTHORIZED, "Authentication is required"),
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "Access is denied"),
     UNSUPPORTED_SORT_TYPE(HttpStatus.BAD_REQUEST, "Unsupported type of sort"),
