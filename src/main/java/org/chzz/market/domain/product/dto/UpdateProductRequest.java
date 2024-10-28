@@ -2,9 +2,9 @@ package org.chzz.market.domain.product.dto;
 
 import static org.chzz.market.domain.auction.dto.request.BaseRegisterRequest.DESCRIPTION_REGEX;
 import static org.chzz.market.domain.product.entity.Product.Category;
-import jakarta.validation.constraints.Max;
+
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.util.HashMap;
@@ -31,8 +31,7 @@ public class UpdateProductRequest {
     private Category category;
 
     @ThousandMultiple
-    @Min(value = 1000, message = "시작 가격은 최소 1,000원 이상, 1000의 배수이어야 합니다")
-    @Max(value = 2_000_000,message = "최소금액은 200만원을 넘을 수 없습니다")
+    @Max(value = 2_000_000, message = "최소금액은 200만원을 넘을 수 없습니다")
     private Integer minPrice;
 
     @Builder.Default

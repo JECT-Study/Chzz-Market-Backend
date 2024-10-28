@@ -4,9 +4,8 @@ import static org.chzz.market.domain.product.entity.Product.Category;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -44,8 +43,7 @@ public abstract class BaseRegisterRequest {
 
     @NotNull
     @ThousandMultiple
-    @Min(value = 1000, message = "시작 가격은 최소 1,000원 이상, 1000의 배수이어야 합니다")
-    @Max(value = 2_000_000,message = "최소금액은 200만원을 넘을 수 없습니다")
+    @Max(value = 2_000_000, message = "최소금액은 200만원을 넘을 수 없습니다")
     protected Integer minPrice;
 
     @NotNull(message = "경매 타입을 선택해주세요")
