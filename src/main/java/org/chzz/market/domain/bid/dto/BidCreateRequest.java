@@ -28,12 +28,4 @@ public class BidCreateRequest {
                 .amount(bidAmount)
                 .build();
     }
-
-    public @NotNull Long getAuctionId() {
-        return this.auctionId;
-    }
-
-    public @Max(value = 2_000_000, message = "입찰금액은 200만원을 넘을 수 없습니다") Long getBidAmount() {
-        return this.bidAmount;
-    }
 }
