@@ -60,7 +60,8 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
                         image.cdnPath,
                         product.minPrice,
                         product.likes.size().longValue(),
-                        isProductLikedByUser(userId)
+                        isProductLikedByUser(userId),
+                        product.user.id.eq(userId)
                 ))
                 .leftJoin(image).on(image.product.eq(product).and(isRepresentativeImage()))
                 .groupBy(product.id, product.name, image.cdnPath, product.minPrice)
