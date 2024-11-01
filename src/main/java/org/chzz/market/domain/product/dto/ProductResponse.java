@@ -11,8 +11,21 @@ import lombok.Getter;
 @Getter
 public class ProductResponse extends BaseProductDto {
     private final Long productId;
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Boolean isLiked;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Boolean isSeller;
+
+    @QueryProjection
+    public ProductResponse(Long productId, String name, String cdnPath, Integer minPrice,
+                           Long likeCount, Boolean isLiked, Boolean isSeller) {
+        super(name, cdnPath, likeCount, minPrice);
+        this.productId = productId;
+        this.isLiked = isLiked;
+        this.isSeller = isSeller;
+    }
 
     @QueryProjection
     public ProductResponse(Long productId, String name, String cdnPath, Integer minPrice,
