@@ -71,7 +71,7 @@ public class PaymentService {
 
     @Transactional(readOnly = true)
     public void validateOrderId(String orderId) {
-        if (paymentRepository.existsByOrderId(orderId) || !paymentClient.isValidOrderId(orderId)) {
+        if (paymentRepository.existsByOrderNo(orderId) || !paymentClient.isValidOrderId(orderId)) {
             throw new PaymentException(PaymentErrorCode.ALREADY_EXIST);
         }
     }
