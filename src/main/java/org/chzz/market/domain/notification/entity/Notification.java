@@ -77,4 +77,8 @@ public abstract class Notification extends BaseTimeEntity {
         }
         this.isDeleted = true;
     }
+
+    public boolean isOwner(Long userId) {
+        return this.userId.equals(userId);
+    }
 }
