@@ -1,9 +1,9 @@
-package org.chzz.market.domain.address.dto;
+package org.chzz.market.domain.delivery.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.Builder;
-import org.chzz.market.domain.address.entity.Address;
+import org.chzz.market.domain.delivery.entity.Delivery;
 import org.chzz.market.domain.user.entity.User;
 
 @Builder
@@ -29,8 +29,8 @@ public record DeliveryRequest(
 
         Boolean isDefault
 ) {
-    public static Address toEntity(User user, DeliveryRequest dto) {
-        return Address.builder()
+    public static Delivery toEntity(User user, DeliveryRequest dto) {
+        return Delivery.builder()
                 .user(user)
                 .roadAddress(dto.roadAddress())
                 .jibun(dto.jibun())

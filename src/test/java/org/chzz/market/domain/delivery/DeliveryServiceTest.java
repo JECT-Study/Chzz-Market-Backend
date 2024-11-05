@@ -1,4 +1,4 @@
-package org.chzz.market.domain.address;
+package org.chzz.market.domain.delivery;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -15,12 +15,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import org.chzz.market.domain.address.dto.DeliveryRequest;
-import org.chzz.market.domain.address.dto.DeliveryResponse;
-import org.chzz.market.domain.address.entity.Address;
-import org.chzz.market.domain.address.error.AddressException;
-import org.chzz.market.domain.address.repository.AddressRepository;
-import org.chzz.market.domain.address.service.AddressService;
+import org.chzz.market.domain.delivery.dto.DeliveryRequest;
+import org.chzz.market.domain.delivery.dto.DeliveryResponse;
+import org.chzz.market.domain.delivery.entity.Delivery;
+import org.chzz.market.domain.delivery.error.DeliveryException;
+import org.chzz.market.domain.delivery.repository.DeliveryRepository;
+import org.chzz.market.domain.delivery.service.DeliveryService;
 import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.error.exception.UserException;
 import org.chzz.market.domain.user.repository.UserRepository;
@@ -39,20 +39,20 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 
 @ExtendWith(MockitoExtension.class)
-public class AddressServiceTest {
+public class DeliveryServiceTest {
 
     @Mock
-    private AddressRepository addressRepository;
+    private DeliveryRepository deliveryRepository;
 
     @Mock
     private UserRepository userRepository;
 
     @InjectMocks
-    private AddressService addressService;
+    private DeliveryService deliveryService;
 
     private User testUser;
     private DeliveryRequest testDeliveryRequest;
-    private Address testAddress, address1, address2, address3;
+    private Delivery testDelivery, delivery1, delivery2, delivery3;
 
     @BeforeEach
     void setUp() {
@@ -60,7 +60,7 @@ public class AddressServiceTest {
                 .id(1L)
                 .build();
 
-        testAddress = Address.builder()
+        testDelivery = Delivery.builder()
                 .id(1L)
                 .user(testUser)
                 .roadAddress("서울시 강남구")
@@ -70,7 +70,7 @@ public class AddressServiceTest {
                 .isDefault(true)
                 .build();
 
-        address1 = Address.builder()
+        delivery1 = Delivery.builder()
                 .id(1L)
                 .user(testUser)
                 .roadAddress("Address 1")
@@ -79,7 +79,7 @@ public class AddressServiceTest {
                 .isDefault(true)
                 .build();
 
-        address2 = Address.builder()
+        delivery2 = Delivery.builder()
                 .id(2L)
                 .user(testUser)
                 .roadAddress("Address 2")
@@ -88,7 +88,7 @@ public class AddressServiceTest {
                 .isDefault(false)
                 .build();
 
-        address3 = Address.builder()
+        delivery3 = Delivery.builder()
                 .id(3L)
                 .user(testUser)
                 .roadAddress("Address 3")
@@ -112,11 +112,11 @@ public class AddressServiceTest {
     @DisplayName("배송지 목록 조회 성공")
     void getAddresses_Success() {
         Pageable pageable = PageRequest.of(0, 10);
-        Page<Address> addressePage = new PageImpl<>(Collections.singletonList(testAddress));
-        when(addressRepository.findByUserIdOrderByIsDefaultDescCreatedAtDesc(eq(1L), any(Pageable.class))).thenReturn(
+        Page<Delivery> addressePage = new PageImpl<>(Collections.singletonList(testDelivery));
+        when(deliveryRepository.findByUserIdOrderByIsDefaultDescCreatedAtDesc(eq(1L), any(Pageable.class))).thenReturn(
                 addressePage);
 
-        Page<DeliveryResponse> result = addressService.getAddresses(1L, pageable);
+        Page<DeliveryResponse> result = deliveryService.getAddresses(1L, pageable);
 
         assertNotNull(result);
         assertEquals(1, result.getContent().size());
@@ -127,13 +127,13 @@ public class AddressServiceTest {
     void getAddresses_SortCorrectly() {
         Pageable pageable = PageRequest.of(0, 10);
 
-        List<Address> addresses = Arrays.asList(address1, address2, address3);
-        Page<Address> addressPage = new PageImpl<>(addresses);
+        List<Delivery> deliveries = Arrays.asList(delivery1, delivery2, delivery3);
+        Page<Delivery> addressPage = new PageImpl<>(deliveries);
 
-        when(addressRepository.findByUserIdOrderByIsDefaultDescCreatedAtDesc(eq(1L), any(Pageable.class))).thenReturn(
+        when(deliveryRepository.findByUserIdOrderByIsDefaultDescCreatedAtDesc(eq(1L), any(Pageable.class))).thenReturn(
                 addressPage);
 
-        Page<DeliveryResponse> result = addressService.getAddresses(1L, pageable);
+        Page<DeliveryResponse> result = deliveryService.getAddresses(1L, pageable);
 
         assertNotNull(result);
         assertEquals(3, result.getContent().size());
@@ -150,7 +150,7 @@ public class AddressServiceTest {
     @DisplayName("기본 배송지만 조회 성공 확인")
     void getAddresses_ShouldReturnOnlyDefaultAddressWhenSizeIsOne() {
         Long userId = 1L;
-        Address defaultAddress = Address.builder()
+        Delivery defaultDelivery = Delivery.builder()
                 .id(1L)
                 .roadAddress("서울시 강남구")
                 .jibun("강남대로 123")
@@ -161,15 +161,15 @@ public class AddressServiceTest {
                 .isDefault(true)
                 .build();
 
-        Page<Address> addressPage = new PageImpl<>(Collections.singletonList(defaultAddress));
+        Page<Delivery> addressPage = new PageImpl<>(Collections.singletonList(defaultDelivery));
 
         Pageable pageable = PageRequest.of(0, 1, Sort.by(Direction.DESC, "isDefault", "createdAt"));
 
-        when(addressRepository.findByUserIdOrderByIsDefaultDescCreatedAtDesc(eq(userId),
+        when(deliveryRepository.findByUserIdOrderByIsDefaultDescCreatedAtDesc(eq(userId),
                 any(Pageable.class))).thenReturn(
                 addressPage);
 
-        Page<DeliveryResponse> result = addressService.getAddresses(userId, pageable);
+        Page<DeliveryResponse> result = deliveryService.getAddresses(userId, pageable);
 
         assertNotNull(result);
         assertEquals(1, result.getContent().size());
@@ -188,12 +188,12 @@ public class AddressServiceTest {
     @DisplayName("배송지 추가 성공")
     void addDelivery_Success() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
-        when(addressRepository.save(any(Address.class))).thenReturn(testAddress);
+        when(deliveryRepository.save(any(Delivery.class))).thenReturn(testDelivery);
 
-        assertDoesNotThrow(() -> addressService.addDelivery(1L, testDeliveryRequest));
+        assertDoesNotThrow(() -> deliveryService.addDelivery(1L, testDeliveryRequest));
 
-        verify(addressRepository).findByUserIdAndIsDefaultTrue(1L);
-        verify(addressRepository).save(any(Address.class));
+        verify(deliveryRepository).findByUserIdAndIsDefaultTrue(1L);
+        verify(deliveryRepository).save(any(Delivery.class));
     }
 
     @Test
@@ -201,13 +201,13 @@ public class AddressServiceTest {
     void addDelivery_UserNotFound() {
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(UserException.class, () -> addressService.addDelivery(1L, testDeliveryRequest));
+        assertThrows(UserException.class, () -> deliveryService.addDelivery(1L, testDeliveryRequest));
     }
 
     @Test
     @DisplayName("배송지 수정 성공")
     void updateDelivery_Success() {
-        Address addressToUpdate = Address.builder()
+        Delivery deliveryToUpdate = Delivery.builder()
                 .id(1L)
                 .user(testUser)
                 .roadAddress("기존 주소")
@@ -219,38 +219,38 @@ public class AddressServiceTest {
                 .isDefault(false)
                 .build();
 
-        when(addressRepository.findById(1L)).thenReturn(Optional.of(addressToUpdate));
+        when(deliveryRepository.findById(1L)).thenReturn(Optional.of(deliveryToUpdate));
 
         DeliveryRequest updateRequest = new DeliveryRequest(
                 "새로운 주소", "새로운 지번", "54321", "새로운 상세주소",
                 "새로운 수령인", "01087654321", true);
 
-        addressService.updateDelivery(1L, 1L, updateRequest);
+        deliveryService.updateDelivery(1L, 1L, updateRequest);
 
-        assertEquals("새로운 주소", addressToUpdate.getRoadAddress());
-        assertEquals("새로운 지번", addressToUpdate.getJibun());
-        assertEquals("54321", addressToUpdate.getZipcode());
-        assertEquals("새로운 상세주소", addressToUpdate.getDetailAddress());
-        assertEquals("새로운 수령인", addressToUpdate.getRecipientName());
-        assertEquals("01087654321", addressToUpdate.getPhoneNumber());
-        assertTrue(addressToUpdate.isDefault());
+        assertEquals("새로운 주소", deliveryToUpdate.getRoadAddress());
+        assertEquals("새로운 지번", deliveryToUpdate.getJibun());
+        assertEquals("54321", deliveryToUpdate.getZipcode());
+        assertEquals("새로운 상세주소", deliveryToUpdate.getDetailAddress());
+        assertEquals("새로운 수령인", deliveryToUpdate.getRecipientName());
+        assertEquals("01087654321", deliveryToUpdate.getPhoneNumber());
+        assertTrue(deliveryToUpdate.isDefault());
 
-        verify(addressRepository).findById(1L);
-        verify(addressRepository).findByUserIdAndIsDefaultTrue(1L);
+        verify(deliveryRepository).findById(1L);
+        verify(deliveryRepository).findByUserIdAndIsDefaultTrue(1L);
     }
 
     @Test
     @DisplayName("배송지 수정 실패 - 배송지를 찾을 수 없음")
     void updateDelivery_AddressNotFound() {
-        when(addressRepository.findById(1L)).thenReturn(Optional.empty());
+        when(deliveryRepository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(AddressException.class, () -> addressService.updateDelivery(1L, 1L, testDeliveryRequest));
+        assertThrows(DeliveryException.class, () -> deliveryService.updateDelivery(1L, 1L, testDeliveryRequest));
     }
 
     @Test
     @DisplayName("배송지 삭제 성공")
     void deleteDelivery_Success() {
-        Address nonDefaultAddress = Address.builder()
+        Delivery nonDefaultDelivery = Delivery.builder()
                 .id(2L)
                 .user(testUser)
                 .roadAddress("서울시 강남구")
@@ -262,27 +262,27 @@ public class AddressServiceTest {
                 .isDefault(false)
                 .build();
 
-        when(addressRepository.findById(2L)).thenReturn(Optional.of(nonDefaultAddress));
+        when(deliveryRepository.findById(2L)).thenReturn(Optional.of(nonDefaultDelivery));
 
-        assertDoesNotThrow(() -> addressService.deleteDelivery(1L, 2L));
+        assertDoesNotThrow(() -> deliveryService.deleteDelivery(1L, 2L));
 
-        verify(addressRepository).delete(nonDefaultAddress);
+        verify(deliveryRepository).delete(nonDefaultDelivery);
     }
 
     @Test
     @DisplayName("배송지 삭제 실패 - 배송지를 찾을 수 없음")
     void deleteDelivery_AddressNotFound() {
-        when(addressRepository.findById(1L)).thenReturn(Optional.empty());
+        when(deliveryRepository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(AddressException.class, () -> addressService.deleteDelivery(1L, 1L));
+        assertThrows(DeliveryException.class, () -> deliveryService.deleteDelivery(1L, 1L));
     }
 
     @Test
     @DisplayName("배송지 삭제 실패 - 기본 배송지 삭제 시도")
     void deleteDelivery_CannotDeleteDefaultAddress() {
-        when(addressRepository.findById(1L)).thenReturn(Optional.of(testAddress));
+        when(deliveryRepository.findById(1L)).thenReturn(Optional.of(testDelivery));
 
-        assertThrows(AddressException.class, () -> addressService.deleteDelivery(1L, 1L));
+        assertThrows(DeliveryException.class, () -> deliveryService.deleteDelivery(1L, 1L));
     }
 
 }

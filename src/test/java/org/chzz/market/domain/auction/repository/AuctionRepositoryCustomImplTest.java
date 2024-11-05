@@ -15,7 +15,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.chzz.market.common.DatabaseTest;
-import org.chzz.market.domain.address.entity.Address;
+import org.chzz.market.domain.delivery.entity.Delivery;
 import org.chzz.market.domain.auction.dto.BaseAuctionDto;
 import org.chzz.market.domain.auction.dto.response.AuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.AuctionResponse;
@@ -184,7 +184,7 @@ class AuctionRepositoryCustomImplTest {
         bidRepository.saveAll(List.of(bid1, bid2, bid3, bid4, bid5, bid6, bid7, bid8, bid10, bid11, bid12, bid13,
                 bid14, bid15));
 
-        Address address = Address.builder()
+        Delivery delivery = Delivery.builder()
                 .roadAddress("서울시 강남구")
                 .jibun("12345")
                 .zipcode("06000")
@@ -193,7 +193,7 @@ class AuctionRepositoryCustomImplTest {
                 .phoneNumber("010-1234-5678")
                 .build();
 
-        order1 = Order.of(4L, payment1, address, "부재시 경비실에 맡겨주세요.");
+        order1 = Order.of(4L, payment1, delivery, "부재시 경비실에 맡겨주세요.");
         orderRepository.save(order1);
     }
 

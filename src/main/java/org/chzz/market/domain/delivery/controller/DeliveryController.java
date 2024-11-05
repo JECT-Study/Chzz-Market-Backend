@@ -1,11 +1,11 @@
-package org.chzz.market.domain.address.controller;
+package org.chzz.market.domain.delivery.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.config.LoginUser;
-import org.chzz.market.domain.address.dto.DeliveryRequest;
-import org.chzz.market.domain.address.dto.DeliveryResponse;
-import org.chzz.market.domain.address.service.AddressService;
+import org.chzz.market.domain.delivery.dto.DeliveryRequest;
+import org.chzz.market.domain.delivery.dto.DeliveryResponse;
+import org.chzz.market.domain.delivery.service.DeliveryService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -22,8 +22,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/addresses")
 @RequiredArgsConstructor
-public class AddressController implements AddressApi {
-    private final AddressService addressService;
+public class DeliveryController implements DeliveryApi {
+    private final DeliveryService deliveryService;
 
     /**
      * 사용자의 주소 목록을 조회합니다.
@@ -37,7 +37,7 @@ public class AddressController implements AddressApi {
     public ResponseEntity<Page<DeliveryResponse>> getAddresses(
             @LoginUser Long userId,
             Pageable pageable) {
-        return ResponseEntity.ok(addressService.getAddresses(userId, pageable));
+        return ResponseEntity.ok(deliveryService.getAddresses(userId, pageable));
     }
 
     /**
@@ -52,7 +52,7 @@ public class AddressController implements AddressApi {
     public ResponseEntity<Void> addDelivery(
             @LoginUser Long userId,
             @Valid @RequestBody DeliveryRequest deliveryRequest) {
-        addressService.addDelivery(userId, deliveryRequest);
+        deliveryService.addDelivery(userId, deliveryRequest);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
@@ -70,7 +70,7 @@ public class AddressController implements AddressApi {
             @LoginUser Long userId,
             @PathVariable Long addressId,
             @Valid @RequestBody DeliveryRequest deliveryRequest) {
-        addressService.updateDelivery(userId, addressId, deliveryRequest);
+        deliveryService.updateDelivery(userId, addressId, deliveryRequest);
         return ResponseEntity.ok().build();
     }
 
@@ -86,7 +86,7 @@ public class AddressController implements AddressApi {
     public ResponseEntity<Void> deleteDelivery(
             @LoginUser Long userId,
             @PathVariable Long addressId) {
-        addressService.deleteDelivery(userId, addressId);
+        deliveryService.deleteDelivery(userId, addressId);
         return ResponseEntity.noContent().build();
     }
 }

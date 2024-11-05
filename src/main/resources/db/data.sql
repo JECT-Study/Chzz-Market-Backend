@@ -62,10 +62,10 @@ INSERT INTO `product` VALUES
 /*!40000 ALTER TABLE `product` ENABLE KEYS */;
 UNLOCK TABLES;
 
-LOCK TABLES `address` WRITE;
-/*!40000 ALTER TABLE `address` DISABLE KEYS */;
-INSERT INTO `address` VALUES (1,'2025-02-19 17:20:15.000000','2024-03-22 22:40:44.000000',1,'Ap #538-5488 Vitae, St.','Ap #668-1430 Neque. Av.','4315 Velit. St.','Ap #939-7613 Est. Road','Ap #942-3891 Eget, Road','3381'),(2,'2025-04-07 06:46:07.000000','2023-08-04 02:57:44.000000',1,'Ap #274-5005 Arcu. Rd.','363-7728 Sollicitudin St.','Ap #200-4259 Libero Rd.','296-2475 Sed Ave','Ap #833-1133 Lectus Street','1230'),(3,'2024-05-26 00:24:39.000000','2023-11-12 12:38:08.000000',2,'Ap #795-7541 Mauris Rd.','869-2832 Sed Rd.','Ap #852-2756 Ante Road','9896 Curabitur St.','P.O. Box 248, 5378 Diam St.','541848'),(4,'2025-01-09 01:21:28.000000','2024-04-18 06:55:17.000000',2,'Ap #541-2447 Nec Road','P.O. Box 614, 9429 Volutpat. Avenue','Ap #464-4402 Posuere Ave','752-9148 Volutpat. Avenue','654-6989 Nulla. Rd.','85-932'),(5,'2024-11-09 16:06:33.000000','2024-04-28 16:11:38.000000',1,'Ap #942-8059 Enim Avenue','Ap #916-2700 Diam. Ave','411-4946 Tellus. Av.','495 Enim Av.','263-647 Sit St.','66243-258');
-/*!40000 ALTER TABLE `address` ENABLE KEYS */;
+LOCK TABLES `delivery` WRITE;
+/*!40000 ALTER TABLE `delivery` DISABLE KEYS */;
+INSERT INTO `delivery` VALUES (1,'2025-02-19 17:20:15.000000','2024-03-22 22:40:44.000000',1,'Ap #538-5488 Vitae, St.','Ap #668-1430 Neque. Av.','4315 Velit. St.','Ap #939-7613 Est. Road','Ap #942-3891 Eget, Road','3381'),(2,'2025-04-07 06:46:07.000000','2023-08-04 02:57:44.000000',1,'Ap #274-5005 Arcu. Rd.','363-7728 Sollicitudin St.','Ap #200-4259 Libero Rd.','296-2475 Sed Ave','Ap #833-1133 Lectus Street','1230'),(3,'2024-05-26 00:24:39.000000','2023-11-12 12:38:08.000000',2,'Ap #795-7541 Mauris Rd.','869-2832 Sed Rd.','Ap #852-2756 Ante Road','9896 Curabitur St.','P.O. Box 248, 5378 Diam St.','541848'),(4,'2025-01-09 01:21:28.000000','2024-04-18 06:55:17.000000',2,'Ap #541-2447 Nec Road','P.O. Box 614, 9429 Volutpat. Avenue','Ap #464-4402 Posuere Ave','752-9148 Volutpat. Avenue','654-6989 Nulla. Rd.','85-932'),(5,'2024-11-09 16:06:33.000000','2024-04-28 16:11:38.000000',1,'Ap #942-8059 Enim Avenue','Ap #916-2700 Diam. Ave','411-4946 Tellus. Av.','495 Enim Av.','263-647 Sit St.','66243-258');
+/*!40000 ALTER TABLE `delivery` ENABLE KEYS */;
 UNLOCK TABLES;
 
 LOCK TABLES `auction` WRITE;

@@ -1,4 +1,4 @@
-package org.chzz.market.domain.address.entity;
+package org.chzz.market.domain.delivery.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,7 +14,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.chzz.market.domain.address.dto.DeliveryRequest;
+import org.chzz.market.domain.delivery.dto.DeliveryRequest;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
 import org.chzz.market.domain.user.entity.User;
 import org.hibernate.annotations.DynamicUpdate;
@@ -26,11 +26,11 @@ import org.hibernate.annotations.DynamicUpdate;
 @DynamicUpdate
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Address extends BaseTimeEntity {
+public class Delivery extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "address_id")
+    @Column(name = "delivery_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
