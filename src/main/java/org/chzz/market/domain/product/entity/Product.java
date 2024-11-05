@@ -133,9 +133,10 @@ public class Product extends BaseTimeEntity {
         image.specifyProduct(null);
     }
 
-    public Image getFirstImage() {
+    public String getFirstImageCdnPath() {
         return images.stream()
                 .filter(image -> image.getSequence() == 1)
+                .map(Image::getCdnPath)  // cdnPath 속성만 추출
                 .findFirst()
                 .orElseThrow(() -> new ProductException(ProductErrorCode.IMAGE_NOT_FOUND));
     }

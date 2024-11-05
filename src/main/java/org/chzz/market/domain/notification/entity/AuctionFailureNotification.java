@@ -13,7 +13,7 @@ import org.chzz.market.domain.user.entity.User;
 @DiscriminatorValue(value = AUCTION_FAILURE)
 public class AuctionFailureNotification extends Notification {
 
-    public AuctionFailureNotification(Long userId, Image image, String message) {
-        super(userId, image, message);
+    public AuctionFailureNotification(Long userId, String cdnPath, String message) {
+        super(userId, cdnPath, message);
     }
 }

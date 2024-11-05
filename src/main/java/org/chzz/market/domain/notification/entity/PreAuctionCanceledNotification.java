@@ -5,15 +5,13 @@ import static org.chzz.market.domain.notification.entity.NotificationType.Values
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import lombok.NoArgsConstructor;
-import org.chzz.market.domain.image.entity.Image;
-import org.chzz.market.domain.user.entity.User;
 
 @Entity
 @NoArgsConstructor
 @DiscriminatorValue(value = PRE_AUCTION_CANCELED)
 public class PreAuctionCanceledNotification extends Notification {
 
-    public PreAuctionCanceledNotification(Long userId, Image image, String message) {
-        super(userId, image, message);
+    public PreAuctionCanceledNotification(Long userId, String cdnPath, String message) {
+        super(userId, cdnPath, message);
     }
 }

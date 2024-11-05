@@ -9,7 +9,7 @@ import org.chzz.market.domain.notification.entity.Notification;
 import org.chzz.market.domain.notification.entity.NotificationType;
 import org.chzz.market.domain.user.entity.User;
 
-public record NotificationEvent(List<Long> userIds, NotificationType type, String message, Image image, // 공통 필드
+public record NotificationEvent(List<Long> userIds, NotificationType type, String message, String cdnPath, // 공통 필드
                                 Map<String, Object> additionalFields// 동적 필드를 위한 필드
 ) {
     public static final String FIELD_AUCTION_ID = "auctionId"; // 추가로 필요한 필드 이름
@@ -17,26 +17,26 @@ public record NotificationEvent(List<Long> userIds, NotificationType type, Strin
 
     // 경매 ID가 필요한 단일 사용자를 위한 정적 메서드
     public static NotificationEvent createAuctionNotification(Long userId, NotificationType type, String message,
-                                                              Image image, Long auctionId) {
-        return new NotificationEvent(List.of(userId), type, message, image, Map.of(FIELD_AUCTION_ID, auctionId));
+                                                              String cdnPath, Long auctionId) {
+        return new NotificationEvent(List.of(userId), type, message, cdnPath, Map.of(FIELD_AUCTION_ID, auctionId));
     }
 
     // 경매 ID가 필요한 여러 사용자를 위한 정적 메서드
     public static NotificationEvent createAuctionNotification(List<Long> userIds, NotificationType type, String message,
-                                                              Image image, Long auctionId) {
-        return new NotificationEvent(userIds, type, message, image, Map.of(FIELD_AUCTION_ID, auctionId));
+                                                              String cdnPath, Long auctionId) {
+        return new NotificationEvent(userIds, type, message, cdnPath, Map.of(FIELD_AUCTION_ID, auctionId));
     }
 
     // 경매 ID가 필요 없는 단일 사용자를 위한 정적 메서드
     public static NotificationEvent createSimpleNotification(Long userId, NotificationType type, String message,
-                                                             Image image) {
-        return new NotificationEvent(List.of(userId), type, message, image, EMPTY_FIELDS);
+                                                             String cdnPath) {
+        return new NotificationEvent(List.of(userId), type, message, cdnPath, EMPTY_FIELDS);
     }
 
     // 경매 ID가 필요 없는 여러 사용자를 위한 정적 메서드
     public static NotificationEvent createSimpleNotification(List<Long> userIds, NotificationType type, String message,
-                                                             Image image) {
-        return new NotificationEvent(userIds, type, message, image, EMPTY_FIELDS);
+                                                             String cdnPath) {
+        return new NotificationEvent(userIds, type, message, cdnPath, EMPTY_FIELDS);
     }
 
     public Notification toEntity(Long userId) {

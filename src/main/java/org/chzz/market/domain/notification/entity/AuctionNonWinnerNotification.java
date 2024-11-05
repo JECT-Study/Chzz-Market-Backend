@@ -13,7 +13,7 @@ import org.chzz.market.domain.user.entity.User;
 @DiscriminatorValue(value = AUCTION_NON_WINNER)
 public class AuctionNonWinnerNotification extends Notification {
 
-    public AuctionNonWinnerNotification(Long userId, Image image, String message) {
-        super(userId, image, message);
+    public AuctionNonWinnerNotification(Long userId, String cdnPath, String message) {
+        super(userId, cdnPath, message);
     }
 }

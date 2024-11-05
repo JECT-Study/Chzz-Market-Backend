@@ -172,7 +172,7 @@ public class AuctionService {
         if (!likedUserIds.isEmpty()) {
             eventPublisher.publishEvent(NotificationEvent.createAuctionNotification(likedUserIds, AUCTION_START,
                     AUCTION_START.getMessage(product.getName()),
-                    product.getFirstImage(), auction.getId())); // 경매 시작 알림
+                    product.getFirstImageCdnPath(), auction.getId())); // 경매 시작 알림
         }
 
         log.info("경매가 시작되었습니다. 등록된 경매 마감 시간 : {}", auction.getEndDateTime());
@@ -232,45 +232,45 @@ public class AuctionService {
     private void processAuctionResults(Auction auction) {
         Long productUserId = auction.getProduct().getUser().getId();
         String productName = auction.getProduct().getName();
-        Image firstImage = auction.getProduct().getFirstImage();
+        String firstImageCdnPath = auction.getProduct().getFirstImageCdnPath();
         List<Bid> bids = bidService.findAllBidsByAuction(auction);
         if (bids.isEmpty()) { // 입찰이 없는 경우
             eventPublisher.publishEvent(
                     NotificationEvent.createSimpleNotification(productUserId, AUCTION_FAILURE,
                             AUCTION_FAILURE.getMessage(productName),
-                            firstImage)); // 낙찰 실패 알림 이벤트
+                            firstImageCdnPath)); // 낙찰 실패 알림 이벤트
             return;
         }
         eventPublisher.publishEvent(
                 NotificationEvent.createAuctionNotification(productUserId, AUCTION_SUCCESS,
                         AUCTION_SUCCESS.getMessage(productName),
-                        firstImage, auction.getId())); // 낙찰 성공 알림 이벤트
-        processWinningBid(auction, bids.get(0), productName, firstImage); // 첫 번째 입찰이 낙찰
-        processNonWinningBids(bids, productName, firstImage);
+                        firstImageCdnPath, auction.getId())); // 낙찰 성공 알림 이벤트
+        processWinningBid(auction, bids.get(0), productName, firstImageCdnPath); // 첫 번째 입찰이 낙찰
+        processNonWinningBids(bids, productName, firstImageCdnPath);
 
     }
 
     /**
      * 낙찰자 처리
      */
-    private void processWinningBid(Auction auction, Bid winningBid, String productName, Image firstImage) {
+    private void processWinningBid(Auction auction, Bid winningBid, String productName, String firstImageCdnPath) {
         auction.assignWinner(winningBid.getBidder().getId());
         eventPublisher.publishEvent(
                 NotificationEvent.createAuctionNotification(winningBid.getBidder().getId(), AUCTION_WINNER,
-                        AUCTION_WINNER.getMessage(productName), firstImage, auction.getId())); // 낙찰자 알림 이벤트
+                        AUCTION_WINNER.getMessage(productName), firstImageCdnPath, auction.getId())); // 낙찰자 알림 이벤트
         log.info("경매 ID {}: 낙찰자 처리 완료", auction.getId());
     }
 
     /**
      * 미낙찰자 처리
      */
-    private void processNonWinningBids(List<Bid> bids, String productName, Image firstImage) {
+    private void processNonWinningBids(List<Bid> bids, String productName, String firstImageCdnPath) {
         List<Long> nonWinnerIds = bids.stream().skip(1) // 낙찰자를 제외한 나머지 입찰자들
                 .map(bid -> bid.getBidder().getId()).collect(Collectors.toList());
 
         if (!nonWinnerIds.isEmpty()) {
             eventPublisher.publishEvent(NotificationEvent.createSimpleNotification(nonWinnerIds, AUCTION_NON_WINNER,
-                    AUCTION_NON_WINNER.getMessage(productName), firstImage)); // 미낙찰자 알림 이벤트
+                    AUCTION_NON_WINNER.getMessage(productName), firstImageCdnPath)); // 미낙찰자 알림 이벤트
         }
     }
 }

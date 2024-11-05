@@ -31,11 +31,10 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom 
                         notification.message,
                         notification.type,
                         notification.isRead,
-                        image.cdnPath,
+                        notification.cdnPath,
                         getAuctionIdPath(),
                         notification.createdAt
                 ))
-                .leftJoin(notification.image, image)
                 .where(notification.isDeleted.eq(FALSE))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
