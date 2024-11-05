@@ -307,7 +307,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
     public Page<WonAuctionResponse> findWonAuctionHistoryByUserId(Long userId, Pageable pageable) {
         JPAQuery<?> baseQuery = jpaQueryFactory
                 .from(auction)
-                .join(auction.bids, bid).on(bid.bidder.id.eq(userId).and(bid.status.eq(ACTIVE)))
+                .join(auction.bids, bid).on(bid.bidderId.eq(userId).and(bid.status.eq(ACTIVE)))
                 .join(auction.product, product)
                 .where(auction.winnerId.eq(userId).and(auction.status.eq(ENDED)));
 
@@ -348,7 +348,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
     public Page<LostAuctionResponse> findLostAuctionHistoryByUserId(Long userId, Pageable pageable) {
         JPAQuery<?> baseQuery = jpaQueryFactory
                 .from(auction)
-                .join(auction.bids, bid).on(bid.bidder.id.eq(userId).and(bid.status.eq(ACTIVE)))
+                .join(auction.bids, bid).on(bid.bidderId.eq(userId).and(bid.status.eq(ACTIVE)))
                 .where(auction.winnerId.ne(userId).and(auction.status.eq(ENDED)));
 
         List<LostAuctionResponse> query = baseQuery
@@ -388,7 +388,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                 .select(auction.id)
                 .from(auction)
                 .join(auction.bids, bid)
-                .where(bid.bidder.id.eq(userId)
+                .where(bid.bidderId.eq(userId)
                         .and(bid.status.eq(ACTIVE)))
                 .fetch();
 
@@ -504,7 +504,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                         ))
                 .from(auction)
                 .join(bid)
-                .on(bid.auction.eq(auction).and(auction.id.eq(auctionId)).and(auction.winnerId.eq(bid.bidder.id)))
+                .on(bid.auction.eq(auction).and(auction.id.eq(auctionId)).and(auction.winnerId.eq(bid.bidderId)))
                 .join(auction.product, product)
                 .leftJoin(image).on(image.product.eq(product).and(isRepresentativeImage()))
                 .fetchOne());
@@ -580,11 +580,11 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
     }
 
     private BooleanBuilder bidderIdEq(Long userId) {
-        return nullSafeBuilder(() -> bid.bidder.id.eq(userId));
+        return nullSafeBuilder(() -> bid.bidderId.eq(userId));
     }
 
     private BooleanBuilder bidderIdEqSub(QBid qBid, Long userId) {
-        return nullSafeBuilder(() -> qBid.bidder.id.eq(userId));
+        return nullSafeBuilder(() -> qBid.bidderId.eq(userId));
     }
 
     private BooleanBuilder winnerIdEq(Long userId) {

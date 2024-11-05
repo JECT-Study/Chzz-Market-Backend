@@ -7,5 +7,5 @@ import org.chzz.market.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface BidRepository extends JpaRepository<Bid, Long> , BidRepositoryCustom{
-    Optional<Bid> findByAuctionAndBidder(Auction auction, User bidder);
+    Optional<Bid> findByAuctionAndBidderId(Auction auction, User bidder);
 }

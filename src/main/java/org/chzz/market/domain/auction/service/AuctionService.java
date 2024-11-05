@@ -254,9 +254,9 @@ public class AuctionService {
      * 낙찰자 처리
      */
     private void processWinningBid(Auction auction, Bid winningBid, String productName, String firstImageCdnPath) {
-        auction.assignWinner(winningBid.getBidder().getId());
+        auction.assignWinner(winningBid.getBidderId());
         eventPublisher.publishEvent(
-                NotificationEvent.createAuctionNotification(winningBid.getBidder().getId(), AUCTION_WINNER,
+                NotificationEvent.createAuctionNotification(winningBid.getBidderId(), AUCTION_WINNER,
                         AUCTION_WINNER.getMessage(productName), firstImageCdnPath, auction.getId())); // 낙찰자 알림 이벤트
         log.info("경매 ID {}: 낙찰자 처리 완료", auction.getId());
     }
@@ -266,7 +266,7 @@ public class AuctionService {
      */
     private void processNonWinningBids(List<Bid> bids, String productName, String firstImageCdnPath) {
         List<Long> nonWinnerIds = bids.stream().skip(1) // 낙찰자를 제외한 나머지 입찰자들
-                .map(bid -> bid.getBidder().getId()).collect(Collectors.toList());
+                .map(bid -> bid.getBidderId()).collect(Collectors.toList());
 
         if (!nonWinnerIds.isEmpty()) {
             eventPublisher.publishEvent(NotificationEvent.createSimpleNotification(nonWinnerIds, AUCTION_NON_WINNER,

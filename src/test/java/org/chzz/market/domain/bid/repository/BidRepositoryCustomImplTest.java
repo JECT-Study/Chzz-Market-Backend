@@ -51,9 +51,6 @@ class BidRepositoryCustomImplTest {
     @Autowired
     ImageRepository imageRepository;
 
-    @Autowired
-    EntityManagerFactory entityManagerFactory;
-
     private User bidder1, bidder2, bidder3;
     private Auction auction1, auction2, auction3, auction4;
     private Product product4;
@@ -91,6 +88,9 @@ class BidRepositoryCustomImplTest {
                 .userRole(UserRole.USER)
                 .providerId("2222")
                 .build();
+
+        userRepository.saveAll(List.of(seller, bidder1, bidder2, bidder3));
+
         Product product1 = Product.builder()
                 .category(Category.OTHER)
                 .description("asd")
@@ -123,6 +123,9 @@ class BidRepositoryCustomImplTest {
                 .user(seller)
                 .build();
 
+        productRepository.saveAll(List.of(product1, product2, product3, product4));
+
+
         Image image1 = Image.builder()
                 .product(product1)
                 .cdnPath("qepifnv2")
@@ -131,6 +134,9 @@ class BidRepositoryCustomImplTest {
                 .product(product1)
                 .cdnPath("rrreww4")
                 .build();
+
+        imageRepository.saveAll(List.of(image1, image2));
+
         auction1 = Auction.builder()
                 .product(product1)
                 .endDateTime(LocalDateTime.now().plusDays(2))
@@ -152,50 +158,48 @@ class BidRepositoryCustomImplTest {
                 .winnerId(null) // 낙찰자가 없는 경우
                 .build();
 
+        auctionRepository.saveAll(List.of(auction1, auction2, auction3));
+
         Bid bid1 = Bid.builder()
                 .amount(1000L)
                 .auction(auction1)
                 .count(2)
-                .bidder(bidder1)
+                .bidderId(bidder1.getId())
                 .build();
         Bid bid2 = Bid.builder()
                 .amount(2000L)
                 .auction(auction2)
                 .count(3)
-                .bidder(bidder1)
+                .bidderId(bidder1.getId())
                 .build();
         Bid bid3 = Bid.builder()
                 .amount(300000L)
                 .auction(auction1)
                 .count(1)
-                .bidder(bidder2)
+                .bidderId(bidder2.getId())
                 .build();
         Bid bid4 = Bid.builder()
                 .amount(10000000L)
                 .auction(auction2)
                 .count(1)
-                .bidder(bidder2)
+                .bidderId(bidder2.getId())
                 .build();
 
         Bid cancelledBid1 = Bid.builder()
                 .amount(10000000L)
                 .auction(auction3)
                 .count(1)
-                .bidder(bidder2)
+                .bidderId(bidder2.getId())
                 .status(CANCELLED)
                 .build();
         Bid cancelledBid2 = Bid.builder()
                 .amount(10000000L)
                 .auction(auction3)
                 .count(1)
-                .bidder(bidder1)
+                .bidderId(bidder1.getId())
                 .status(CANCELLED)
                 .build();
 
-        userRepository.saveAll(List.of(seller, bidder1, bidder2, bidder3));
-        productRepository.saveAll(List.of(product1, product2, product3, product4));
-        imageRepository.saveAll(List.of(image1, image2));
-        auctionRepository.saveAll(List.of(auction1, auction2, auction3));
         bidRepository.saveAll(List.of(bid1, bid2, bid3, bid4, cancelledBid1, cancelledBid2));
     }
 
@@ -322,20 +326,20 @@ class BidRepositoryCustomImplTest {
                 .amount(5000L)
                 .auction(auction4)
                 .count(1)
-                .bidder(bidder1)
+                .bidderId(bidder1.getId())
                 .build();
 
         Bid bid6 = Bid.builder()
                 .amount(7000L)
                 .auction(auction4)
                 .count(2)
-                .bidder(bidder2)
+                .bidderId(bidder2.getId())
                 .build();
         Bid cancelledBid3 = Bid.builder()
                 .amount(10000L)
                 .auction(auction4)
                 .count(3)
-                .bidder(bidder3)
+                .bidderId(bidder3.getId())
                 .status(CANCELLED)
                 .build();
         bidRepository.saveAll(List.of(bid5, bid6, cancelledBid3));

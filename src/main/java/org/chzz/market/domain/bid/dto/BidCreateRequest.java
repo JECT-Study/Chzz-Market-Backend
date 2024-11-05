@@ -23,10 +23,10 @@ public class BidCreateRequest {
     @Max(value = 2_000_000, message = "입찰금액은 200만원을 넘을 수 없습니다")
     private Long bidAmount;
 
-    public Bid toEntity(Auction auction, User user) {
+    public Bid toEntity(Auction auction, Long userId) {
         return Bid.builder()
                 .auction(auction)
-                .bidder(user)
+                .bidderId(userId)
                 .amount(bidAmount)
                 .build();
     }

@@ -44,7 +44,7 @@ public class BidRepositoryCustomImpl implements BidRepositoryCustom {
         // 공통된 부분을 baseQuery로 추출
         JPAQuery<?> baseQuery = jpaQueryFactory
                 .from(bid)
-                .join(bid.auction, auction).on(bid.bidder.id.eq(userId).and(bid.status.eq(ACTIVE)
+                .join(bid.auction, auction).on(bid.bidderId.eq(userId).and(bid.status.eq(ACTIVE)
                         .and(auctionStatusEqIgnoreNull(auctionStatus))));
 
         List<BiddingRecord> result = baseQuery
@@ -75,7 +75,6 @@ public class BidRepositoryCustomImpl implements BidRepositoryCustom {
     public List<Bid> findAllBidsByAuction(Auction auction) {
         return jpaQueryFactory
                 .selectFrom(bid)
-                .leftJoin(bid.bidder).fetchJoin()
                 .where(
                         bid.auction.eq(auction).and(bid.status.eq(ACTIVE))
                 )
@@ -96,7 +95,7 @@ public class BidRepositoryCustomImpl implements BidRepositoryCustom {
                         user.nickname,
                         isWinner
                 ))
-                .join(bid.bidder, user)
+                .join(user).on(bid.bidderId.eq(user.id))
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())

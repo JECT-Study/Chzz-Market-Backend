@@ -32,10 +32,10 @@ class NotificationServiceTest {
 
     @BeforeEach
     void setUp() {
-        user = User.builder().providerId("1234").nickname("닉네임1").email("asd@naver.com").build();
-        notification = new AuctionSuccessNotification(user, null, "Test Notification 1", 1L);
-        readNotification = new AuctionSuccessNotification(user, null, "Test Notification 1", 1L);
-        deletedNotification = new AuctionSuccessNotification(user, null, "Test Notification 1", 1L);
+        user = User.builder().providerId("1234").nickname("닉네임1").email("asd@naver.com").id(1L).build();
+        notification = new AuctionSuccessNotification(user.getId(), null, "Test Notification 1", 1L);
+        readNotification = new AuctionSuccessNotification(user.getId(), null, "Test Notification 1", 1L);
+        deletedNotification = new AuctionSuccessNotification(user.getId(), null, "Test Notification 1", 1L);
         deletedNotification.delete();
         readNotification.read();
         notificationRepository.save(notification);

@@ -43,9 +43,8 @@ public class Bid extends BaseTimeEntity {
     @Column(name = "bid_id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User bidder;
+    @Column(nullable = false)
+    private Long bidderId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "auction_id", nullable = false)
@@ -86,7 +85,7 @@ public class Bid extends BaseTimeEntity {
     }
 
     public boolean isOwner(Long userId) {
-        return this.bidder.getId().equals(userId);
+        return this.bidderId.equals(userId);
     }
 
     private void validateActiveStatus() {

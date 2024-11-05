@@ -151,20 +151,20 @@ class AuctionRepositoryCustomImplTest {
         image6 = Image.builder().product(product8).cdnPath("path/to/image5.jpg").sequence(1).build();
         imageRepository.saveAll(List.of(image1, image2, image3, image4, image5, image6));
 
-        bid1 = Bid.builder().bidder(user2).auction(auction1).amount(2000L).build();
-        bid2 = Bid.builder().bidder(user2).auction(auction2).amount(4000L).build();
-        bid3 = Bid.builder().bidder(user1).auction(auction3).amount(5000L).build();
-        bid4 = Bid.builder().bidder(user3).auction(auction2).amount(6000L).build();
-        bid5 = Bid.builder().bidder(user1).auction(auction5).amount(7000L).build();
-        bid6 = Bid.builder().bidder(user2).auction(auction6).amount(8000L).build();
-        bid7 = Bid.builder().bidder(user3).auction(auction3).amount(310000L).build();
-        bid8 = Bid.builder().bidder(user4).auction(auction3).amount(320000L).build();
-        bid10 = Bid.builder().bidder(user2).auction(auction3).amount(8000L).build();
-        bid11 = Bid.builder().bidder(user2).auction(auction4).amount(15000L).build();
-        bid12 = Bid.builder().bidder(user3).auction(auction4).amount(25000L).build();
-        bid13 = Bid.builder().bidder(user4).auction(auction8).amount(250000L).build();
-        bid14 = Bid.builder().bidder(user2).auction(auction8).amount(150000L).build();
-        bid15 = Bid.builder().bidder(user5).auction(auction9).amount(75000L).status(BidStatus.ACTIVE).build();
+        bid1 = Bid.builder().bidderId(user2.getId()).auction(auction1).amount(2000L).build();
+        bid2 = Bid.builder().bidderId(user2.getId()).auction(auction2).amount(4000L).build();
+        bid3 = Bid.builder().bidderId(user1.getId()).auction(auction3).amount(5000L).build();
+        bid4 = Bid.builder().bidderId(user3.getId()).auction(auction2).amount(6000L).build();
+        bid5 = Bid.builder().bidderId(user1.getId()).auction(auction5).amount(7000L).build();
+        bid6 = Bid.builder().bidderId(user2.getId()).auction(auction6).amount(8000L).build();
+        bid7 = Bid.builder().bidderId(user3.getId()).auction(auction3).amount(310000L).build();
+        bid8 = Bid.builder().bidderId(user4.getId()).auction(auction3).amount(320000L).build();
+        bid10 = Bid.builder().bidderId(user2.getId()).auction(auction3).amount(8000L).build();
+        bid11 = Bid.builder().bidderId(user2.getId()).auction(auction4).amount(15000L).build();
+        bid12 = Bid.builder().bidderId(user3.getId()).auction(auction4).amount(25000L).build();
+        bid13 = Bid.builder().bidderId(user4.getId()).auction(auction8).amount(250000L).build();
+        bid14 = Bid.builder().bidderId(user2.getId()).auction(auction8).amount(150000L).build();
+        bid15 = Bid.builder().bidderId(user5.getId()).auction(auction9).amount(75000L).status(BidStatus.ACTIVE).build();
 
         auction1.registerBid(bid1);
         auction2.registerBid(bid2);
@@ -659,27 +659,27 @@ class AuctionRepositoryCustomImplTest {
                     List.of(ongoingAuction1, ongoingAuction2, failedAuction1, failedAuction2, successedAuction));
 
             Bid bid1 = Bid.builder()
-                    .bidder(user)
+                    .bidderId(user.getId())
                     .auction(successedAuction)
                     .amount(10000L)
                     .build();
             Bid bid2 = Bid.builder()
-                    .bidder(user)
+                    .bidderId(user.getId())
                     .auction(failedAuction1)
                     .amount(10000L)
                     .build();
             Bid bid3 = Bid.builder()
-                    .bidder(user)
+                    .bidderId(user.getId())
                     .auction(failedAuction2)
                     .amount(10000L)
                     .build();
             Bid bid4 = Bid.builder()
-                    .bidder(user)
+                    .bidderId(user.getId())
                     .auction(ongoingAuction1)
                     .amount(1000L)
                     .build();
             Bid bid5 = Bid.builder()
-                    .bidder(user)
+                    .bidderId(user.getId())
                     .auction(ongoingAuction2)
                     .amount(1000L)
                     .build();

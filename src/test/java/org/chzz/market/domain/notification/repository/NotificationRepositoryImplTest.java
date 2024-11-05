@@ -33,11 +33,11 @@ class NotificationRepositoryImplTest {
         userRepository.save(user1);
 
         // 몇 개의 알림을 미리 저장
-        Notification notification1 = new AuctionSuccessNotification(user1, null, "Test Notification 1", 1L);
+        Notification notification1 = new AuctionSuccessNotification(user1.getId(), null, "Test Notification 1", 1L);
 
-        Notification notification2 = new AuctionSuccessNotification(user1, null, "Test Notification 1", 1L);
+        Notification notification2 = new AuctionSuccessNotification(user1.getId(), null, "Test Notification 1", 1L);
 
-        Notification notification3 = new AuctionSuccessNotification(user1, null, "Test Notification 1", 1L);
+        Notification notification3 = new AuctionSuccessNotification(user1.getId(), null, "Test Notification 1", 1L);
 
         notification3.delete();
         notificationRepository.save(notification1);

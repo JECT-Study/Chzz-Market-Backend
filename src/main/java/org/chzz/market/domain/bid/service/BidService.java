@@ -74,12 +74,12 @@ public class BidService {
         Auction auction = auctionRepository.findById(bidCreateRequest.getAuctionId())
                 .orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
         validateBidConditions(bidCreateRequest, user.getId(), auction);
-        bidRepository.findByAuctionAndBidder(auction, user)
+        bidRepository.findByAuctionAndBidderId(auction, user)
                 .ifPresentOrElse(
                         // 이미 입찰을 한 경우
                         bid -> bid.adjustBidAmount(bidCreateRequest.getBidAmount()),
                         // 입찰을 처음 하는 경우
-                        () -> auction.registerBid(bidCreateRequest.toEntity(auction, user)) // 연관관계 설정
+                        () -> auction.registerBid(bidCreateRequest.toEntity(auction, user.getId())) // 연관관계 설정
                 );
     }
 
