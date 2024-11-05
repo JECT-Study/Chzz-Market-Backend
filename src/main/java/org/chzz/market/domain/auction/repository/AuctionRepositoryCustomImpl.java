@@ -89,7 +89,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                         bid.countDistinct(),
                         isParticipating(userId)
                 ))
-                .leftJoin(bid).on(bid.auction.id.eq(auction.id).and(bid.status.eq(ACTIVE)))
+                .leftJoin(bid).on(bid.auctionId.eq(auction.id).and(bid.status.eq(ACTIVE)))
                 .leftJoin(image).on(image.product.eq(product).and(isRepresentativeImage()))
                 .groupBy(auction.id, product.name, image.cdnPath, auction.createdAt, product.minPrice)
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
@@ -139,11 +139,11 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                 .join(auction.product, product)
                 .join(product.user, user)
                 // 활성화된 입찰 조인
-                .leftJoin(activeBid).on(activeBid.auction.id.eq(auctionId)
+                .leftJoin(activeBid).on(activeBid.auctionId.eq(auctionId)
                         .and(activeBid.status.eq(ACTIVE)) // ACTIVE 상태인 입찰만 조인
                         .and(bidderIdEqSub(activeBid, userId)))
                 // 취소된 입찰 조인
-                .leftJoin(canceledBid).on(canceledBid.auction.id.eq(auctionId)
+                .leftJoin(canceledBid).on(canceledBid.auctionId.eq(auctionId)
                         .and(canceledBid.status.eq(CANCELLED)) // CANCELED 상태인 입찰 조인
                         .and(bidderIdEqSub(canceledBid, userId)))
                 .leftJoin(order).on(order.auction.eq(auction))
@@ -174,7 +174,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                 .from(auction)
                 .join(auction.product, product)
                 .leftJoin(image).on(image.product.eq(product).and(isRepresentativeImage()))
-                .leftJoin(bid).on(bid.auction.id.eq(auctionId).and(bid.status.eq(ACTIVE)))
+                .leftJoin(bid).on(bid.auctionId.eq(auctionId).and(bid.status.eq(ACTIVE)))
                 .where(auction.id.eq(auctionId))
                 .groupBy(product.name, image.cdnPath, product.minPrice)
                 .fetchOne());
@@ -258,7 +258,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                         bid.countDistinct())
                 )
                 .leftJoin(image).on(image.product.eq(product).and(isRepresentativeImage()))
-                .leftJoin(bid).on(bid.auction.id.eq(auction.id).and(bid.status.ne(CANCELLED)))
+                .leftJoin(bid).on(bid.auctionId.eq(auction.id).and(bid.status.ne(CANCELLED)))
                 .groupBy(auction.id, product.name, image.cdnPath, auction.createdAt, product.minPrice)
                 .offset(0)
                 .limit(5)
@@ -289,7 +289,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                         bid.countDistinct())
                 )
                 .leftJoin(image).on(image.product.eq(product).and(isRepresentativeImage()))
-                .leftJoin(bid).on(bid.auction.id.eq(auction.id).and(bid.status.ne(CANCELLED)))
+                .leftJoin(bid).on(bid.auctionId.eq(auction.id).and(bid.status.ne(CANCELLED)))
                 .groupBy(auction.id, product.name, image.cdnPath)
                 .offset(0)
                 .limit(5)
@@ -307,7 +307,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
     public Page<WonAuctionResponse> findWonAuctionHistoryByUserId(Long userId, Pageable pageable) {
         JPAQuery<?> baseQuery = jpaQueryFactory
                 .from(auction)
-                .join(auction.bids, bid).on(bid.bidderId.eq(userId).and(bid.status.eq(ACTIVE)))
+                .join(bid).on(bid.auctionId.eq(auction.id).and(bid.bidderId.eq(userId).and(bid.status.eq(ACTIVE))))
                 .join(auction.product, product)
                 .where(auction.winnerId.eq(userId).and(auction.status.eq(ENDED)));
 
@@ -348,7 +348,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
     public Page<LostAuctionResponse> findLostAuctionHistoryByUserId(Long userId, Pageable pageable) {
         JPAQuery<?> baseQuery = jpaQueryFactory
                 .from(auction)
-                .join(auction.bids, bid).on(bid.bidderId.eq(userId).and(bid.status.eq(ACTIVE)))
+                .join(bid).on(bid.auctionId.eq(auction.id).and(bid.bidderId.eq(userId).and(bid.status.eq(ACTIVE))))
                 .where(auction.winnerId.ne(userId).and(auction.status.eq(ENDED)));
 
         List<LostAuctionResponse> query = baseQuery
@@ -387,7 +387,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
         List<Long> participatedAuctionIds = jpaQueryFactory
                 .select(auction.id)
                 .from(auction)
-                .join(auction.bids, bid)
+                .join(bid).on(bid.auctionId.eq(auction.id))
                 .where(bid.bidderId.eq(userId)
                         .and(bid.status.eq(ACTIVE)))
                 .fetch();
@@ -504,7 +504,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                         ))
                 .from(auction)
                 .join(bid)
-                .on(bid.auction.eq(auction).and(auction.id.eq(auctionId)).and(auction.winnerId.eq(bid.bidderId)))
+                .on(bid.auctionId.eq(auction.id).and(auction.id.eq(auctionId)).and(auction.winnerId.eq(bid.bidderId)))
                 .join(auction.product, product)
                 .leftJoin(image).on(image.product.eq(product).and(isRepresentativeImage()))
                 .fetchOne());
@@ -528,7 +528,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
     private BooleanExpression isParticipating(Long userId) {
         return JPAExpressions.selectOne()
                 .from(bid)
-                .where(bid.auction.id.eq(auction.id).and(bid.status.eq(ACTIVE).and(bidderIdEq(userId))))
+                .where(bid.auctionId.eq(auction.id).and(bid.status.eq(ACTIVE).and(bidderIdEq(userId))))
                 .exists();
     }
 
@@ -541,7 +541,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
         return Expressions.asNumber(JPAExpressions
                 .select(bid.count())
                 .from(bid)
-                .where(bid.auction.id.eq(auction.id).and(bid.status.eq(ACTIVE))));
+                .where(bid.auctionId.eq(auction.id).and(bid.status.eq(ACTIVE))));
     }
 
     /**
@@ -570,7 +570,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
         return JPAExpressions.select(bid.amount.max().coalesce(0L))
                 .from(bid)
                 .where(
-                        bid.auction.id.eq(auction.id),
+                        bid.auctionId.eq(auction.id),
                         bid.status.eq(ACTIVE)
                 );
     }

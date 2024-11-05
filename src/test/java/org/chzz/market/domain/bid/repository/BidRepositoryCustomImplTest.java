@@ -2,10 +2,9 @@ package org.chzz.market.domain.bid.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.chzz.market.domain.auction.type.AuctionStatus.ENDED;
-import static org.chzz.market.domain.bid.entity.Bid.BidStatus.CANCELLED;
 import static org.chzz.market.domain.auction.type.AuctionStatus.PROCEEDING;
+import static org.chzz.market.domain.bid.entity.Bid.BidStatus.CANCELLED;
 
-import jakarta.persistence.EntityManagerFactory;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -125,7 +124,6 @@ class BidRepositoryCustomImplTest {
 
         productRepository.saveAll(List.of(product1, product2, product3, product4));
 
-
         Image image1 = Image.builder()
                 .product(product1)
                 .cdnPath("qepifnv2")
@@ -162,39 +160,39 @@ class BidRepositoryCustomImplTest {
 
         Bid bid1 = Bid.builder()
                 .amount(1000L)
-                .auction(auction1)
+                .auctionId(auction1.getId())
                 .count(2)
                 .bidderId(bidder1.getId())
                 .build();
         Bid bid2 = Bid.builder()
                 .amount(2000L)
-                .auction(auction2)
+                .auctionId(auction2.getId())
                 .count(3)
                 .bidderId(bidder1.getId())
                 .build();
         Bid bid3 = Bid.builder()
                 .amount(300000L)
-                .auction(auction1)
+                .auctionId(auction1.getId())
                 .count(1)
                 .bidderId(bidder2.getId())
                 .build();
         Bid bid4 = Bid.builder()
                 .amount(10000000L)
-                .auction(auction2)
+                .auctionId(auction2.getId())
                 .count(1)
                 .bidderId(bidder2.getId())
                 .build();
 
         Bid cancelledBid1 = Bid.builder()
                 .amount(10000000L)
-                .auction(auction3)
+                .auctionId(auction3.getId())
                 .count(1)
                 .bidderId(bidder2.getId())
                 .status(CANCELLED)
                 .build();
         Bid cancelledBid2 = Bid.builder()
                 .amount(10000000L)
-                .auction(auction3)
+                .auctionId(auction3.getId())
                 .count(1)
                 .bidderId(bidder1.getId())
                 .status(CANCELLED)
@@ -302,7 +300,7 @@ class BidRepositoryCustomImplTest {
     @DisplayName("경매 ID로 입찰 내역을 조회할 때 활성화 된 입찰이 없는 경우(낙찰자가 없는 경우)를 처리한다")
     void testFindBidsByAuctionIdWithoutWinner() {
         // given
-        Pageable pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "bidAmount"));
+        Pageable pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "bid-amount"));
 
         // when
         Page<BidInfoResponse> bidsForAuction3 = bidRepository.findBidsByAuctionId(auction3.getId(), pageable);
@@ -324,20 +322,20 @@ class BidRepositoryCustomImplTest {
         auctionRepository.save(auction4);
         Bid bid5 = Bid.builder()
                 .amount(5000L)
-                .auction(auction4)
+                .auctionId(auction4.getId())
                 .count(1)
                 .bidderId(bidder1.getId())
                 .build();
 
         Bid bid6 = Bid.builder()
                 .amount(7000L)
-                .auction(auction4)
+                .auctionId(auction4.getId())
                 .count(2)
                 .bidderId(bidder2.getId())
                 .build();
         Bid cancelledBid3 = Bid.builder()
                 .amount(10000L)
-                .auction(auction4)
+                .auctionId(auction4.getId())
                 .count(3)
                 .bidderId(bidder3.getId())
                 .status(CANCELLED)

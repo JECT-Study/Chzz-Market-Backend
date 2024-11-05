@@ -93,19 +93,12 @@ class UserServiceTest {
         auction6 = Auction.builder().id(6L).product(product6).status(AuctionStatus.ENDED)
                 .endDateTime(LocalDateTime.now().minusDays(3)).winnerId(user2.getId()).build();
 
-        bid1 = Bid.builder().id(1L).auction(auction1).bidderId(user1.getId()).amount(1500L).build();
-        bid2 = Bid.builder().id(2L).auction(auction2).bidderId(user1.getId()).amount(2500L).build();
-        bid3 = Bid.builder().id(3L).auction(auction3).bidderId(user1.getId()).amount(3500L).build();
-        bid4 = Bid.builder().id(4L).auction(auction4).bidderId(user1.getId()).amount(4500L).build();
-        bid5 = Bid.builder().id(5L).auction(auction5).bidderId(user1.getId()).amount(5500L).build();
-        bid6 = Bid.builder().id(6L).auction(auction6).bidderId(user1.getId()).amount(6500L).build();
-
-        auction1.registerBid(bid1);
-        auction2.registerBid(bid2);
-        auction3.registerBid(bid3);
-        auction4.registerBid(bid4);
-        auction5.registerBid(bid5);
-        auction6.registerBid(bid6);
+        bid1 = Bid.builder().id(1L).auctionId(auction1.getId()).bidderId(user1.getId()).amount(1500L).build();
+        bid2 = Bid.builder().id(2L).auctionId(auction2.getId()).bidderId(user1.getId()).amount(2500L).build();
+        bid3 = Bid.builder().id(3L).auctionId(auction3.getId()).bidderId(user1.getId()).amount(3500L).build();
+        bid4 = Bid.builder().id(4L).auctionId(auction4.getId()).bidderId(user1.getId()).amount(4500L).build();
+        bid5 = Bid.builder().id(5L).auctionId(auction5.getId()).bidderId(user1.getId()).amount(5500L).build();
+        bid6 = Bid.builder().id(6L).auctionId(auction6.getId()).bidderId(user1.getId()).amount(6500L).build();
 
         auctionProduct1 = Product.builder().id(9L).name("경매상품1").user(user1).minPrice(9000).build();
         auctionProduct2 = Product.builder().id(10L).name("경매상품2").user(user1).minPrice(10000).build();

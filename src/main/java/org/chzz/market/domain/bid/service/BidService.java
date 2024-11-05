@@ -74,12 +74,12 @@ public class BidService {
         Auction auction = auctionRepository.findById(bidCreateRequest.getAuctionId())
                 .orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
         validateBidConditions(bidCreateRequest, user.getId(), auction);
-        bidRepository.findByAuctionAndBidderId(auction, user)
+        bidRepository.findByAuctionIdAndBidderId(auction.getId(), userId)
                 .ifPresentOrElse(
                         // 이미 입찰을 한 경우
                         bid -> bid.adjustBidAmount(bidCreateRequest.getBidAmount()),
                         // 입찰을 처음 하는 경우
-                        () -> auction.registerBid(bidCreateRequest.toEntity(auction, user.getId())) // 연관관계 설정
+                        () -> bidRepository.save(bidCreateRequest.toEntity(user.getId()))
                 );
     }
 
@@ -89,12 +89,13 @@ public class BidService {
     @Transactional
     public void cancelBid(Long bidId, Long userId) {
         Bid bid = bidRepository.findById(bidId).orElseThrow(() -> new BidException(BID_NOT_FOUND));
-        Auction auction = bid.getAuction();
+        Auction auction = auctionRepository.findById(bid.getAuctionId())
+                .orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
         if (!bid.isOwner(userId)) {
             throw new BidException(BID_NOT_ACCESSIBLE);
         }
         auction.validateAuctionEndTime();
-        auction.removeBid(bid);
+        bid.cancelBid();
         log.info("입찰이 취소되었습니다. 입찰 ID: {}, 사용자 ID: {}, 경매 ID: {}", bid.getId(), userId, auction.getId());
     }
 

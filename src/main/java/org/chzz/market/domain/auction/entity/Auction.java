@@ -2,10 +2,8 @@ package org.chzz.market.domain.auction.entity;
 
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_ENDED;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_NOT_ENDED;
-import static org.chzz.market.domain.auction.type.AuctionStatus.ENDED;
 import static org.chzz.market.domain.auction.type.AuctionStatus.PROCEEDING;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -16,12 +14,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,13 +26,12 @@ import org.chzz.market.domain.auction.entity.listener.AuctionEntityListener;
 import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.auction.type.AuctionStatus;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
-import org.chzz.market.domain.bid.entity.Bid;
 import org.chzz.market.domain.product.entity.Product;
 
 @Getter
 @Entity
 @Table(indexes = {
-        @Index(name = "idx_auction_end_date_time",columnList = "end_date_time")
+        @Index(name = "idx_auction_end_date_time", columnList = "end_date_time")
 })
 @Builder
 @AllArgsConstructor
@@ -75,10 +69,6 @@ public class Auction extends BaseTimeEntity {
                 .build();
     }
 
-    @OneToMany(mappedBy = "auction", cascade = CascadeType.PERSIST)
-    @Builder.Default
-    private List<Bid> bids = new ArrayList<>();
-
     public void validateAuctionEndTime() {
         // 경매가 진행중이 아닐 때
         if (status != PROCEEDING || LocalDateTime.now().isAfter(endDateTime)) {
@@ -89,16 +79,6 @@ public class Auction extends BaseTimeEntity {
     // 입찰 금액이 최소 금액 이상인지 확인
     public boolean isAboveMinPrice(Long amount) {
         return amount >= getMinPrice();
-    }
-
-    public void registerBid(Bid bid) {
-        bid.specifyAuction(this);
-        bids.add(bid);
-    }
-
-    public void removeBid(Bid bid) {
-        bid.cancelBid();
-        bids.remove(bid);
     }
 
     public void endAuction() {
