@@ -1,10 +1,10 @@
 package org.chzz.market.domain.order.service;
 
 import lombok.RequiredArgsConstructor;
-import org.chzz.market.domain.address.entity.Address;
-import org.chzz.market.domain.address.exception.AddressErrorCode;
-import org.chzz.market.domain.address.exception.AddressException;
-import org.chzz.market.domain.address.repository.AddressRepository;
+import org.chzz.market.domain.delivery.entity.Delivery;
+import org.chzz.market.domain.delivery.error.DeliveryErrorCode;
+import org.chzz.market.domain.delivery.error.DeliveryException;
+import org.chzz.market.domain.delivery.repository.DeliveryRepository;
 import org.chzz.market.domain.order.entity.Order;
 import org.chzz.market.domain.order.repository.OrderRepository;
 import org.chzz.market.domain.payment.dto.request.ShippingAddressRequest;
@@ -20,7 +20,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @Transactional
 public class OrderService {
     private final OrderRepository orderRepository;
-    private final AddressRepository addressRepository;
+    private final DeliveryRepository deliveryRepository;
 
     @Async("threadPoolTaskExecutor")
     @TransactionalEventListener
@@ -28,9 +28,9 @@ public class OrderService {
         Long userId = event.userId();
         Payment payment = event.payment();
         ShippingAddressRequest shippingAddressRequest = event.shippingAddressRequest();
-        Address address = addressRepository.findById(shippingAddressRequest.addressId())
-                .orElseThrow(() -> new AddressException(AddressErrorCode.NOT_FOUND));
-        Order order = Order.of(userId, payment, address, shippingAddressRequest.memo());
+        Delivery delivery = deliveryRepository.findById(shippingAddressRequest.addressId())
+                .orElseThrow(() -> new DeliveryException(DeliveryErrorCode.ADDRESS_NOT_FOUND));
+        Order order = Order.of(userId, payment, delivery, shippingAddressRequest.memo());
         orderRepository.save(order);
     }
 }

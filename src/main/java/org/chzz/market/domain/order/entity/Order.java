@@ -16,7 +16,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.chzz.market.domain.address.entity.Address;
+import org.chzz.market.domain.delivery.entity.Delivery;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.payment.entity.Payment;
 import org.chzz.market.domain.payment.entity.Payment.PaymentMethod;
@@ -74,20 +74,20 @@ public class Order {
     @JoinColumn(name = "auction_id")
     private Auction auction;
 
-    public static Order of(Long userId, Payment payment, Address address, String deliveryMemo) {
+    public static Order of(Long userId, Payment payment, Delivery delivery, String deliveryMemo) {
         return Order.builder()
                 .buyerId(userId)
                 .paymentId(payment.getId())
-                .orderNo(payment.getOrderId())
+                .orderNo(payment.getOrderNo())
                 .amount(payment.getAmount())
                 .auction(payment.getAuction())
                 .method(payment.getMethod())
-                .roadAddress(address.getRoadAddress())
-                .jibun(address.getJibun())
-                .zipcode(address.getZipcode())
-                .detailAddress(address.getDetailAddress())
-                .recipientName(address.getRecipientName())
-                .phoneNumber(address.getPhoneNumber())
+                .roadAddress(delivery.getRoadAddress())
+                .jibun(delivery.getJibun())
+                .zipcode(delivery.getZipcode())
+                .detailAddress(delivery.getDetailAddress())
+                .recipientName(delivery.getRecipientName())
+                .phoneNumber(delivery.getPhoneNumber())
                 .deliveryMemo(deliveryMemo)
                 .build();
     }
