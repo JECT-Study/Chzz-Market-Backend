@@ -55,7 +55,7 @@ public class Payment extends BaseTimeEntity {
     private Status status;
 
     @Column(unique = true, nullable = false)
-    private String orderId;
+    private String orderNo;
 
     @Column(nullable = false)
     private String paymentKey;
@@ -67,14 +67,14 @@ public class Payment extends BaseTimeEntity {
         }
     }
 
-    private Payment(User payer, Auction auction, Long amount, PaymentMethod method, Status status, String orderId,
+    private Payment(User payer, Auction auction, Long amount, PaymentMethod method, Status status, String orderNo,
                     String paymentKey) {
         this.payer = payer;
         this.auction = auction;
         this.amount = amount;
         this.method = method;
         this.status = status;
-        this.orderId = orderId;
+        this.orderNo = orderNo;
         this.paymentKey = paymentKey;
     }
 
