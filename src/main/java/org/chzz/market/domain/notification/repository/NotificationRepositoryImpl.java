@@ -23,7 +23,7 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom 
     @Override
     public Page<NotificationResponse> findByUserId(Long userId, Pageable pageable) {
         JPAQuery<?> baseQuery = jpaQueryFactory.from(notification)
-                .where(notification.user.id.eq(userId));
+                .where(notification.userId.eq(userId));
 
         List<NotificationResponse> content = baseQuery
                 .select(new QNotificationResponse(

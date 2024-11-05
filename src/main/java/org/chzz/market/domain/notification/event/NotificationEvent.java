@@ -39,8 +39,8 @@ public record NotificationEvent(List<Long> userIds, NotificationType type, Strin
         return new NotificationEvent(userIds, type, message, image, EMPTY_FIELDS);
     }
 
-    public Notification toEntity(User user) {
-        return type.createNotification(user, this);
+    public Notification toEntity(Long userId) {
+        return type.createNotification(userId, this);
     }
 
     public Long getAuctionId() {

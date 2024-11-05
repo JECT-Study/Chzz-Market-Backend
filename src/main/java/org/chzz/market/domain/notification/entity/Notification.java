@@ -36,9 +36,8 @@ public abstract class Notification extends BaseTimeEntity {
     @Column(name = "notification_id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(nullable = false)
+    private Long userId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "image_id")
@@ -56,8 +55,8 @@ public abstract class Notification extends BaseTimeEntity {
     @Column(insertable = false, updatable = false) // jpa 상속구조에서 dype 컬럼을 사용하기 위해
     private String type;
 
-    public Notification(User user, Image image, String message) {
-        this.user = user;
+    public Notification(Long userId, Image image, String message) {
+        this.userId = userId;
         this.image = image;
         this.message = message;
     }

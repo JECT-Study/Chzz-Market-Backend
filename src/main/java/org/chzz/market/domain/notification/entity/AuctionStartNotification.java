@@ -14,8 +14,8 @@ import org.chzz.market.domain.user.entity.User;
 public class AuctionStartNotification extends Notification {
     private Long auctionId;
 
-    public AuctionStartNotification(User user, Image image, String message, Long auctionId) {
-        super(user, image, message);
+    public AuctionStartNotification(Long userId, Image image, String message, Long auctionId) {
+        super(userId, image, message);
         this.auctionId = auctionId;
     }
 }

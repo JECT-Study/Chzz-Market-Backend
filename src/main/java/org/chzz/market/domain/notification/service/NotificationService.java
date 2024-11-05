@@ -141,7 +141,7 @@ public class NotificationService {
     private Notification findNotificationByUserAndId(Long userId, Long notificationId) {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new NotificationException(NotificationErrorCode.NOTIFICATION_NOT_FOUND));
-        if (notification.getUser().getId() != userId) {
+        if (notification.getUserId() != userId) {
             throw new NotificationException(NotificationErrorCode.UNAUTHORIZED_ACCESS);
         }
         return notification;

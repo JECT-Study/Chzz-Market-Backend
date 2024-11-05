@@ -13,7 +13,7 @@ import org.chzz.market.domain.user.entity.User;
 @DiscriminatorValue(value = PRE_AUCTION_CANCELED)
 public class PreAuctionCanceledNotification extends Notification {
 
-    public PreAuctionCanceledNotification(User user, Image image, String message) {
-        super(user, image, message);
+    public PreAuctionCanceledNotification(Long userId, Image image, String message) {
+        super(userId, image, message);
     }
 }
