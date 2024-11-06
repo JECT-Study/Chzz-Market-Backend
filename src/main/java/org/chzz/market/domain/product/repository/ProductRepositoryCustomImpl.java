@@ -61,9 +61,10 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
                         product.minPrice,
                         product.likes.size().longValue(),
                         isProductLikedByUser(userId),
-                        product.user.id.eq(userId)
+                        userIdEq(userId)
                 ))
                 .leftJoin(image).on(image.product.eq(product).and(isRepresentativeImage()))
+                .join(product.user, user)
                 .groupBy(product.id, product.name, image.cdnPath, product.minPrice)
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
@@ -96,7 +97,7 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
                         product.description,
                         product.likes.size().longValue(),
                         isProductLikedByUser(userId),
-                        nullSafeBuilder(() -> user.id.eq(userId)),
+                        userIdEq(userId),
                         product.category
                 ))
                 .from(product)
@@ -248,6 +249,10 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
 
     private BooleanBuilder categoryEqIgnoreNull(Category category) {
         return nullSafeBuilderIgnore(() -> product.category.eq(category));
+    }
+
+    private BooleanBuilder userIdEq(Long userId) {
+        return nullSafeBuilder(() -> user.id.eq(userId));
     }
 
     @Getter
