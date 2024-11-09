@@ -38,7 +38,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/products")
+@RequestMapping("/v1/products")
 public class ProductController implements ProductApi {
     private final ProductService productService;
     private final LikeService likeService;

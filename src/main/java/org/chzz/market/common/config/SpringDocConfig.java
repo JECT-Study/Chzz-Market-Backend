@@ -28,7 +28,7 @@ public class SpringDocConfig {
     public OpenAPI openAPI() {
         Info info = new Info()
                 .title("Chzz Market API")
-                .version("v1");
+                .version("v2");
         return new OpenAPI()
                 .components(new Components()
                         .addSecuritySchemes("BearerAuth", new SecurityScheme()

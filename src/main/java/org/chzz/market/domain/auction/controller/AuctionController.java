@@ -42,7 +42,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/auctions")
+@RequestMapping("/v1/auctions")
 public class AuctionController implements AuctionApi {
     private final AuctionService auctionService;
     private final BidService bidService;
