@@ -1,0 +1,55 @@
+package org.chzz.market.domain.auctionv2.controller;
+
+import java.util.Map;
+import org.chzz.market.domain.auction.dto.response.StartAuctionResponse;
+import org.chzz.market.domain.auction.dto.response.WonAuctionDetailsResponse;
+import org.chzz.market.domain.bid.dto.response.BidInfoResponse;
+import org.chzz.market.domain.like.dto.LikeResponse;
+import org.chzz.market.domain.product.dto.DeleteProductResponse;
+import org.chzz.market.domain.product.dto.UpdateProductRequest;
+import org.chzz.market.domain.product.dto.UpdateProductResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+@RestController
+public class AuctionDetailController implements AuctionDetailApi {
+    @Override
+    public ResponseEntity<?> getAuctionDetails(Long userId, Long auctionId) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<Page<BidInfoResponse>> getBids(Long userId, Long auctionId, Pageable pageable) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<WonAuctionDetailsResponse> getWinningBid(Long userId, Long auctionId) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<StartAuctionResponse> startAuction(Long userId, Long auctionId) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<LikeResponse> likeAuction(Long userId, Long auctionId) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<UpdateProductResponse> updateAuction(Long userId, Long auctionId,
+                                                               UpdateProductRequest request,
+                                                               Map<String, MultipartFile> images) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<DeleteProductResponse> deleteAuction(Long userId, Long auctionId) {
+        return null;
+    }
+}
