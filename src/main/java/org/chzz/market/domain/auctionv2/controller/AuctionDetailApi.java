@@ -26,11 +26,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "auctions(v2)", description = "V2 경매 API")
-@RestController
 @RequestMapping("/v2/auctions/{auctionId}")
 public interface AuctionDetailApi {
     @Operation(summary = "특정 경매 상세 조회", description = "특정 경매 상세 정보를 조회합니다.") // TODO: 정식경매와 사전 경매 응답 구분 추가

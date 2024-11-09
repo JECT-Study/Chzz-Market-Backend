@@ -21,11 +21,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "auctions(v2)", description = "V2 경매 API")
-@RestController
 @RequestMapping("/v2/auctions")
 public interface AuctionV2Api {
     @Operation(summary = "경매 목록 조회", description = "경매 목록을 조회합니다. type 파라미터를 통해 조회 유형을 지정합니다.")

@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-@RestController
+//@RestController
 public class AuctionV2Controller implements AuctionV2Api {
     @Override
     public ResponseEntity<Page<?>> getAuctionList(Long userId, Category category, AuctionType type, Pageable pageable) {

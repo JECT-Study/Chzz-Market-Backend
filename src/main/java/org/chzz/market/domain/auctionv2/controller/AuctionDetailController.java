@@ -14,7 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-@RestController
+//@RestController
 public class AuctionDetailController implements AuctionDetailApi {
     @Override
     public ResponseEntity<?> getAuctionDetails(Long userId, Long auctionId) {
