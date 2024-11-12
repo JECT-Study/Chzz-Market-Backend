@@ -27,9 +27,7 @@ import org.chzz.market.domain.base.entity.BaseTimeEntity;
 import org.chzz.market.domain.image.entity.ImageV2;
 import org.chzz.market.domain.user.entity.User;
 
-/**
- * TODO: V2 경매 API 전환이 끝나서 운영 환경에 적용할 땐 기존 테이블에서 데이터를 이관해야 합니다.(flyway 스크립트)
- */
+// TODO: V2 경매 API 전환이 끝나서 운영 환경에 적용할 땐 기존 테이블에서 데이터를 이관해야 합니다.(flyway 스크립트)
 @Table(name = "auction_v2")
 @Entity
 @EntityListeners(value = AuctionEntityListener.class)

@@ -18,6 +18,7 @@ import lombok.NoArgsConstructor;
 import org.chzz.market.domain.auctionv2.entity.AuctionV2;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
 
+// TODO: V2 경매 API 전환이 끝나서 운영 환경에 적용할 땐 기존 테이블에서 데이터를 이관해야 합니다.(flyway 스크립트)
 @Getter
 @Entity
 @Table(indexes = {
@@ -26,7 +27,7 @@ import org.chzz.market.domain.base.entity.BaseTimeEntity;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
 @AllArgsConstructor
-public class ImageV2 extends BaseTimeEntity { // TODO: V2 경매 API 전환이 끝나서 운영 환경에 적용할 땐 기존 테이블에서 데이터를 이관해야 합니다.(flyway 스크립트)
+public class ImageV2 extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "image_id")
