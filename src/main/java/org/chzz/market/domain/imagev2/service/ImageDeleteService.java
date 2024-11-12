@@ -7,23 +7,24 @@ import com.amazonaws.services.s3.AmazonS3;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.domain.image.entity.ImageV2;
 import org.chzz.market.domain.imagev2.error.exception.ImageException;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
-@RequiredArgsConstructor
 @Slf4j
 public class ImageDeleteService {
     private final AmazonS3 amazonS3Client;
+    private final String bucket;
 
-    @Value("${cloud.aws.s3.bucket}")
-    private String bucket;
+    public ImageDeleteService(AmazonS3 amazonS3Client, @Qualifier("s3BucketName") String bucket) {
+        this.amazonS3Client = amazonS3Client;
+        this.bucket = bucket;
+    }
 
     /**
      * S3에서 이미지 삭제

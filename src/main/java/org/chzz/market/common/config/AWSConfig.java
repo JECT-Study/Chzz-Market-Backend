@@ -19,6 +19,9 @@ public class AWSConfig {
     @Value("${cloud.aws.region.static}")
     private String region;
 
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucket;
+
     @Bean
     public AmazonS3 amazonS3Client() {
         BasicAWSCredentials awsCreds = new BasicAWSCredentials(accessKey, secretKey);
@@ -26,5 +29,10 @@ public class AWSConfig {
                 .withRegion(region)
                 .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
                 .build();
+    }
+
+    @Bean
+    public String s3BucketName() {
+        return bucket;
     }
 }
