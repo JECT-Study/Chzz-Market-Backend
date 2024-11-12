@@ -1,11 +1,12 @@
 package org.chzz.market.domain.auctionv2.controller;
 
 import java.util.Map;
+import lombok.RequiredArgsConstructor;
 import org.chzz.market.domain.auction.dto.response.StartAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.WonAuctionDetailsResponse;
+import org.chzz.market.domain.auctionv2.service.AuctionDeleteService;
 import org.chzz.market.domain.bid.dto.response.BidInfoResponse;
 import org.chzz.market.domain.like.dto.LikeResponse;
-import org.chzz.market.domain.product.dto.DeleteProductResponse;
 import org.chzz.market.domain.product.dto.UpdateProductRequest;
 import org.chzz.market.domain.product.dto.UpdateProductResponse;
 import org.springframework.data.domain.Page;
@@ -15,7 +16,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 //@RestController
+@RequiredArgsConstructor
 public class AuctionDetailController implements AuctionDetailApi {
+    private final AuctionDeleteService auctionDeleteService;
+
     @Override
     public ResponseEntity<?> getAuctionDetails(Long userId, Long auctionId) {
         return null;
@@ -49,7 +53,8 @@ public class AuctionDetailController implements AuctionDetailApi {
     }
 
     @Override
-    public ResponseEntity<DeleteProductResponse> deleteAuction(Long userId, Long auctionId) {
-        return null;
+    public ResponseEntity<Void> deleteAuction(Long userId, Long auctionId) {
+        auctionDeleteService.delete(userId, auctionId);
+        return ResponseEntity.ok().build();
     }
 }
