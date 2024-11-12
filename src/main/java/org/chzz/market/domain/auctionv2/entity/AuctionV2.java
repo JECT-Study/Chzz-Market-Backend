@@ -1,5 +1,6 @@
 package org.chzz.market.domain.auctionv2.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -11,8 +12,11 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,18 +24,19 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.chzz.market.domain.auction.entity.listener.AuctionEntityListener;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
-import org.chzz.market.domain.product.entity.Product.Category;
+import org.chzz.market.domain.image.entity.ImageV2;
 import org.chzz.market.domain.user.entity.User;
 
 /**
  * TODO: V2 경매 API 전환이 끝나서 운영 환경에 적용할 땐 기존 테이블에서 데이터를 이관해야 합니다.(flyway 스크립트)
  */
-@Entity
-@AllArgsConstructor
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-@EntityListeners(value = AuctionEntityListener.class)
 @Table(name = "auction_v2")
+@Entity
+@EntityListeners(value = AuctionEntityListener.class)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
+@AllArgsConstructor
+@Getter
 public class AuctionV2 extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -71,13 +76,23 @@ public class AuctionV2 extends BaseTimeEntity {
     @Column
     private Integer bidCount;
 
-    @Getter
-    @AllArgsConstructor
-    public enum AuctionStatus {
-        PROCEEDING("진행중"),
-        ENDED("종료"),
-        PRE("사전");
+    @Builder.Default
+    @OneToMany(mappedBy = "auction", cascade = {CascadeType.REMOVE, CascadeType.PERSIST}, orphanRemoval = true)
+    private List<ImageV2> images = new ArrayList<>();
 
-        private final String description;
+    public boolean isNowOwner(Long userId) {
+        return !isOwner(userId);
+    }
+
+    public boolean isOwner(Long userId) {
+        return seller.getId().equals(userId);
+    }
+
+    public boolean isPreAuction() {
+        return status == AuctionStatus.PRE;
+    }
+
+    public boolean isOfficialAuction() {
+        return status == AuctionStatus.PROCEEDING || status == AuctionStatus.ENDED;
     }
 }
