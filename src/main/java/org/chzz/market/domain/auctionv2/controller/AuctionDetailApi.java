@@ -1,15 +1,23 @@
 package org.chzz.market.domain.auctionv2.controller;
 
+import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.Const.AUCTION_ACCESS_FORBIDDEN;
+import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.Const.AUCTION_NOT_FOUND;
+import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.Const.OFFICIAL_AUCTION_DELETE_FORBIDDEN;
+import static org.chzz.market.domain.imagev2.error.ImageErrorCode.Const.IMAGE_DELETE_FAILED;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.Map;
 import org.chzz.market.common.config.LoginUser;
+import org.chzz.market.common.springdoc.ApiExceptionExplanation;
+import org.chzz.market.common.springdoc.ApiResponseExplanations;
 import org.chzz.market.domain.auction.dto.response.StartAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.WonAuctionDetailsResponse;
+import org.chzz.market.domain.auctionv2.error.AuctionErrorCode;
 import org.chzz.market.domain.bid.dto.response.BidInfoResponse;
+import org.chzz.market.domain.imagev2.error.ImageErrorCode;
 import org.chzz.market.domain.like.dto.LikeResponse;
-import org.chzz.market.domain.product.dto.DeleteProductResponse;
 import org.chzz.market.domain.product.dto.UpdateProductRequest;
 import org.chzz.market.domain.product.dto.UpdateProductResponse;
 import org.springdoc.core.annotations.ParameterObject;
@@ -64,9 +72,16 @@ public interface AuctionDetailApi {
                                                         @RequestPart @Valid UpdateProductRequest request,
                                                         @RequestParam(required = false) Map<String, MultipartFile> images);
 
-    @Operation(summary = "특정 경매 삭제", description = "특정 경매를 삭제합니다.")
+    @Operation(summary = "특정 경매 삭제", description = "특정 경매를 삭제합니다. 삭제는 사전경매만 가능합니다.")
+    @ApiResponseExplanations(
+            errors = {
+                    @ApiExceptionExplanation(value = AuctionErrorCode.class, constant = OFFICIAL_AUCTION_DELETE_FORBIDDEN, name = "정식 경매 인 경우"),
+                    @ApiExceptionExplanation(value = AuctionErrorCode.class, constant = AUCTION_ACCESS_FORBIDDEN, name = "경매의 접근 권한이 없는 경우"),
+                    @ApiExceptionExplanation(value = AuctionErrorCode.class, constant = AUCTION_NOT_FOUND, name = "경매를 찾을 수 없는 경우"),
+                    @ApiExceptionExplanation(value = ImageErrorCode.class, constant = IMAGE_DELETE_FAILED, name = "이미지 삭제에 실패한 경우"),
+            }
+    )
     @DeleteMapping
-    ResponseEntity<DeleteProductResponse> deleteAuction(@LoginUser Long userId,
-                                                        @PathVariable Long auctionId);
-
+    ResponseEntity<Void> deleteAuction(@LoginUser Long userId,
+                                       @PathVariable Long auctionId);
 }
