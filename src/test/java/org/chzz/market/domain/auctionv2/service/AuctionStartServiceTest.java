@@ -36,7 +36,7 @@ class AuctionStartServiceTest {
     private AuctionStartService auctionStartService;
 
     @Test
-    public void 사전경매에서_정식경매로_전환_성공() throws Exception {
+    public void 사전경매에서_정식경매로_전환_성공() {
         // given
         AuctionV2 auction = mock(AuctionV2.class);
         LikeV2 like = mock(LikeV2.class);
@@ -54,7 +54,7 @@ class AuctionStartServiceTest {
     }
 
     @Test
-    public void 사전경매에서_정식경매로_전환할때_좋아요가_없을시_알림이벤트발행을_하지않는다() throws Exception {
+    public void 사전경매에서_정식경매로_전환할때_좋아요가_없을시_알림이벤트발행을_하지않는다() {
         // given
         AuctionV2 auction = mock(AuctionV2.class);
 
