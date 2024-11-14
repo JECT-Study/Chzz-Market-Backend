@@ -1,5 +1,8 @@
 package org.chzz.market.domain.auctionv2.entity;
 
+import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.AUCTION_ACCESS_FORBIDDEN;
+import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.AUCTION_ALREADY_OFFICIAL;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -23,9 +26,13 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.chzz.market.domain.auction.entity.listener.AuctionEntityListener;
+import org.chzz.market.domain.auctionv2.error.AuctionException;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
 import org.chzz.market.domain.image.entity.ImageV2;
+import org.chzz.market.domain.imagev2.error.ImageErrorCode;
+import org.chzz.market.domain.imagev2.error.exception.ImageException;
 import org.chzz.market.domain.user.entity.User;
+import org.hibernate.annotations.DynamicUpdate;
 
 // TODO: V2 경매 API 전환이 끝나서 운영 환경에 적용할 땐 기존 테이블에서 데이터를 이관해야 합니다.(flyway 스크립트)
 @Table(name = "auction_v2")
@@ -33,6 +40,7 @@ import org.chzz.market.domain.user.entity.User;
 @EntityListeners(value = AuctionEntityListener.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
+@DynamicUpdate
 @AllArgsConstructor
 @Getter
 public class AuctionV2 extends BaseTimeEntity {
@@ -86,11 +94,32 @@ public class AuctionV2 extends BaseTimeEntity {
         return seller.getId().equals(userId);
     }
 
+    public void validateOwner(Long userId) {
+        if (!seller.getId().equals(userId)) {
+            throw new AuctionException(AUCTION_ACCESS_FORBIDDEN);
+        }
+    }
+
     public boolean isPreAuction() {
         return status == AuctionStatus.PRE;
     }
 
     public boolean isOfficialAuction() {
         return status == AuctionStatus.PROCEEDING || status == AuctionStatus.ENDED;
+    }
+
+    public void startOfficialAuction() {
+        if (isOfficialAuction()) {
+            throw new AuctionException(AUCTION_ALREADY_OFFICIAL);
+        }
+        this.status = AuctionStatus.PROCEEDING;
+    }
+
+    public String getFirstImageCdnPath() {
+        return images.stream()
+                .filter(image -> image.getSequence() == 1)
+                .map(ImageV2::getCdnPath)  // cdnPath 속성만 추출
+                .findFirst()
+                .orElseThrow(() -> new ImageException(ImageErrorCode.IMAGE_NOT_FOUND));
     }
 }
