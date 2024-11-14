@@ -25,6 +25,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.domain.auction.entity.listener.AuctionEntityListener;
 import org.chzz.market.domain.auctionv2.error.AuctionException;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
@@ -43,6 +44,7 @@ import org.hibernate.annotations.DynamicUpdate;
 @DynamicUpdate
 @AllArgsConstructor
 @Getter
+@Slf4j
 public class AuctionV2 extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -118,8 +120,11 @@ public class AuctionV2 extends BaseTimeEntity {
     public String getFirstImageCdnPath() {
         return images.stream()
                 .filter(image -> image.getSequence() == 1)
-                .map(ImageV2::getCdnPath)  // cdnPath 속성만 추출
+                .map(ImageV2::getCdnPath)
                 .findFirst()
-                .orElseThrow(() -> new ImageException(ImageErrorCode.IMAGE_NOT_FOUND));
+                .orElseThrow(() -> {
+                    log.error("경매의 첫 번째 이미지가 없는 경우: {}", this.id);
+                    return new ImageException(ImageErrorCode.IMAGE_NOT_FOUND);
+                });
     }
 }
