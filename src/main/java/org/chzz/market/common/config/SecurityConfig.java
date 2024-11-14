@@ -71,6 +71,8 @@ public class SecurityConfig {
                                 "/api/v1/notifications/subscribe",
                                 "/api/v1/users/*",
                                 "/api/v1/users/check/nickname/*").permitAll()
+                        .requestMatchers(GET,
+                                "/api/v2/auctions/categories").permitAll()
                         .requestMatchers(POST,
                                 "/api/v1/users/tokens/reissue").permitAll()
                         .requestMatchers(POST, "/api/v1/users").hasRole("TEMP_USER")
