@@ -12,7 +12,6 @@ import java.util.Map;
 import org.chzz.market.common.config.LoginUser;
 import org.chzz.market.common.springdoc.ApiExceptionExplanation;
 import org.chzz.market.common.springdoc.ApiResponseExplanations;
-import org.chzz.market.domain.auction.dto.response.StartAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.WonAuctionDetailsResponse;
 import org.chzz.market.domain.auctionv2.error.AuctionErrorCode;
 import org.chzz.market.domain.bid.dto.response.BidInfoResponse;
@@ -57,8 +56,8 @@ public interface AuctionDetailApi {
 
     @Operation(summary = "특정 경매 전환", description = "특정 사전 경매를 정식 경매로 전환합니다.")
     @PostMapping("/start")
-    ResponseEntity<StartAuctionResponse> startAuction(@LoginUser Long userId,
-                                                      @PathVariable Long auctionId);
+    ResponseEntity<Void> startAuction(@LoginUser Long userId,
+                                      @PathVariable Long auctionId);
 
     @Operation(summary = "특정 경매 좋아요(찜) 요청 및 취소", description = "특정 경매에 대한 좋아요(찜) 요청 및 취소를 합니다.")
     @PostMapping("/likes")
