@@ -5,6 +5,8 @@ import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.AUCTION_AC
 import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.AUCTION_NOT_FOUND;
 import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.OFFICIAL_AUCTION_DELETE_FORBIDDEN;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -49,7 +51,7 @@ class AuctionDeleteServiceTest {
         LikeV2 like = mock(LikeV2.class);
 
         when(auctionRepository.findById(any())).thenReturn(Optional.of(auction));
-        when(auction.isNowOwner(any())).thenReturn(false);
+        doNothing().when(auction).validateOwner(any());
         when(auction.isOfficialAuction()).thenReturn(false);
         when(likeRepository.findByAuctionId(auction.getId())).thenReturn(List.of(like));
 
@@ -68,7 +70,7 @@ class AuctionDeleteServiceTest {
         AuctionV2 auction = mock(AuctionV2.class);
 
         when(auctionRepository.findById(any())).thenReturn(Optional.of(auction));
-        when(auction.isNowOwner(any())).thenReturn(false);
+        doNothing().when(auction).validateOwner(any());
         when(auction.isOfficialAuction()).thenReturn(false);
         when(likeRepository.findByAuctionId(auction.getId())).thenReturn(List.of());
 
@@ -100,7 +102,7 @@ class AuctionDeleteServiceTest {
 
         // when
         when(auctionRepository.findById(any())).thenReturn(Optional.of(auction));
-        when(auction.isNowOwner(any())).thenReturn(true);
+        doThrow(new AuctionException(AUCTION_ACCESS_FORBIDDEN)).when(auction).validateOwner(any());
 
         // then
         assertThatThrownBy(() -> auctionDeleteService.delete(1L, 1L))
@@ -116,7 +118,7 @@ class AuctionDeleteServiceTest {
 
         // when
         when(auctionRepository.findById(any())).thenReturn(Optional.of(auction));
-        when(auction.isNowOwner(any())).thenReturn(false);
+        doNothing().when(auction).validateOwner(any());
         when(auction.isOfficialAuction()).thenReturn(true);
 
         // then
