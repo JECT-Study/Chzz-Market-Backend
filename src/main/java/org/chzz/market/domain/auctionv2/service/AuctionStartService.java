@@ -34,7 +34,7 @@ public class AuctionStartService {
         auction.validateOwner(userId);
         auction.startOfficialAuction();
         processStartNotification(auction);
-        log.info("{}번 경매 정식경매 전환완료", auction.getId());
+        log.info("{}번 경매 정식경매 전환완료", auctionId);
     }
 
     private void processStartNotification(AuctionV2 auction) {
