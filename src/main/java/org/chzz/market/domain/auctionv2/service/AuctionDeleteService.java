@@ -41,9 +41,7 @@ public class AuctionDeleteService {
      * 경매 취소 유효성 검사
      */
     private static void validate(Long userId, AuctionV2 auction) {
-        if (auction.isNowOwner(userId)) {
-            throw new AuctionException(AuctionErrorCode.AUCTION_ACCESS_FORBIDDEN);
-        }
+        auction.validateOwner(userId);
         if (auction.isOfficialAuction()) {
             throw new AuctionException(AuctionErrorCode.OFFICIAL_AUCTION_DELETE_FORBIDDEN);
         }
