@@ -88,16 +88,12 @@ public class AuctionV2 extends BaseTimeEntity {
     @OneToMany(mappedBy = "auction", cascade = {CascadeType.REMOVE, CascadeType.PERSIST}, orphanRemoval = true)
     private List<ImageV2> images = new ArrayList<>();
 
-    public boolean isNowOwner(Long userId) {
-        return !isOwner(userId);
-    }
-
     public boolean isOwner(Long userId) {
         return seller.getId().equals(userId);
     }
 
     public void validateOwner(Long userId) {
-        if (!seller.getId().equals(userId)) {
+        if (!isOwner(userId)) {
             throw new AuctionException(AUCTION_ACCESS_FORBIDDEN);
         }
     }
