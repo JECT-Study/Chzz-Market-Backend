@@ -23,7 +23,7 @@ public class StringToEnumConverterFactory implements ConverterFactory<String, En
             if (source == null || source.isEmpty()) {
                 return null;
             }
-            return (T) Enum.valueOf(this.enumType, source.trim().toUpperCase().replace("-", "_"));
+            return (T) Enum.valueOf(this.enumType, StringCaseConverter.toUpperCaseWithUnderscores(source));
         }
     }
 }

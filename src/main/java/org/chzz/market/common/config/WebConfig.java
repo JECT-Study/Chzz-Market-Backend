@@ -14,7 +14,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
 
-    private static final String API_V1 = "/api/v1";
+    private static final String API = "/api";
 
     private final StringToEnumConverterFactory stringToEnumConverterFactory;
     private final CustomPageableHandlerMethodArgumentResolver customSortHandlerMethodArgumentResolver;
@@ -33,6 +33,6 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void configurePathMatch(PathMatchConfigurer configurer) {
-        configurer.addPathPrefix(API_V1, c -> c.isAnnotationPresent(RestController.class));
+        configurer.addPathPrefix(API, c -> c.isAnnotationPresent(RestController.class));
     }
 }

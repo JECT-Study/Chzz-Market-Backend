@@ -23,4 +23,14 @@ public enum BidErrorCode implements ErrorCode {
 
     private final HttpStatus httpStatus;
     private final String message;
+
+    public static class Const {
+        public static final String BID_NOT_FOUND = "BID_NOT_FOUND";
+        public static final String BID_BELOW_MIN_PRICE = "BID_BELOW_MIN_PRICE";
+        public static final String BID_LIMIT_EXCEEDED = "BID_LIMIT_EXCEEDED";
+        public static final String BID_SAME_AS_PREVIOUS = "BID_SAME_AS_PREVIOUS";
+        public static final String BID_ALREADY_CANCELLED = "BID_ALREADY_CANCELLED";
+        public static final String BID_BY_OWNER = "BID_BY_OWNER";
+        public static final String BID_NOT_ACCESSIBLE = "BID_NOT_ACCESSIBLE";
+    }
 }

@@ -8,10 +8,10 @@ import java.time.LocalDateTime;
  * 경매 시작 (사전 등록 -> 경매 등록 전환) DTO
  */
 public record StartAuctionResponse(
-        Long auctionId,
+        Long auctionId, // 사전 경매 전환 시 응답 값에 auctionId 사용
         Long productId,
         AuctionStatus status,
-        LocalDateTime endTime,
+        LocalDateTime endDateTime,
         String message
 ) {
     private static final String DEFAULT_SUCCESS_MESSAGE = "경매가 성공적으로 시작되었습니다.";

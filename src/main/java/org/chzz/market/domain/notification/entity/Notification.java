@@ -1,19 +1,20 @@
 package org.chzz.market.domain.notification.entity;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorColumn;
+import jakarta.persistence.DiscriminatorType;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
@@ -25,22 +26,21 @@ import org.chzz.market.domain.user.entity.User;
 @Getter
 @Entity
 @Table
-@Builder
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Notification extends BaseTimeEntity {
+public abstract class Notification extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "notification_id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(nullable = false)
+    private Long userId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "image_id")
-    private Image image;
+    @Column
+    private String cdnPath;
 
     @Column(nullable = false)
     private String message;
@@ -51,9 +51,14 @@ public class Notification extends BaseTimeEntity {
     @Column(nullable = false)
     private boolean isDeleted;
 
-    @Column(nullable = false, columnDefinition = "varchar(30)")
-    @Enumerated(EnumType.STRING)
-    private NotificationType type;
+    @Column(insertable = false, updatable = false) // jpa 상속구조에서 dype 컬럼을 사용하기 위해
+    private String type;
+
+    public Notification(Long userId, String cdnPath, String message) {
+        this.userId = userId;
+        this.cdnPath = cdnPath;
+        this.message = message;
+    }
 
     public void read() {
         if (this.isDeleted) {
@@ -72,4 +77,7 @@ public class Notification extends BaseTimeEntity {
         this.isDeleted = true;
     }
 
+    public boolean isOwner(Long userId) {
+        return this.userId.equals(userId);
+    }
 }

@@ -2,10 +2,9 @@ package org.chzz.market.domain.bid.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.chzz.market.domain.auction.type.AuctionStatus.ENDED;
-import static org.chzz.market.domain.bid.entity.Bid.BidStatus.CANCELLED;
 import static org.chzz.market.domain.auction.type.AuctionStatus.PROCEEDING;
+import static org.chzz.market.domain.bid.entity.Bid.BidStatus.CANCELLED;
 
-import jakarta.persistence.EntityManagerFactory;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -51,9 +50,6 @@ class BidRepositoryCustomImplTest {
     @Autowired
     ImageRepository imageRepository;
 
-    @Autowired
-    EntityManagerFactory entityManagerFactory;
-
     private User bidder1, bidder2, bidder3;
     private Auction auction1, auction2, auction3, auction4;
     private Product product4;
@@ -91,6 +87,9 @@ class BidRepositoryCustomImplTest {
                 .userRole(UserRole.USER)
                 .providerId("2222")
                 .build();
+
+        userRepository.saveAll(List.of(seller, bidder1, bidder2, bidder3));
+
         Product product1 = Product.builder()
                 .category(Category.OTHER)
                 .description("asd")
@@ -123,6 +122,8 @@ class BidRepositoryCustomImplTest {
                 .user(seller)
                 .build();
 
+        productRepository.saveAll(List.of(product1, product2, product3, product4));
+
         Image image1 = Image.builder()
                 .product(product1)
                 .cdnPath("qepifnv2")
@@ -131,6 +132,9 @@ class BidRepositoryCustomImplTest {
                 .product(product1)
                 .cdnPath("rrreww4")
                 .build();
+
+        imageRepository.saveAll(List.of(image1, image2));
+
         auction1 = Auction.builder()
                 .product(product1)
                 .endDateTime(LocalDateTime.now().plusDays(2))
@@ -152,50 +156,48 @@ class BidRepositoryCustomImplTest {
                 .winnerId(null) // 낙찰자가 없는 경우
                 .build();
 
+        auctionRepository.saveAll(List.of(auction1, auction2, auction3));
+
         Bid bid1 = Bid.builder()
                 .amount(1000L)
-                .auction(auction1)
+                .auctionId(auction1.getId())
                 .count(2)
-                .bidder(bidder1)
+                .bidderId(bidder1.getId())
                 .build();
         Bid bid2 = Bid.builder()
                 .amount(2000L)
-                .auction(auction2)
+                .auctionId(auction2.getId())
                 .count(3)
-                .bidder(bidder1)
+                .bidderId(bidder1.getId())
                 .build();
         Bid bid3 = Bid.builder()
                 .amount(300000L)
-                .auction(auction1)
+                .auctionId(auction1.getId())
                 .count(1)
-                .bidder(bidder2)
+                .bidderId(bidder2.getId())
                 .build();
         Bid bid4 = Bid.builder()
                 .amount(10000000L)
-                .auction(auction2)
+                .auctionId(auction2.getId())
                 .count(1)
-                .bidder(bidder2)
+                .bidderId(bidder2.getId())
                 .build();
 
         Bid cancelledBid1 = Bid.builder()
                 .amount(10000000L)
-                .auction(auction3)
+                .auctionId(auction3.getId())
                 .count(1)
-                .bidder(bidder2)
+                .bidderId(bidder2.getId())
                 .status(CANCELLED)
                 .build();
         Bid cancelledBid2 = Bid.builder()
                 .amount(10000000L)
-                .auction(auction3)
+                .auctionId(auction3.getId())
                 .count(1)
-                .bidder(bidder1)
+                .bidderId(bidder1.getId())
                 .status(CANCELLED)
                 .build();
 
-        userRepository.saveAll(List.of(seller, bidder1, bidder2, bidder3));
-        productRepository.saveAll(List.of(product1, product2, product3, product4));
-        imageRepository.saveAll(List.of(image1, image2));
-        auctionRepository.saveAll(List.of(auction1, auction2, auction3));
         bidRepository.saveAll(List.of(bid1, bid2, bid3, bid4, cancelledBid1, cancelledBid2));
     }
 
@@ -203,9 +205,9 @@ class BidRepositoryCustomImplTest {
     @DisplayName("입찰 기록은 가격 기준으로 정렬 가능하다")
     void testFindBidHistory() {
         // given
-        Pageable pageable = PageRequest.of(0, 10, Sort.by("amount"));
-        Page<BiddingRecord> usersBidHistory1 = bidRepository.findUsersBidHistory(bidder1.getId(), pageable);
-        Page<BiddingRecord> usersBidHistory2 = bidRepository.findUsersBidHistory(bidder2.getId(), pageable);
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("bidAmount"));
+        Page<BiddingRecord> usersBidHistory1 = bidRepository.findUsersBidHistory(bidder1.getId(), pageable, null);
+        Page<BiddingRecord> usersBidHistory2 = bidRepository.findUsersBidHistory(bidder2.getId(), pageable, null);
 
         // when
 
@@ -228,8 +230,8 @@ class BidRepositoryCustomImplTest {
     void testFindBidHistoryOrderByTimeRemaining() {
         // given
         Pageable pageable = PageRequest.of(0, 10, Sort.by("time-remaining"));
-        Page<BiddingRecord> usersBidHistory1 = bidRepository.findUsersBidHistory(bidder1.getId(), pageable);
-        Page<BiddingRecord> usersBidHistory2 = bidRepository.findUsersBidHistory(bidder2.getId(), pageable);
+        Page<BiddingRecord> usersBidHistory1 = bidRepository.findUsersBidHistory(bidder1.getId(), pageable, null);
+        Page<BiddingRecord> usersBidHistory2 = bidRepository.findUsersBidHistory(bidder2.getId(), pageable, null);
         // when
 
         // then
@@ -298,7 +300,7 @@ class BidRepositoryCustomImplTest {
     @DisplayName("경매 ID로 입찰 내역을 조회할 때 활성화 된 입찰이 없는 경우(낙찰자가 없는 경우)를 처리한다")
     void testFindBidsByAuctionIdWithoutWinner() {
         // given
-        Pageable pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "amount"));
+        Pageable pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "bid-amount"));
 
         // when
         Page<BidInfoResponse> bidsForAuction3 = bidRepository.findBidsByAuctionId(auction3.getId(), pageable);
@@ -320,28 +322,28 @@ class BidRepositoryCustomImplTest {
         auctionRepository.save(auction4);
         Bid bid5 = Bid.builder()
                 .amount(5000L)
-                .auction(auction4)
+                .auctionId(auction4.getId())
                 .count(1)
-                .bidder(bidder1)
+                .bidderId(bidder1.getId())
                 .build();
 
         Bid bid6 = Bid.builder()
                 .amount(7000L)
-                .auction(auction4)
+                .auctionId(auction4.getId())
                 .count(2)
-                .bidder(bidder2)
+                .bidderId(bidder2.getId())
                 .build();
         Bid cancelledBid3 = Bid.builder()
                 .amount(10000L)
-                .auction(auction4)
+                .auctionId(auction4.getId())
                 .count(3)
-                .bidder(bidder3)
+                .bidderId(bidder3.getId())
                 .status(CANCELLED)
                 .build();
         bidRepository.saveAll(List.of(bid5, bid6, cancelledBid3));
 
         // given
-        Pageable pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "amount"));
+        Pageable pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "bid-amount"));
 
         // when
         Page<BidInfoResponse> bidsForAuction4 = bidRepository.findBidsByAuctionId(auction4.getId(), pageable);
@@ -353,10 +355,10 @@ class BidRepositoryCustomImplTest {
         // then
         assertThat(bidsForAuction4.getContent()).hasSize(2); // 활성화된 입찰 2개만 조회되어야 함
         assertThat(bidsForAuction4.getContent()).isSortedAccordingTo(
-                Comparator.comparing(BidInfoResponse::amount).reversed());
+                Comparator.comparing(BidInfoResponse::bidAmount).reversed());
         assertThat(winningBid).isNotNull();
-        assertThat(winningBid.amount()).isEqualTo(7000L);
-        assertThat(winningBid.nickname()).isEqualTo("bidder2");
+        assertThat(winningBid.bidAmount()).isEqualTo(7000L);
+        assertThat(winningBid.bidderNickname()).isEqualTo("bidder2");
         assertThat(winningBid.isWinningBidder()).isTrue();
     }
 

@@ -1,11 +1,16 @@
 package org.chzz.market.domain.auction.service.register;
 
+import static org.chzz.market.domain.auction.type.AuctionStatus.PROCEEDING;
+
+import java.time.LocalDateTime;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.domain.auction.dto.request.BaseRegisterRequest;
 import org.chzz.market.domain.auction.dto.response.RegisterAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.RegisterResponse;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
+import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.image.service.ImageService;
 import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.product.repository.ProductRepository;
@@ -16,11 +21,6 @@ import org.chzz.market.domain.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.time.LocalDateTime;
-import java.util.List;
-
-import static org.chzz.market.domain.auction.type.AuctionStatus.PROCEEDING;
 
 @Service
 @RequiredArgsConstructor
@@ -37,12 +37,11 @@ public class AuctionRegisterService implements AuctionRegistrationService {
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
         Product product = createProduct(request, user);
+        List<String> imageUrls = imageService.uploadImages(images);
+        List<Image> saveImages = imageService.saveProductImageEntities(imageUrls);
+        product.addImages(saveImages);
         Product savedProduct = productRepository.save(product);
-
-        if (images != null && !images.isEmpty()) {
-            List<String> imageUrls = imageService.uploadImages(images);
-            imageService.saveProductImageEntities(savedProduct, imageUrls);
-        }
+        savedProduct.validateImageSize();
 
         Auction auction = createAuction(savedProduct);
         auctionRepository.save(auction);

@@ -7,10 +7,8 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 
 @Configuration
-@Profile({"local", "prod"})
 public class AWSConfig {
     @Value("${cloud.aws.credentials.access-key}")
     private String accessKey;
@@ -33,8 +31,8 @@ public class AWSConfig {
                 .build();
     }
 
+    @Bean
     public String s3BucketName() {
         return bucket;
     }
-
 }

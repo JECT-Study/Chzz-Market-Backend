@@ -1,9 +1,9 @@
 package org.chzz.market.domain.token.service;
 
-import jakarta.servlet.http.Cookie;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.chzz.market.common.aop.redisrock.DistributedLock;
 import org.chzz.market.common.util.JWTUtil;
 import org.chzz.market.domain.token.dto.TokenData;
 import org.chzz.market.domain.token.entity.TokenType;
@@ -34,8 +34,8 @@ public class TokenService {
         return jwtUtil.createToken(user, TokenType.TEMP);
     }
 
-    public Map<TokenType, String> reissue(Cookie refreshCookie) {
-        String refreshToken = getRefreshTokenByCookie(refreshCookie);
+    @DistributedLock(key = "#refreshToken")
+    public Map<TokenType, String> reissue(String refreshToken) {
         jwtUtil.validateToken(refreshToken, TokenType.REFRESH);
         Long userId = refreshTokenRepository.findByToken(refreshToken)
                 .orElseThrow(() -> new TokenException(TokenErrorCode.REFRESH_TOKEN_NOT_FOUND)).userId();
@@ -48,19 +48,11 @@ public class TokenService {
         return Map.of(TokenType.ACCESS, createAccessToken(user), TokenType.REFRESH, createRefreshToken(user));
     }
 
-    public void logout(Cookie refreshCookie) {
-        String refreshToken = getRefreshTokenByCookie(refreshCookie);
+    public void logout(String refreshToken) {
         jwtUtil.validateToken(refreshToken, TokenType.REFRESH);
         Long userId = refreshTokenRepository.findByToken(refreshToken)
                 .orElseThrow(() -> new TokenException(TokenErrorCode.REFRESH_TOKEN_NOT_FOUND)).userId();
         refreshTokenRepository.deleteByToken(refreshToken);
         log.info("사용자 ID {}: 로그아웃이 완료되었습니다.", userId);
-    }
-
-    private String getRefreshTokenByCookie(Cookie refreshCookie) {
-        if (refreshCookie == null) {
-            throw new TokenException(TokenErrorCode.REFRESH_TOKEN_NOT_FOUND);
-        }
-        return refreshCookie.getValue();
     }
 }

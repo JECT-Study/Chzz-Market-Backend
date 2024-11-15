@@ -2,19 +2,23 @@ package org.chzz.market.domain.user.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
-
-import org.chzz.market.domain.auction.repository.AuctionRepository;
-import org.chzz.market.domain.bank_account.entity.BankAccount;
-import org.chzz.market.domain.user.dto.response.ParticipationCountsResponse;
-import org.chzz.market.domain.user.dto.response.UserProfileResponse;
+import org.chzz.market.domain.auction.entity.Auction;
+import org.chzz.market.domain.auction.type.AuctionStatus;
+import org.chzz.market.domain.bid.entity.Bid;
+import org.chzz.market.domain.image.service.ImageService;
+import org.chzz.market.domain.product.entity.Product;
+import org.chzz.market.domain.user.dto.request.UpdateUserProfileRequest;
 import org.chzz.market.domain.user.dto.request.UserCreateRequest;
 import org.chzz.market.domain.user.dto.response.NicknameAvailabilityResponse;
-import org.chzz.market.domain.user.dto.UpdateProfileResponse;
-import org.chzz.market.domain.user.dto.UpdateUserProfileRequest;
 import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.entity.User.ProviderType;
 import org.chzz.market.domain.user.entity.User.UserRole;
@@ -28,43 +32,86 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import static org.mockito.Mockito.verify;
+import org.springframework.mock.web.MockMultipartFile;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
     @Mock
     private UserRepository userRepository;
-
     @Mock
-    private AuctionRepository auctionRepository;
-
+    private ImageService imageService;
     @InjectMocks
     private UserService userService;
 
-    private User user1;
+    private User user1, user2, user3;
+    private Product product1, product2, product3, product4, product5, product6;
+    private Product auctionProduct1, auctionProduct2;
+    private Auction auction1, auction2, auction3, auction4, auction5, auction6, auction7, auction8;
+    private Bid bid1, bid2, bid3, bid4, bid5, bid6;
+
     private UpdateUserProfileRequest updateUserProfileRequest;
-    private ParticipationCountsResponse counts;
 
     @BeforeEach
     void setUp() {
-        user1 = User.builder()
+        user1 = spy(User.builder()
                 .id(1L)
                 .nickname("닉네임 1")
                 .bio("자기소개 1")
-                .build();
+                .build());
+
+        user2 = spy(User.builder()
+                .id(2L)
+                .nickname("닉네임 2")
+                .bio("자기소개 2")
+                .build());
+
+        user3 = spy(User.builder()
+                .id(3L)
+                .nickname("닉네임 3")
+                .bio("자기소개 3")
+                .profileImageUrl("https://test")
+                .build());
+
+        product1 = Product.builder().id(1L).name("제품1").user(user2).minPrice(1000).build();
+        product2 = Product.builder().id(2L).name("제품2").user(user2).minPrice(2000).build();
+        product3 = Product.builder().id(3L).name("제품3").user(user2).minPrice(3000).build();
+        product4 = Product.builder().id(4L).name("제품4").user(user2).minPrice(4000).build();
+        product5 = Product.builder().id(5L).name("제품5").user(user2).minPrice(5000).build();
+        product6 = Product.builder().id(6L).name("제품6").user(user2).minPrice(6000).build();
+
+        auction1 = Auction.builder().id(1L).product(product1).status(AuctionStatus.PROCEEDING)
+                .endDateTime(LocalDateTime.now().plusDays(1)).build();
+        auction2 = Auction.builder().id(2L).product(product2).status(AuctionStatus.PROCEEDING)
+                .endDateTime(LocalDateTime.now().plusDays(2)).build();
+        auction3 = Auction.builder().id(3L).product(product3).status(AuctionStatus.PROCEEDING)
+                .endDateTime(LocalDateTime.now().plusDays(3)).build();
+        auction4 = Auction.builder().id(4L).product(product4).status(AuctionStatus.ENDED)
+                .endDateTime(LocalDateTime.now().minusDays(1)).winnerId(user1.getId()).build();
+        auction5 = Auction.builder().id(5L).product(product5).status(AuctionStatus.ENDED)
+                .endDateTime(LocalDateTime.now().minusDays(2)).winnerId(user1.getId()).build();
+        auction6 = Auction.builder().id(6L).product(product6).status(AuctionStatus.ENDED)
+                .endDateTime(LocalDateTime.now().minusDays(3)).winnerId(user2.getId()).build();
+
+        bid1 = Bid.builder().id(1L).auctionId(auction1.getId()).bidderId(user1.getId()).amount(1500L).build();
+        bid2 = Bid.builder().id(2L).auctionId(auction2.getId()).bidderId(user1.getId()).amount(2500L).build();
+        bid3 = Bid.builder().id(3L).auctionId(auction3.getId()).bidderId(user1.getId()).amount(3500L).build();
+        bid4 = Bid.builder().id(4L).auctionId(auction4.getId()).bidderId(user1.getId()).amount(4500L).build();
+        bid5 = Bid.builder().id(5L).auctionId(auction5.getId()).bidderId(user1.getId()).amount(5500L).build();
+        bid6 = Bid.builder().id(6L).auctionId(auction6.getId()).bidderId(user1.getId()).amount(6500L).build();
+
+        auctionProduct1 = Product.builder().id(9L).name("경매상품1").user(user1).minPrice(9000).build();
+        auctionProduct2 = Product.builder().id(10L).name("경매상품2").user(user1).minPrice(10000).build();
+
+        auction7 = Auction.builder().id(7L).product(auctionProduct1).status(AuctionStatus.PROCEEDING)
+                .endDateTime(LocalDateTime.now().plusDays(4)).build();
+        auction8 = Auction.builder().id(8L).product(auctionProduct2).status(AuctionStatus.PROCEEDING)
+                .endDateTime(LocalDateTime.now().plusDays(5)).build();
 
         updateUserProfileRequest = UpdateUserProfileRequest.builder()
                 .nickname("수정된 닉네임")
                 .bio("수정된 자기 소개")
-                .link("수정된 URL")
                 .build();
-
-        counts = new ParticipationCountsResponse(5L, 2L, 3L, 1L);
-
-        System.setProperty("org.mockito.logging.verbosity", "all");
     }
 
     @Nested
@@ -75,11 +122,11 @@ class UserServiceTest {
         public void createUser_Success() throws Exception {
             // given
             Long userId = 1L;
-            UserCreateRequest userCreateRequest = new UserCreateRequest("nickname", BankAccount.BankName.KB, "1234567890",
-                    "bio", "http://link.com");
+            UserCreateRequest userCreateRequest = new UserCreateRequest("bidderNickname","bio");
             User user = User.builder()
                     .email("test@gmail.com")
                     .providerId("123456")
+                    .userRole(UserRole.TEMP_USER)
                     .providerType(ProviderType.KAKAO)
                     .build();
             when(userRepository.findById(userId)).thenReturn(Optional.of(user));
@@ -91,9 +138,7 @@ class UserServiceTest {
             // then
             assertThat(user.getNickname()).isEqualTo(userCreateRequest.getNickname());
             assertThat(user.getBio()).isEqualTo(userCreateRequest.getBio());
-            assertThat(user.getLink()).isEqualTo(userCreateRequest.getLink());
             assertThat(user.getUserRole()).isEqualTo(UserRole.USER);
-            assertThat(user.getBankAccounts()).hasSize(1);
         }
 
         @Test
@@ -101,11 +146,11 @@ class UserServiceTest {
         public void createUser_WhenBioAndLinkAreEmptyStrings_ThenFieldsAreSetToNull() throws Exception {
             // given
             Long userId = 1L;
-            UserCreateRequest userCreateRequest = new UserCreateRequest("newNickname", BankAccount.BankName.KB, "1234567890",
-                    "", "");
+            UserCreateRequest userCreateRequest = new UserCreateRequest("newNickname", "");
             User user = User.builder()
                     .email("test@gmail.com")
                     .providerId("123456")
+                    .userRole(UserRole.TEMP_USER)
                     .providerType(ProviderType.KAKAO)
                     .build();
             when(userRepository.findById(userId)).thenReturn(Optional.of(user));
@@ -117,9 +162,7 @@ class UserServiceTest {
             // then
             assertThat(user.getNickname()).isEqualTo(userCreateRequest.getNickname());
             assertThat(user.getBio()).isNull();
-            assertThat(user.getLink()).isNull();
             assertThat(user.getUserRole()).isEqualTo(UserRole.USER);
-            assertThat(user.getBankAccounts()).hasSize(1);
         }
 
         @Test
@@ -188,102 +231,110 @@ class UserServiceTest {
 
     @Nested
     @DisplayName("유저 프로필 수정")
-    class userProfile_Update {
+    class UserProfileUpdateTest {
+
         @Test
-        @DisplayName("1. 유저 프로필 수정 성공")
+        @DisplayName("1.성공 - 유저 프로필 수정")
         void updateUserProfile_Success() {
             // given
             when(userRepository.findById(any())).thenReturn(Optional.of(user1));
             when(userRepository.findByNickname(any())).thenReturn(Optional.empty());
 
             // when
-            UpdateProfileResponse response = userService.updateUserProfile(user1.getId(), updateUserProfileRequest);
+            userService.updateUserProfile(user1.getId(), null, updateUserProfileRequest);
 
             // then
-            assertNotNull(response);
-            assertEquals("수정된 닉네임", response.nickname());
-            assertEquals("수정된 자기 소개", response.bio());
-            assertEquals("수정된 URL", response.url());
-
-            assertEquals("수정된 닉네임", user1.getNickname());
-            assertEquals("수정된 자기 소개", user1.getBio());
-            assertEquals("수정된 URL", user1.getLink());
+            assertThat(user1.getNickname()).isEqualTo("수정된 닉네임");
+            assertThat(user1.getBio()).isEqualTo("수정된 자기 소개");
         }
 
         @Test
-        @DisplayName("2. 유저 프로필 수정 실패 - 유저를 찾을 수 없음")
+        @DisplayName("2.성공 - 파일 포함 프로필 수정")
+        void updateUserProfile_Success_WithFile() {
+            // given
+            when(userRepository.findById(any())).thenReturn(Optional.of(user1));
+            when(userRepository.findByNickname(any())).thenReturn(Optional.empty());
+
+            MockMultipartFile file = new MockMultipartFile(
+                    "profileImage",
+                    "image.jpg",
+                    "image/jpeg",
+                    "test image content".getBytes()
+            );
+
+            when(imageService.uploadImage(file)).thenReturn("https://cdn.example.com/image.jpg");
+
+            // when
+            userService.updateUserProfile(user1.getId(), file, updateUserProfileRequest);
+
+            // then
+            assertThat(user1.getNickname()).isEqualTo("수정된 닉네임");
+            assertThat(user1.getBio()).isEqualTo("수정된 자기 소개");
+            assertThat(user1.getProfileImageUrl()).isEqualTo("https://cdn.example.com/image.jpg");
+        }
+
+        @Test
+        @DisplayName("3.성공 - 기존 이미지에서 기본 이미지로 변경")
+        void updateUserProfile_WithExistingImage_SetToDefaultImage() {
+            // given
+            when(userRepository.findById(any())).thenReturn(Optional.of(user3));
+            when(userRepository.findByNickname(any())).thenReturn(Optional.empty());
+
+            UpdateUserProfileRequest request = UpdateUserProfileRequest.builder()
+                    .nickname("수정된 닉네임")
+                    .bio("수정된 자기 소개")
+                    .useDefaultImage(true)
+                    .build();
+
+            // when
+            userService.updateUserProfile(user3.getId(), null, request);
+
+            // then
+            assertThat(user3.getProfileImageUrl()).isNull(); // 기본 이미지로 변경 시 URL은 null
+            assertThat(user3.getNickname()).isEqualTo("수정된 닉네임");
+            assertThat(user3.getBio()).isEqualTo("수정된 자기 소개");
+        }
+
+        @Test
+        @DisplayName("4.성공 - 기존 이미지에서 새 이미지 업로드")
+        void updateUserProfile_WithExistingImage_UploadNewImage() {
+            // given
+            when(userRepository.findById(any())).thenReturn(Optional.of(user3));
+            when(userRepository.findByNickname(any())).thenReturn(Optional.empty());
+
+            MockMultipartFile file = new MockMultipartFile(
+                    "profileImage",
+                    "image.jpg",
+                    "image/jpeg",
+                    "test image content".getBytes()
+            );
+
+            when(imageService.uploadImage(file)).thenReturn("https://cdn.example.com/new-image.jpg");
+
+            UpdateUserProfileRequest request = UpdateUserProfileRequest.builder()
+                    .nickname("수정된 닉네임")
+                    .bio("수정된 자기 소개")
+                    .build();
+
+            // when
+            userService.updateUserProfile(user3.getId(), file, request);
+
+            // then
+            assertThat(user3.getProfileImageUrl()).isEqualTo("https://cdn.example.com/new-image.jpg");
+            assertThat(user3.getNickname()).isEqualTo("수정된 닉네임");
+            assertThat(user3.getBio()).isEqualTo("수정된 자기 소개");
+        }
+
+        @Test
+        @DisplayName("5.실패 - 유저를 찾을 수 없음")
         void updateUserProfile_Fail_UserNotFound() {
             // given
+            when(userRepository.findById(any())).thenReturn(Optional.empty());
+
             // when, then
             assertThrows(UserException.class, () ->
-                    userService.updateUserProfile(999L, updateUserProfileRequest)
+                    userService.updateUserProfile(999L, null, updateUserProfileRequest)
             );
-        }
-    }
-
-    @Nested
-    @DisplayName("사용자 정보 조회 테스트")
-    class UpdateUserTest {
-        @Test
-        @DisplayName("1. 사용자 정보 조회가 성공하는 경우")
-        public void updateUser_Success() {
-            // given
-            when(userRepository.findByNickname("닉네임 1")).thenReturn(Optional.of(user1));
-            when(auctionRepository.getParticipationCounts(1L)).thenReturn(counts);
-
-            // when
-            UserProfileResponse response = userService.getUserProfile("닉네임 1");
-
-            // then
-            assertNotNull(response);
-            assertEquals("닉네임 1", response.nickname());
-            assertEquals("자기소개 1", response.bio());
-            assertNotNull(response.participationCount());
-            assertEquals(5L, response.participationCount().ongoingAuctionCount());
-            assertEquals(2L, response.participationCount().successfulAuctionCount());
-            assertEquals(3L, response.participationCount().failedAuctionCount());
-            assertEquals(1L, response.participationCount().unsuccessfulAuctionCount());
-
-            verify(userRepository).findByNickname(user1.getNickname());
-            verify(auctionRepository).getParticipationCounts(user1.getId());
-        }
-
-        @Test
-        @DisplayName("2. 존재하지 않는 사용자의 프로필 조회 시 예외 발생")
-        public void updateUser_UserNotFound() {
-            // given
-            when(userRepository.findByNickname("존재하지 않는 닉네임")).thenReturn(Optional.empty());
-
-            // when
-            assertThrows(UserException.class, () -> userService.getUserProfile("존재하지 않는 닉네임"));
-            verify(userRepository).findByNickname("존재하지 않는 닉네임");
-            verifyNoInteractions(auctionRepository);
-        }
-
-        @Test
-        @DisplayName("3. 사용자의 경매 참여 카운트가 모두 0인 경우")
-        public void getUserProfile_ZeroCounts() {
-            // given
-            ParticipationCountsResponse zeroCounts = new ParticipationCountsResponse(0L, 0L, 0L, 0L);
-
-            when(userRepository.findByNickname("닉네임 1")).thenReturn(Optional.of(user1));
-            when(auctionRepository.getParticipationCounts(1L)).thenReturn(zeroCounts);
-
-            // when
-            UserProfileResponse response = userService.getUserProfile("닉네임 1");
-
-            // then
-            assertNotNull(response);
-            assertEquals("닉네임 1", response.nickname());
-            assertEquals("자기소개 1", response.bio());
-            assertNotNull(response.participationCount());
-            assertEquals(0L, response.participationCount().ongoingAuctionCount());
-            assertEquals(0L, response.participationCount().successfulAuctionCount());
-            assertEquals(0L, response.participationCount().failedAuctionCount());
-            assertEquals(0L, response.participationCount().unsuccessfulAuctionCount());
-
-            verify(userRepository).findByNickname(user1.getNickname());
-            verify(auctionRepository).getParticipationCounts(user1.getId());
         }
     }
 }

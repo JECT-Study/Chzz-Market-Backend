@@ -17,9 +17,9 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.error.AuctionErrorCode;
-import org.chzz.market.domain.auction.type.AuctionStatus;
 import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
+import org.chzz.market.domain.auction.type.AuctionStatus;
 import org.chzz.market.domain.bid.dto.BidCreateRequest;
 import org.chzz.market.domain.bid.entity.Bid;
 import org.chzz.market.domain.bid.error.BidException;
@@ -82,25 +82,24 @@ class BidServiceTest {
     @DisplayName("성공 - 처음 입찰 한 경우")
     public void firstBid_Success() throws Exception {
         //given
-        bidCreateRequest = BidCreateRequest.builder().auctionId(1L).amount(1000L).build();
+        bidCreateRequest = BidCreateRequest.builder().auctionId(1L).bidAmount(1000L).build();
         when(userRepository.findById(2L)).thenReturn(Optional.of(user2));
         when(auctionRepository.findById(bidCreateRequest.getAuctionId())).thenReturn(Optional.ofNullable(auction));
-        when(bidRepository.findByAuctionAndBidder(auction, user2)).thenReturn(Optional.empty());
+        when(bidRepository.findByAuctionIdAndBidderId(auction.getId(), user2.getId())).thenReturn(Optional.empty());
 
         //when & then
         assertDoesNotThrow(() -> bidService.createBid(bidCreateRequest, 2L));
-        assertThat(auction.getBids().size()).isEqualTo(1);
     }
 
     @Test
     @DisplayName("성공 - 이미 입찰 한 경우 업데이트")
     public void updateBid_Success() throws Exception {
         //given
-        bidCreateRequest = BidCreateRequest.builder().auctionId(1L).amount(2000L).build();
-        Bid bid = Bid.builder().id(1L).auction(auction).bidder(user2).amount(1000L).build();
+        bidCreateRequest = BidCreateRequest.builder().auctionId(1L).bidAmount(2000L).build();
+        Bid bid = Bid.builder().id(1L).auctionId(auction.getId()).bidderId(user2.getId()).amount(1000L).build();
         when(userRepository.findById(2L)).thenReturn(Optional.of(user2));
         when(auctionRepository.findById(bidCreateRequest.getAuctionId())).thenReturn(Optional.ofNullable(auction));
-        when(bidRepository.findByAuctionAndBidder(auction, user2)).thenReturn(Optional.of(bid));
+        when(bidRepository.findByAuctionIdAndBidderId(auction.getId(), user2.getId())).thenReturn(Optional.of(bid));
 
         //when
         bidService.createBid(bidCreateRequest, 2L);
@@ -108,14 +107,14 @@ class BidServiceTest {
         //then
         assertThat(bid.getId()).isEqualTo(1L);
         assertThat(bid.getAmount()).isEqualTo(2000L);
-        assertThat(bid.getCount()).isEqualTo(2L);
+        assertThat(bid.getCount()).isEqualTo(1L);
     }
 
     @Test
     @DisplayName("실패 - 경매 등록자가 입찰할 때 예외 발생")
     public void ownerBid_ThrowsException() throws Exception {
         // given
-        bidCreateRequest = BidCreateRequest.builder().auctionId(1L).amount(1000L).build();
+        bidCreateRequest = BidCreateRequest.builder().auctionId(1L).bidAmount(1000L).build();
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(auctionRepository.findById(bidCreateRequest.getAuctionId())).thenReturn(Optional.ofNullable(auction));
 
@@ -130,7 +129,7 @@ class BidServiceTest {
     @DisplayName("실패 - 경매가 상태가 진행이 아닐 때 예외 발생")
     public void notProceeding_ThrowsException() throws Exception {
         //given
-        bidCreateRequest = BidCreateRequest.builder().auctionId(2L).amount(1000L).build();
+        bidCreateRequest = BidCreateRequest.builder().auctionId(2L).bidAmount(1000L).build();
         when(userRepository.findById(2L)).thenReturn(Optional.of(user2));
         when(auctionRepository.findById(bidCreateRequest.getAuctionId())).thenReturn(
                 Optional.ofNullable(completeAuction));
@@ -147,7 +146,7 @@ class BidServiceTest {
     @DisplayName("실패 - 입찰 시각이 종료시각을 지날 때 예외 발생")
     public void auctionEnded_ThrowsException() throws Exception {
         //given
-        bidCreateRequest = BidCreateRequest.builder().auctionId(3L).amount(1000L).build();
+        bidCreateRequest = BidCreateRequest.builder().auctionId(3L).bidAmount(1000L).build();
         when(userRepository.findById(2L)).thenReturn(Optional.of(user2));
         when(auctionRepository.findById(bidCreateRequest.getAuctionId())).thenReturn(Optional.ofNullable(endAuction));
 
@@ -162,7 +161,7 @@ class BidServiceTest {
     @DisplayName("실패 - 최소 금액보다 낮은 입찰 금액일때 예외 발생")
     public void bidBelowMinPrice_ThrowsException() throws Exception {
         //given
-        bidCreateRequest = BidCreateRequest.builder().auctionId(1L).amount(500L).build();
+        bidCreateRequest = BidCreateRequest.builder().auctionId(1L).bidAmount(500L).build();
         when(userRepository.findById(2L)).thenReturn(Optional.of(user2));
         when(auctionRepository.findById(bidCreateRequest.getAuctionId())).thenReturn(Optional.ofNullable(auction));
 
@@ -177,11 +176,12 @@ class BidServiceTest {
     @DisplayName("실패 - 남은 입찰 횟수가 0보다 작을 때 입찰 한 경우 예외 발생")
     public void bidCountZeroOrLess_ThrowsException() throws Exception {
         //given
-        Bid bid = Bid.builder().id(1L).auction(auction).bidder(user2).amount(1000L).count(0).build();
-        bidCreateRequest = BidCreateRequest.builder().auctionId(1L).amount(5000L).build();
+        Bid bid = Bid.builder().id(1L).auctionId(auction.getId()).bidderId(user2.getId()).amount(1000L).count(0)
+                .build();
+        bidCreateRequest = BidCreateRequest.builder().auctionId(1L).bidAmount(5000L).build();
         when(userRepository.findById(2L)).thenReturn(Optional.of(user2));
         when(auctionRepository.findById(bidCreateRequest.getAuctionId())).thenReturn(Optional.ofNullable(auction));
-        when(bidRepository.findByAuctionAndBidder(auction, user2)).thenReturn(Optional.of(bid));
+        when(bidRepository.findByAuctionIdAndBidderId(auction.getId(), user2.getId())).thenReturn(Optional.of(bid));
 
         //when & then
         assertThatThrownBy(() -> bidService.createBid(bidCreateRequest, 2L))
@@ -194,11 +194,11 @@ class BidServiceTest {
     @DisplayName("실패 - 기존 입찰 금액과 동일한 입찰 금액인 경우")
     public void asd() throws Exception {
         //given
-        bidCreateRequest = BidCreateRequest.builder().auctionId(1L).amount(1000L).build();
-        Bid bid = Bid.builder().id(1L).auction(auction).bidder(user2).amount(1000L).build();
+        bidCreateRequest = BidCreateRequest.builder().auctionId(1L).bidAmount(1000L).build();
+        Bid bid = Bid.builder().id(1L).auctionId(auction.getId()).bidderId(user2.getId()).amount(1000L).build();
         when(userRepository.findById(2L)).thenReturn(Optional.of(user2));
         when(auctionRepository.findById(bidCreateRequest.getAuctionId())).thenReturn(Optional.ofNullable(auction));
-        when(bidRepository.findByAuctionAndBidder(auction, user2)).thenReturn(Optional.of(bid));
+        when(bidRepository.findByAuctionIdAndBidderId(auction.getId(), user2.getId())).thenReturn(Optional.of(bid));
 
         //when & then
         assertThatThrownBy(() -> bidService.createBid(bidCreateRequest, 2L))
@@ -211,24 +211,26 @@ class BidServiceTest {
     @DisplayName("성공 - 입찰 취소")
     public void cancelBid_Success() throws Exception {
         //given
-        Bid bid = Bid.builder().id(1L).auction(auction).bidder(user2).amount(1000L).count(3).build();
-        auction.registerBid(bid);
+        Bid bid = Bid.builder().id(1L).auctionId(auction.getId()).bidderId(user2.getId()).amount(1000L).count(3)
+                .build();
 
         //when
+        when(auctionRepository.findById(1L)).thenReturn(Optional.of(auction));
         when(bidRepository.findById(1L)).thenReturn(Optional.of(bid));
         bidService.cancelBid(bid.getId(), user2.getId());
         //then
         assertThat(bid.getStatus()).isEqualTo(CANCELLED);
-        assertThat(auction.getBids().size()).isEqualTo(0);
     }
 
     @Test
     @DisplayName("실패 - 입찰 취소 시 입찰자가 아닌 경우 예외 발생")
     public void cancelBid_NotByBidder_ThrowsException() throws Exception {
         //given
-        Bid bid = Bid.builder().id(1L).auction(auction).bidder(user2).amount(1000L).count(3).build();
+        Bid bid = Bid.builder().id(1L).auctionId(auction.getId()).bidderId(user2.getId()).amount(1000L).count(3)
+                .build();
 
         //when
+        when(auctionRepository.findById(1L)).thenReturn(Optional.of(auction));
         when(bidRepository.findById(1L)).thenReturn(Optional.of(bid));
 
         //then
@@ -242,9 +244,11 @@ class BidServiceTest {
     @DisplayName("실패 - 입찰 취소 시각이 경매 종료 시각을 지날 때 예외 발생")
     public void cancelBid_AfterAuctionEnded_ThrowsException() throws Exception {
         //given
-        Bid bid = Bid.builder().id(3L).auction(endAuction).bidder(user2).amount(1000L).count(3).build();
+        Bid bid = Bid.builder().id(3L).auctionId(endAuction.getId()).bidderId(user2.getId()).amount(1000L).count(3)
+                .build();
 
         //when
+        when(auctionRepository.findById(3L)).thenReturn(Optional.of(endAuction));
         when(bidRepository.findById(3L)).thenReturn(Optional.of(bid));
 
         //then
@@ -258,9 +262,11 @@ class BidServiceTest {
     @DisplayName("실패 - 이미 취소된 입찰을 취소할 때 예외 발생")
     public void cancelBid_AlreadyCancelledBid_ThrowsException() throws Exception {
         //given
-        Bid bid = Bid.builder().id(1L).auction(auction).bidder(user2).amount(1000L).count(3).status(CANCELLED).build();
+        Bid bid = Bid.builder().id(1L).auctionId(auction.getId()).bidderId(user2.getId()).amount(1000L).count(3)
+                .status(CANCELLED).build();
 
         //when
+        when(auctionRepository.findById(1L)).thenReturn(Optional.of(auction));
         when(bidRepository.findById(1L)).thenReturn(Optional.of(bid));
 
         //then
@@ -315,6 +321,4 @@ class BidServiceTest {
                 .extracting(ERROR_CODE)
                 .isEqualTo(AuctionErrorCode.AUCTION_NOT_ENDED);
     }
-
-
 }

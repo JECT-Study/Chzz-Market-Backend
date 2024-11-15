@@ -1,13 +1,18 @@
 package org.chzz.market.common.filter;
 
+import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.POST;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.chzz.market.common.dto.ApiEndpoint;
 import org.chzz.market.common.util.CookieUtil;
 import org.chzz.market.common.util.JWTUtil;
 import org.chzz.market.domain.token.entity.TokenType;
@@ -17,17 +22,26 @@ import org.chzz.market.domain.user.entity.User.UserRole;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-@Component
 @RequiredArgsConstructor
 @Slf4j
 public class JWTFilter extends OncePerRequestFilter {
     public static final String AUTHORIZATION_HEADER = "Authorization";
     public static final String BEARER_TOKEN_PREFIX = "Bearer ";
+    private static final ApiEndpoint SIGN_UP_ENDPOINT = new ApiEndpoint("/api/v1/users", POST);
+    private static final List<ApiEndpoint> EXCLUDED_ENDPOINTS = List.of(
+            new ApiEndpoint("/api/v1/auctions/best", GET),
+            new ApiEndpoint("/api/v1/auctions/imminent", GET),
+            new ApiEndpoint("/api/v1/users/tokens/reissue", POST)
+    );
 
     private final JWTUtil jwtUtil;
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        return EXCLUDED_ENDPOINTS.stream().anyMatch(endpoint -> endpoint.matches(request));
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -40,7 +54,7 @@ public class JWTFilter extends OncePerRequestFilter {
             jwtUtil.validateToken(accessToken, TokenType.ACCESS);
             setAuthentication(accessToken);
             filterChain.doFilter(request, response);
-        } else if (tempCookie != null) {
+        } else if (isSignUpRequest(request) && tempCookie != null) {
             String tempToken = tempCookie.getValue();
             jwtUtil.validateToken(tempToken, TokenType.TEMP);
             setAuthentication(tempToken);
@@ -62,5 +76,9 @@ public class JWTFilter extends OncePerRequestFilter {
         Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null,
                 customUserDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authToken);
+    }
+
+    private boolean isSignUpRequest(HttpServletRequest request) {
+        return SIGN_UP_ENDPOINT.matches(request);
     }
 }

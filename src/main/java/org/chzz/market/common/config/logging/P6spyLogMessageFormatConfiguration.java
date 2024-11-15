@@ -6,7 +6,7 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
-@Profile({"local","test"})
+@Profile("!prod")
 @Configuration
 public class P6spyLogMessageFormatConfiguration {
 

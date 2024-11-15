@@ -1,8 +1,12 @@
 package org.chzz.market.domain.product.controller;
 
+import static org.chzz.market.domain.product.entity.Product.Category;
+
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.common.config.LoginUser;
 import org.chzz.market.domain.like.dto.LikeResponse;
 import org.chzz.market.domain.like.service.LikeService;
@@ -12,14 +16,12 @@ import org.chzz.market.domain.product.dto.ProductDetailsResponse;
 import org.chzz.market.domain.product.dto.ProductResponse;
 import org.chzz.market.domain.product.dto.UpdateProductRequest;
 import org.chzz.market.domain.product.dto.UpdateProductResponse;
-import org.chzz.market.domain.product.entity.Product;
 import org.chzz.market.domain.product.service.ProductService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,37 +34,40 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+
+@Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/products")
-public class ProductController {
-    private static final Logger logger = LoggerFactory.getLogger(ProductController.class);
-
+@RequestMapping("/v1/products")
+public class ProductController implements ProductApi {
     private final ProductService productService;
     private final LikeService likeService;
 
-    /*
-     * 카테고리 별 사전 등록 상품 목록 조회
+    /**
+     * 사전 등록 상품 목록 조회
      */
+    @Override
     @GetMapping
     public ResponseEntity<Page<ProductResponse>> getProductList(
-            @RequestParam Product.Category category,
+            @RequestParam(required = false) Category category,
             @LoginUser Long userId,
             Pageable pageable) {
         return ResponseEntity.ok(productService.getProductListByCategory(category, userId, pageable));
     }
 
-    /*
+    /**
      * 상품 카테고리 목록 조회
      */
+    @Override
     @GetMapping("/categories")
     public ResponseEntity<List<CategoryResponse>> getCategoryList() {
         return ResponseEntity.ok(productService.getCategories());
     }
 
-    /*
+    /**
      * 사전 등록 상품 상세 정보 조회
      */
+    @Override
     @GetMapping("/{productId}")
     public ResponseEntity<ProductDetailsResponse> getProductDetails(
             @PathVariable Long productId,
@@ -71,19 +76,32 @@ public class ProductController {
         return ResponseEntity.ok(response);
     }
 
-    /*
-     * 나의 사전 등록 상품 목록 조회
+    /**
+     * 특정 닉네임 사용자의 사전 경매 목록 조회 (현재 사용 x)
      */
+    @Override
     @GetMapping("/users/{nickname}")
     public ResponseEntity<Page<ProductResponse>> getMyProductList(
             @PathVariable String nickname,
             Pageable pageable) {
-        return ResponseEntity.ok(productService.getMyProductList(nickname, pageable));
+        return ResponseEntity.ok(productService.getProductListByNickname(nickname, pageable));
     }
 
-    /*
+    /**
+     * 나의 사전 경매 목록 조회
+     */
+    @Override
+    @GetMapping("/users")
+    public ResponseEntity<Page<ProductResponse>> getRegisteredProductList(
+            @LoginUser Long userId,
+            Pageable pageable) {
+        return ResponseEntity.ok(productService.getProductListByUserId(userId, pageable));
+    }
+
+    /**
      * 내가 참여한 사전경매 조회
      */
+    @Override
     @GetMapping("/history")
     public ResponseEntity<Page<ProductResponse>> getLikedProductList(
             @LoginUser Long userId,
@@ -94,12 +112,13 @@ public class ProductController {
     /**
      * 사전 등록 상품 수정
      */
-    @PatchMapping("/{productId}")
+    @Override
+    @PatchMapping(value = "/{productId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UpdateProductResponse> updateProduct(
             @LoginUser Long userId,
             @PathVariable Long productId,
             @RequestPart("request") @Valid UpdateProductRequest request,
-            @RequestPart(value = "images", required = false) List<MultipartFile> images) {
+            @RequestParam(required = false) Map<String, MultipartFile> images) {
         UpdateProductResponse response = productService.updateProduct(userId, productId, request, images);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -107,18 +126,20 @@ public class ProductController {
     /**
      * 사전 등록 상품 삭제
      */
+    @Override
     @DeleteMapping("/{productId}")
     public ResponseEntity<DeleteProductResponse> deleteProduct(
             @PathVariable Long productId,
             @LoginUser Long userId) {
         DeleteProductResponse response = productService.deleteProduct(productId, userId);
-        logger.info("상품이 성공적으로 삭제되었습니다. 상품 ID: {}", productId);
+        log.info("상품이 성공적으로 삭제되었습니다. 상품 ID: {}", productId);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     /**
      * 상품 좋아요 토글
      */
+    @Override
     @PostMapping("/{productId}/likes")
     public ResponseEntity<LikeResponse> toggleProductLike(
             @PathVariable Long productId,

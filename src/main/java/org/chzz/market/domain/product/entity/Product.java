@@ -1,5 +1,8 @@
 package org.chzz.market.domain.product.entity;
 
+import static org.chzz.market.domain.image.error.ImageErrorCode.MAX_IMAGE_COUNT_EXCEEDED;
+import static org.chzz.market.domain.image.error.ImageErrorCode.NO_IMAGES_PROVIDED;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -16,17 +19,18 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.chzz.market.common.validation.annotation.ThousandMultiple;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
 import org.chzz.market.domain.image.entity.Image;
+import org.chzz.market.domain.image.error.exception.ImageException;
 import org.chzz.market.domain.like.entity.Like;
 import org.chzz.market.domain.product.dto.UpdateProductRequest;
+import org.chzz.market.domain.product.error.ProductErrorCode;
+import org.chzz.market.domain.product.error.ProductException;
 import org.chzz.market.domain.user.entity.User;
 import org.hibernate.annotations.DynamicUpdate;
 
@@ -34,7 +38,7 @@ import org.hibernate.annotations.DynamicUpdate;
 @Entity
 @Builder
 @Table(indexes = {
-        @Index(name = "idx_product_id_name",columnList = "product_id, name")
+        @Index(name = "idx_product_id_name", columnList = "product_id, name")
 })
 @DynamicUpdate
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -50,15 +54,12 @@ public class Product extends BaseTimeEntity {
     private User user;
 
     @Column(nullable = false)
-    // @Pattern(regexp = "^[가-힣a-zA-Z0-9]{2,}$",message = "invalid type of nickname")
     private String name;
 
     @Column(length = 1000)
-    //TODO 2024 07 18 13:35:30 : custom validate
     private String description;
 
     @Column
-    @ThousandMultiple
     private Integer minPrice;
 
     @Column(nullable = false, columnDefinition = "varchar(30)")
@@ -70,7 +71,7 @@ public class Product extends BaseTimeEntity {
     private List<Like> likes = new ArrayList<>();
 
     @Builder.Default
-    @OneToMany(mappedBy = "product", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "product", cascade = {CascadeType.REMOVE, CascadeType.PERSIST}, orphanRemoval = true)
     private List<Image> images = new ArrayList<>();
 
     @Getter
@@ -103,9 +104,8 @@ public class Product extends BaseTimeEntity {
         likes.remove(like);
     }
 
-
     public void update(UpdateProductRequest modifiedProduct) {
-        this.name = modifiedProduct.getName();
+        this.name = modifiedProduct.getProductName();
         this.description = modifiedProduct.getDescription();
         this.category = modifiedProduct.getCategory();
         this.minPrice = modifiedProduct.getMinPrice();
@@ -115,16 +115,46 @@ public class Product extends BaseTimeEntity {
         return this.user.getId().equals(userId);
     }
 
-    public void clearImages() {
-        this.images.clear();
-    }
-
     public void addImages(List<Image> images) {
-        this.images.addAll(images);
+        images.forEach(this::addImage);
     }
 
-    public Optional<Image> getFirstImage() {
-        return images.stream().findFirst();
+    public void removeImages(List<Image> images) {
+        images.forEach(this::removeImage);
+    }
+
+    private void addImage(Image image) {
+        images.add(image);
+        image.specifyProduct(this);
+    }
+
+    private void removeImage(Image image) {
+        images.remove(image);
+        image.specifyProduct(null);
+    }
+
+    public String getFirstImageCdnPath() {
+        return images.stream()
+                .filter(image -> image.getSequence() == 1)
+                .map(Image::getCdnPath)  // cdnPath 속성만 추출
+                .findFirst()
+                .orElseThrow(() -> new ProductException(ProductErrorCode.IMAGE_NOT_FOUND));
+    }
+
+    public List<Long> getLikeUserIds() {
+        return likes.stream()
+                .map(like -> like.getUser().getId())
+                .distinct()
+                .toList();
+    }
+
+    public void validateImageSize() {
+        long count = this.images.size();
+        if (count < 1) {
+            throw new ImageException(NO_IMAGES_PROVIDED);
+        } else if (count > 5) {
+            throw new ImageException(MAX_IMAGE_COUNT_EXCEEDED);
+        }
     }
 
 }

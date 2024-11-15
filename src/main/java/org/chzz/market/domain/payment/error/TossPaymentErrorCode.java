@@ -51,7 +51,8 @@ public enum TossPaymentErrorCode implements ErrorCode {
     NOT_AVAILABLE_BANK(HttpStatus.FORBIDDEN, "은행 서비스 시간이 아닙니다."),
     INVALID_PASSWORD(HttpStatus.FORBIDDEN, "결제 비밀번호가 일치하지 않습니다."),
     INCORRECT_BASIC_AUTH_FORMAT(HttpStatus.FORBIDDEN, "잘못된 요청입니다. ':' 를 포함해 인코딩해주세요."),
-    FDS_ERROR(HttpStatus.FORBIDDEN, "[토스페이먼츠] 위험거래가 감지되어 결제가 제한됩니다. 발송된 문자에 포함된 링크를 통해 본인인증 후 결제가 가능합니다. (고객센터: 1644-8051)"),
+    FDS_ERROR(HttpStatus.FORBIDDEN,
+            "[토스페이먼츠] 위험거래가 감지되어 결제가 제한됩니다. 발송된 문자에 포함된 링크를 통해 본인인증 후 결제가 가능합니다. (고객센터: 1644-8051)"),
     NOT_FOUND_PAYMENT(HttpStatus.NOT_FOUND, "존재하지 않는 결제 정보 입니다."),
     NOT_FOUND_PAYMENT_SESSION(HttpStatus.NOT_FOUND, "결제 시간이 만료되어 결제 진행 데이터가 존재하지 않습니다."),
     FAILED_PAYMENT_INTERNAL_SYSTEM_PROCESSING(HttpStatus.INTERNAL_SERVER_ERROR, "결제가 완료되지 않았어요. 다시 시도해주세요."),
@@ -67,9 +68,59 @@ public enum TossPaymentErrorCode implements ErrorCode {
     }
 
     private record TossErrorResponse(String code,
-                             String message) {
+                                     String message) {
         TossPaymentErrorCode asErrorCode() {
             return TossPaymentErrorCode.valueOf(code);
         }
+    }
+
+    public static class Const {
+        public static final String ALREADY_PROCESSED_PAYMENT = "ALREADY_PROCESSED_PAYMENT";
+        public static final String PROVIDER_ERROR = "PROVIDER_ERROR";
+        public static final String EXCEED_MAX_CARD_INSTALLMENT_PLAN = "EXCEED_MAX_CARD_INSTALLMENT_PLAN";
+        public static final String INVALID_REQUEST = "INVALID_REQUEST";
+        public static final String NOT_ALLOWED_POINT_USE = "NOT_ALLOWED_POINT_USE";
+        public static final String INVALID_API_KEY = "INVALID_API_KEY";
+        public static final String INVALID_REJECT_CARD = "INVALID_REJECT_CARD";
+        public static final String BELOW_MINIMUM_AMOUNT = "BELOW_MINIMUM_AMOUNT";
+        public static final String INVALID_CARD_EXPIRATION = "INVALID_CARD_EXPIRATION";
+        public static final String INVALID_STOPPED_CARD = "INVALID_STOPPED_CARD";
+        public static final String EXCEED_MAX_DAILY_PAYMENT_COUNT = "EXCEED_MAX_DAILY_PAYMENT_COUNT";
+        public static final String NOT_SUPPORTED_INSTALLMENT_PLAN_CARD_OR_MERCHANT = "NOT_SUPPORTED_INSTALLMENT_PLAN_CARD_OR_MERCHANT";
+        public static final String INVALID_CARD_INSTALLMENT_PLAN = "INVALID_CARD_INSTALLMENT_PLAN";
+        public static final String NOT_SUPPORTED_MONTHLY_INSTALLMENT_PLAN = "NOT_SUPPORTED_MONTHLY_INSTALLMENT_PLAN";
+        public static final String EXCEED_MAX_PAYMENT_AMOUNT = "EXCEED_MAX_PAYMENT_AMOUNT";
+        public static final String NOT_FOUND_TERMINAL_ID = "NOT_FOUND_TERMINAL_ID";
+        public static final String INVALID_AUTHORIZE_AUTH = "INVALID_AUTHORIZE_AUTH";
+        public static final String INVALID_CARD_LOST_OR_STOLEN = "INVALID_CARD_LOST_OR_STOLEN";
+        public static final String RESTRICTED_TRANSFER_ACCOUNT = "RESTRICTED_TRANSFER_ACCOUNT";
+        public static final String INVALID_CARD_NUMBER = "INVALID_CARD_NUMBER";
+        public static final String INVALID_UNREGISTERED_SUBMALL = "INVALID_UNREGISTERED_SUBMALL";
+        public static final String NOT_REGISTERED_BUSINESS = "NOT_REGISTERED_BUSINESS";
+        public static final String EXCEED_MAX_ONE_DAY_WITHDRAW_AMOUNT = "EXCEED_MAX_ONE_DAY_WITHDRAW_AMOUNT";
+        public static final String EXCEED_MAX_ONE_TIME_WITHDRAW_AMOUNT = "EXCEED_MAX_ONE_TIME_WITHDRAW_AMOUNT";
+        public static final String CARD_PROCESSING_ERROR = "CARD_PROCESSING_ERROR";
+        public static final String EXCEED_MAX_AMOUNT = "EXCEED_MAX_AMOUNT";
+        public static final String INVALID_ACCOUNT_INFO_RE_REGISTER = "INVALID_ACCOUNT_INFO_RE_REGISTER";
+        public static final String NOT_AVAILABLE_PAYMENT = "NOT_AVAILABLE_PAYMENT";
+        public static final String UNAPPROVED_ORDER_ID = "UNAPPROVED_ORDER_ID";
+        public static final String EXCEED_MAX_MONTHLY_PAYMENT_AMOUNT = "EXCEED_MAX_MONTHLY_PAYMENT_AMOUNT";
+        public static final String UNAUTHORIZED_KEY = "UNAUTHORIZED_KEY";
+        public static final String REJECT_ACCOUNT_PAYMENT = "REJECT_ACCOUNT_PAYMENT";
+        public static final String REJECT_CARD_PAYMENT = "REJECT_CARD_PAYMENT";
+        public static final String REJECT_CARD_COMPANY = "REJECT_CARD_COMPANY";
+        public static final String FORBIDDEN_REQUEST = "FORBIDDEN_REQUEST";
+        public static final String REJECT_TOSSPAY_INVALID_ACCOUNT = "REJECT_TOSSPAY_INVALID_ACCOUNT";
+        public static final String EXCEED_MAX_AUTH_COUNT = "EXCEED_MAX_AUTH_COUNT";
+        public static final String EXCEED_MAX_ONE_DAY_AMOUNT = "EXCEED_MAX_ONE_DAY_AMOUNT";
+        public static final String NOT_AVAILABLE_BANK = "NOT_AVAILABLE_BANK";
+        public static final String INVALID_PASSWORD = "INVALID_PASSWORD";
+        public static final String INCORRECT_BASIC_AUTH_FORMAT = "INCORRECT_BASIC_AUTH_FORMAT";
+        public static final String FDS_ERROR = "FDS_ERROR";
+        public static final String NOT_FOUND_PAYMENT = "NOT_FOUND_PAYMENT";
+        public static final String NOT_FOUND_PAYMENT_SESSION = "NOT_FOUND_PAYMENT_SESSION";
+        public static final String FAILED_PAYMENT_INTERNAL_SYSTEM_PROCESSING = "FAILED_PAYMENT_INTERNAL_SYSTEM_PROCESSING";
+        public static final String FAILED_INTERNAL_SYSTEM_PROCESSING = "FAILED_INTERNAL_SYSTEM_PROCESSING";
+        public static final String UNKNOWN_PAYMENT_ERROR = "UNKNOWN_PAYMENT_ERROR";
     }
 }

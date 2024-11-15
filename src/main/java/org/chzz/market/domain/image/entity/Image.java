@@ -29,13 +29,24 @@ import org.chzz.market.domain.product.entity.Product;
 public class Image extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="image_id")
+    @Column(name = "image_id")
     private Long id;
 
     @Column(nullable = false)
     private String cdnPath;
 
+    @Column
+    private int sequence;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     private Product product;
+
+    public void specifyProduct(Product product) {
+        this.product = product;
+    }
+
+    public void changeSequence(Integer newSequence) {
+        this.sequence = newSequence;
+    }
 }

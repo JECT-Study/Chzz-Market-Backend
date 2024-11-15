@@ -20,10 +20,4 @@ public class AWSConfig {
     public AWSCredentialsProvider awsCredentialsProvider() {
         return Mockito.mock(AWSCredentialsProvider.class);
     }
-
-    @Bean
-    @Primary
-    public String s3BucketName() {
-        return "test-bucket";
-    }
 }

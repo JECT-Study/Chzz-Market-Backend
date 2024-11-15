@@ -12,19 +12,16 @@ spring:
     username: sa
     password:
 
-    h2:
-      console:
-        enabled: true
-    jpa:
-      hibernate:
-        ddl-auto: create
-      properties:
-        hibernate:
-          dialect: org.hibernate.dialect.H2Dialect
+  h2:
+    console:
+      enabled: true
+
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
+      host: localhost
+      port: 6379
+      repositories:
+        enabled: false
 
   security:
     oauth2:
@@ -73,6 +70,8 @@ spring:
             threadCount: 3
             threadPriority: 5
             threadsInheritContextClassLoaderOfInitializingThread: true
+  flyway:
+    enabled: false
 cloud:
   aws:
     credentials:
