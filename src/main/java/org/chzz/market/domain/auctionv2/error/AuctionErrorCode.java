@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 public enum AuctionErrorCode implements ErrorCode {
     AUCTION_ALREADY_OFFICIAL(BAD_REQUEST, "해당 경매는 이미 정식 경매입니다."),
     OFFICIAL_AUCTION_DELETE_FORBIDDEN(FORBIDDEN, "정식경매는 삭제할수 없습니다."),
+    NOW_WINNER(FORBIDDEN, "낙찰자가 아닙니다."),
     AUCTION_ACCESS_FORBIDDEN(FORBIDDEN, "해당 경매에 접근할 수 없습니다."),
     AUCTION_NOT_FOUND(NOT_FOUND, "경매를 찾을 수 없습니다.");
 
@@ -23,6 +24,7 @@ public enum AuctionErrorCode implements ErrorCode {
     public static class Const {
         public static final String AUCTION_ALREADY_OFFICIAL = "AUCTION_ALREADY_OFFICIAL";
         public static final String OFFICIAL_AUCTION_DELETE_FORBIDDEN = "OFFICIAL_AUCTION_DELETE_FORBIDDEN";
+        public static final String NOW_WINNER = "NOW_WINNER";
         public static final String AUCTION_ACCESS_FORBIDDEN = "AUCTION_ACCESS_FORBIDDEN";
         public static final String AUCTION_NOT_FOUND = "AUCTION_NOT_FOUND";
     }
