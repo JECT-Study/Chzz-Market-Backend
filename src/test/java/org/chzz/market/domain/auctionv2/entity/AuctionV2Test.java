@@ -88,4 +88,29 @@ class AuctionV2Test {
                 .extracting(ERROR_CODE)
                 .isEqualTo(IMAGE_NOT_FOUND);
     }
+
+    @Test
+    void 낙찰자가_맞는경우() {
+        AuctionV2 winnerAuction = AuctionV2.builder()
+                .seller(owner)
+                .status(AuctionStatus.PRE)
+                .winnerId(owner.getId())
+                .build();
+        assertThat(winnerAuction.isWinner(owner.getId())).isTrue();
+    }
+
+    @Test
+    void 낙찰자가_null_일때_조회하는경우_false_반환() {
+        assertThat(auction.isWinner(1L)).isFalse();
+    }
+
+    @Test
+    void 낙찰자가_아닐때_조회하는경우_false_반환() {
+        AuctionV2 winnerAuction = AuctionV2.builder()
+                .seller(owner)
+                .status(AuctionStatus.PRE)
+                .winnerId(owner.getId())
+                .build();
+        assertThat(winnerAuction.isWinner(owner.getId() + 1)).isFalse();
+    }
 }
