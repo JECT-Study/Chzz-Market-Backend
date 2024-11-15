@@ -14,7 +14,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Email;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -47,7 +46,6 @@ public class User extends BaseTimeEntity {
     private String nickname;
 
     @Column(nullable = false)
-    @Email(message = "invalid type of email")
     private String email;
 
     @Column(columnDefinition = "TEXT")
