@@ -1,6 +1,8 @@
 package org.chzz.market.domain.auctionv2.controller;
 
+import static org.chzz.market.domain.auction.error.AuctionErrorCode.Const.NOT_WINNER;
 import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.Const.AUCTION_ACCESS_FORBIDDEN;
+import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.Const.AUCTION_ALREADY_OFFICIAL;
 import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.Const.AUCTION_NOT_FOUND;
 import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.Const.OFFICIAL_AUCTION_DELETE_FORBIDDEN;
 import static org.chzz.market.domain.imagev2.error.ImageErrorCode.Const.IMAGE_DELETE_FAILED;
@@ -42,10 +44,23 @@ public interface AuctionDetailApi {
                                                   @ParameterObject @PageableDefault Pageable pageable); // TODO: 내림차순 디폴트
 
     @Operation(summary = "특정 경매 낙찰 조회", description = "특정 경매 낙찰 정보를 조회합니다.")
+    @ApiResponseExplanations(
+            errors = {
+                    @ApiExceptionExplanation(value = AuctionErrorCode.class, constant = NOT_WINNER, name = "낙찰자가 아닐때"),
+                    @ApiExceptionExplanation(value = AuctionErrorCode.class, constant = AUCTION_NOT_FOUND, name = "경매를 찾을 수 없는 경우"),
+            }
+    )
     ResponseEntity<WonAuctionDetailsResponse> getWinningBid(@LoginUser Long userId,
                                                             @PathVariable Long auctionId);
 
     @Operation(summary = "특정 경매 전환", description = "특정 사전 경매를 정식 경매로 전환합니다.")
+    @ApiResponseExplanations(
+            errors = {
+                    @ApiExceptionExplanation(value = AuctionErrorCode.class, constant = AUCTION_ALREADY_OFFICIAL, name = "이미 정식 경매 인 경우"),
+                    @ApiExceptionExplanation(value = AuctionErrorCode.class, constant = AUCTION_ACCESS_FORBIDDEN, name = "경매의 접근 권한이 없는 경우"),
+                    @ApiExceptionExplanation(value = AuctionErrorCode.class, constant = AUCTION_NOT_FOUND, name = "경매를 찾을 수 없는 경우"),
+            }
+    )
     ResponseEntity<Void> startAuction(@LoginUser Long userId,
                                       @PathVariable Long auctionId);
 
