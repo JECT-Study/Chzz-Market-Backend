@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.AUCTION_ACCESS_FORBIDDEN;
 import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.AUCTION_ALREADY_OFFICIAL;
+import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.AUCTION_NOT_ENDED;
 import static org.chzz.market.domain.imagev2.error.ImageErrorCode.IMAGE_NOT_FOUND;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
@@ -112,5 +113,18 @@ class AuctionV2Test {
                 .winnerId(owner.getId())
                 .build();
         assertThat(winnerAuction.isWinner(owner.getId() + 1)).isFalse();
+    }
+
+    @Test
+    void 아직_경매가_끝나지_않을때_예외가_발생한다() {
+        List<AuctionV2> auctions = List.of(
+                AuctionV2.builder().seller(owner).status(AuctionStatus.PRE).winnerId(owner.getId()).build(),
+                AuctionV2.builder().seller(owner).status(AuctionStatus.PROCEEDING).winnerId(owner.getId()).build()
+        );
+
+        auctions.forEach(auction -> assertThatThrownBy(auction::validateAuctionEnded)
+                .isInstanceOf(AuctionException.class)
+                .extracting(ERROR_CODE)
+                .isEqualTo(AUCTION_NOT_ENDED));
     }
 }
