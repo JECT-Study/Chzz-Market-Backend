@@ -50,5 +50,5 @@ public interface AuctionV2Api {
     @Operation(summary = "경매 테스트 등록", description = "테스트 등록합니다.")
     @PostMapping("/test")
     ResponseEntity<Void> testEndAuction(@LoginUser Long userId,
-                                               @RequestParam int seconds);
+                                        @RequestParam int seconds);
 }
