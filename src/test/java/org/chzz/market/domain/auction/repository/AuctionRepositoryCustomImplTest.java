@@ -42,7 +42,6 @@ import org.chzz.market.domain.product.repository.ProductRepository;
 import org.chzz.market.domain.user.dto.response.ParticipationCountsResponse;
 import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.repository.UserRepository;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -61,22 +60,22 @@ class AuctionRepositoryCustomImplTest {
     @Autowired
     AuctionRepository auctionRepository;
 
-    private static User user1, user2, user3, user4, user5;
-    private static Product product1, product2, product3, product4, product5, product6, product7, product8, product9, product10;
-    private static Auction auction1, auction2, auction3, auction4, auction5, auction6, auction7, auction8, auction9, auction10;
+    private User user1, user2, user3, user4, user5;
+    private Product product1, product2, product3, product4, product5, product6, product7, product8, product9, product10;
+    private Auction auction1, auction2, auction3, auction4, auction5, auction6, auction7, auction8, auction9, auction10;
 
-    private static Image image1, image2, image3, image4, image5, image6;
-    private static Bid bid1, bid2, bid3, bid4, bid5, bid6, bid7, bid8, bid9, bid10, bid11, bid12, bid13, bid14, bid15;
-    private static Order order1;
+    private Image image1, image2, image3, image4, image5, image6;
+    private Bid bid1, bid2, bid3, bid4, bid5, bid6, bid7, bid8, bid9, bid10, bid11, bid12, bid13, bid14, bid15;
+    private Order order1;
 
-    @BeforeAll
-    static void setUpOnce(@Autowired UserRepository userRepository,
-                          @Autowired ProductRepository productRepository,
-                          @Autowired AuctionRepository auctionRepository,
-                          @Autowired ImageRepository imageRepository,
-                          @Autowired BidRepository bidRepository,
-                          @Autowired PaymentRepository paymentRepository,
-                          @Autowired OrderRepository orderRepository) {
+    @BeforeEach
+    void init(@Autowired UserRepository userRepository,
+              @Autowired ProductRepository productRepository,
+              @Autowired AuctionRepository auctionRepository,
+              @Autowired ImageRepository imageRepository,
+              @Autowired BidRepository bidRepository,
+              @Autowired PaymentRepository paymentRepository,
+              @Autowired OrderRepository orderRepository) {
         user1 = User.builder().providerId("1234").nickname("닉네임1").email("asd@naver.com").build();
         user2 = User.builder().providerId("12345").nickname("닉네임2").email("asd1@naver.com").build();
         user3 = User.builder().providerId("123456").nickname("닉네임3").email("asd12@naver.com").build();
@@ -151,19 +150,32 @@ class AuctionRepositoryCustomImplTest {
         image6 = Image.builder().product(product8).cdnPath("path/to/image5.jpg").sequence(1).build();
         imageRepository.saveAll(List.of(image1, image2, image3, image4, image5, image6));
 
-        bid1 = Bid.builder().bidderId(user2.getId()).auctionId(auction1.getId()).amount(2000L).build();
-        bid2 = Bid.builder().bidderId(user2.getId()).auctionId(auction2.getId()).amount(4000L).build();
-        bid3 = Bid.builder().bidderId(user1.getId()).auctionId(auction3.getId()).amount(5000L).build();
-        bid4 = Bid.builder().bidderId(user3.getId()).auctionId(auction2.getId()).amount(6000L).build();
-        bid5 = Bid.builder().bidderId(user1.getId()).auctionId(auction5.getId()).amount(7000L).build();
-        bid6 = Bid.builder().bidderId(user2.getId()).auctionId(auction6.getId()).amount(8000L).build();
-        bid7 = Bid.builder().bidderId(user3.getId()).auctionId(auction3.getId()).amount(310000L).build();
-        bid8 = Bid.builder().bidderId(user4.getId()).auctionId(auction3.getId()).amount(320000L).build();
-        bid10 = Bid.builder().bidderId(user2.getId()).auctionId(auction3.getId()).amount(8000L).build();
-        bid11 = Bid.builder().bidderId(user2.getId()).auctionId(auction4.getId()).amount(15000L).build();
-        bid12 = Bid.builder().bidderId(user3.getId()).auctionId(auction4.getId()).amount(25000L).build();
-        bid13 = Bid.builder().bidderId(user4.getId()).auctionId(auction8.getId()).amount(250000L).build();
-        bid14 = Bid.builder().bidderId(user2.getId()).auctionId(auction8.getId()).amount(150000L).build();
+        bid1 = Bid.builder().bidderId(user2.getId()).auctionId(auction1.getId()).status(BidStatus.ACTIVE).amount(2000L)
+                .build();
+        bid2 = Bid.builder().bidderId(user2.getId()).auctionId(auction2.getId()).status(BidStatus.ACTIVE).amount(4000L)
+                .build();
+        bid3 = Bid.builder().bidderId(user1.getId()).auctionId(auction3.getId()).status(BidStatus.ACTIVE).amount(5000L)
+                .build();
+        bid4 = Bid.builder().bidderId(user3.getId()).auctionId(auction2.getId()).status(BidStatus.ACTIVE).amount(6000L)
+                .build();
+        bid5 = Bid.builder().bidderId(user1.getId()).auctionId(auction5.getId()).status(BidStatus.ACTIVE).amount(7000L)
+                .build();
+        bid6 = Bid.builder().bidderId(user2.getId()).auctionId(auction6.getId()).status(BidStatus.ACTIVE).amount(8000L)
+                .build();
+        bid7 = Bid.builder().bidderId(user3.getId()).auctionId(auction3.getId()).status(BidStatus.ACTIVE)
+                .amount(310000L).build();
+        bid8 = Bid.builder().bidderId(user4.getId()).auctionId(auction3.getId()).status(BidStatus.ACTIVE)
+                .amount(320000L).build();
+        bid10 = Bid.builder().bidderId(user2.getId()).auctionId(auction3.getId()).status(BidStatus.ACTIVE).amount(8000L)
+                .build();
+        bid11 = Bid.builder().bidderId(user2.getId()).auctionId(auction4.getId()).status(BidStatus.ACTIVE)
+                .amount(15000L).build();
+        bid12 = Bid.builder().bidderId(user3.getId()).auctionId(auction4.getId()).status(BidStatus.ACTIVE)
+                .amount(25000L).build();
+        bid13 = Bid.builder().bidderId(user4.getId()).auctionId(auction8.getId()).status(BidStatus.ACTIVE)
+                .amount(250000L).build();
+        bid14 = Bid.builder().bidderId(user2.getId()).auctionId(auction8.getId()).status(BidStatus.ACTIVE)
+                .amount(150000L).build();
         bid15 = Bid.builder().bidderId(user5.getId()).auctionId(auction9.getId()).amount(75000L)
                 .status(BidStatus.ACTIVE).build();
 
@@ -192,7 +204,7 @@ class AuctionRepositoryCustomImplTest {
 
         //when
         Page<AuctionResponse> result = auctionRepository.findAuctionsByCategory(
-                Category.FASHION_AND_CLOTHING, 1L, pageable);
+                Category.FASHION_AND_CLOTHING, user1.getId(), pageable);
 
         //then
         assertThat(result).isNotNull();
@@ -215,7 +227,7 @@ class AuctionRepositoryCustomImplTest {
 
         //when
         Page<AuctionResponse> result = auctionRepository.findAuctionsByCategory(
-                Category.FASHION_AND_CLOTHING, 2L, pageable);
+                Category.FASHION_AND_CLOTHING, user2.getId(), pageable);
 
         //then
         assertThat(result).isNotNull();
