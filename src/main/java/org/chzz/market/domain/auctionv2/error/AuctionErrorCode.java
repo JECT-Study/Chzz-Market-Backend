@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 @AllArgsConstructor
 public enum AuctionErrorCode implements ErrorCode {
+    AUCTION_NOT_ENDED(BAD_REQUEST, "해당 경매가 아직 끝나지 않았습니다."),
     AUCTION_ALREADY_OFFICIAL(BAD_REQUEST, "해당 경매는 이미 정식 경매입니다."),
     OFFICIAL_AUCTION_DELETE_FORBIDDEN(FORBIDDEN, "정식경매는 삭제할수 없습니다."),
     NOW_WINNER(FORBIDDEN, "낙찰자가 아닙니다."),
@@ -22,6 +23,7 @@ public enum AuctionErrorCode implements ErrorCode {
     private final String message;
 
     public static class Const {
+        public static final String AUCTION_NOT_ENDED = "AUCTION_NOT_ENDED";
         public static final String AUCTION_ALREADY_OFFICIAL = "AUCTION_ALREADY_OFFICIAL";
         public static final String OFFICIAL_AUCTION_DELETE_FORBIDDEN = "OFFICIAL_AUCTION_DELETE_FORBIDDEN";
         public static final String NOW_WINNER = "NOW_WINNER";
