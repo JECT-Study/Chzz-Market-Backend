@@ -1,9 +1,10 @@
 package org.chzz.market.domain.auctionv2.controller;
 
-import static org.chzz.market.domain.auction.error.AuctionErrorCode.Const.NOT_WINNER;
 import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.Const.AUCTION_ACCESS_FORBIDDEN;
 import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.Const.AUCTION_ALREADY_OFFICIAL;
+import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.Const.AUCTION_NOT_ENDED;
 import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.Const.AUCTION_NOT_FOUND;
+import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.Const.NOW_WINNER;
 import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.Const.OFFICIAL_AUCTION_DELETE_FORBIDDEN;
 import static org.chzz.market.domain.imagev2.error.ImageErrorCode.Const.IMAGE_DELETE_FAILED;
 
@@ -24,6 +25,7 @@ import org.chzz.market.domain.product.dto.UpdateProductResponse;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -39,14 +41,21 @@ public interface AuctionDetailApi {
                                         @PathVariable Long auctionId);
 
     @Operation(summary = "특정 경매 입찰 목록 조회", description = "특정 경매 입찰 목록을 조회합니다.")
+    @ApiResponseExplanations(
+            errors = {
+                    @ApiExceptionExplanation(value = AuctionErrorCode.class, constant = AUCTION_NOT_ENDED, name = "아직 경매가 끝나지 않을때"),
+                    @ApiExceptionExplanation(value = AuctionErrorCode.class, constant = AUCTION_ACCESS_FORBIDDEN, name = "경매의 접근 권한이 없는 경우"),
+                    @ApiExceptionExplanation(value = AuctionErrorCode.class, constant = AUCTION_NOT_FOUND, name = "경매를 찾을 수 없는 경우"),
+            }
+    )
     ResponseEntity<Page<BidInfoResponse>> getBids(@LoginUser Long userId,
                                                   @PathVariable Long auctionId,
-                                                  @ParameterObject @PageableDefault Pageable pageable); // TODO: 내림차순 디폴트
+                                                  @ParameterObject @PageableDefault(sort = "bid-amount", direction = Sort.Direction.DESC) Pageable pageable);
 
     @Operation(summary = "특정 경매 낙찰 조회", description = "특정 경매 낙찰 정보를 조회합니다.")
     @ApiResponseExplanations(
             errors = {
-                    @ApiExceptionExplanation(value = AuctionErrorCode.class, constant = NOT_WINNER, name = "낙찰자가 아닐때"),
+                    @ApiExceptionExplanation(value = AuctionErrorCode.class, constant = NOW_WINNER, name = "낙찰자가 아닐때"),
                     @ApiExceptionExplanation(value = AuctionErrorCode.class, constant = AUCTION_NOT_FOUND, name = "경매를 찾을 수 없는 경우"),
             }
     )

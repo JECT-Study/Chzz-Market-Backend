@@ -1,5 +1,7 @@
 package org.chzz.market.domain.auctionv2.controller;
 
+import static org.springframework.data.domain.Sort.Direction.DESC;
+
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.config.LoginUser;
@@ -8,6 +10,7 @@ import org.chzz.market.domain.auctionv2.service.AuctionDeleteService;
 import org.chzz.market.domain.auctionv2.service.AuctionStartService;
 import org.chzz.market.domain.auctionv2.service.AuctionWonService;
 import org.chzz.market.domain.bid.dto.response.BidInfoResponse;
+import org.chzz.market.domain.bid.service.BidLookupService;
 import org.chzz.market.domain.like.dto.LikeResponse;
 import org.chzz.market.domain.product.dto.UpdateProductRequest;
 import org.chzz.market.domain.product.dto.UpdateProductResponse;
@@ -32,6 +35,7 @@ public class AuctionDetailController implements AuctionDetailApi {
     private final AuctionDeleteService auctionDeleteService;
     private final AuctionStartService auctionStartService;
     private final AuctionWonService auctionWonService;
+    private final BidLookupService bidLookupService;
 
     @Override
     @GetMapping
@@ -43,8 +47,8 @@ public class AuctionDetailController implements AuctionDetailApi {
     @GetMapping("/bids")
     public ResponseEntity<Page<BidInfoResponse>> getBids(@LoginUser Long userId,
                                                          @PathVariable Long auctionId,
-                                                         @PageableDefault Pageable pageable) { // TODO: 내림차순 디폴트
-        return null;
+                                                         @PageableDefault(sort = "bid-amount", direction = DESC) Pageable pageable) {
+        return ResponseEntity.ok(bidLookupService.getBidsByAuctionId(userId, auctionId, pageable));
     }
 
     @Override
