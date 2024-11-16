@@ -21,20 +21,21 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
+@Transactional
 class BidQueryRepositoryTest {
-    @Autowired
-    BidQueryRepository bidQueryRepository;
-
     @Autowired
     AuctionV2Repository auctionV2Repository;
 
     @Autowired
     BidRepository bidRepository;
-
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    BidQueryRepository bidQueryRepository;
 
     @Test
     void 해당경매_입찰내역을_조회한다() {
@@ -44,6 +45,7 @@ class BidQueryRepositoryTest {
         User user3 = User.builder().email("ex").providerId("ex").providerType(ProviderType.KAKAO).build();
         User user4 = User.builder().email("ex").providerId("ex").providerType(ProviderType.KAKAO).build();
         userRepository.saveAll(List.of(owner, user1, user2, user3, user4));
+
         AuctionV2 auction = AuctionV2.builder().seller(owner).name("맥북프로").description("맥북프로 2019년형 팝니다.")
                 .status(AuctionStatus.PROCEEDING).category(Category.ELECTRONICS).winnerId(1L).build();
         auctionV2Repository.save(auction);
@@ -69,7 +71,7 @@ class BidQueryRepositoryTest {
     @Test
     void 해당경매_입찰내역이_아무것도_없을때_조회한다() {
         User owner = User.builder().email("ex").providerId("ex").providerType(ProviderType.KAKAO).build();
-        userRepository.saveAll(List.of(owner));
+        userRepository.save(owner);
         AuctionV2 auction = AuctionV2.builder().seller(owner).name("맥북프로").description("맥북프로 2019년형 팝니다.")
                 .status(AuctionStatus.PROCEEDING).category(Category.ELECTRONICS).winnerId(1L).build();
         auctionV2Repository.save(auction);
