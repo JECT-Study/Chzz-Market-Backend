@@ -2,6 +2,7 @@ package org.chzz.market.domain.auctionv2.entity;
 
 import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.AUCTION_ACCESS_FORBIDDEN;
 import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.AUCTION_ALREADY_OFFICIAL;
+import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.AUCTION_NOT_ENDED;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -109,6 +110,12 @@ public class AuctionV2 extends BaseTimeEntity {
 
     public boolean isOfficialAuction() {
         return status == AuctionStatus.PROCEEDING || status == AuctionStatus.ENDED;
+    }
+
+    public void validateAuctionEnded() {
+        if (!status.equals(AuctionStatus.ENDED)) {
+            throw new AuctionException(AUCTION_NOT_ENDED);
+        }
     }
 
     public boolean isWinner(Long userId) {
