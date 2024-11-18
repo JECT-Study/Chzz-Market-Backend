@@ -79,11 +79,11 @@ public class AuctionV2 extends BaseTimeEntity {
 
     @Builder.Default
     @Column
-    private Integer likeCount = 0;
+    private Long likeCount = 0L;
 
     @Builder.Default
     @Column
-    private Integer bidCount = 0;
+    private Long bidCount = 0L;
 
     @Builder.Default
     @OneToMany(mappedBy = "auction", cascade = {CascadeType.REMOVE, CascadeType.PERSIST}, orphanRemoval = true)
