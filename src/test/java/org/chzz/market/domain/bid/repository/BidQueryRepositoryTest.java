@@ -47,7 +47,7 @@ class BidQueryRepositoryTest {
         userRepository.saveAll(List.of(owner, user1, user2, user3, user4));
 
         AuctionV2 auction = AuctionV2.builder().seller(owner).name("맥북프로").description("맥북프로 2019년형 팝니다.")
-                .status(AuctionStatus.PROCEEDING).category(Category.ELECTRONICS).winnerId(1L).build();
+                .status(AuctionStatus.ENDED).category(Category.ELECTRONICS).winnerId(user1.getId()).build();
         auctionV2Repository.save(auction);
         Bid bid1 = Bid.builder().bidderId(user1.getId()).auctionId(auction.getId()).amount(2000L)
                 .status(BidStatus.ACTIVE).build();
@@ -61,11 +61,15 @@ class BidQueryRepositoryTest {
         Pageable pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "bid-amount"));
         Page<BidInfoResponse> result = bidQueryRepository.findBidsByAuctionId(auction.getId(), pageable);
         List<BidInfoResponse> content = result.getContent();
+
+        System.out.println("content = " + content);
         // then
         assertThat(content).hasSize(3);
         assertThat(content).isSortedAccordingTo(
                 Comparator.comparing(BidInfoResponse::bidAmount).reversed());
         assertThat(content.get(0).bidAmount()).isEqualTo(2000L);
+        assertThat(content.get(0).isWinningBidder()).isTrue();
+        assertThat(content.get(1).isWinningBidder()).isFalse();
     }
 
     @Test
@@ -73,7 +77,7 @@ class BidQueryRepositoryTest {
         User owner = User.builder().email("ex").providerId("ex").providerType(ProviderType.KAKAO).build();
         userRepository.save(owner);
         AuctionV2 auction = AuctionV2.builder().seller(owner).name("맥북프로").description("맥북프로 2019년형 팝니다.")
-                .status(AuctionStatus.PROCEEDING).category(Category.ELECTRONICS).winnerId(1L).build();
+                .status(AuctionStatus.PROCEEDING).category(Category.ELECTRONICS).winnerId(null).build();
         auctionV2Repository.save(auction);
         Pageable pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "bid-amount"));
         Page<BidInfoResponse> result = bidQueryRepository.findBidsByAuctionId(auction.getId(), pageable);
@@ -81,5 +85,4 @@ class BidQueryRepositoryTest {
         // then
         assertThat(content).hasSize(0);
     }
-
 }
