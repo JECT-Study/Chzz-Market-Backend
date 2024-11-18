@@ -17,7 +17,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.chzz.market.domain.auctionv2.entity.AuctionV2;
-import org.chzz.market.domain.payment.entity.Payment.PaymentMethod;
+import org.chzz.market.domain.paymentv2.entity.PaymentV2.PaymentMethod;
 
 @Entity
 @Getter
