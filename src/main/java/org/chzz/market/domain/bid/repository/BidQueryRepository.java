@@ -6,7 +6,6 @@ import static org.chzz.market.domain.bid.entity.QBid.bid;
 import static org.chzz.market.domain.user.entity.QUser.user;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
@@ -29,8 +28,7 @@ public class BidQueryRepository {
      * 특정 경매의 입찰 조회
      */
     public Page<BidInfoResponse> findBidsByAuctionId(Long auctionId, Pageable pageable) {
-        BooleanExpression isWinner = auctionV2.winnerId.isNotNull().and(auctionV2.winnerId.eq(user.id))
-                .or(auctionV2.winnerId.isNull().and(Expressions.FALSE));
+        BooleanExpression isWinner = auctionV2.winnerId.isNotNull().and(auctionV2.winnerId.eq(user.id));
 
         JPAQuery<?> baseQuery = jpaQueryFactory.from(bid)
                 .join(auctionV2).on(bid.auctionId.eq(auctionV2.id)
