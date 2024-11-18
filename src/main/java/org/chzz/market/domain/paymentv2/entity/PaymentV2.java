@@ -13,11 +13,11 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.chzz.market.domain.auctionv2.entity.AuctionV2;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
-import org.chzz.market.domain.payment.entity.Payment.PaymentMethod;
 import org.chzz.market.domain.user.entity.User;
 
 @Getter
@@ -60,5 +60,20 @@ public class PaymentV2 extends BaseTimeEntity {
         if (this.status == null) {
             this.status = Status.READY;
         }
+    }
+
+    @AllArgsConstructor
+    public enum PaymentMethod {
+        CARD("카드"),
+        VIRTUAL_ACCOUNT("가상계좌"),
+        EASY_PAYMENT("간편결제"),
+        MOBILE("휴대폰"),
+        ACCOUNT_TRANSFER("계좌이체"),
+        CULTURE_GIFT_CARD("문화상품권"),
+        BOOK_CULTURE_GIFT_CARD("도서문화상품권"),
+        GAME_CULTURE_GIFT_CARD("게임문화상품권"),
+        CASH("테스트용");
+
+        private final String description;
     }
 }
