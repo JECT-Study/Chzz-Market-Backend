@@ -9,12 +9,18 @@ import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.Const.OFFI
 import static org.chzz.market.domain.imagev2.error.ImageErrorCode.Const.IMAGE_DELETE_FAILED;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.Map;
 import org.chzz.market.common.config.LoginUser;
 import org.chzz.market.common.springdoc.ApiExceptionExplanation;
 import org.chzz.market.common.springdoc.ApiResponseExplanations;
+import org.chzz.market.domain.auctionv2.dto.response.OfficialAuctionDetailResponse;
+import org.chzz.market.domain.auctionv2.dto.response.PreAuctionDetailResponse;
 import org.chzz.market.domain.auctionv2.dto.response.WonAuctionDetailsResponse;
 import org.chzz.market.domain.auctionv2.error.AuctionErrorCode;
 import org.chzz.market.domain.bid.dto.response.BidInfoResponse;
@@ -27,6 +33,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -36,7 +43,10 @@ import org.springframework.web.multipart.MultipartFile;
 @Tag(name = "auctions(v2)", description = "V2 경매 API")
 public interface AuctionDetailApi {
     @Operation(summary = "특정 경매 상세 조회", description = "특정 경매 상세 정보를 조회합니다.")
-        // TODO: 정식경매와 사전 경매 응답 구분 추가
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "정식경매 응답", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = OfficialAuctionDetailResponse.class))),
+            @ApiResponse(responseCode = "201", description = "사전경매 응답", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = PreAuctionDetailResponse.class))),
+    })
     ResponseEntity<?> getAuctionDetails(@LoginUser Long userId,
                                         @PathVariable Long auctionId);
 

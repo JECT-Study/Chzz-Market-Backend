@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.config.LoginUser;
 import org.chzz.market.domain.auctionv2.dto.response.WonAuctionDetailsResponse;
 import org.chzz.market.domain.auctionv2.service.AuctionDeleteService;
+import org.chzz.market.domain.auctionv2.service.AuctionDetailService;
 import org.chzz.market.domain.auctionv2.service.AuctionStartService;
 import org.chzz.market.domain.auctionv2.service.AuctionWonService;
 import org.chzz.market.domain.bid.dto.response.BidInfoResponse;
@@ -32,6 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 @RequestMapping("/v2/auctions/{auctionId}")
 public class AuctionDetailController implements AuctionDetailApi {
+    private final AuctionDetailService auctionDetailService;
     private final AuctionDeleteService auctionDeleteService;
     private final AuctionStartService auctionStartService;
     private final AuctionWonService auctionWonService;
@@ -39,8 +41,9 @@ public class AuctionDetailController implements AuctionDetailApi {
 
     @Override
     @GetMapping
-    public ResponseEntity<?> getAuctionDetails(@LoginUser Long userId, @PathVariable Long auctionId) {
-        return null;
+    public ResponseEntity<?> getAuctionDetails(@LoginUser Long userId,
+                                               @PathVariable Long auctionId) {
+        return ResponseEntity.ok(auctionDetailService.getAuctionDetails(userId, auctionId));
     }
 
     @Override
