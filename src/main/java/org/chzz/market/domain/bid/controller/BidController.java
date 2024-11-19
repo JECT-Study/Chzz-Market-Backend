@@ -5,9 +5,10 @@ import static org.springframework.http.HttpStatus.CREATED;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.config.LoginUser;
-import org.chzz.market.domain.auction.type.AuctionStatus;
+import org.chzz.market.domain.auctionv2.entity.AuctionStatus;
 import org.chzz.market.domain.bid.dto.BidCreateRequest;
 import org.chzz.market.domain.bid.dto.query.BiddingRecord;
+import org.chzz.market.domain.bid.service.BidLookupService;
 import org.chzz.market.domain.bid.service.BidService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/v1/bids")
 public class BidController implements BidApi {
+    private final BidLookupService bidLookupService;
     private final BidService bidService;
 
     /**
@@ -42,7 +44,7 @@ public class BidController implements BidApi {
             @LoginUser Long userId,
             @PageableDefault(sort = "time-remaining") Pageable pageable,
             @RequestParam(value = "status", required = false) AuctionStatus status) {
-        Page<BiddingRecord> records = bidService.inquireBidHistory(userId, pageable, status);
+        Page<BiddingRecord> records = bidLookupService.inquireBidHistory(userId, pageable, status);
         return ResponseEntity.ok(records);
     }
 

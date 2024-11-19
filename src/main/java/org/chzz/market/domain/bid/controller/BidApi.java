@@ -14,7 +14,7 @@ import jakarta.validation.Valid;
 import org.chzz.market.common.springdoc.ApiExceptionExplanation;
 import org.chzz.market.common.springdoc.ApiResponseExplanations;
 import org.chzz.market.domain.auction.error.AuctionErrorCode;
-import org.chzz.market.domain.auction.type.AuctionStatus;
+import org.chzz.market.domain.auctionv2.entity.AuctionStatus;
 import org.chzz.market.domain.bid.dto.BidCreateRequest;
 import org.chzz.market.domain.bid.dto.query.BiddingRecord;
 import org.chzz.market.domain.bid.error.BidErrorCode;
