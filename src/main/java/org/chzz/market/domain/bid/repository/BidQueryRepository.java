@@ -17,10 +17,12 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.util.QuerydslOrderProvider;
 import org.chzz.market.domain.auctionv2.entity.AuctionStatus;
+import org.chzz.market.domain.auctionv2.entity.AuctionV2;
 import org.chzz.market.domain.bid.dto.query.BiddingRecord;
 import org.chzz.market.domain.bid.dto.query.QBiddingRecord;
 import org.chzz.market.domain.bid.dto.response.BidInfoResponse;
 import org.chzz.market.domain.bid.dto.response.QBidInfoResponse;
+import org.chzz.market.domain.bid.entity.Bid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
@@ -60,6 +62,9 @@ public class BidQueryRepository {
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
 
+    /**
+     * 나의 입찰 목록 조회
+     */
     public Page<BiddingRecord> findUsersBidHistory(Long userId, Pageable pageable, AuctionStatus auctionStatus) {
         // 공통된 부분을 baseQuery로 추출
         JPAQuery<?> baseQuery = jpaQueryFactory
@@ -90,6 +95,17 @@ public class BidQueryRepository {
                 .select(bid.count());
 
         return PageableExecutionUtils.getPage(result, pageable, countQuery::fetchOne);
+    }
+
+    /**
+     * 특정 경매의 모든 입찰 Entity 조회
+     */
+    public List<Bid> findAllBidsByAuction(AuctionV2 auction) {
+        return jpaQueryFactory
+                .selectFrom(bid)
+                .where(bid.auctionId.eq(auction.getId()).and(bid.status.eq(ACTIVE)))
+                .orderBy(bid.amount.desc(), bid.updatedAt.asc())
+                .fetch();
     }
 
     private BooleanExpression isRepresentativeImage() {
