@@ -5,8 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.chzz.market.common.config.LoginUser;
-import org.chzz.market.domain.auction.dto.request.BaseRegisterRequest;
-import org.chzz.market.domain.auction.dto.response.RegisterResponse;
+import org.chzz.market.domain.auctionv2.dto.RegisterRequest;
 import org.chzz.market.domain.auctionv2.dto.response.CategoryResponse;
 import org.chzz.market.domain.auctionv2.dto.view.AuctionType;
 import org.chzz.market.domain.auctionv2.dto.view.UserAuctionType;
@@ -43,8 +42,8 @@ public interface AuctionV2Api {
 
     @Operation(summary = "경매 등록", description = "경매를 등록합니다.")
     @PostMapping
-    ResponseEntity<RegisterResponse> registerAuction(@LoginUser Long userId,
-                                                     @RequestPart("request") @Valid BaseRegisterRequest request,
+    ResponseEntity<Void> registerAuction(@LoginUser Long userId,
+                                                     @RequestPart("request") @Valid RegisterRequest request,
                                                      @RequestPart(value = "images") List<MultipartFile> images);
 
     @Operation(summary = "경매 테스트 등록", description = "테스트 등록합니다.")
