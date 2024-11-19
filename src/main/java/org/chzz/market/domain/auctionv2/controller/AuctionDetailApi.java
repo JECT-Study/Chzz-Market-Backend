@@ -25,7 +25,6 @@ import org.chzz.market.domain.auctionv2.dto.response.WonAuctionDetailsResponse;
 import org.chzz.market.domain.auctionv2.error.AuctionErrorCode;
 import org.chzz.market.domain.bid.dto.response.BidInfoResponse;
 import org.chzz.market.domain.imagev2.error.ImageErrorCode;
-import org.chzz.market.domain.like.dto.LikeResponse;
 import org.chzz.market.domain.product.dto.UpdateProductRequest;
 import org.chzz.market.domain.product.dto.UpdateProductResponse;
 import org.springdoc.core.annotations.ParameterObject;
@@ -84,8 +83,8 @@ public interface AuctionDetailApi {
                                       @PathVariable Long auctionId);
 
     @Operation(summary = "특정 경매 좋아요(찜) 요청 및 취소", description = "특정 경매에 대한 좋아요(찜) 요청 및 취소를 합니다.")
-    ResponseEntity<LikeResponse> likeAuction(@LoginUser Long userId,
-                                             @PathVariable Long auctionId);
+    ResponseEntity<Void> likeAuction(@LoginUser Long userId,
+                                     @PathVariable Long auctionId);
 
     @Operation(summary = "특정 경매 수정", description = "특정 경매를 수정합니다.")
     ResponseEntity<UpdateProductResponse> updateAuction(@LoginUser Long userId,

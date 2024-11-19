@@ -12,7 +12,7 @@ import org.chzz.market.domain.auctionv2.service.AuctionStartService;
 import org.chzz.market.domain.auctionv2.service.AuctionWonService;
 import org.chzz.market.domain.bid.dto.response.BidInfoResponse;
 import org.chzz.market.domain.bid.service.BidLookupService;
-import org.chzz.market.domain.like.dto.LikeResponse;
+import org.chzz.market.domain.likev2.service.LikeUpdateService;
 import org.chzz.market.domain.product.dto.UpdateProductRequest;
 import org.chzz.market.domain.product.dto.UpdateProductResponse;
 import org.springframework.data.domain.Page;
@@ -38,6 +38,7 @@ public class AuctionDetailController implements AuctionDetailApi {
     private final AuctionStartService auctionStartService;
     private final AuctionWonService auctionWonService;
     private final BidLookupService bidLookupService;
+    private final LikeUpdateService likeUpdateService;
 
     @Override
     @GetMapping
@@ -63,15 +64,17 @@ public class AuctionDetailController implements AuctionDetailApi {
 
     @Override
     @PostMapping("/start")
-    public ResponseEntity<Void> startAuction(Long userId, Long auctionId) {
+    public ResponseEntity<Void> startAuction(@LoginUser Long userId,
+                                             @PathVariable Long auctionId) {
         auctionStartService.start(userId, auctionId);
         return ResponseEntity.ok().build();
     }
 
     @Override
     @PostMapping("/likes")
-    public ResponseEntity<LikeResponse> likeAuction(Long userId, Long auctionId) {
-        return null;
+    public ResponseEntity<Void> likeAuction(@LoginUser Long userId, @PathVariable Long auctionId) {
+        likeUpdateService.updateLike(userId, auctionId);
+        return ResponseEntity.ok().build();
     }
 
     @Override
