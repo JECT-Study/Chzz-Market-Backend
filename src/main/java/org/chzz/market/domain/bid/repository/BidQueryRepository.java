@@ -1,16 +1,24 @@
 package org.chzz.market.domain.bid.repository;
 
+import static com.querydsl.core.types.dsl.Expressions.numberTemplate;
+import static org.chzz.market.common.util.QuerydslUtil.nullSafeBuilderIgnore;
 import static org.chzz.market.domain.auctionv2.entity.QAuctionV2.auctionV2;
 import static org.chzz.market.domain.bid.entity.Bid.BidStatus.ACTIVE;
 import static org.chzz.market.domain.bid.entity.QBid.bid;
+import static org.chzz.market.domain.image.entity.QImageV2.imageV2;
 import static org.chzz.market.domain.user.entity.QUser.user;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.util.QuerydslOrderProvider;
+import org.chzz.market.domain.auctionv2.entity.AuctionStatus;
+import org.chzz.market.domain.bid.dto.query.BiddingRecord;
+import org.chzz.market.domain.bid.dto.query.QBiddingRecord;
 import org.chzz.market.domain.bid.dto.response.BidInfoResponse;
 import org.chzz.market.domain.bid.dto.response.QBidInfoResponse;
 import org.springframework.data.domain.Page;
@@ -50,5 +58,50 @@ public class BidQueryRepository {
         JPAQuery<Long> countQuery = baseQuery.
                 select(bid.count());
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+    }
+
+    public Page<BiddingRecord> findUsersBidHistory(Long userId, Pageable pageable, AuctionStatus auctionStatus) {
+        // 공통된 부분을 baseQuery로 추출
+        JPAQuery<?> baseQuery = jpaQueryFactory
+                .from(bid)
+                .join(auctionV2).on(bid.auctionId.eq(auctionV2.id)
+                        .and(bid.bidderId.eq(userId))
+                        .and(bid.status.eq(ACTIVE))
+                        .and(auctionStatusEqIgnoreNull(auctionStatus)));
+
+        List<BiddingRecord> result = baseQuery
+                .select(new QBiddingRecord(
+                        auctionV2.id,
+                        auctionV2.name,
+                        auctionV2.minPrice.longValue(),
+                        bid.amount,
+                        auctionV2.bidCount,
+                        imageV2.cdnPath,
+                        timeRemaining().longValue()
+                ))
+                .leftJoin(imageV2).on(imageV2.auction.eq(auctionV2).and(isRepresentativeImage()))
+                .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        // 카운트 쿼리 작성
+        JPAQuery<Long> countQuery = baseQuery
+                .select(bid.count());
+
+        return PageableExecutionUtils.getPage(result, pageable, countQuery::fetchOne);
+    }
+
+    private BooleanExpression isRepresentativeImage() {
+        return imageV2.auction.eq(auctionV2).and(imageV2.sequence.eq(1));
+    }
+
+    private static NumberExpression<Integer> timeRemaining() {
+        return numberTemplate(Integer.class,
+                "GREATEST(0, TIMESTAMPDIFF(SECOND, CURRENT_TIMESTAMP, {0}))", auctionV2.endDateTime); // 음수면 0으로 처리
+    }
+
+    private BooleanBuilder auctionStatusEqIgnoreNull(AuctionStatus status) {
+        return nullSafeBuilderIgnore(() -> auctionV2.status.eq(status));
     }
 }
