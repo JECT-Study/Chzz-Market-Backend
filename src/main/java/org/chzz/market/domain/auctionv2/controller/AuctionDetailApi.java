@@ -83,6 +83,11 @@ public interface AuctionDetailApi {
                                       @PathVariable Long auctionId);
 
     @Operation(summary = "특정 경매 좋아요(찜) 요청 및 취소", description = "특정 경매에 대한 좋아요(찜) 요청 및 취소를 합니다.")
+    @ApiResponseExplanations(
+            errors = {
+                    @ApiExceptionExplanation(value = AuctionErrorCode.class, constant = AUCTION_NOT_FOUND, name = "경매를 찾을 수 없는 경우"),
+            }
+    )
     ResponseEntity<Void> likeAuction(@LoginUser Long userId,
                                      @PathVariable Long auctionId);
 
