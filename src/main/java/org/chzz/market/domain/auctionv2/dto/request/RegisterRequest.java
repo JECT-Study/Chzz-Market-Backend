@@ -1,4 +1,4 @@
-package org.chzz.market.domain.auctionv2.dto;
+package org.chzz.market.domain.auctionv2.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.chzz.market.common.validation.annotation.ThousandMultiple;
+import org.chzz.market.domain.auctionv2.dto.AuctionRegisterType;
 import org.chzz.market.domain.product.entity.Product;
 
 @Getter

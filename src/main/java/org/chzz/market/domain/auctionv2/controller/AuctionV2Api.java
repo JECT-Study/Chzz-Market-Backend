@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.chzz.market.common.config.LoginUser;
-import org.chzz.market.domain.auctionv2.dto.RegisterRequest;
+import org.chzz.market.domain.auctionv2.dto.request.RegisterRequest;
 import org.chzz.market.domain.auctionv2.dto.response.CategoryResponse;
 import org.chzz.market.domain.auctionv2.dto.view.AuctionType;
 import org.chzz.market.domain.auctionv2.dto.view.UserAuctionType;
