@@ -4,9 +4,11 @@ import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.AUCTION_AC
 import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.AUCTION_NOT_FOUND;
 
 import lombok.RequiredArgsConstructor;
+import org.chzz.market.domain.auctionv2.entity.AuctionStatus;
 import org.chzz.market.domain.auctionv2.entity.AuctionV2;
 import org.chzz.market.domain.auctionv2.error.AuctionException;
 import org.chzz.market.domain.auctionv2.repository.AuctionV2Repository;
+import org.chzz.market.domain.bid.dto.query.BiddingRecord;
 import org.chzz.market.domain.bid.dto.response.BidInfoResponse;
 import org.chzz.market.domain.bid.repository.BidQueryRepository;
 import org.springframework.data.domain.Page;
@@ -29,5 +31,9 @@ public class BidLookupService {
         }
         auction.validateAuctionEnded();
         return bidQueryRepository.findBidsByAuctionId(auctionId, pageable);
+    }
+
+    public Page<BiddingRecord> inquireBidHistory(Long userId, Pageable pageable, AuctionStatus status) {
+        return bidQueryRepository.findUsersBidHistory(userId, pageable, status);
     }
 }
