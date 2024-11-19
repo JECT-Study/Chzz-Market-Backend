@@ -2,7 +2,15 @@ package org.chzz.market.domain.image.service;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.transfer.MultipleFileUpload;
+import com.amazonaws.services.s3.transfer.TransferManager;
+import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
+import com.amazonaws.services.s3.transfer.Upload;
+import com.amazonaws.services.s3.transfer.model.UploadResult;
+import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.domain.image.error.ImageErrorCode;
@@ -15,6 +23,8 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 @RequiredArgsConstructor
 public class S3ImageUploader implements ImageUploader {
+    private static final List<String> ALLOWED_EXTENSIONS = Arrays.asList("jpg", "jpeg", "png", "webp");
+
     private final AmazonS3 amazonS3Client;
 
     @Value("${cloud.aws.s3.bucket}")
@@ -31,6 +41,25 @@ public class S3ImageUploader implements ImageUploader {
 
             return fileName; // CDN 경로 생성 (전체 URL 아닌 경로만)
         } catch (IOException e) {
+            throw new ImageException(ImageErrorCode.IMAGE_UPLOAD_FAILED);
+        }
+    }
+
+    public List<String> uploadImages(List<File> images) {
+        TransferManager transfer = TransferManagerBuilder.standard().withS3Client(amazonS3Client).build();
+        MultipleFileUpload upload = transfer.uploadFileList(bucket, "", new File("."), images);
+
+        return upload.getSubTransfers().stream().map(S3ImageUploader::getFileName).toList();
+    }
+
+    /**
+     * @return 각 파일의 key값(파일명)
+     */
+    private static String getFileName(final Upload subUpload) {
+        try {
+            UploadResult uploadResult = subUpload.waitForUploadResult();
+            return uploadResult.getKey();
+        } catch (InterruptedException e) {
             throw new ImageException(ImageErrorCode.IMAGE_UPLOAD_FAILED);
         }
     }
