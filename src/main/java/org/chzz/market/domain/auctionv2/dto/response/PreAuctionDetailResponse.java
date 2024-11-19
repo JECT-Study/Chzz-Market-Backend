@@ -8,7 +8,7 @@ import org.chzz.market.domain.auctionv2.entity.Category;
 
 @Getter
 @NoArgsConstructor
-public class PreAuctionDetailResponse extends AuctionDetailBaseResponse {
+public class PreAuctionDetailResponse extends BaseAuctionDetailResponse {
     private LocalDateTime updatedAt;
     private Long likeCount;
     private Boolean isLiked;

@@ -9,7 +9,7 @@ import org.chzz.market.domain.auctionv2.entity.Category;
 
 @Getter
 @NoArgsConstructor
-public class OfficialAuctionDetailResponse extends AuctionDetailBaseResponse {
+public class OfficialAuctionDetailResponse extends BaseAuctionDetailResponse {
     private Long timeRemaining;
     private Long participantCount;
     private Boolean isParticipated;

@@ -4,7 +4,7 @@ import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.AUCTION_NO
 
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.chzz.market.domain.auctionv2.dto.response.AuctionDetailBaseResponse;
+import org.chzz.market.domain.auctionv2.dto.response.BaseAuctionDetailResponse;
 import org.chzz.market.domain.auctionv2.entity.AuctionStatus;
 import org.chzz.market.domain.auctionv2.error.AuctionException;
 import org.chzz.market.domain.auctionv2.repository.AuctionV2QueryRepository;
@@ -19,13 +19,13 @@ public class AuctionDetailService {
     private final AuctionV2Repository auctionRepository;
     private final AuctionV2QueryRepository auctionQueryRepository;
 
-    public AuctionDetailBaseResponse getAuctionDetails(Long userId, Long auctionId) {
+    public BaseAuctionDetailResponse getAuctionDetails(Long userId, Long auctionId) {
         return auctionRepository.findAuctionStatusById(auctionId)
                 .flatMap(status -> getAuctionDetailByStatus(status, userId, auctionId))
                 .orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
     }
 
-    private Optional<AuctionDetailBaseResponse> getAuctionDetailByStatus(AuctionStatus status, Long userId,
+    private Optional<BaseAuctionDetailResponse> getAuctionDetailByStatus(AuctionStatus status, Long userId,
                                                                          Long auctionId) {
         return switch (status) {
             case PRE -> auctionQueryRepository.findPreAuctionDetailById(userId, auctionId)

@@ -9,7 +9,7 @@ import org.chzz.market.domain.image.dto.ImageResponse;
 
 @Getter
 @NoArgsConstructor
-public abstract class AuctionDetailBaseResponse {
+public abstract class BaseAuctionDetailResponse {
     private Long auctionId;
     private String sellerNickname;
     private String sellerProfileImageUrl;
@@ -21,7 +21,7 @@ public abstract class AuctionDetailBaseResponse {
     private Category category;
     private List<ImageResponse> images;
 
-    public AuctionDetailBaseResponse(Long auctionId, String sellerNickname, String sellerProfileImageUrl,
+    public BaseAuctionDetailResponse(Long auctionId, String sellerNickname, String sellerProfileImageUrl,
                                      String productName, String description, Integer minPrice, Boolean isSeller,
                                      AuctionStatus status, Category category) {
         this.auctionId = auctionId;
