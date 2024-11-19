@@ -19,4 +19,12 @@ public interface AuctionV2Repository extends JpaRepository<AuctionV2, Long>, Auc
     @Modifying
     @Query("UPDATE AuctionV2 a SET a.likeCount = a.likeCount - 1 WHERE a.id = :auctionId")
     void decrementLikeCount(Long auctionId);
+
+    @Modifying
+    @Query("UPDATE AuctionV2 a SET a.bidCount = a.bidCount + 1 WHERE a.id = :auctionId")
+    void incrementBidCount(Long auctionId);
+
+    @Modifying
+    @Query("UPDATE AuctionV2 a SET a.bidCount = a.bidCount - 1 WHERE a.id = :auctionId")
+    void decrementBidCount(Long auctionId);
 }
