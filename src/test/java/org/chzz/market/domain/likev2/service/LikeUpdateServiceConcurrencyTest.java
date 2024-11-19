@@ -42,7 +42,7 @@ public class LikeUpdateServiceConcurrencyTest {
     }
 
     @Test
-    public void testUpdateLikeConcurrency() throws InterruptedException {
+    public void 좋아요_동시성_테스트() throws InterruptedException {
         AuctionV2 auction = createAuction(seller, "맥북프로", "맥북프로 2019년형 팝니다.", AuctionStatus.PROCEEDING, null);
 
         int numberOfThreads = 100;
