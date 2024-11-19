@@ -1,7 +1,11 @@
 package org.chzz.market.domain.auctionv2.entity;
 
+import static org.chzz.market.domain.auctionv2.entity.AuctionStatus.ENDED;
+import static org.chzz.market.domain.auctionv2.entity.AuctionStatus.PRE;
+import static org.chzz.market.domain.auctionv2.entity.AuctionStatus.PROCEEDING;
 import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.AUCTION_ACCESS_FORBIDDEN;
 import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.AUCTION_ALREADY_OFFICIAL;
+import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.AUCTION_ENDED;
 import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.AUCTION_NOT_ENDED;
 
 import jakarta.persistence.CascadeType;
@@ -105,15 +109,15 @@ public class AuctionV2 extends BaseTimeEntity {
     }
 
     public boolean isPreAuction() {
-        return status == AuctionStatus.PRE;
+        return status == PRE;
     }
 
     public boolean isOfficialAuction() {
-        return status == AuctionStatus.PROCEEDING || status == AuctionStatus.ENDED;
+        return status == PROCEEDING || status == ENDED;
     }
 
     public void validateAuctionEnded() {
-        if (!status.equals(AuctionStatus.ENDED)) {
+        if (!status.equals(ENDED)) {
             throw new AuctionException(AUCTION_NOT_ENDED);
         }
     }
@@ -126,7 +130,7 @@ public class AuctionV2 extends BaseTimeEntity {
         if (isOfficialAuction()) {
             throw new AuctionException(AUCTION_ALREADY_OFFICIAL);
         }
-        this.status = AuctionStatus.PROCEEDING;
+        this.status = PROCEEDING;
     }
 
     public String getFirstImageCdnPath() {
@@ -138,5 +142,16 @@ public class AuctionV2 extends BaseTimeEntity {
                     log.error("경매의 첫 번째 이미지가 없는 경우: {}", this.id);
                     return new ImageException(ImageErrorCode.IMAGE_NOT_FOUND);
                 });
+    }
+
+    public void validateAuctionEndTime() {
+        // 경매가 진행중이 아닐 때
+        if (status != PROCEEDING || endDateTime == null || LocalDateTime.now().isAfter(endDateTime)) {
+            throw new AuctionException(AUCTION_ENDED);
+        }
+    }
+
+    public boolean isAboveMinPrice(Long amount) {
+        return amount >= minPrice;
     }
 }
