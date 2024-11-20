@@ -154,4 +154,8 @@ public class AuctionV2 extends BaseTimeEntity {
     public boolean isAboveMinPrice(Long amount) {
         return amount >= minPrice;
     }
+
+    public void addImages(final List<ImageV2> images) {
+        this.images.addAll(images);
+    }
 }
