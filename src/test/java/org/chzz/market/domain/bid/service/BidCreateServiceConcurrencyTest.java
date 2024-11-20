@@ -61,7 +61,7 @@ public class BidCreateServiceConcurrencyTest {
     }
 
     @Test
-    public void createBidConcurrencyTest() throws InterruptedException {
+    public void 하나의_경매에_여러명이_입찰할때_동시성테스트() throws InterruptedException {
         int numberOfThreads = 5;
         ExecutorService executorService = Executors.newFixedThreadPool(numberOfThreads);
         CountDownLatch latch = new CountDownLatch(numberOfThreads);
@@ -87,7 +87,7 @@ public class BidCreateServiceConcurrencyTest {
     }
 
     @Test
-    public void singleUserConcurrentBidTest_ThrowsException() throws InterruptedException {
+    public void 하나의경매에_동일한_사용자가_입찰요청을_할경우_예외가_발생한다() throws InterruptedException {
         int numberOfThreads = 3; // 동일한 사용자가 동시에 요청
         ExecutorService executorService = Executors.newFixedThreadPool(numberOfThreads);
         CountDownLatch latch = new CountDownLatch(numberOfThreads);
