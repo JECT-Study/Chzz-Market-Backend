@@ -3,17 +3,15 @@ package org.chzz.market.domain.bid.service;
 import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.AUCTION_NOT_FOUND;
 import static org.chzz.market.domain.bid.error.BidErrorCode.BID_BELOW_MIN_PRICE;
 import static org.chzz.market.domain.bid.error.BidErrorCode.BID_BY_OWNER;
-import static org.chzz.market.domain.bid.error.BidErrorCode.BID_NOT_ACCESSIBLE;
-import static org.chzz.market.domain.bid.error.BidErrorCode.BID_NOT_FOUND;
 import static org.chzz.market.domain.user.error.UserErrorCode.USER_NOT_FOUND;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.chzz.market.common.aop.redisrock.DistributedLock;
 import org.chzz.market.domain.auctionv2.entity.AuctionV2;
 import org.chzz.market.domain.auctionv2.error.AuctionException;
 import org.chzz.market.domain.auctionv2.repository.AuctionV2Repository;
 import org.chzz.market.domain.bid.dto.BidCreateRequest;
-import org.chzz.market.domain.bid.entity.Bid;
 import org.chzz.market.domain.bid.error.BidException;
 import org.chzz.market.domain.bid.repository.BidRepository;
 import org.chzz.market.domain.user.entity.User;
@@ -26,13 +24,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @RequiredArgsConstructor
 @Slf4j
-public class BidUpdateService {
+public class BidCreateService {
     private final AuctionV2Repository auctionRepository;
     private final BidRepository bidRepository;
     private final UserRepository userRepository;
 
     @Transactional
-    public void createBid(final BidCreateRequest bidCreateRequest, Long userId) {
+    @DistributedLock(key = "'bid:' + #userId + ':' + #bidCreateRequest.auctionId")
+    public void create(final BidCreateRequest bidCreateRequest, Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(USER_NOT_FOUND));
         AuctionV2 auction = auctionRepository.findById(bidCreateRequest.getAuctionId())
                 .orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
@@ -47,23 +46,6 @@ public class BidUpdateService {
                             auctionRepository.incrementBidCount(auction.getId());
                         }
                 );
-    }
-
-    /**
-     * 입찰 취소
-     */
-    @Transactional
-    public void cancelBid(Long bidId, Long userId) {
-        Bid bid = bidRepository.findById(bidId).orElseThrow(() -> new BidException(BID_NOT_FOUND));
-        AuctionV2 auction = auctionRepository.findById(bid.getAuctionId())
-                .orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
-        if (!bid.isOwner(userId)) {
-            throw new BidException(BID_NOT_ACCESSIBLE);
-        }
-        auction.validateAuctionEndTime();
-        bid.cancelBid();
-        auctionRepository.decrementBidCount(auction.getId());
-        log.info("입찰이 취소되었습니다. 입찰 ID: {}, 사용자 ID: {}, 경매 ID: {}", bid.getId(), userId, auction.getId());
     }
 
     /**
