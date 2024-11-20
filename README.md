@@ -25,7 +25,7 @@ border-radius: 20px;" >
 
 </br>
 
-[✨ <치즈마켓> 사용해보기](https://chzzmarket.vercel.app/)
+[✨ <치즈마켓> 사용해보기](https://chzzmarket.store/)
 
 [//]: # ([📄 API 문서 바로가기]&#40;https://app.swaggerhub.com/apis-docs/CHLWNDKS333_1/chzz-market-api/1.0.0#/Products&#41;)
 

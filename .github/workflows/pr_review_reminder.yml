@@ -63,7 +63,6 @@ jobs:
         run: |
           reviewer_map='[
             {"github": "junest66", "discord": "<@444811214623735839>"},
-            {"github": "viaunixue", "discord": "<@386917108455309316>"},
             {"github": "YeaChan05", "discord": "<@391487793995579403>"}
           ]'
           prs=$(cat prs.json)
