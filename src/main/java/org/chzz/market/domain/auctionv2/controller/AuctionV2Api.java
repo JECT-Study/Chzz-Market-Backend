@@ -1,6 +1,11 @@
 package org.chzz.market.domain.auctionv2.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -8,6 +13,8 @@ import org.chzz.market.common.config.LoginUser;
 import org.chzz.market.domain.auction.dto.request.BaseRegisterRequest;
 import org.chzz.market.domain.auction.dto.response.RegisterResponse;
 import org.chzz.market.domain.auctionv2.dto.response.CategoryResponse;
+import org.chzz.market.domain.auctionv2.dto.response.OfficialAuctionResponse;
+import org.chzz.market.domain.auctionv2.dto.response.PreAuctionResponse;
 import org.chzz.market.domain.auctionv2.entity.AuctionStatus;
 import org.chzz.market.domain.auctionv2.entity.Category;
 import org.springdoc.core.annotations.ParameterObject;
@@ -26,6 +33,20 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/v2/auctions")
 public interface AuctionV2Api {
     @Operation(summary = "경매 목록 조회", description = "경매 목록을 조회합니다. status 파라미터를 통해 조회 유형을 지정합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "정식 경매 응답(페이징)",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = OfficialAuctionResponse.class))
+                    )}
+            ),
+            @ApiResponse(responseCode = "201", description = "사전 경매 응답(페이징)",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = PreAuctionResponse.class))
+                    )}
+            )
+    })
     @GetMapping
     ResponseEntity<Page<?>> getAuctionList(@LoginUser Long userId, @RequestParam(required = false) Category category,
                                            @RequestParam(required = false, defaultValue = "proceeding") AuctionStatus status,
