@@ -3,6 +3,7 @@ package org.chzz.market.domain.likev2.service;
 import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.AUCTION_NOT_FOUND;
 
 import lombok.RequiredArgsConstructor;
+import org.chzz.market.common.aop.redisrock.DistributedLock;
 import org.chzz.market.domain.auctionv2.error.AuctionException;
 import org.chzz.market.domain.auctionv2.repository.AuctionV2Repository;
 import org.chzz.market.domain.likev2.entity.LikeV2;
@@ -16,8 +17,14 @@ public class LikeUpdateService {
     private final AuctionV2Repository auctionRepository;
     private final LikeV2Repository likeRepository;
 
-    @Transactional
+    @DistributedLock(key = "'like:' + #userId + ':' + #auctionId")
     public void updateLike(Long userId, Long auctionId) {
+        // 락 획득 후 트랜잭션 시작
+        handleLikeTransaction(userId, auctionId);
+    }
+
+    @Transactional
+    public void handleLikeTransaction(Long userId, Long auctionId) {
         auctionRepository.findById(auctionId)
                 .orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
 
@@ -30,12 +37,12 @@ public class LikeUpdateService {
 
     private void handleUnlike(LikeV2 like, Long auctionId) {
         likeRepository.delete(like);
-        auctionRepository.decrementLikeCount(auctionId); // TODO: 동시성문제 고려 일단 원자적 연산으로 해결
+        auctionRepository.decrementLikeCount(auctionId);
     }
 
     private void handleLike(Long userId, Long auctionId) {
         likeRepository.save(createLike(userId, auctionId));
-        auctionRepository.incrementLikeCount(auctionId); // TODO: 동시성문제 고려 일단 원자적 연산으로 해결
+        auctionRepository.incrementLikeCount(auctionId);
     }
 
     private LikeV2 createLike(Long userId, Long auctionId) {
