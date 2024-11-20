@@ -38,9 +38,10 @@ public class PreAuctionRegistrationService implements RegistrationService {
 
     private AuctionV2 createAuction(final RegisterRequest request, final User user) {
         return AuctionV2.builder()
-                .name(request.getProductName())
-                .minPrice(request.getMinPrice())
-                .description(request.getDescription())
+                .name(request.productName())
+                .minPrice(request.minPrice())
+                .category(request.category())
+                .description(request.description())
                 .seller(user)
                 .status(AuctionStatus.PRE)
                 .build();

@@ -39,9 +39,10 @@ public class AuctionRegistrationService implements RegistrationService {
 
     private AuctionV2 createAuction(final RegisterRequest request, final User user) {
         return AuctionV2.builder()
-                .name(request.getProductName())
-                .minPrice(request.getMinPrice())
-                .description(request.getDescription())
+                .name(request.productName())
+                .minPrice(request.minPrice())
+                .description(request.description())
+                .category(request.category())
                 .seller(user)
                 .status(AuctionStatus.PROCEEDING)
                 .endDateTime(LocalDateTime.now().plusDays(1))
