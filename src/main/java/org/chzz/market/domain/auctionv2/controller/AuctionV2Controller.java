@@ -10,6 +10,7 @@ import org.chzz.market.domain.auctionv2.dto.response.CategoryResponse;
 import org.chzz.market.domain.auctionv2.entity.AuctionStatus;
 import org.chzz.market.domain.auctionv2.entity.Category;
 import org.chzz.market.domain.auctionv2.service.AuctionCategoryService;
+import org.chzz.market.domain.auctionv2.service.AuctionLookupService;
 import org.chzz.market.domain.auctionv2.service.AuctionTestService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequiredArgsConstructor
 public class AuctionV2Controller implements AuctionV2Api {
+    private final AuctionLookupService auctionLookupService;
     private final AuctionCategoryService auctionCategoryService;
     private final AuctionTestService testService;
 
@@ -36,9 +38,9 @@ public class AuctionV2Controller implements AuctionV2Api {
     @GetMapping
     public ResponseEntity<Page<?>> getAuctionList(@LoginUser Long userId,
                                                   @RequestParam(required = false) Category category,
-                                                  @RequestParam AuctionStatus status,
-                                                  @PageableDefault(sort = "newest") Pageable pageable) {
-        return null;
+                                                  @RequestParam(required = false, defaultValue = "proceeding") AuctionStatus status,
+                                                  @PageableDefault(sort = "newest-v2") Pageable pageable) {
+        return ResponseEntity.ok(auctionLookupService.getAuctionList(userId, category, status, pageable));
     }
 
     /**
