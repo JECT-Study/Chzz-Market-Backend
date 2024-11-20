@@ -28,7 +28,7 @@ public interface AuctionV2Api {
     @Operation(summary = "경매 목록 조회", description = "경매 목록을 조회합니다. status 파라미터를 통해 조회 유형을 지정합니다.")
     @GetMapping
     ResponseEntity<Page<?>> getAuctionList(@LoginUser Long userId, @RequestParam(required = false) Category category,
-                                           @RequestParam AuctionStatus status,
+                                           @RequestParam(required = false, defaultValue = "proceeding") AuctionStatus status,
                                            @ParameterObject @PageableDefault(sort = "newest") Pageable pageable);
 
     @Operation(summary = "경매 카테고리 조회", description = "경매 카테고리 목록을 조회합니다.")
