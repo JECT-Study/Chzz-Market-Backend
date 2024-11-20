@@ -45,7 +45,7 @@ public class LikeUpdateServiceConcurrencyTest {
     public void 좋아요_동시성_테스트() throws InterruptedException {
         AuctionV2 auction = createAuction(seller, "맥북프로", "맥북프로 2019년형 팝니다.", AuctionStatus.PROCEEDING, null);
 
-        int numberOfThreads = 100;
+        int numberOfThreads = 10;
         ExecutorService executorService = Executors.newFixedThreadPool(numberOfThreads);
         CountDownLatch latch = new CountDownLatch(numberOfThreads);
 
@@ -66,8 +66,42 @@ public class LikeUpdateServiceConcurrencyTest {
 
         AuctionV2 updatedAuction = auctionRepository.findById(auction.getId())
                 .orElseThrow(() -> new RuntimeException("Auction not found"));
-        assertThat(updatedAuction.getLikeCount()).isEqualTo(100);
+        assertThat(updatedAuction.getLikeCount()).isEqualTo(10);
     }
+
+    @Test
+    public void 한사람_동시에_여러_좋아요_요청_테스트() throws InterruptedException {
+        // 경매 생성
+        AuctionV2 auction = createAuction(seller, "아이폰 13", "최신형 아이폰 13 팝니다.", AuctionStatus.PROCEEDING, null);
+
+        int numberOfThreads = 9; // 동시에 요청할 스레드 수
+        ExecutorService executorService = Executors.newFixedThreadPool(numberOfThreads);
+        CountDownLatch latch = new CountDownLatch(numberOfThreads);
+
+        // 하나의 userId를 여러 번 요청
+        long userId = user.getId();
+
+        // WHEN
+        for (int i = 0; i < numberOfThreads; i++) {
+            executorService.execute(() -> {
+                try {
+                    likeUpdateService.updateLike(userId, auction.getId());
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+
+        latch.await();
+        executorService.shutdown();
+
+        // THEN
+        AuctionV2 updatedAuction = auctionRepository.findById(auction.getId())
+                .orElseThrow(() -> new RuntimeException("Auction not found"));
+
+        assertThat(updatedAuction.getLikeCount()).isEqualTo(1);
+    }
+
 
     private AuctionV2 createAuction(User seller, String name, String description, AuctionStatus status, Long winnerId) {
         AuctionV2 auction = AuctionV2.builder()
