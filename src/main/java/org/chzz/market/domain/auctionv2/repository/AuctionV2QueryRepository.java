@@ -218,6 +218,41 @@ public class AuctionV2QueryRepository {
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
 
+    /**
+     * 내가 좋아요한 사전 경매목록 조회
+     */
+    public Page<PreAuctionResponse> findLikedAuctionsByUserId(Long userId, Pageable pageable) {
+        List<PreAuctionResponse> content = jpaQueryFactory.from(auctionV2)
+                .select(
+                        Projections.constructor(
+                                PreAuctionResponse.class,
+                                auctionV2.id,
+                                auctionV2.name,
+                                imageV2.cdnPath,
+                                auctionV2.minPrice.longValue(),
+                                userIdEq(userId),
+                                auctionV2.likeCount,
+                                likeV2.id.isNotNull()
+                        )
+                )
+                .from(auctionV2)
+                .join(auctionV2.seller, user)
+                .leftJoin(auctionV2.images, imageV2).on(imageV2.sequence.eq(1))
+                .leftJoin(likeV2).on(likeV2.auctionId.eq(auctionV2.id).and(likeV2.userId.eq(userId)))
+                .where(auctionV2.status.eq(PRE))
+                .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        JPAQuery<Long> countQuery = jpaQueryFactory.select(auctionV2.count())
+                .from(auctionV2)
+                .leftJoin(likeV2).on(likeV2.auctionId.eq(auctionV2.id).and(likeV2.userId.eq(userId)))
+                .where(auctionV2.status.eq(PRE));
+
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+    }
+
     private List<ImageResponse> getImagesByAuctionId(Long auctionId) {
         return jpaQueryFactory
                 .select(new QImageResponse(imageV2.id, imageV2.cdnPath))
@@ -259,7 +294,6 @@ public class AuctionV2QueryRepository {
         return numberTemplate(Integer.class,
                 "GREATEST(0, TIMESTAMPDIFF(SECOND, CURRENT_TIMESTAMP, {0}))", auctionV2.endDateTime); // 음수면 0으로 처리
     }
-
 
     @Getter
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
