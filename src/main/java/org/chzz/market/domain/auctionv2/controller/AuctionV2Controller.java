@@ -83,9 +83,10 @@ public class AuctionV2Controller implements AuctionV2Api {
      * 사용자가 등록한 사전 경매 목록 조회
      */
     @Override
-    public ResponseEntity<Page<?>> getUserPreAuctionList(@LoginUser Long userId,
-                                                         @PageableDefault(sort = "newest") Pageable pageable) {
-        return null;
+    @GetMapping("/users/pre")
+    public ResponseEntity<Page<PreAuctionResponse>> getUserPreAuctionList(@LoginUser Long userId,
+                                                                          @PageableDefault(sort = "newest-v2") Pageable pageable) {
+        return ResponseEntity.ok(auctionMyService.getUserPreAuctionList(userId, pageable));
     }
 
     /**

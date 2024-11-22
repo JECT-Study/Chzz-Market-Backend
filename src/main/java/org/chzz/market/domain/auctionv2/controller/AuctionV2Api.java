@@ -80,8 +80,8 @@ public interface AuctionV2Api {
 
     @Operation(summary = "사용자가 등록한 사전 경매 목록 조회", description = "사용자가 등록한 사전 경매 목록을 조회합니다.")
     @GetMapping("/users/pre")
-    ResponseEntity<Page<?>> getUserPreAuctionList(@LoginUser Long userId,
-                                                  @ParameterObject @PageableDefault(sort = "newest") Pageable pageable);
+    ResponseEntity<Page<PreAuctionResponse>> getUserPreAuctionList(@LoginUser Long userId,
+                                                                   @ParameterObject @PageableDefault(sort = "newest-v2") Pageable pageable);
 
     @Operation(summary = "사용자가 낙찰한 경매 목록 조회", description = "사용자가 낙찰한 경매 목록을 조회합니다.")
     @GetMapping("/users/won")
