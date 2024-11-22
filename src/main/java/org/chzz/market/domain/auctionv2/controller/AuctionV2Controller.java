@@ -1,6 +1,7 @@
 package org.chzz.market.domain.auctionv2.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.config.LoginUser;
@@ -17,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -26,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
+@Validated
 public class AuctionV2Controller implements AuctionV2Api {
     private final AuctionLookupService auctionLookupService;
     private final AuctionCategoryService auctionCategoryService;
@@ -39,8 +42,10 @@ public class AuctionV2Controller implements AuctionV2Api {
     public ResponseEntity<Page<?>> getAuctionList(@LoginUser Long userId,
                                                   @RequestParam(required = false) Category category,
                                                   @RequestParam(required = false, defaultValue = "proceeding") AuctionStatus status,
+                                                  @RequestParam(required = false) @Min(value = 1, message = "minutes는 1 이상의 값이어야 합니다.") Integer minutes,
                                                   @PageableDefault(sort = "newest-v2") Pageable pageable) {
-        return ResponseEntity.ok(auctionLookupService.getAuctionList(userId, category, status, pageable));
+        return ResponseEntity.ok(
+                auctionLookupService.getAuctionList(userId, category, status, minutes, pageable));
     }
 
     /**
@@ -50,15 +55,6 @@ public class AuctionV2Controller implements AuctionV2Api {
     @GetMapping("/categories")
     public ResponseEntity<List<CategoryResponse>> getCategoryList() {
         return ResponseEntity.ok(auctionCategoryService.getCategories());
-    }
-
-    /**
-     * 정식 경매의 마감임박 조회
-     */
-    @Override
-    @GetMapping("/imminent")
-    public ResponseEntity<Page<?>> getImminentAuctionList(@PageableDefault(sort = "newest") Pageable pageable) {
-        return null;
     }
 
     /**

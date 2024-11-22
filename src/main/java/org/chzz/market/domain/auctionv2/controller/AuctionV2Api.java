@@ -1,5 +1,7 @@
 package org.chzz.market.domain.auctionv2.controller;
 
+import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.Const.END_WITHIN_MINUTES_PARAM_ALLOWED_FOR_PROCEEDING_ONLY;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -8,8 +10,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import java.util.List;
 import org.chzz.market.common.config.LoginUser;
+import org.chzz.market.common.springdoc.ApiExceptionExplanation;
+import org.chzz.market.common.springdoc.ApiResponseExplanations;
 import org.chzz.market.domain.auction.dto.request.BaseRegisterRequest;
 import org.chzz.market.domain.auction.dto.response.RegisterResponse;
 import org.chzz.market.domain.auctionv2.dto.response.CategoryResponse;
@@ -17,6 +22,7 @@ import org.chzz.market.domain.auctionv2.dto.response.OfficialAuctionResponse;
 import org.chzz.market.domain.auctionv2.dto.response.PreAuctionResponse;
 import org.chzz.market.domain.auctionv2.entity.AuctionStatus;
 import org.chzz.market.domain.auctionv2.entity.Category;
+import org.chzz.market.domain.auctionv2.error.AuctionErrorCode;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -47,19 +53,20 @@ public interface AuctionV2Api {
                     )}
             )
     })
+    @ApiResponseExplanations(
+            errors = {
+                    @ApiExceptionExplanation(value = AuctionErrorCode.class, constant = END_WITHIN_MINUTES_PARAM_ALLOWED_FOR_PROCEEDING_ONLY, name = "minutes 파라미터는 진행중인 경매일 때만 사용가능"),
+            }
+    )
     @GetMapping
     ResponseEntity<Page<?>> getAuctionList(@LoginUser Long userId, @RequestParam(required = false) Category category,
                                            @RequestParam(required = false, defaultValue = "proceeding") AuctionStatus status,
-                                           @ParameterObject @PageableDefault(sort = "newest") Pageable pageable);
+                                           @RequestParam(required = false) @Min(value = 1, message = "minutes는 1 이상의 값이어야 합니다.") Integer minutes,
+                                           @ParameterObject @PageableDefault(sort = "newest-v2") Pageable pageable);
 
     @Operation(summary = "경매 카테고리 조회", description = "경매 카테고리 목록을 조회합니다.")
     @GetMapping("/categories")
     ResponseEntity<List<CategoryResponse>> getCategoryList();
-
-    @Operation(summary = "마감임박 조회", description = "정식 경매의 마감임박")
-    @GetMapping("/imminent")
-    ResponseEntity<Page<?>> getImminentAuctionList(
-            @ParameterObject @PageableDefault(sort = "newest") Pageable pageable);
 
     @Operation(summary = "사용자가 등록한 진행중인 경매 목록 조회", description = "사용자가 등록한 진행중인 경매 목록을 조회합니다.")
     @GetMapping("/users/proceeding")
