@@ -466,5 +466,34 @@ class AuctionV2QueryRepositoryTest {
             assertThat(result.getContent().get(0).getProductName()).isEqualTo("아이패드");
             assertThat(result.getContent().get(1).getProductName()).isEqualTo("맥북프로");
         }
+
+
+        @Test
+        void 사용자가_등록한_사전경매_목록_조회() {
+            // Given
+            AuctionV2 auction1 = createAuction(seller, "맥북프로", "맥북프로 2019년형 팝니다.", AuctionStatus.PRE, null, 1000);
+            AuctionV2 auction2 = createAuction(seller, "아이패드", "아이패드 2021년형 팝니다.", AuctionStatus.PRE, null, 2000);
+            AuctionV2 auction3 = createAuction(user, "아이패드", "아이패드 2021년형 팝니다.", AuctionStatus.PRE, null, 2000);
+            auctionV2Repository.saveAll(List.of(auction1, auction2, auction3));
+
+            Pageable pageable = PageRequest.of(0, 10, Sort.by("expensive-v2"));
+
+            // When
+            Page<PreAuctionResponse> result = auctionQueryRepository.findPreAuctionsByUserId(seller.getId(), pageable);
+
+            // Then
+            assertThat(result).isNotNull();
+            assertThat(result.getContent()).hasSize(2);
+
+            PreAuctionResponse response1 = result.getContent().get(0);
+            assertThat(response1.getProductName()).isEqualTo("아이패드");
+            assertThat(response1.getIsSeller()).isTrue();
+            assertThat(response1.getIsLiked()).isFalse();
+
+            PreAuctionResponse response2 = result.getContent().get(1);
+            assertThat(response2.getProductName()).isEqualTo("맥북프로");
+            assertThat(response2.getIsSeller()).isTrue();
+            assertThat(response2.getIsLiked()).isFalse();
+        }
     }
 }
