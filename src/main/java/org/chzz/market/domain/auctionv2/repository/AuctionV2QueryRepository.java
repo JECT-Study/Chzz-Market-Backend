@@ -2,6 +2,9 @@ package org.chzz.market.domain.auctionv2.repository;
 
 import static com.querydsl.core.types.dsl.Expressions.numberTemplate;
 import static org.chzz.market.common.util.QuerydslUtil.nullSafeBuilder;
+import static org.chzz.market.common.util.QuerydslUtil.nullSafeBuilderIgnore;
+import static org.chzz.market.domain.auctionv2.entity.AuctionStatus.PRE;
+import static org.chzz.market.domain.auctionv2.entity.AuctionStatus.PROCEEDING;
 import static org.chzz.market.domain.auctionv2.entity.QAuctionV2.auctionV2;
 import static org.chzz.market.domain.bid.entity.Bid.BidStatus.ACTIVE;
 import static org.chzz.market.domain.bid.entity.Bid.BidStatus.CANCELLED;
@@ -12,27 +15,40 @@ import static org.chzz.market.domain.orderv2.entity.QOrderV2.orderV2;
 import static org.chzz.market.domain.user.entity.QUser.user;
 
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.NumberExpression;
-import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import java.util.Optional;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.chzz.market.common.util.QuerydslOrder;
+import org.chzz.market.common.util.QuerydslOrderProvider;
 import org.chzz.market.domain.auctionv2.dto.response.OfficialAuctionDetailResponse;
+import org.chzz.market.domain.auctionv2.dto.response.OfficialAuctionResponse;
 import org.chzz.market.domain.auctionv2.dto.response.PreAuctionDetailResponse;
+import org.chzz.market.domain.auctionv2.dto.response.PreAuctionResponse;
 import org.chzz.market.domain.auctionv2.dto.response.QWonAuctionDetailsResponse;
 import org.chzz.market.domain.auctionv2.dto.response.WonAuctionDetailsResponse;
+import org.chzz.market.domain.auctionv2.entity.AuctionStatus;
+import org.chzz.market.domain.auctionv2.entity.Category;
 import org.chzz.market.domain.bid.entity.QBid;
 import org.chzz.market.domain.image.dto.ImageResponse;
 import org.chzz.market.domain.image.dto.QImageResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
 public class AuctionV2QueryRepository {
     private final JPAQueryFactory jpaQueryFactory;
+    private final QuerydslOrderProvider querydslOrderProvider;
 
     /**
      * 낙찰자 정보 조회
@@ -43,11 +59,14 @@ public class AuctionV2QueryRepository {
                 .from(auctionV2)
                 .leftJoin(bid).on(bid.bidderId.eq(auctionV2.winnerId)
                         .and(bid.auctionId.eq(auctionV2.id)))
-                .leftJoin(imageV2).on(isRepresentativeImage())
+                .leftJoin(auctionV2.images, imageV2).on(imageV2.sequence.eq(1))
                 .where(auctionV2.id.eq(auctionId))
                 .fetchOne());
     }
 
+    /**
+     * 사전 경매 상세 조회
+     */
     public Optional<PreAuctionDetailResponse> findPreAuctionDetailById(Long userId, Long auctionId) {
         Optional<PreAuctionDetailResponse> result = Optional.ofNullable(jpaQueryFactory
                 .select(
@@ -64,11 +83,12 @@ public class AuctionV2QueryRepository {
                                 auctionV2.category,
                                 auctionV2.updatedAt,
                                 auctionV2.likeCount,
-                                isAuctionLikedByUserId(userId)
+                                likeV2.id.isNotNull()
                         )
                 )
                 .from(auctionV2)
                 .join(auctionV2.seller, user)
+                .leftJoin(likeV2).on(likeV2.auctionId.eq(auctionV2.id).and(likeUserIdEq(userId)))
                 .where(auctionV2.id.eq(auctionId))
                 .fetchOne());
 
@@ -76,6 +96,9 @@ public class AuctionV2QueryRepository {
         return result;
     }
 
+    /**
+     * 정식 경매 상세 조회
+     */
     public Optional<OfficialAuctionDetailResponse> findOfficialAuctionDetailById(Long userId, Long auctionId) {
         QBid activeBid = new QBid("bidActive");
         QBid canceledBid = new QBid("bidCanceled");
@@ -122,6 +145,76 @@ public class AuctionV2QueryRepository {
         return officialAuctionDetailResponse;
     }
 
+    /**
+     * 사전 경매 목록 조회
+     */
+    public Page<PreAuctionResponse> findPreAuctions(Long userId, Category category, Pageable pageable) {
+        List<PreAuctionResponse> content = jpaQueryFactory.from(auctionV2)
+                .select(
+                        Projections.constructor(
+                                PreAuctionResponse.class,
+                                auctionV2.id,
+                                auctionV2.name,
+                                imageV2.cdnPath,
+                                auctionV2.minPrice.longValue(),
+                                userIdEq(userId),
+                                auctionV2.likeCount,
+                                likeV2.id.isNotNull()
+                        )
+                )
+                .from(auctionV2)
+                .join(auctionV2.seller, user)
+                .leftJoin(auctionV2.images, imageV2).on(imageV2.sequence.eq(1))
+                .leftJoin(likeV2).on(likeV2.auctionId.eq(auctionV2.id).and(likeUserIdEq(userId)))
+                .where(categoryEqIgnoreNull(category).and(auctionV2.status.eq(PRE)))
+                .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        JPAQuery<Long> countQuery = jpaQueryFactory.select(auctionV2.count())
+                .from(auctionV2)
+                .where(categoryEqIgnoreNull(category).and(auctionV2.status.eq(PRE)));
+
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+    }
+
+    /**
+     * 정식 경매 목록 조회
+     */
+    public Page<OfficialAuctionResponse> findOfficialAuctions(Long userId, Category category, AuctionStatus status,
+                                                              Pageable pageable) {
+        List<OfficialAuctionResponse> content = jpaQueryFactory.from(auctionV2)
+                .select(
+                        Projections.constructor(
+                                OfficialAuctionResponse.class,
+                                auctionV2.id,
+                                auctionV2.name,
+                                imageV2.cdnPath,
+                                auctionV2.minPrice.longValue(),
+                                userIdEq(userId),
+                                timeRemaining().longValue(),
+                                auctionV2.bidCount,
+                                bid.id.isNotNull()
+                        )
+                )
+                .from(auctionV2)
+                .join(auctionV2.seller, user)
+                .leftJoin(bid).on(bid.auctionId.eq(auctionV2.id).and(bidderIdEq(userId)).and(bid.status.eq(ACTIVE)))
+                .leftJoin(auctionV2.images, imageV2).on(imageV2.sequence.eq(1))
+                .where(categoryEqIgnoreNull(category).and(auctionV2.status.eq(status)))
+                .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        JPAQuery<Long> countQuery = jpaQueryFactory.select(auctionV2.count())
+                .from(auctionV2)
+                .where(categoryEqIgnoreNull(category).and(auctionV2.status.eq(PROCEEDING)));
+
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+    }
+
     private List<ImageResponse> getImagesByAuctionId(Long auctionId) {
         return jpaQueryFactory
                 .select(new QImageResponse(imageV2.id, imageV2.cdnPath))
@@ -131,20 +224,12 @@ public class AuctionV2QueryRepository {
                 .fetch();
     }
 
-    private BooleanExpression isAuctionLikedByUserId(Long userId) {
-        return JPAExpressions.selectOne()
-                .from(likeV2)
-                .where(likeV2.auctionId.eq(auctionV2.id)
-                        .and(likeUserIdEq(userId)))
-                .exists();
-    }
-
-    private BooleanExpression isRepresentativeImage() {
-        return imageV2.auction.eq(auctionV2).and(imageV2.sequence.eq(1));
-    }
-
     private BooleanBuilder userIdEq(Long userId) {
         return nullSafeBuilder(() -> user.id.eq(userId));
+    }
+
+    private BooleanBuilder bidderIdEq(Long userId) {
+        return nullSafeBuilder(() -> bid.bidderId.eq(userId));
     }
 
     private BooleanBuilder bidderIdEqSub(QBid qBid, Long userId) {
@@ -159,8 +244,24 @@ public class AuctionV2QueryRepository {
         return nullSafeBuilder(() -> likeV2.userId.eq(userId));
     }
 
+    private BooleanBuilder categoryEqIgnoreNull(Category category) {
+        return nullSafeBuilderIgnore(() -> auctionV2.category.eq(category));
+    }
+
     private static NumberExpression<Integer> timeRemaining() {
         return numberTemplate(Integer.class,
                 "GREATEST(0, TIMESTAMPDIFF(SECOND, CURRENT_TIMESTAMP, {0}))", auctionV2.endDateTime); // 음수면 0으로 처리
+    }
+
+    @Getter
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    public enum AuctionOrder implements QuerydslOrder {
+        POPULARITY("popularity-v2", auctionV2.bidCount.desc()),
+        EXPENSIVE("expensive-v2", auctionV2.minPrice.desc()),
+        CHEAP("cheap-v2", auctionV2.minPrice.asc()),
+        NEWEST("newest-v2", auctionV2.createdAt.desc());
+
+        private final String name;
+        private final OrderSpecifier<?> orderSpecifier;
     }
 }

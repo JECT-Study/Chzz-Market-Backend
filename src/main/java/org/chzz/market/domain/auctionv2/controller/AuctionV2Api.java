@@ -3,6 +3,11 @@ package org.chzz.market.domain.auctionv2.controller;
 import static org.chzz.market.domain.user.error.UserErrorCode.Const.USER_NOT_FOUND;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
@@ -13,8 +18,9 @@ import org.chzz.market.common.springdoc.ApiResponseExplanations;
 import org.chzz.market.common.validation.annotation.NotEmptyMultipartList;
 import org.chzz.market.domain.auctionv2.dto.request.RegisterRequest;
 import org.chzz.market.domain.auctionv2.dto.response.CategoryResponse;
-import org.chzz.market.domain.auctionv2.dto.view.AuctionType;
-import org.chzz.market.domain.auctionv2.dto.view.UserAuctionType;
+import org.chzz.market.domain.auctionv2.dto.response.OfficialAuctionResponse;
+import org.chzz.market.domain.auctionv2.dto.response.PreAuctionResponse;
+import org.chzz.market.domain.auctionv2.entity.AuctionStatus;
 import org.chzz.market.domain.auctionv2.entity.Category;
 import org.chzz.market.domain.user.error.UserErrorCode;
 import org.springdoc.core.annotations.ParameterObject;
@@ -32,20 +38,64 @@ import org.springframework.web.multipart.MultipartFile;
 @Tag(name = "auctions(v2)", description = "V2 경매 API")
 @RequestMapping("/v2/auctions")
 public interface AuctionV2Api {
-    @Operation(summary = "경매 목록 조회", description = "경매 목록을 조회합니다. type 파라미터를 통해 조회 유형을 지정합니다.")
+    @Operation(summary = "경매 목록 조회", description = "경매 목록을 조회합니다. status 파라미터를 통해 조회 유형을 지정합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "정식 경매 응답(페이징)",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = OfficialAuctionResponse.class))
+                    )}
+            ),
+            @ApiResponse(responseCode = "201", description = "사전 경매 응답(페이징)",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = PreAuctionResponse.class))
+                    )}
+            )
+    })
     @GetMapping
     ResponseEntity<Page<?>> getAuctionList(@LoginUser Long userId, @RequestParam(required = false) Category category,
-                                           @RequestParam AuctionType type,
+                                           @RequestParam(required = false, defaultValue = "proceeding") AuctionStatus status,
                                            @ParameterObject @PageableDefault(sort = "newest") Pageable pageable);
 
     @Operation(summary = "경매 카테고리 조회", description = "경매 카테고리 목록을 조회합니다.")
     @GetMapping("/categories")
     ResponseEntity<List<CategoryResponse>> getCategoryList();
 
-    @Operation(summary = "사용자 경매 목록 조회", description = "사용자가 등록한 경매 목록을 조회합니다. type 파라미터를 통해 조회 유형을 지정합니다.")
-    @GetMapping("/users")
-    ResponseEntity<Page<?>> getUserAuctionList(@LoginUser Long userId, @RequestParam UserAuctionType type,
-                                               @ParameterObject @PageableDefault(sort = "newest") Pageable pageable);
+    @Operation(summary = "마감임박 조회", description = "정식 경매의 마감임박")
+    @GetMapping("/imminent")
+    ResponseEntity<Page<?>> getImminentAuctionList(
+            @ParameterObject @PageableDefault(sort = "newest") Pageable pageable);
+
+    @Operation(summary = "사용자가 등록한 진행중인 경매 목록 조회", description = "사용자가 등록한 진행중인 경매 목록을 조회합니다.")
+    @GetMapping("/users/proceeding")
+    ResponseEntity<Page<?>> getUserProceedingAuctionList(@LoginUser Long userId,
+                                                         @ParameterObject @PageableDefault(sort = "newest") Pageable pageable);
+
+    @Operation(summary = "사용자가 등록한 종료된 경매 목록 조회", description = "사용자가 등록한 종료된 경매 목록을 조회합니다.")
+    @GetMapping("/users/ended")
+    ResponseEntity<Page<?>> getUserEndedAuctionList(@LoginUser Long userId,
+                                                    @ParameterObject @PageableDefault(sort = "newest") Pageable pageable);
+
+    @Operation(summary = "사용자가 등록한 사전 경매 목록 조회", description = "사용자가 등록한 사전 경매 목록을 조회합니다.")
+    @GetMapping("/users/pre")
+    ResponseEntity<Page<?>> getUserPreAuctionList(@LoginUser Long userId,
+                                                  @ParameterObject @PageableDefault(sort = "newest") Pageable pageable);
+
+    @Operation(summary = "사용자가 낙찰한 경매 목록 조회", description = "사용자가 낙찰한 경매 목록을 조회합니다.")
+    @GetMapping("/users/won")
+    ResponseEntity<Page<?>> getUserWonAuctionList(@LoginUser Long userId,
+                                                  @ParameterObject @PageableDefault(sort = "newest") Pageable pageable);
+
+    @Operation(summary = "사용자가 낙찰실패한 경매 목록 조회", description = "사용자가 낙찰실패한 경매 목록을 조회합니다.")
+    @GetMapping("/users/lost")
+    ResponseEntity<Page<?>> getUserLostAuctionList(@LoginUser Long userId,
+                                                   @ParameterObject @PageableDefault(sort = "newest") Pageable pageable);
+
+    @Operation(summary = "사용자가 좋아요(찜)한 경매 목록 조회", description = "사용자가 좋아요(찜)한 경매 목록을 조회합니다.")
+    @GetMapping("/users/likes")
+    ResponseEntity<Page<?>> getUserLikesAuctionList(@LoginUser Long userId,
+                                                    @ParameterObject @PageableDefault(sort = "newest") Pageable pageable);
 
     @Operation(summary = "경매 등록", description = "경매를 등록합니다.")
     @ApiResponseExplanations(
