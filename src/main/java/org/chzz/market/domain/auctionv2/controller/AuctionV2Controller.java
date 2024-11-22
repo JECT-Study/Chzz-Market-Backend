@@ -8,10 +8,12 @@ import org.chzz.market.common.config.LoginUser;
 import org.chzz.market.domain.auction.dto.request.BaseRegisterRequest;
 import org.chzz.market.domain.auction.dto.response.RegisterResponse;
 import org.chzz.market.domain.auctionv2.dto.response.CategoryResponse;
+import org.chzz.market.domain.auctionv2.dto.response.PreAuctionResponse;
 import org.chzz.market.domain.auctionv2.entity.AuctionStatus;
 import org.chzz.market.domain.auctionv2.entity.Category;
 import org.chzz.market.domain.auctionv2.service.AuctionCategoryService;
 import org.chzz.market.domain.auctionv2.service.AuctionLookupService;
+import org.chzz.market.domain.auctionv2.service.AuctionMyService;
 import org.chzz.market.domain.auctionv2.service.AuctionTestService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -33,6 +35,7 @@ public class AuctionV2Controller implements AuctionV2Api {
     private final AuctionLookupService auctionLookupService;
     private final AuctionCategoryService auctionCategoryService;
     private final AuctionTestService testService;
+    private final AuctionMyService auctionMyService;
 
     /**
      * 경매 목록 조회
@@ -107,9 +110,10 @@ public class AuctionV2Controller implements AuctionV2Api {
      * 사용자가 좋아요(찜)한 경매 목록 조회
      */
     @Override
-    public ResponseEntity<Page<?>> getUserLikesAuctionList(@LoginUser Long userId,
-                                                           @PageableDefault(sort = "newest") Pageable pageable) {
-        return null;
+    @GetMapping("/users/likes")
+    public ResponseEntity<Page<PreAuctionResponse>> getLikedAuctionList(@LoginUser Long userId,
+                                                                        @PageableDefault(sort = "newest-v2") Pageable pageable) {
+        return ResponseEntity.ok(auctionMyService.getLikedAuctionList(userId, pageable));
     }
 
     /**
