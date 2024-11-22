@@ -17,7 +17,6 @@ import static org.chzz.market.domain.user.entity.QUser.user;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -60,7 +59,7 @@ public class AuctionV2QueryRepository {
                 .from(auctionV2)
                 .leftJoin(bid).on(bid.bidderId.eq(auctionV2.winnerId)
                         .and(bid.auctionId.eq(auctionV2.id)))
-                .leftJoin(imageV2).on(isRepresentativeImage())
+                .leftJoin(auctionV2.images, imageV2).on(imageV2.sequence.eq(1))
                 .where(auctionV2.id.eq(auctionId))
                 .fetchOne());
     }
@@ -165,7 +164,7 @@ public class AuctionV2QueryRepository {
                 )
                 .from(auctionV2)
                 .join(auctionV2.seller, user)
-                .leftJoin(imageV2).on(imageV2.auction.eq(auctionV2).and(isRepresentativeImage()))
+                .leftJoin(auctionV2.images, imageV2).on(imageV2.sequence.eq(1))
                 .leftJoin(likeV2).on(likeV2.auctionId.eq(auctionV2.id).and(likeUserIdEq(userId)))
                 .where(categoryEqIgnoreNull(category).and(auctionV2.status.eq(PRE)))
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
@@ -202,7 +201,7 @@ public class AuctionV2QueryRepository {
                 .from(auctionV2)
                 .join(auctionV2.seller, user)
                 .leftJoin(bid).on(bid.auctionId.eq(auctionV2.id).and(bidderIdEq(userId)).and(bid.status.eq(ACTIVE)))
-                .leftJoin(imageV2).on(imageV2.auction.eq(auctionV2).and(isRepresentativeImage()))
+                .leftJoin(auctionV2.images, imageV2).on(imageV2.sequence.eq(1))
                 .where(categoryEqIgnoreNull(category).and(auctionV2.status.eq(status)))
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
@@ -223,10 +222,6 @@ public class AuctionV2QueryRepository {
                 .where(imageV2.auction.id.eq(auctionId))
                 .orderBy(imageV2.sequence.asc())
                 .fetch();
-    }
-
-    private BooleanExpression isRepresentativeImage() {
-        return imageV2.auction.eq(auctionV2).and(imageV2.sequence.eq(1));
     }
 
     private BooleanBuilder userIdEq(Long userId) {
