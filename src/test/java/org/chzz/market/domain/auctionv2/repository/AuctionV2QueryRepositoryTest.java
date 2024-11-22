@@ -2,6 +2,8 @@ package org.chzz.market.domain.auctionv2.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import org.chzz.market.domain.auctionv2.dto.response.OfficialAuctionDetailResponse;
 import org.chzz.market.domain.auctionv2.dto.response.OfficialAuctionResponse;
@@ -383,6 +385,57 @@ class AuctionV2QueryRepositoryTest {
             assertThat(result.getContent()).hasSize(2);
             assertThat(result.getContent().get(0).getProductName()).isEqualTo("아이패드"); // 가격이 더 높은 아이패드가 먼저
             assertThat(result.getContent().get(1).getProductName()).isEqualTo("맥북프로"); // 가격이 낮은 맥북프로가 나중
+        }
+
+        @Test
+        public void 정식경매_목록_조회_종료까지_남은시간_테스트() throws Exception {
+            // given
+            AuctionV2 auction1 = AuctionV2.builder()
+                    .seller(seller)
+                    .name("맥북프로")
+                    .description("맥북프로 2019년형 팝니다.")
+                    .status(AuctionStatus.PROCEEDING)
+                    .category(Category.ELECTRONICS)
+                    .winnerId(null)
+                    .minPrice(1000)
+                    .endDateTime(LocalDateTime.now().plusSeconds(3600)) // 1시간 뒤 종료
+                    .build();
+
+            AuctionV2 auction2 = AuctionV2.builder()
+                    .seller(seller)
+                    .name("아이패드")
+                    .description("아이패드 2019년형 팝니다.")
+                    .status(AuctionStatus.PROCEEDING)
+                    .category(Category.ELECTRONICS)
+                    .winnerId(null)
+                    .minPrice(2000)
+                    .endDateTime(LocalDateTime.now().plusSeconds(7200)) // 2시간 뒤 종료
+                    .build();
+            auctionV2Repository.saveAll(List.of(auction1, auction2));
+            Pageable pageable = PageRequest.of(0, 10, Sort.by("immediately-v2"));
+
+            Page<OfficialAuctionResponse> resultWithin1Hour = auctionQueryRepository.findOfficialAuctions(null, null,
+                    AuctionStatus.PROCEEDING, 3600, pageable);
+
+            // then
+            assertThat(resultWithin1Hour).isNotNull();
+            assertThat(resultWithin1Hour.getContent()).hasSize(1);
+            assertThat(resultWithin1Hour.getContent().get(0).getProductName()).isEqualTo("맥북프로");
+
+            // when - endWithinSeconds 2시간 이내
+            Page<OfficialAuctionResponse> resultWithin2Hours = auctionQueryRepository.findOfficialAuctions(
+                    seller.getId(),
+                    Category.ELECTRONICS,
+                    AuctionStatus.PROCEEDING,
+                    7200, // 2시간 이내
+                    pageable
+            );
+
+            // then
+            assertThat(resultWithin2Hours).isNotNull();
+            assertThat(resultWithin2Hours.getContent()).hasSize(2);
+            assertThat(resultWithin2Hours.getContent().get(0).getProductName()).isEqualTo("맥북프로"); // 더 빨리 종료되는 맥북
+            assertThat(resultWithin2Hours.getContent().get(1).getProductName()).isEqualTo("아이패드"); // 나중에 종료되는 아이패드
         }
     }
 }
