@@ -14,7 +14,18 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuctionMyService {
     private final AuctionV2QueryRepository auctionQueryRepository;
 
+    /**
+     * 사용자가 등록한 사전 경매 목록 조회
+     */
+    public Page<PreAuctionResponse> getUserPreAuctionList(Long userId, Pageable pageable) {
+        return auctionQueryRepository.findPreAuctionsByUserId(userId, pageable);
+    }
+
+    /**
+     * 사용자가 좋아요한 사전 경매 목록 조회
+     */
     public Page<PreAuctionResponse> getLikedAuctionList(Long userId, Pageable pageable) {
         return auctionQueryRepository.findLikedAuctionsByUserId(userId, pageable);
     }
+
 }
