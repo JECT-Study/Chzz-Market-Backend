@@ -51,7 +51,6 @@ public interface AuctionV2Api {
     @ApiResponseExplanations(
             errors = {
                     @ApiExceptionExplanation(value = UserErrorCode.class, constant = USER_NOT_FOUND, name = "회원정보 조회 실패"),
-                    @ApiExceptionExplanation(value = UserErrorCode.class, constant = USER_NOT_FOUND, name = "회원정보 조회 실패"),
             }
     )
     @PostMapping
