@@ -259,7 +259,7 @@ class AuctionV2QueryRepositoryTest {
 
             //when
             Page<OfficialAuctionResponse> result = auctionQueryRepository.findOfficialAuctions(seller.getId(),
-                    Category.ELECTRONICS, AuctionStatus.PROCEEDING, pageable);
+                    Category.ELECTRONICS, AuctionStatus.PROCEEDING, null, pageable);
             //then
             assertThat(result).isNotNull();
             assertThat(result.getContent()).hasSize(1);
@@ -276,7 +276,7 @@ class AuctionV2QueryRepositoryTest {
 
             //when
             Page<OfficialAuctionResponse> result = auctionQueryRepository.findOfficialAuctions(user.getId(),
-                    Category.ELECTRONICS, AuctionStatus.PROCEEDING, pageable);
+                    Category.ELECTRONICS, AuctionStatus.PROCEEDING, null, pageable);
             //then
             assertThat(result).isNotNull();
             assertThat(result.getContent()).hasSize(1);
@@ -286,7 +286,7 @@ class AuctionV2QueryRepositoryTest {
 
             //when 비로그인
             Page<OfficialAuctionResponse> result1 = auctionQueryRepository.findOfficialAuctions(null,
-                    Category.ELECTRONICS, AuctionStatus.PROCEEDING, pageable);
+                    Category.ELECTRONICS, AuctionStatus.PROCEEDING, null, pageable);
             //then
             assertThat(result).isNotNull();
             assertThat(result.getContent()).hasSize(1);
@@ -305,7 +305,7 @@ class AuctionV2QueryRepositoryTest {
             bidRepository.save(bid);
             //when
             Page<OfficialAuctionResponse> result = auctionQueryRepository.findOfficialAuctions(user.getId(),
-                    Category.ELECTRONICS, AuctionStatus.PROCEEDING, pageable);
+                    Category.ELECTRONICS, AuctionStatus.PROCEEDING, null, pageable);
             //then
             assertThat(result).isNotNull();
             assertThat(result.getContent()).hasSize(1);
@@ -376,7 +376,7 @@ class AuctionV2QueryRepositoryTest {
 
             //when
             Page<OfficialAuctionResponse> result = auctionQueryRepository.findOfficialAuctions(seller.getId(),
-                    Category.ELECTRONICS, AuctionStatus.PROCEEDING, pageable);
+                    Category.ELECTRONICS, AuctionStatus.PROCEEDING, null, pageable);
 
             //then
             assertThat(result).isNotNull();
