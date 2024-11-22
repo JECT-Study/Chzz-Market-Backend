@@ -17,6 +17,7 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -219,7 +220,41 @@ public class AuctionV2QueryRepository {
     }
 
     /**
-     * 내가 좋아요한 사전 경매목록 조회
+     * 사용자가 등록한 사전경매 목록 조회
+     */
+    public Page<PreAuctionResponse> findPreAuctionsByUserId(Long userId, Pageable pageable) {
+        List<PreAuctionResponse> content = jpaQueryFactory.from(auctionV2)
+                .select(
+                        Projections.constructor(
+                                PreAuctionResponse.class,
+                                auctionV2.id,
+                                auctionV2.name,
+                                imageV2.cdnPath,
+                                auctionV2.minPrice.longValue(),
+                                Expressions.TRUE,
+                                auctionV2.likeCount,
+                                Expressions.FALSE
+                        )
+                )
+                .from(auctionV2)
+                .join(auctionV2.seller, user).on(user.id.eq(userId))
+                .leftJoin(auctionV2.images, imageV2).on(imageV2.sequence.eq(1))
+                .where(auctionV2.status.eq(PRE))
+                .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        JPAQuery<Long> countQuery = jpaQueryFactory.select(auctionV2.count())
+                .from(auctionV2)
+                .join(auctionV2.seller, user).on(user.id.eq(userId))
+                .where(auctionV2.status.eq(PRE));
+
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+    }
+
+    /**
+     * 사용자가 좋아요한 사전 경매목록 조회
      */
     public Page<PreAuctionResponse> findLikedAuctionsByUserId(Long userId, Pageable pageable) {
         List<PreAuctionResponse> content = jpaQueryFactory.from(auctionV2)
