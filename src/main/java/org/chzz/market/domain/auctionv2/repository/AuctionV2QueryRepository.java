@@ -4,7 +4,6 @@ import static com.querydsl.core.types.dsl.Expressions.numberTemplate;
 import static org.chzz.market.common.util.QuerydslUtil.nullSafeBuilder;
 import static org.chzz.market.common.util.QuerydslUtil.nullSafeBuilderIgnore;
 import static org.chzz.market.domain.auctionv2.entity.AuctionStatus.PRE;
-import static org.chzz.market.domain.auctionv2.entity.AuctionStatus.PROCEEDING;
 import static org.chzz.market.domain.auctionv2.entity.QAuctionV2.auctionV2;
 import static org.chzz.market.domain.bid.entity.Bid.BidStatus.ACTIVE;
 import static org.chzz.market.domain.bid.entity.Bid.BidStatus.CANCELLED;
@@ -17,6 +16,7 @@ import static org.chzz.market.domain.user.entity.QUser.user;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -183,6 +183,7 @@ public class AuctionV2QueryRepository {
      * 정식 경매 목록 조회
      */
     public Page<OfficialAuctionResponse> findOfficialAuctions(Long userId, Category category, AuctionStatus status,
+                                                              Integer endWithinSeconds,
                                                               Pageable pageable) {
         List<OfficialAuctionResponse> content = jpaQueryFactory.from(auctionV2)
                 .select(
@@ -202,7 +203,8 @@ public class AuctionV2QueryRepository {
                 .join(auctionV2.seller, user)
                 .leftJoin(bid).on(bid.auctionId.eq(auctionV2.id).and(bidderIdEq(userId)).and(bid.status.eq(ACTIVE)))
                 .leftJoin(auctionV2.images, imageV2).on(imageV2.sequence.eq(1))
-                .where(categoryEqIgnoreNull(category).and(auctionV2.status.eq(status)))
+                .where(categoryEqIgnoreNull(category).and(auctionV2.status.eq(status))
+                        .and(timeRemainingIgnoreNull(endWithinSeconds)))
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -210,7 +212,8 @@ public class AuctionV2QueryRepository {
 
         JPAQuery<Long> countQuery = jpaQueryFactory.select(auctionV2.count())
                 .from(auctionV2)
-                .where(categoryEqIgnoreNull(category).and(auctionV2.status.eq(PROCEEDING)));
+                .where(categoryEqIgnoreNull(category).and(auctionV2.status.eq(status))
+                        .and(timeRemainingIgnoreNull(endWithinSeconds)));
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
@@ -248,10 +251,15 @@ public class AuctionV2QueryRepository {
         return nullSafeBuilderIgnore(() -> auctionV2.category.eq(category));
     }
 
+    private BooleanExpression timeRemainingIgnoreNull(Integer endWithinSeconds) {
+        return endWithinSeconds != null ? timeRemaining().between(0, endWithinSeconds) : null;
+    }
+
     private static NumberExpression<Integer> timeRemaining() {
         return numberTemplate(Integer.class,
                 "GREATEST(0, TIMESTAMPDIFF(SECOND, CURRENT_TIMESTAMP, {0}))", auctionV2.endDateTime); // 음수면 0으로 처리
     }
+
 
     @Getter
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -259,6 +267,7 @@ public class AuctionV2QueryRepository {
         POPULARITY("popularity-v2", auctionV2.bidCount.desc()),
         EXPENSIVE("expensive-v2", auctionV2.minPrice.desc()),
         CHEAP("cheap-v2", auctionV2.minPrice.asc()),
+        IMMEDIATELY("immediately-v2", timeRemaining().asc()),
         NEWEST("newest-v2", auctionV2.createdAt.desc());
 
         private final String name;
