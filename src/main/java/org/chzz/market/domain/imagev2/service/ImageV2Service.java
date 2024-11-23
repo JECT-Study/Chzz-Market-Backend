@@ -15,6 +15,7 @@ import org.chzz.market.domain.image.error.exception.ImageException;
 import org.chzz.market.domain.image.service.S3ImageUploader;
 import org.chzz.market.domain.imagev2.repository.ImageV2Repository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,8 +27,8 @@ public class ImageV2Service {
 
     private final ImageV2Repository imageRepository;
     private final S3ImageUploader s3ImageUploader;
-    
-    @TransactionalEventListener
+
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     public void uploadImages(final ImageUploadEvent event) {
         Map<String, MultipartFile> buffer = setImageBuffer(event);
 
