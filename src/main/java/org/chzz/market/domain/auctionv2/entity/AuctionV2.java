@@ -158,4 +158,12 @@ public class AuctionV2 extends BaseTimeEntity {
     public void addImages(final List<ImageV2> images) {
         this.images.addAll(images);
     }
+
+    public void endAuction() {
+        this.status = ENDED;
+    }
+
+    public void assignWinner(final Long bidderId) {
+        this.winnerId = bidderId;
+    }
 }
