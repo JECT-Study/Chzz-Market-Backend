@@ -3,7 +3,9 @@ package org.chzz.market.domain.auctionv2.repository;
 import static com.querydsl.core.types.dsl.Expressions.numberTemplate;
 import static org.chzz.market.common.util.QuerydslUtil.nullSafeBuilder;
 import static org.chzz.market.common.util.QuerydslUtil.nullSafeBuilderIgnore;
+import static org.chzz.market.domain.auctionv2.entity.AuctionStatus.ENDED;
 import static org.chzz.market.domain.auctionv2.entity.AuctionStatus.PRE;
+import static org.chzz.market.domain.auctionv2.entity.AuctionStatus.PROCEEDING;
 import static org.chzz.market.domain.auctionv2.entity.QAuctionV2.auctionV2;
 import static org.chzz.market.domain.bid.entity.Bid.BidStatus.ACTIVE;
 import static org.chzz.market.domain.bid.entity.Bid.BidStatus.CANCELLED;
@@ -19,6 +21,8 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
@@ -29,12 +33,16 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.util.QuerydslOrder;
 import org.chzz.market.common.util.QuerydslOrderProvider;
+import org.chzz.market.domain.auctionv2.dto.response.EndedAuctionResponse;
+import org.chzz.market.domain.auctionv2.dto.response.LostAuctionResponse;
 import org.chzz.market.domain.auctionv2.dto.response.OfficialAuctionDetailResponse;
 import org.chzz.market.domain.auctionv2.dto.response.OfficialAuctionResponse;
 import org.chzz.market.domain.auctionv2.dto.response.PreAuctionDetailResponse;
 import org.chzz.market.domain.auctionv2.dto.response.PreAuctionResponse;
+import org.chzz.market.domain.auctionv2.dto.response.ProceedingAuctionResponse;
 import org.chzz.market.domain.auctionv2.dto.response.QWonAuctionDetailsResponse;
 import org.chzz.market.domain.auctionv2.dto.response.WonAuctionDetailsResponse;
+import org.chzz.market.domain.auctionv2.dto.response.WonAuctionResponse;
 import org.chzz.market.domain.auctionv2.entity.AuctionStatus;
 import org.chzz.market.domain.auctionv2.entity.Category;
 import org.chzz.market.domain.bid.entity.QBid;
@@ -281,6 +289,148 @@ public class AuctionV2QueryRepository {
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
 
+    /**
+     * 사용자가 등록한 진행 중인 경매 목록 조회
+     */
+    public Page<ProceedingAuctionResponse> findProceedingAuctionsByUserId(Long userId, Pageable pageable) {
+        JPAQuery<?> baseQuery = jpaQueryFactory.from(auctionV2)
+                .join(auctionV2.seller, user).on(user.id.eq(userId))
+                .where(auctionV2.status.eq(PROCEEDING));
+
+        List<ProceedingAuctionResponse> content = baseQuery
+                .select(
+                        Projections.constructor(
+                                ProceedingAuctionResponse.class,
+                                auctionV2.id,
+                                auctionV2.name,
+                                imageV2.cdnPath,
+                                auctionV2.minPrice.longValue(),
+                                userIdEq(userId),
+                                timeRemaining().longValue(),
+                                auctionV2.status,
+                                auctionV2.bidCount,
+                                auctionV2.createdAt
+                        )
+                )
+                .leftJoin(auctionV2.images, imageV2).on(imageV2.sequence.eq(1))
+                .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        JPAQuery<Long> countQuery = baseQuery.select(auctionV2.count());
+
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+    }
+
+    /**
+     * 사용자가 등록한 종료된 경매 목록 조회
+     */
+    public Page<EndedAuctionResponse> findEndedAuctionsByUserId(Long userId, Pageable pageable) {
+        JPAQuery<?> baseQuery = jpaQueryFactory.from(auctionV2)
+                .join(auctionV2.seller, user).on(user.id.eq(userId))
+                .where(auctionV2.status.eq(ENDED));
+
+        List<EndedAuctionResponse> content = baseQuery
+                .select(
+                        Projections.constructor(
+                                EndedAuctionResponse.class,
+                                auctionV2.id,
+                                auctionV2.name,
+                                imageV2.cdnPath,
+                                auctionV2.minPrice.longValue(),
+                                userIdEq(userId),
+                                auctionV2.bidCount,
+                                getWinningBidAmount(),
+                                auctionV2.winnerId.isNotNull(),
+                                orderV2.isNotNull(),
+                                auctionV2.createdAt
+                        )
+                )
+                .leftJoin(auctionV2.images, imageV2).on(imageV2.sequence.eq(1))
+                .leftJoin(orderV2).on(orderV2.auction.eq(auctionV2))
+                .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        JPAQuery<Long> countQuery = baseQuery.select(auctionV2.count());
+
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+    }
+
+    /**
+     * 사용자가 낙찰한 경매 목록 조회
+     */
+    public Page<WonAuctionResponse> findWonAuctionsByUserId(Long userId, Pageable pageable) {
+        JPAQuery<?> baseQuery = jpaQueryFactory.from(auctionV2)
+                .join(bid).on(bid.auctionId.eq(auctionV2.id).and(bid.bidderId.eq(userId).and(bid.status.eq(ACTIVE))))
+                .where(auctionV2.winnerId.eq(userId).and(auctionV2.status.eq(ENDED)));
+
+        List<WonAuctionResponse> content = baseQuery
+                .select(
+                        Projections.constructor(
+                                WonAuctionResponse.class,
+                                auctionV2.id,
+                                auctionV2.name,
+                                imageV2.cdnPath,
+                                auctionV2.minPrice.longValue(),
+                                userIdEq(userId),
+                                auctionV2.bidCount,
+                                auctionV2.endDateTime,
+                                bid.amount,
+                                orderV2.isNotNull(),
+                                orderV2.id
+                        )
+                )
+                .join(auctionV2.seller, user)
+                .leftJoin(orderV2).on(orderV2.auction.id.eq(auctionV2.id))
+                .leftJoin(auctionV2.images, imageV2).on(imageV2.sequence.eq(1))
+                .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        JPAQuery<Long> countQuery = baseQuery.select(auctionV2.count());
+
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+    }
+
+
+    /**
+     * 사용자가 낙찰 실패한 경매 목록 조회
+     */
+    public Page<LostAuctionResponse> findLostAuctionsByUserId(Long userId, Pageable pageable) {
+        JPAQuery<?> baseQuery = jpaQueryFactory.from(auctionV2)
+                .join(bid).on(bid.auctionId.eq(auctionV2.id).and(bid.bidderId.eq(userId).and(bid.status.eq(ACTIVE))))
+                .where(auctionV2.winnerId.ne(userId).and(auctionV2.status.eq(ENDED)));
+
+        List<LostAuctionResponse> content = baseQuery
+                .select(
+                        Projections.constructor(
+                                LostAuctionResponse.class,
+                                auctionV2.id,
+                                auctionV2.name,
+                                imageV2.cdnPath,
+                                auctionV2.minPrice.longValue(),
+                                userIdEq(userId),
+                                auctionV2.bidCount,
+                                auctionV2.endDateTime,
+                                bid.amount
+                        )
+                )
+                .join(auctionV2.seller, user)
+                .leftJoin(auctionV2.images, imageV2).on(imageV2.sequence.eq(1))
+                .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        JPAQuery<Long> countQuery = baseQuery.select(auctionV2.count());
+
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+    }
+
     private List<ImageResponse> getImagesByAuctionId(Long auctionId) {
         return jpaQueryFactory
                 .select(new QImageResponse(imageV2.id, imageV2.cdnPath))
@@ -321,6 +471,15 @@ public class AuctionV2QueryRepository {
     private static NumberExpression<Integer> timeRemaining() {
         return numberTemplate(Integer.class,
                 "GREATEST(0, TIMESTAMPDIFF(SECOND, CURRENT_TIMESTAMP, {0}))", auctionV2.endDateTime); // 음수면 0으로 처리
+    }
+
+    private JPQLQuery<Long> getWinningBidAmount() {
+        return JPAExpressions.select(bid.amount.max().coalesce(0L))
+                .from(bid)
+                .where(
+                        bid.auctionId.eq(auctionV2.id),
+                        bid.status.eq(ACTIVE)
+                );
     }
 
     @Getter
