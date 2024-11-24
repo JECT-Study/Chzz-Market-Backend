@@ -131,6 +131,7 @@ public class AuctionV2 extends BaseTimeEntity {
             throw new AuctionException(AUCTION_ALREADY_OFFICIAL);
         }
         this.status = PROCEEDING;
+        this.endDateTime = LocalDateTime.now().plusDays(1);
     }
 
     public String getFirstImageCdnPath() {

@@ -3,7 +3,6 @@ package org.chzz.market.domain.auctionv2.service;
 import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.AUCTION_NOT_FOUND;
 import static org.chzz.market.domain.notification.entity.NotificationType.AUCTION_START;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +34,7 @@ public class AuctionStartService {
                 .orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
         auction.validateOwner(userId);
         auction.startOfficialAuction();
-        eventPublisher.publishEvent(new AuctionRegistrationEvent(auction.getId(), LocalDateTime.now().plusDays(1)));
+        eventPublisher.publishEvent(new AuctionRegistrationEvent(auction.getId(), auction.getEndDateTime()));
         processStartNotification(auction);
         log.info("{}번 경매 정식경매 전환완료", auctionId);
     }
