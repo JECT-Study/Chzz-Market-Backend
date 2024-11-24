@@ -1,7 +1,7 @@
 package org.chzz.market.domain.auctionv2.controller;
 
-import static org.chzz.market.domain.user.error.UserErrorCode.Const.USER_NOT_FOUND;
 import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.Const.END_WITHIN_MINUTES_PARAM_ALLOWED_FOR_PROCEEDING_ONLY;
+import static org.chzz.market.domain.user.error.UserErrorCode.Const.USER_NOT_FOUND;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -11,8 +11,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 import org.chzz.market.common.config.LoginUser;
 import org.chzz.market.common.springdoc.ApiExceptionExplanation;
@@ -20,12 +20,16 @@ import org.chzz.market.common.springdoc.ApiResponseExplanations;
 import org.chzz.market.common.validation.annotation.NotEmptyMultipartList;
 import org.chzz.market.domain.auctionv2.dto.request.RegisterRequest;
 import org.chzz.market.domain.auctionv2.dto.response.CategoryResponse;
+import org.chzz.market.domain.auctionv2.dto.response.EndedAuctionResponse;
+import org.chzz.market.domain.auctionv2.dto.response.LostAuctionResponse;
 import org.chzz.market.domain.auctionv2.dto.response.OfficialAuctionResponse;
 import org.chzz.market.domain.auctionv2.dto.response.PreAuctionResponse;
+import org.chzz.market.domain.auctionv2.dto.response.ProceedingAuctionResponse;
+import org.chzz.market.domain.auctionv2.dto.response.WonAuctionResponse;
 import org.chzz.market.domain.auctionv2.entity.AuctionStatus;
 import org.chzz.market.domain.auctionv2.entity.Category;
-import org.chzz.market.domain.user.error.UserErrorCode;
 import org.chzz.market.domain.auctionv2.error.AuctionErrorCode;
+import org.chzz.market.domain.user.error.UserErrorCode;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -73,13 +77,13 @@ public interface AuctionV2Api {
 
     @Operation(summary = "사용자가 등록한 진행중인 경매 목록 조회", description = "사용자가 등록한 진행중인 경매 목록을 조회합니다.")
     @GetMapping("/users/proceeding")
-    ResponseEntity<Page<?>> getUserProceedingAuctionList(@LoginUser Long userId,
-                                                         @ParameterObject @PageableDefault(sort = "newest") Pageable pageable);
+    ResponseEntity<Page<ProceedingAuctionResponse>> getUserProceedingAuctionList(@LoginUser Long userId,
+                                                                                 @ParameterObject @PageableDefault(sort = "newest-v2") Pageable pageable);
 
     @Operation(summary = "사용자가 등록한 종료된 경매 목록 조회", description = "사용자가 등록한 종료된 경매 목록을 조회합니다.")
     @GetMapping("/users/ended")
-    ResponseEntity<Page<?>> getUserEndedAuctionList(@LoginUser Long userId,
-                                                    @ParameterObject @PageableDefault(sort = "newest") Pageable pageable);
+    ResponseEntity<Page<EndedAuctionResponse>> getUserEndedAuctionList(@LoginUser Long userId,
+                                                                       @ParameterObject @PageableDefault(sort = "newest-v2") Pageable pageable);
 
     @Operation(summary = "사용자가 등록한 사전 경매 목록 조회", description = "사용자가 등록한 사전 경매 목록을 조회합니다.")
     @GetMapping("/users/pre")
@@ -88,18 +92,18 @@ public interface AuctionV2Api {
 
     @Operation(summary = "사용자가 낙찰한 경매 목록 조회", description = "사용자가 낙찰한 경매 목록을 조회합니다.")
     @GetMapping("/users/won")
-    ResponseEntity<Page<?>> getUserWonAuctionList(@LoginUser Long userId,
-                                                  @ParameterObject @PageableDefault(sort = "newest") Pageable pageable);
+    ResponseEntity<Page<WonAuctionResponse>> getUserWonAuctionList(@LoginUser Long userId,
+                                                                   @ParameterObject @PageableDefault(sort = "newest-v2") Pageable pageable);
 
     @Operation(summary = "사용자가 낙찰실패한 경매 목록 조회", description = "사용자가 낙찰실패한 경매 목록을 조회합니다.")
     @GetMapping("/users/lost")
-    ResponseEntity<Page<?>> getUserLostAuctionList(@LoginUser Long userId,
-                                                   @ParameterObject @PageableDefault(sort = "newest") Pageable pageable);
+    ResponseEntity<Page<LostAuctionResponse>> getUserLostAuctionList(@LoginUser Long userId,
+                                                                     @ParameterObject @PageableDefault(sort = "newest-v2") Pageable pageable);
 
     @Operation(summary = "사용자가 좋아요(찜)한 경매 목록 조회", description = "사용자가 좋아요(찜)한 경매 목록을 조회합니다.")
     @GetMapping("/users/likes")
     ResponseEntity<Page<PreAuctionResponse>> getLikedAuctionList(@LoginUser Long userId,
-                                                                 @ParameterObject @PageableDefault(sort = "newest") Pageable pageable);
+                                                                 @ParameterObject @PageableDefault(sort = "newest-v2") Pageable pageable);
 
     @Operation(summary = "경매 등록", description = "경매를 등록합니다.")
     @ApiResponseExplanations(
@@ -108,18 +112,10 @@ public interface AuctionV2Api {
             }
     )
     @PostMapping
-    ResponseEntity<Void> registerAuction(@LoginUser
-                                         Long userId,
-
-                                         @RequestPart("request")
-                                         @Valid
-                                         RegisterRequest request,
-
-                                         @RequestPart(value = "images")
-                                         @Valid
-                                         @NotEmptyMultipartList
-                                         @Size(max = 5, message = "이미지는 5장 이내로만 업로드 가능합니다.")
-                                         List<MultipartFile> images);
+    ResponseEntity<Void> registerAuction(@LoginUser Long userId,
+                                         @RequestPart("request") @Valid RegisterRequest request,
+                                         @RequestPart(value = "images") @Valid
+                                         @NotEmptyMultipartList @Size(max = 5, message = "이미지는 5장 이내로만 업로드 가능합니다.") List<MultipartFile> images);
 
     @Operation(summary = "경매 테스트 등록", description = "테스트 등록합니다.")
     @PostMapping("/test")

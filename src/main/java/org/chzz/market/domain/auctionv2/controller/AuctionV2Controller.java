@@ -10,7 +10,11 @@ import org.chzz.market.common.validation.annotation.NotEmptyMultipartList;
 import org.chzz.market.domain.auctionv2.dto.AuctionRegisterType;
 import org.chzz.market.domain.auctionv2.dto.request.RegisterRequest;
 import org.chzz.market.domain.auctionv2.dto.response.CategoryResponse;
+import org.chzz.market.domain.auctionv2.dto.response.EndedAuctionResponse;
+import org.chzz.market.domain.auctionv2.dto.response.LostAuctionResponse;
 import org.chzz.market.domain.auctionv2.dto.response.PreAuctionResponse;
+import org.chzz.market.domain.auctionv2.dto.response.ProceedingAuctionResponse;
+import org.chzz.market.domain.auctionv2.dto.response.WonAuctionResponse;
 import org.chzz.market.domain.auctionv2.entity.AuctionStatus;
 import org.chzz.market.domain.auctionv2.entity.Category;
 import org.chzz.market.domain.auctionv2.service.AuctionCategoryService;
@@ -68,18 +72,18 @@ public class AuctionV2Controller implements AuctionV2Api {
      */
     @Override
     @GetMapping("/users/proceeding")
-    public ResponseEntity<Page<?>> getUserProceedingAuctionList(@LoginUser Long userId,
-                                                                @PageableDefault(sort = "newest") Pageable pageable) {
-        return null;
+    public ResponseEntity<Page<ProceedingAuctionResponse>> getUserProceedingAuctionList(@LoginUser Long userId,
+                                                                                        @PageableDefault(sort = "newest-v2") Pageable pageable) {
+        return ResponseEntity.ok(auctionMyService.getUserProceedingAuctionList(userId, pageable));
     }
 
     /**
      * 사용자가 등록한 종료된 경매 목록 조회
      */
     @Override
-    public ResponseEntity<Page<?>> getUserEndedAuctionList(@LoginUser Long userId,
-                                                           @PageableDefault(sort = "newest") Pageable pageable) {
-        return null;
+    public ResponseEntity<Page<EndedAuctionResponse>> getUserEndedAuctionList(@LoginUser Long userId,
+                                                                              @PageableDefault(sort = "newest-v2") Pageable pageable) {
+        return ResponseEntity.ok(auctionMyService.getUserEndedAuctionList(userId, pageable));
     }
 
     /**
@@ -96,18 +100,18 @@ public class AuctionV2Controller implements AuctionV2Api {
      * 사용자가 낙찰한 경매 목록 조회
      */
     @Override
-    public ResponseEntity<Page<?>> getUserWonAuctionList(@LoginUser Long userId,
-                                                         @PageableDefault(sort = "newest") Pageable pageable) {
-        return null;
+    public ResponseEntity<Page<WonAuctionResponse>> getUserWonAuctionList(@LoginUser Long userId,
+                                                                          @PageableDefault(sort = "newest-v2") Pageable pageable) {
+        return ResponseEntity.ok(auctionMyService.getUserWonAuctionList(userId, pageable));
     }
 
     /**
      * 사용자가 낙찰실패한 경매 목록 조회
      */
     @Override
-    public ResponseEntity<Page<?>> getUserLostAuctionList(@LoginUser Long userId,
-                                                          @PageableDefault(sort = "newest") Pageable pageable) {
-        return null;
+    public ResponseEntity<Page<LostAuctionResponse>> getUserLostAuctionList(@LoginUser Long userId,
+                                                                            @PageableDefault(sort = "newest-v2") Pageable pageable) {
+        return ResponseEntity.ok(auctionMyService.getUserLostAuctionList(userId, pageable));
     }
 
     /**
@@ -125,18 +129,10 @@ public class AuctionV2Controller implements AuctionV2Api {
      */
     @Override
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<Void> registerAuction(@LoginUser
-                                                Long userId,
-
-                                                @RequestPart("request")
-                                                @Valid
-                                                RegisterRequest request,
-
-                                                @RequestPart(value = "images")
-                                                @Valid
-                                                @NotEmptyMultipartList
-                                                @Size(max = 5, message = "이미지는 5장 이내로만 업로드 가능합니다.")
-                                                List<MultipartFile> images) {
+    public ResponseEntity<Void> registerAuction(@LoginUser Long userId,
+                                                @RequestPart("request") @Valid RegisterRequest request,
+                                                @RequestPart(value = "images") @Valid
+                                                @NotEmptyMultipartList @Size(max = 5, message = "이미지는 5장 이내로만 업로드 가능합니다.") List<MultipartFile> images) {
         AuctionRegisterType type = request.auctionRegisterType();
         type.getService().register(userId, request, images);//요청 타입에 따라 다른 서비스 호출
         return ResponseEntity.status(HttpStatus.CREATED).build();
