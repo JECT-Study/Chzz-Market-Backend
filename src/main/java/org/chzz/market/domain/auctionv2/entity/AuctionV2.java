@@ -131,6 +131,7 @@ public class AuctionV2 extends BaseTimeEntity {
             throw new AuctionException(AUCTION_ALREADY_OFFICIAL);
         }
         this.status = PROCEEDING;
+        this.endDateTime = LocalDateTime.now().plusDays(1);
     }
 
     public String getFirstImageCdnPath() {
@@ -153,5 +154,17 @@ public class AuctionV2 extends BaseTimeEntity {
 
     public boolean isAboveMinPrice(Long amount) {
         return amount >= minPrice;
+    }
+
+    public void addImages(final List<ImageV2> images) {
+        this.images.addAll(images);
+    }
+
+    public void endAuction() {
+        this.status = ENDED;
+    }
+
+    public void assignWinner(final Long bidderId) {
+        this.winnerId = bidderId;
     }
 }

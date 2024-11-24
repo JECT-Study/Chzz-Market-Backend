@@ -2,11 +2,13 @@ package org.chzz.market.domain.auctionv2.controller;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.config.LoginUser;
-import org.chzz.market.domain.auction.dto.request.BaseRegisterRequest;
-import org.chzz.market.domain.auction.dto.response.RegisterResponse;
+import org.chzz.market.common.validation.annotation.NotEmptyMultipartList;
+import org.chzz.market.domain.auctionv2.dto.AuctionRegisterType;
+import org.chzz.market.domain.auctionv2.dto.request.RegisterRequest;
 import org.chzz.market.domain.auctionv2.dto.response.CategoryResponse;
 import org.chzz.market.domain.auctionv2.dto.response.PreAuctionResponse;
 import org.chzz.market.domain.auctionv2.entity.AuctionStatus;
@@ -19,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -121,11 +124,22 @@ public class AuctionV2Controller implements AuctionV2Api {
      * 경매 등록
      */
     @Override
-    @PostMapping
-    public ResponseEntity<RegisterResponse> registerAuction(@LoginUser Long userId,
-                                                            @RequestPart("request") @Valid BaseRegisterRequest request,
-                                                            @RequestPart(value = "images") List<MultipartFile> images) {
-        return null;
+    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<Void> registerAuction(@LoginUser
+                                                Long userId,
+
+                                                @RequestPart("request")
+                                                @Valid
+                                                RegisterRequest request,
+
+                                                @RequestPart(value = "images")
+                                                @Valid
+                                                @NotEmptyMultipartList
+                                                @Size(max = 5, message = "이미지는 5장 이내로만 업로드 가능합니다.")
+                                                List<MultipartFile> images) {
+        AuctionRegisterType type = request.auctionRegisterType();
+        type.getService().register(userId, request, images);//요청 타입에 따라 다른 서비스 호출
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     /**

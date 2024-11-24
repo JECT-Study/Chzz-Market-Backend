@@ -6,6 +6,7 @@ import static org.chzz.market.domain.notification.entity.NotificationType.AUCTIO
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.chzz.market.domain.auctionv2.dto.AuctionRegistrationEvent;
 import org.chzz.market.domain.auctionv2.entity.AuctionV2;
 import org.chzz.market.domain.auctionv2.error.AuctionException;
 import org.chzz.market.domain.auctionv2.repository.AuctionV2Repository;
@@ -33,6 +34,7 @@ public class AuctionStartService {
                 .orElseThrow(() -> new AuctionException(AUCTION_NOT_FOUND));
         auction.validateOwner(userId);
         auction.startOfficialAuction();
+        eventPublisher.publishEvent(new AuctionRegistrationEvent(auction.getId(), auction.getEndDateTime()));
         processStartNotification(auction);
         log.info("{}번 경매 정식경매 전환완료", auctionId);
     }
