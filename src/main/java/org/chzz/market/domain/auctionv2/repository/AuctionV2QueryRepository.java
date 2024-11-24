@@ -150,7 +150,10 @@ public class AuctionV2QueryRepository {
      * 사전 경매 목록 조회
      */
     public Page<PreAuctionResponse> findPreAuctions(Long userId, Category category, Pageable pageable) {
-        List<PreAuctionResponse> content = jpaQueryFactory
+        JPAQuery<?> baseQuery = jpaQueryFactory.from(auctionV2)
+                .where(categoryEqIgnoreNull(category).and(auctionV2.status.eq(PRE)));
+
+        List<PreAuctionResponse> content = baseQuery
                 .select(
                         Projections.constructor(
                                 PreAuctionResponse.class,
@@ -163,19 +166,15 @@ public class AuctionV2QueryRepository {
                                 likeV2.id.isNotNull()
                         )
                 )
-                .from(auctionV2)
                 .join(auctionV2.seller, user)
                 .leftJoin(auctionV2.images, imageV2).on(imageV2.sequence.eq(1))
                 .leftJoin(likeV2).on(likeV2.auctionId.eq(auctionV2.id).and(likeUserIdEq(userId)))
-                .where(categoryEqIgnoreNull(category).and(auctionV2.status.eq(PRE)))
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        JPAQuery<Long> countQuery = jpaQueryFactory.select(auctionV2.count())
-                .from(auctionV2)
-                .where(categoryEqIgnoreNull(category).and(auctionV2.status.eq(PRE)));
+        JPAQuery<Long> countQuery = baseQuery.select(auctionV2.count());
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
@@ -186,7 +185,11 @@ public class AuctionV2QueryRepository {
     public Page<OfficialAuctionResponse> findOfficialAuctions(Long userId, Category category, AuctionStatus status,
                                                               Integer endWithinSeconds,
                                                               Pageable pageable) {
-        List<OfficialAuctionResponse> content = jpaQueryFactory
+        JPAQuery<?> baseQuery = jpaQueryFactory.from(auctionV2)
+                .where(categoryEqIgnoreNull(category).and(auctionV2.status.eq(status))
+                        .and(timeRemainingIgnoreNull(endWithinSeconds)));
+
+        List<OfficialAuctionResponse> content = baseQuery
                 .select(
                         Projections.constructor(
                                 OfficialAuctionResponse.class,
@@ -200,21 +203,15 @@ public class AuctionV2QueryRepository {
                                 bid.id.isNotNull()
                         )
                 )
-                .from(auctionV2)
                 .join(auctionV2.seller, user)
                 .leftJoin(bid).on(bid.auctionId.eq(auctionV2.id).and(bidderIdEq(userId)).and(bid.status.eq(ACTIVE)))
                 .leftJoin(auctionV2.images, imageV2).on(imageV2.sequence.eq(1))
-                .where(categoryEqIgnoreNull(category).and(auctionV2.status.eq(status))
-                        .and(timeRemainingIgnoreNull(endWithinSeconds)))
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        JPAQuery<Long> countQuery = jpaQueryFactory.select(auctionV2.count())
-                .from(auctionV2)
-                .where(categoryEqIgnoreNull(category).and(auctionV2.status.eq(status))
-                        .and(timeRemainingIgnoreNull(endWithinSeconds)));
+        JPAQuery<Long> countQuery = baseQuery.select(auctionV2.count());
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
@@ -223,7 +220,11 @@ public class AuctionV2QueryRepository {
      * 사용자가 등록한 사전경매 목록 조회
      */
     public Page<PreAuctionResponse> findPreAuctionsByUserId(Long userId, Pageable pageable) {
-        List<PreAuctionResponse> content = jpaQueryFactory
+        JPAQuery<?> baseQuery = jpaQueryFactory.from(auctionV2)
+                .join(auctionV2.seller, user).on(user.id.eq(userId))
+                .where(auctionV2.status.eq(PRE));
+
+        List<PreAuctionResponse> content = baseQuery
                 .select(
                         Projections.constructor(
                                 PreAuctionResponse.class,
@@ -236,19 +237,13 @@ public class AuctionV2QueryRepository {
                                 Expressions.FALSE
                         )
                 )
-                .from(auctionV2)
-                .join(auctionV2.seller, user).on(user.id.eq(userId))
                 .leftJoin(auctionV2.images, imageV2).on(imageV2.sequence.eq(1))
-                .where(auctionV2.status.eq(PRE))
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        JPAQuery<Long> countQuery = jpaQueryFactory.select(auctionV2.count())
-                .from(auctionV2)
-                .join(auctionV2.seller, user).on(user.id.eq(userId))
-                .where(auctionV2.status.eq(PRE));
+        JPAQuery<Long> countQuery = baseQuery.select(auctionV2.count());
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
@@ -257,7 +252,11 @@ public class AuctionV2QueryRepository {
      * 사용자가 좋아요한 사전 경매목록 조회
      */
     public Page<PreAuctionResponse> findLikedAuctionsByUserId(Long userId, Pageable pageable) {
-        List<PreAuctionResponse> content = jpaQueryFactory
+        JPAQuery<?> baseQuery = jpaQueryFactory.from(auctionV2)
+                .leftJoin(likeV2).on(likeV2.auctionId.eq(auctionV2.id).and(likeV2.userId.eq(userId)))
+                .where(auctionV2.status.eq(PRE));
+
+        List<PreAuctionResponse> content = baseQuery
                 .select(
                         Projections.constructor(
                                 PreAuctionResponse.class,
@@ -270,20 +269,14 @@ public class AuctionV2QueryRepository {
                                 likeV2.id.isNotNull()
                         )
                 )
-                .from(auctionV2)
                 .join(auctionV2.seller, user)
                 .leftJoin(auctionV2.images, imageV2).on(imageV2.sequence.eq(1))
-                .leftJoin(likeV2).on(likeV2.auctionId.eq(auctionV2.id).and(likeV2.userId.eq(userId)))
-                .where(auctionV2.status.eq(PRE))
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        JPAQuery<Long> countQuery = jpaQueryFactory.select(auctionV2.count())
-                .from(auctionV2)
-                .leftJoin(likeV2).on(likeV2.auctionId.eq(auctionV2.id).and(likeV2.userId.eq(userId)))
-                .where(auctionV2.status.eq(PRE));
+        JPAQuery<Long> countQuery = baseQuery.select(auctionV2.count());
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
