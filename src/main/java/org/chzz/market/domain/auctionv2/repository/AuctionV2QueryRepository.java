@@ -253,7 +253,7 @@ public class AuctionV2QueryRepository {
      */
     public Page<PreAuctionResponse> findLikedAuctionsByUserId(Long userId, Pageable pageable) {
         JPAQuery<?> baseQuery = jpaQueryFactory.from(auctionV2)
-                .leftJoin(likeV2).on(likeV2.auctionId.eq(auctionV2.id).and(likeV2.userId.eq(userId)))
+                .join(likeV2).on(likeV2.auctionId.eq(auctionV2.id).and(likeV2.userId.eq(userId)))
                 .where(auctionV2.status.eq(PRE));
 
         List<PreAuctionResponse> content = baseQuery
