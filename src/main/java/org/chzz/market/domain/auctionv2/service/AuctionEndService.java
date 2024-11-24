@@ -14,7 +14,7 @@ import org.chzz.market.domain.auctionv2.error.AuctionErrorCode;
 import org.chzz.market.domain.auctionv2.error.AuctionException;
 import org.chzz.market.domain.auctionv2.repository.AuctionV2Repository;
 import org.chzz.market.domain.bid.entity.Bid;
-import org.chzz.market.domain.bid.repository.BidRepository;
+import org.chzz.market.domain.bid.repository.BidQueryRepository;
 import org.chzz.market.domain.notification.event.NotificationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
@@ -25,7 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AuctionEndService {
     private final AuctionV2Repository auctionV2Repository;
-    private final BidRepository bidRepository;
+    private final BidQueryRepository bidRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
@@ -44,7 +44,7 @@ public class AuctionEndService {
         Long sellerId = auction.getSeller().getId();
         String productName = auction.getName();
         String firstImageCdnPath = auction.getFirstImageCdnPath();
-        List<Bid> bids = bidRepository.findByAuctionIdOrderByAmountDesc(auction.getId());
+        List<Bid> bids = bidRepository.findAllBidsByAuction(auction);
 
         if (bids.isEmpty()) { // 입찰이 없는 경우
             eventPublisher.publishEvent(
