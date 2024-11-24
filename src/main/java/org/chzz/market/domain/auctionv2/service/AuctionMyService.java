@@ -1,7 +1,11 @@
 package org.chzz.market.domain.auctionv2.service;
 
 import lombok.RequiredArgsConstructor;
+import org.chzz.market.domain.auctionv2.dto.response.EndedAuctionResponse;
+import org.chzz.market.domain.auctionv2.dto.response.LostAuctionResponse;
 import org.chzz.market.domain.auctionv2.dto.response.PreAuctionResponse;
+import org.chzz.market.domain.auctionv2.dto.response.ProceedingAuctionResponse;
+import org.chzz.market.domain.auctionv2.dto.response.WonAuctionResponse;
 import org.chzz.market.domain.auctionv2.repository.AuctionV2QueryRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,4 +32,31 @@ public class AuctionMyService {
         return auctionQueryRepository.findLikedAuctionsByUserId(userId, pageable);
     }
 
+    /**
+     * 사용자가 등록한 진행 중인 경매 목록 조회
+     */
+    public Page<ProceedingAuctionResponse> getUserProceedingAuctionList(Long userId, Pageable pageable) {
+        return auctionQueryRepository.findProceedingAuctionsByUserId(userId, pageable);
+    }
+
+    /**
+     * 사용자가 등록한 종료된 경매 목록 조회
+     */
+    public Page<EndedAuctionResponse> getUserEndedAuctionList(Long userId, Pageable pageable) {
+        return auctionQueryRepository.findEndedAuctionsByUserId(userId, pageable);
+    }
+
+    /**
+     * 사용자가 낙찰 성공한 경매 목록 조회
+     */
+    public Page<WonAuctionResponse> getUserWonAuctionList(Long userId, Pageable pageable) {
+        return auctionQueryRepository.findWonAuctionsByUserId(userId, pageable);
+    }
+
+    /**
+     * 사용자가 낙찰 실패한 경매 목록 조회
+     */
+    public Page<LostAuctionResponse> getUserLostAuctionList(Long userId, Pageable pageable) {
+        return auctionQueryRepository.findLostAuctionsByUserId(userId, pageable);
+    }
 }
