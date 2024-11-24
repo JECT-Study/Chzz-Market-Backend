@@ -150,7 +150,7 @@ public class AuctionV2QueryRepository {
      * 사전 경매 목록 조회
      */
     public Page<PreAuctionResponse> findPreAuctions(Long userId, Category category, Pageable pageable) {
-        List<PreAuctionResponse> content = jpaQueryFactory.from(auctionV2)
+        List<PreAuctionResponse> content = jpaQueryFactory
                 .select(
                         Projections.constructor(
                                 PreAuctionResponse.class,
@@ -186,7 +186,7 @@ public class AuctionV2QueryRepository {
     public Page<OfficialAuctionResponse> findOfficialAuctions(Long userId, Category category, AuctionStatus status,
                                                               Integer endWithinSeconds,
                                                               Pageable pageable) {
-        List<OfficialAuctionResponse> content = jpaQueryFactory.from(auctionV2)
+        List<OfficialAuctionResponse> content = jpaQueryFactory
                 .select(
                         Projections.constructor(
                                 OfficialAuctionResponse.class,
@@ -223,7 +223,7 @@ public class AuctionV2QueryRepository {
      * 사용자가 등록한 사전경매 목록 조회
      */
     public Page<PreAuctionResponse> findPreAuctionsByUserId(Long userId, Pageable pageable) {
-        List<PreAuctionResponse> content = jpaQueryFactory.from(auctionV2)
+        List<PreAuctionResponse> content = jpaQueryFactory
                 .select(
                         Projections.constructor(
                                 PreAuctionResponse.class,
@@ -257,7 +257,7 @@ public class AuctionV2QueryRepository {
      * 사용자가 좋아요한 사전 경매목록 조회
      */
     public Page<PreAuctionResponse> findLikedAuctionsByUserId(Long userId, Pageable pageable) {
-        List<PreAuctionResponse> content = jpaQueryFactory.from(auctionV2)
+        List<PreAuctionResponse> content = jpaQueryFactory
                 .select(
                         Projections.constructor(
                                 PreAuctionResponse.class,
