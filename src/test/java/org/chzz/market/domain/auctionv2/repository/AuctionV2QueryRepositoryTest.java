@@ -5,10 +5,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import org.chzz.market.domain.auctionv2.dto.response.EndedAuctionResponse;
+import org.chzz.market.domain.auctionv2.dto.response.LostAuctionResponse;
 import org.chzz.market.domain.auctionv2.dto.response.OfficialAuctionDetailResponse;
 import org.chzz.market.domain.auctionv2.dto.response.OfficialAuctionResponse;
 import org.chzz.market.domain.auctionv2.dto.response.PreAuctionResponse;
+import org.chzz.market.domain.auctionv2.dto.response.ProceedingAuctionResponse;
 import org.chzz.market.domain.auctionv2.dto.response.WonAuctionDetailsResponse;
+import org.chzz.market.domain.auctionv2.dto.response.WonAuctionResponse;
 import org.chzz.market.domain.auctionv2.entity.AuctionStatus;
 import org.chzz.market.domain.auctionv2.entity.AuctionV2;
 import org.chzz.market.domain.auctionv2.entity.Category;
@@ -52,17 +56,17 @@ class AuctionV2QueryRepositoryTest {
     private LikeV2Repository likeV2Repository;
 
     private User seller;
-    private User user;
+    private User user, user1;
     private ImageV2 defaultImage;
 
     @BeforeEach
     void setUp() {
         seller = User.builder().email("seller").providerId("seller").providerType(User.ProviderType.KAKAO).build();
         user = User.builder().email("user").providerId("user").providerType(User.ProviderType.KAKAO).build();
+        user1 = User.builder().email("user1").providerId("user1").providerType(User.ProviderType.KAKAO).build();
         defaultImage = ImageV2.builder().cdnPath("https://cdn.com").sequence(1).build();
 
-        userRepository.save(seller);
-        userRepository.save(user);
+        userRepository.saveAll(List.of(seller, user, user1));
     }
 
     private AuctionV2 createAuction(User seller, String name, String description, AuctionStatus status, Long winnerId,
@@ -495,5 +499,143 @@ class AuctionV2QueryRepositoryTest {
             assertThat(response2.getIsSeller()).isTrue();
             assertThat(response2.getIsLiked()).isFalse();
         }
+
+        @Test
+        void 사용자가_등록한_진행중인_경매_목록_조회() {
+            // Given
+            AuctionV2 auction1 = createAuction(seller, "맥북프로", "맥북프로 2019년형 팝니다.", AuctionStatus.PROCEEDING, null,
+                    1000);
+            AuctionV2 auction2 = createAuction(seller, "아이패드", "아이패드 2021년형 팝니다.", AuctionStatus.PROCEEDING, null,
+                    2000);
+            AuctionV2 auction3 = createAuction(user, "갤럭시탭", "갤럭시탭 S7 팝니다.", AuctionStatus.PROCEEDING, null, 1500);
+            AuctionV2 auction4 = createAuction(seller, "종료 아이패드", "아이패드 2021년형 팝니다.", AuctionStatus.ENDED, null, 2000);
+            AuctionV2 auction5 = createAuction(seller, "사전 아이패드", "아이패드 2021년형 팝니다.", AuctionStatus.PRE, null, 2000);
+            auctionV2Repository.saveAll(List.of(auction1, auction2, auction3, auction4, auction5));
+
+            Pageable pageable = PageRequest.of(0, 10, Sort.by("expensive-v2"));
+
+            // When
+            Page<ProceedingAuctionResponse> result = auctionQueryRepository.findProceedingAuctionsByUserId(
+                    seller.getId(), pageable);
+
+            // Then
+            assertThat(result).isNotNull();
+            assertThat(result.getContent()).hasSize(2);
+
+            ProceedingAuctionResponse response1 = result.getContent().get(0);
+            assertThat(response1.getProductName()).isEqualTo("아이패드");
+            assertThat(response1.getIsSeller()).isTrue();
+
+            ProceedingAuctionResponse response2 = result.getContent().get(1);
+            assertThat(response2.getProductName()).isEqualTo("맥북프로");
+            assertThat(response2.getIsSeller()).isTrue();
+        }
+
+        @Test
+        void 사용자가_등록한_종료된_경매_목록_조회() {
+            // Given
+            AuctionV2 auction1 = createAuction(seller, "맥북프로", "맥북프로 2019년형 팝니다.", AuctionStatus.ENDED, null, 1000);
+            AuctionV2 auction2 = createAuction(seller, "아이패드", "아이패드 2021년형 팝니다.", AuctionStatus.ENDED, user.getId(),
+                    2000);
+            AuctionV2 auction3 = createAuction(user, "갤럭시탭", "갤럭시탭 S7 팝니다.", AuctionStatus.ENDED, null, 1500);
+            AuctionV2 auction4 = createAuction(seller, "진행중 아이패드", "아이패드 2021년형 팝니다.", AuctionStatus.PROCEEDING, null,
+                    2000);
+            AuctionV2 auction5 = createAuction(seller, "사전 아이패드", "아이패드 2021년형 팝니다.", AuctionStatus.PRE, null, 2000);
+            auctionV2Repository.saveAll(List.of(auction1, auction2, auction3, auction4, auction5));
+
+            createOrder(auction2, user, 2000L);
+
+            Pageable pageable = PageRequest.of(0, 10, Sort.by("expensive-v2"));
+
+            // When
+            Page<EndedAuctionResponse> result = auctionQueryRepository.findEndedAuctionsByUserId(
+                    seller.getId(), pageable);
+
+            // Then
+            assertThat(result).isNotNull();
+            assertThat(result.getContent()).hasSize(2);
+
+            EndedAuctionResponse response1 = result.getContent().get(0);
+            assertThat(response1.getProductName()).isEqualTo("아이패드");
+            assertThat(response1.getIsSeller()).isTrue();
+            assertThat(response1.getIsWon()).isTrue();
+            assertThat(response1.getIsOrdered()).isTrue();
+
+            EndedAuctionResponse response2 = result.getContent().get(1);
+            assertThat(response2.getProductName()).isEqualTo("맥북프로");
+            assertThat(response2.getIsSeller()).isTrue();
+            assertThat(response2.getIsWon()).isFalse();
+            assertThat(response2.getIsOrdered()).isFalse();
+        }
+
+        @Test
+        void 사용자가_낙찰한_경매_목록_조회() {
+            // given
+            AuctionV2 auction1 = createAuction(seller, "맥북프로", "맥북프로 2019년형 팝니다.", AuctionStatus.ENDED, user.getId(),
+                    1000);
+            AuctionV2 auction2 = createAuction(seller, "아이패드", "아이패드 2021년형 팝니다.", AuctionStatus.ENDED, user.getId(),
+                    2000);
+            AuctionV2 auction3 = createAuction(seller, "갤럭시탭", "갤럭시탭 S7 팝니다.", AuctionStatus.ENDED, null, 1500);
+            auctionV2Repository.saveAll(List.of(auction1, auction2, auction3));
+
+            // 사용자의 입찰 생성
+            createBid(user, auction1, 2000L, Bid.BidStatus.ACTIVE);
+            createBid(user, auction2, 3000L, Bid.BidStatus.ACTIVE);
+            createOrder(auction1, user, 2000L);
+
+            Pageable pageable = PageRequest.of(0, 10, Sort.by("expensive-v2"));
+
+            // When
+            Page<WonAuctionResponse> result = auctionQueryRepository.findWonAuctionsByUserId(
+                    user.getId(), pageable);
+
+            // Then
+            assertThat(result).isNotNull();
+            assertThat(result.getContent()).hasSize(2);
+
+            WonAuctionResponse response1 = result.getContent().get(0);
+            assertThat(response1.getProductName()).isEqualTo("아이패드");
+            assertThat(response1.getIsOrdered()).isFalse();
+            assertThat(response1.getWinningAmount()).isEqualTo(3000L);
+
+            WonAuctionResponse response2 = result.getContent().get(1);
+            assertThat(response2.getProductName()).isEqualTo("맥북프로");
+            assertThat(response2.getIsOrdered()).isTrue();
+            assertThat(response2.getWinningAmount()).isEqualTo(2000L);
+        }
+
+        @Test
+        void 사용자가_낙찰_실패한_경매_목록_조회() {
+            // given
+            AuctionV2 auction1 = createAuction(seller, "맥북프로", "맥북프로 2019년형 팝니다.", AuctionStatus.ENDED, user1.getId(),
+                    1000);
+            AuctionV2 auction2 = createAuction(seller, "아이패드", "아이패드 2021년형 팝니다.", AuctionStatus.ENDED, user1.getId(),
+                    2000);
+            auctionV2Repository.saveAll(List.of(auction1, auction2));
+
+            // 사용자의 입찰 생성 (하지만 낙찰되지 않음)
+            createBid(user, auction1, 1000L, Bid.BidStatus.ACTIVE);
+            createBid(user1, auction1, 2000L, Bid.BidStatus.ACTIVE);
+            createBid(user, auction2, 2000L, Bid.BidStatus.ACTIVE);
+            createBid(user1, auction2, 3000L, Bid.BidStatus.ACTIVE);
+
+            Pageable pageable = PageRequest.of(0, 10, Sort.by("expensive-v2"));
+
+            // when
+            Page<LostAuctionResponse> result = auctionQueryRepository.findLostAuctionsByUserId(
+                    user.getId(), pageable);
+
+            // Then
+            assertThat(result).isNotNull();
+            assertThat(result.getContent()).hasSize(2);
+
+            LostAuctionResponse response1 = result.getContent().get(0);
+            assertThat(response1.getProductName()).isEqualTo("아이패드");
+
+            LostAuctionResponse response2 = result.getContent().get(1);
+            assertThat(response2.getProductName()).isEqualTo("맥북프로");
+        }
+
+
     }
 }
