@@ -6,6 +6,7 @@ import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.Const.AUCT
 import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.Const.AUCTION_NOT_FOUND;
 import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.Const.INVALID_IMAGE_COUNT;
 import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.Const.MAX_IMAGE_COUNT_EXCEEDED;
+import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.Const.NOT_A_PRE_AUCTION;
 import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.Const.NOW_WINNER;
 import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.Const.NO_IMAGES_PROVIDED;
 import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.Const.OFFICIAL_AUCTION_DELETE_FORBIDDEN;
@@ -102,6 +103,7 @@ public interface AuctionDetailApi {
                     @ApiExceptionExplanation(value = AuctionErrorCode.class, constant = MAX_IMAGE_COUNT_EXCEEDED, name = "이미지가 5장 이상인 경우"),
                     @ApiExceptionExplanation(value = AuctionErrorCode.class, constant = INVALID_IMAGE_COUNT, name = "이미지 수량이 1개 미만인 경우"),
                     @ApiExceptionExplanation(value = AuctionErrorCode.class, constant = NO_IMAGES_PROVIDED, name = "업로드 이후 이미지 갯수에 문제가 발생한 경우"),
+                    @ApiExceptionExplanation(value = AuctionErrorCode.class, constant = NOT_A_PRE_AUCTION, name = "사전 경매가 아닌 경매를 업데이트 시도하는 경우"),
             }
     )
     ResponseEntity<UpdateAuctionResponse> updateAuction(@LoginUser Long userId,

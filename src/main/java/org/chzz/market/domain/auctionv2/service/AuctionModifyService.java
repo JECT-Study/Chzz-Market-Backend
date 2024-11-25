@@ -36,7 +36,7 @@ public class AuctionModifyService {
 
         // 경매 등록 상태 유무 유효성 검사
         if(!auction.isPreAuction()){
-            throw new AuctionException(AuctionErrorCode.AUCTION_ENDED);
+            throw new AuctionException(AuctionErrorCode.NOT_A_PRE_AUCTION);
         }
 
         // 상품 정보 업데이트
