@@ -43,7 +43,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
-@Tag(name = "auctions(v2)", description = "V2 경매 API")
+@Tag(name = "auctions", description = "경매 API")
 public interface AuctionDetailApi {
     @Operation(summary = "특정 경매 상세 조회", description = "특정 경매 상세 정보를 조회합니다.")
     @ApiResponses(value = {

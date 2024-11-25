@@ -32,7 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/v2/auctions/{auctionId}")
+@RequestMapping("/v1/auctions/{auctionId}")
 public class AuctionDetailController implements AuctionDetailApi {
     private final AuctionDetailService auctionDetailService;
     private final AuctionDeleteService auctionDeleteService;
