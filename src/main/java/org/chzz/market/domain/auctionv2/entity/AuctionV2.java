@@ -30,6 +30,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.chzz.market.domain.auctionv2.dto.request.UpdateAuctionRequest;
+import org.chzz.market.domain.auctionv2.error.AuctionErrorCode;
 import org.chzz.market.domain.auctionv2.error.AuctionException;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
 import org.chzz.market.domain.image.entity.ImageV2;
@@ -166,5 +168,25 @@ public class AuctionV2 extends BaseTimeEntity {
 
     public void assignWinner(final Long bidderId) {
         this.winnerId = bidderId;
+    }
+
+    public void update(final UpdateAuctionRequest request) {
+        this.name = request.getProductName();
+        this.description = request.getDescription();
+        this.category = request.getCategory();
+        this.minPrice = request.getMinPrice();
+    }
+
+    public void validateImageSize() {
+        int count = this.images.size();
+        if (count < 1) {
+            throw new AuctionException(AuctionErrorCode.NO_IMAGES_PROVIDED);
+        } else if (count > 5) {
+            throw new AuctionException(AuctionErrorCode.MAX_IMAGE_COUNT_EXCEEDED);
+        }
+    }
+
+    public void removeImages(final List<ImageV2> imagesToRemove) {
+        this.images.removeAll(imagesToRemove);
     }
 }
