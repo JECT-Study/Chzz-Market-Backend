@@ -23,6 +23,7 @@ import org.chzz.market.domain.image.entity.ImageV2;
 import org.chzz.market.domain.image.error.exception.ImageException;
 import org.chzz.market.domain.image.service.S3ImageUploader;
 import org.chzz.market.domain.imagev2.repository.ImageV2Repository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -35,6 +36,9 @@ import org.springframework.web.multipart.MultipartFile;
 public class ImageV2Service {
     private static final List<String> ALLOWED_EXTENSIONS = Arrays.asList("jpg", "jpeg", "png", "webp");
 
+    @Value("${cloud.aws.cloudfront.domain}")
+    private String cloudfrontDomain;
+
     private final ImageV2Repository imageRepository;
     private final S3ImageUploader s3ImageUploader;
 
@@ -46,7 +50,7 @@ public class ImageV2Service {
 
         AuctionV2 auction = event.auction();
 
-        List<ImageV2> list = createImages(auction,paths);
+        List<ImageV2> list = createImages(auction, paths);
 
         auction.addImages(list);
 
@@ -63,8 +67,7 @@ public class ImageV2Service {
     }
 
     /**
-     * key - unique한 이미지 파일명 <br/>
-     * value - 해당 파일의 {@link MultipartFile}
+     * key - unique한 이미지 파일명 <br/> value - 해당 파일의 {@link MultipartFile}
      */
     private Map<String, MultipartFile> setImageBuffer(final ImageUploadEvent event) {
         Map<String, MultipartFile> imageBuffer = new HashMap<>();
@@ -79,10 +82,10 @@ public class ImageV2Service {
      * @param paths 업로드된 이미지의 cdn 경로들
      * @return cdn과 순서를 적용한 {@link ImageV2} list
      */
-    private List<ImageV2> createImages(final AuctionV2 auction,final List<String> paths) {
+    private List<ImageV2> createImages(final AuctionV2 auction, final List<String> paths) {
         return IntStream.range(0, paths.size())
                 .mapToObj(i -> ImageV2.builder()
-                        .cdnPath(paths.get(i))
+                        .cdnPath(cloudfrontDomain + "/" + paths.get(i))
                         .sequence((i + 1))
                         .auction(auction)
                         .build())
@@ -106,6 +109,7 @@ public class ImageV2Service {
 
     /**
      * 파일 확장자 검증기 <br/>
+     *
      * @param extension 파일 확장자
      */
     private boolean isValidFileExtension(String extension) {
@@ -189,7 +193,7 @@ public class ImageV2Service {
                     String cdnPath = s3ImageUploader.uploadImage(multipartFile, uniqueFileName);
                     return ImageV2.builder()
                             .sequence(sequence)
-                            .cdnPath(cdnPath)
+                            .cdnPath(cloudfrontDomain + "/" + cdnPath)
                             .auction(auction)
                             .build();
                 }).toList();
