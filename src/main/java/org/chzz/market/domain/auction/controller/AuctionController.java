@@ -1,5 +1,6 @@
 package org.chzz.market.domain.auction.controller;
 
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
@@ -52,8 +53,9 @@ public class AuctionController implements AuctionApi {
     public ResponseEntity<Page<?>> getAuctionList(@LoginUser Long userId,
                                                   @RequestParam(required = false) Category category,
                                                   @RequestParam(required = false, defaultValue = "proceeding") AuctionStatus status,
+                                                  @Parameter(description = "경매 종료까지 남은 시간 (분) (1분 이상이어야 함)")
                                                   @RequestParam(required = false) @Min(value = 1, message = "minutes는 1 이상의 값이어야 합니다.") Integer minutes,
-                                                  @PageableDefault(sort = "newest-v2") Pageable pageable) {
+                                                  @PageableDefault(sort = "newest") Pageable pageable) {
         return ResponseEntity.ok(
                 auctionLookupService.getAuctionList(userId, category, status, minutes, pageable));
     }
@@ -73,7 +75,7 @@ public class AuctionController implements AuctionApi {
     @Override
     @GetMapping("/users/proceeding")
     public ResponseEntity<Page<ProceedingAuctionResponse>> getUserProceedingAuctionList(@LoginUser Long userId,
-                                                                                        @PageableDefault(sort = "newest-v2") Pageable pageable) {
+                                                                                        @PageableDefault(sort = "newest") Pageable pageable) {
         return ResponseEntity.ok(auctionMyService.getUserProceedingAuctionList(userId, pageable));
     }
 
@@ -82,7 +84,7 @@ public class AuctionController implements AuctionApi {
      */
     @Override
     public ResponseEntity<Page<EndedAuctionResponse>> getUserEndedAuctionList(@LoginUser Long userId,
-                                                                              @PageableDefault(sort = "newest-v2") Pageable pageable) {
+                                                                              @PageableDefault(sort = "newest") Pageable pageable) {
         return ResponseEntity.ok(auctionMyService.getUserEndedAuctionList(userId, pageable));
     }
 
@@ -92,7 +94,7 @@ public class AuctionController implements AuctionApi {
     @Override
     @GetMapping("/users/pre")
     public ResponseEntity<Page<PreAuctionResponse>> getUserPreAuctionList(@LoginUser Long userId,
-                                                                          @PageableDefault(sort = "newest-v2") Pageable pageable) {
+                                                                          @PageableDefault(sort = "newest") Pageable pageable) {
         return ResponseEntity.ok(auctionMyService.getUserPreAuctionList(userId, pageable));
     }
 
@@ -101,7 +103,7 @@ public class AuctionController implements AuctionApi {
      */
     @Override
     public ResponseEntity<Page<WonAuctionResponse>> getUserWonAuctionList(@LoginUser Long userId,
-                                                                          @PageableDefault(sort = "newest-v2") Pageable pageable) {
+                                                                          @PageableDefault(sort = "newest") Pageable pageable) {
         return ResponseEntity.ok(auctionMyService.getUserWonAuctionList(userId, pageable));
     }
 
@@ -110,7 +112,7 @@ public class AuctionController implements AuctionApi {
      */
     @Override
     public ResponseEntity<Page<LostAuctionResponse>> getUserLostAuctionList(@LoginUser Long userId,
-                                                                            @PageableDefault(sort = "newest-v2") Pageable pageable) {
+                                                                            @PageableDefault(sort = "newest") Pageable pageable) {
         return ResponseEntity.ok(auctionMyService.getUserLostAuctionList(userId, pageable));
     }
 
@@ -120,7 +122,7 @@ public class AuctionController implements AuctionApi {
     @Override
     @GetMapping("/users/likes")
     public ResponseEntity<Page<PreAuctionResponse>> getLikedAuctionList(@LoginUser Long userId,
-                                                                        @PageableDefault(sort = "newest-v2") Pageable pageable) {
+                                                                        @PageableDefault(sort = "newest") Pageable pageable) {
         return ResponseEntity.ok(auctionMyService.getLikedAuctionList(userId, pageable));
     }
 

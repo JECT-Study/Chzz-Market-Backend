@@ -69,7 +69,7 @@ public interface AuctionApi {
     ResponseEntity<Page<?>> getAuctionList(@LoginUser Long userId, @RequestParam(required = false) Category category,
                                            @RequestParam(required = false, defaultValue = "proceeding") AuctionStatus status,
                                            @RequestParam(required = false) @Min(value = 1, message = "minutes는 1 이상의 값이어야 합니다.") Integer minutes,
-                                           @ParameterObject @PageableDefault(sort = "newest-v2") Pageable pageable);
+                                           @ParameterObject @PageableDefault(sort = "newest") Pageable pageable);
 
     @Operation(summary = "경매 카테고리 조회", description = "경매 카테고리 목록을 조회합니다.")
     @GetMapping("/categories")
@@ -78,32 +78,32 @@ public interface AuctionApi {
     @Operation(summary = "사용자가 등록한 진행중인 경매 목록 조회", description = "사용자가 등록한 진행중인 경매 목록을 조회합니다.")
     @GetMapping("/users/proceeding")
     ResponseEntity<Page<ProceedingAuctionResponse>> getUserProceedingAuctionList(@LoginUser Long userId,
-                                                                                 @ParameterObject @PageableDefault(sort = "newest-v2") Pageable pageable);
+                                                                                 @ParameterObject @PageableDefault(sort = "newest") Pageable pageable);
 
     @Operation(summary = "사용자가 등록한 종료된 경매 목록 조회", description = "사용자가 등록한 종료된 경매 목록을 조회합니다.")
     @GetMapping("/users/ended")
     ResponseEntity<Page<EndedAuctionResponse>> getUserEndedAuctionList(@LoginUser Long userId,
-                                                                       @ParameterObject @PageableDefault(sort = "newest-v2") Pageable pageable);
+                                                                       @ParameterObject @PageableDefault(sort = "newest") Pageable pageable);
 
     @Operation(summary = "사용자가 등록한 사전 경매 목록 조회", description = "사용자가 등록한 사전 경매 목록을 조회합니다.")
     @GetMapping("/users/pre")
     ResponseEntity<Page<PreAuctionResponse>> getUserPreAuctionList(@LoginUser Long userId,
-                                                                   @ParameterObject @PageableDefault(sort = "newest-v2") Pageable pageable);
+                                                                   @ParameterObject @PageableDefault(sort = "newest") Pageable pageable);
 
     @Operation(summary = "사용자가 낙찰한 경매 목록 조회", description = "사용자가 낙찰한 경매 목록을 조회합니다.")
     @GetMapping("/users/won")
     ResponseEntity<Page<WonAuctionResponse>> getUserWonAuctionList(@LoginUser Long userId,
-                                                                   @ParameterObject @PageableDefault(sort = "newest-v2") Pageable pageable);
+                                                                   @ParameterObject @PageableDefault(sort = "newest") Pageable pageable);
 
     @Operation(summary = "사용자가 낙찰실패한 경매 목록 조회", description = "사용자가 낙찰실패한 경매 목록을 조회합니다.")
     @GetMapping("/users/lost")
     ResponseEntity<Page<LostAuctionResponse>> getUserLostAuctionList(@LoginUser Long userId,
-                                                                     @ParameterObject @PageableDefault(sort = "newest-v2") Pageable pageable);
+                                                                     @ParameterObject @PageableDefault(sort = "newest") Pageable pageable);
 
     @Operation(summary = "사용자가 좋아요(찜)한 경매 목록 조회", description = "사용자가 좋아요(찜)한 경매 목록을 조회합니다.")
     @GetMapping("/users/likes")
     ResponseEntity<Page<PreAuctionResponse>> getLikedAuctionList(@LoginUser Long userId,
-                                                                 @ParameterObject @PageableDefault(sort = "newest-v2") Pageable pageable);
+                                                                 @ParameterObject @PageableDefault(sort = "newest") Pageable pageable);
 
     @Operation(summary = "경매 등록", description = "경매를 등록합니다.")
     @ApiResponseExplanations(
