@@ -15,15 +15,18 @@ import static org.chzz.market.domain.order.entity.QOrder.order;
 import static org.chzz.market.domain.user.entity.QUser.user;
 
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Ops.DateTimeOps;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimeOperation;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import lombok.AccessLevel;
@@ -47,6 +50,7 @@ import org.chzz.market.domain.auction.entity.Category;
 import org.chzz.market.domain.bid.entity.QBid;
 import org.chzz.market.domain.image.dto.response.ImageResponse;
 import org.chzz.market.domain.image.dto.response.QImageResponse;
+import org.chzz.market.domain.user.dto.response.ParticipationCountsResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
@@ -428,6 +432,61 @@ public class AuctionQueryRepository {
         JPAQuery<Long> countQuery = baseQuery.select(auction.count());
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+    }
+
+    /**
+     * 사용자가 참여한 경매 통계 조회
+     */
+    public ParticipationCountsResponse getParticipationCounts(Long userId) {
+        DateTimeOperation<LocalDateTime> now = Expressions.dateTimeOperation(LocalDateTime.class,
+                DateTimeOps.CURRENT_TIMESTAMP);
+
+        BooleanExpression isEnded = auction.status.eq(ENDED)
+                .and(auction.endDateTime.before(now));
+
+        // 사용자가 참여한 경매 ID 목록을 가져옵니다.
+        List<Long> participatedAuctionIds = jpaQueryFactory
+                .select(auction.id)
+                .from(auction)
+                .join(bid).on(bid.auctionId.eq(auction.id))
+                .where(bid.bidderId.eq(userId)
+                        .and(bid.status.eq(ACTIVE)))
+                .fetch();
+
+        BooleanExpression isParticipatedAuction = auction.id.in(participatedAuctionIds);
+
+        Long proceedingCount = Optional.ofNullable(jpaQueryFactory
+                        .select(auction.count())
+                        .from(auction)
+                        .where(isParticipatedAuction
+                                .and(auction.status.eq(PROCEEDING))
+                                .and(auction.endDateTime.after(now)))
+                        .fetchFirst())
+                .orElse(0L);
+
+        Long successCount = Optional.ofNullable(jpaQueryFactory
+                        .select(auction.count())
+                        .from(auction)
+                        .where(isParticipatedAuction
+                                .and(auction.winnerId.eq(userId))
+                                .and(isEnded))
+                        .fetchFirst())
+                .orElse(0L);
+
+        Long failureCount = Optional.ofNullable(jpaQueryFactory
+                        .select(auction.count())
+                        .from(auction)
+                        .where(isParticipatedAuction
+                                .and(auction.winnerId.ne(userId))
+                                .and(isEnded))
+                        .fetchFirst())
+                .orElse(0L);
+
+        return new ParticipationCountsResponse(
+                proceedingCount,
+                successCount,
+                failureCount
+        );
     }
 
     private List<ImageResponse> getImagesByAuctionId(Long auctionId) {

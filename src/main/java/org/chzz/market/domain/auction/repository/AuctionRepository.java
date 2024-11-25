@@ -26,4 +26,6 @@ public interface AuctionRepository extends JpaRepository<Auction, Long> {
     @Modifying
     @Query("UPDATE Auction a SET a.bidCount = a.bidCount - 1 WHERE a.id = :auctionId AND a.bidCount > 0")
     void decrementBidCount(Long auctionId);
+
+    long countBySellerIdAndStatusIn(Long userId, AuctionStatus... status);
 }

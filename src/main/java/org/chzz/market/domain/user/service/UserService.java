@@ -5,11 +5,15 @@ import static org.chzz.market.domain.user.error.UserErrorCode.USER_NOT_FOUND;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.chzz.market.domain.auction.entity.AuctionStatus;
+import org.chzz.market.domain.auction.repository.AuctionQueryRepository;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.image.service.ImageService;
 import org.chzz.market.domain.user.dto.request.UpdateUserProfileRequest;
 import org.chzz.market.domain.user.dto.request.UserCreateRequest;
 import org.chzz.market.domain.user.dto.response.NicknameAvailabilityResponse;
+import org.chzz.market.domain.user.dto.response.ParticipationCountsResponse;
+import org.chzz.market.domain.user.dto.response.UserProfileResponse;
 import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.error.exception.UserException;
 import org.chzz.market.domain.user.repository.UserRepository;
@@ -25,21 +29,20 @@ public class UserService {
     private final ImageService imageService;
     private final UserRepository userRepository;
     private final AuctionRepository auctionRepository;
-//    private final ProductRepository productRepository;
+    private final AuctionQueryRepository auctionQueryRepository;
 
-//    /**
-//     * 사용자 프로필 조회 (유저 ID 기반)
-//     */
-//    public UserProfileResponse getUserProfileById(Long userId) {
-//        return getUserProfileInternal(findUserById(userId), true);
-//    }
-//
-//    /**
-//     * 사용자 프로필 조회 (닉네임 기반)
-//     */
-//    public UserProfileResponse getUserProfileByNickname(String nickname) {
-//        return getUserProfileInternal(findUserByNickname(nickname), false);
-//    }
+    /**
+     * 사용자 프로필 조회 (유저 ID 기반)
+     */
+    public UserProfileResponse getUserProfileById(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserException(USER_NOT_FOUND));
+        long preAuctionCount = auctionRepository.countBySellerIdAndStatusIn(userId, AuctionStatus.PRE);
+        long officialAuctionCount = auctionRepository.countBySellerIdAndStatusIn(userId, AuctionStatus.PROCEEDING,
+                AuctionStatus.ENDED);
+        ParticipationCountsResponse counts = auctionQueryRepository.getParticipationCounts(userId);
+        return UserProfileResponse.of(user, counts, preAuctionCount, officialAuctionCount);
+    }
 
     /**
      * 닉네임 이용가능 체크
@@ -89,34 +92,6 @@ public class UserService {
         log.info("profileImageUrl = {}", profileImageUrl);
         // 프로필 정보 업데이트
         existingUser.updateProfile(request, profileImageUrl);
-    }
-
-    /**
-     * 내 프로필 조회
-     */
-//    private UserProfileResponse getUserProfileInternal(User user, boolean includeProviderType) {
-//        long preRegisterCount = productRepository.countPreRegisteredProductsByUserId(user.getId());
-//        long registeredAuctionCount = auctionRepository.countByProductUserId(user.getId());
-//
-//        ParticipationCountsResponse counts = auctionRepository.getParticipationCounts(user.getId());
-//
-//        return UserProfileResponse.of(user, counts, preRegisterCount, registeredAuctionCount, includeProviderType);
-//    }
-
-    /**
-     * 닉네임으로 사용자 조회
-     */
-    private User findUserByNickname(String nickname) {
-        return userRepository.findByNickname(nickname)
-                .orElseThrow(() -> new UserException(USER_NOT_FOUND));
-    }
-
-    /**
-     * ID로 사용자 조회
-     */
-    private User findUserById(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new UserException(USER_NOT_FOUND));
     }
 
     /**

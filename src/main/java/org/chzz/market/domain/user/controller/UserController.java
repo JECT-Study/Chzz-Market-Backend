@@ -16,6 +16,7 @@ import org.chzz.market.domain.token.service.TokenService;
 import org.chzz.market.domain.user.dto.request.UpdateUserProfileRequest;
 import org.chzz.market.domain.user.dto.request.UserCreateRequest;
 import org.chzz.market.domain.user.dto.response.NicknameAvailabilityResponse;
+import org.chzz.market.domain.user.dto.response.UserProfileResponse;
 import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.service.UserService;
 import org.hibernate.validator.constraints.Length;
@@ -51,20 +52,11 @@ public class UserController implements UserApi {
     /**
      * 사용자 프로필 조회 (유저 ID 기반)
      */
-//    @Override
-//    @GetMapping
-//    public ResponseEntity<UserProfileResponse> getUserProfileById(@LoginUser Long userId) {
-//        return ResponseEntity.ok(userService.getUserProfileById(userId));
-//    }
-//
-//    /**
-//     * 사용자 프로필 조회 (닉네임 기반) 현재 사용 X
-//     */
-//    @Override
-//    @GetMapping("/{nickname}")
-//    public ResponseEntity<UserProfileResponse> getUserProfileByNickname(@PathVariable String nickname) {
-//        return ResponseEntity.ok(userService.getUserProfileByNickname(nickname));
-//    }
+    @Override
+    @GetMapping
+    public ResponseEntity<UserProfileResponse> getUserProfileById(@LoginUser Long userId) {
+        return ResponseEntity.ok(userService.getUserProfileById(userId));
+    }
 
     /**
      * 닉네임 중복 확인
