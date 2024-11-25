@@ -4,7 +4,10 @@ import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.Const.AUCT
 import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.Const.AUCTION_ALREADY_OFFICIAL;
 import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.Const.AUCTION_NOT_ENDED;
 import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.Const.AUCTION_NOT_FOUND;
+import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.Const.INVALID_IMAGE_COUNT;
+import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.Const.MAX_IMAGE_COUNT_EXCEEDED;
 import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.Const.NOW_WINNER;
+import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.Const.NO_IMAGES_PROVIDED;
 import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.Const.OFFICIAL_AUCTION_DELETE_FORBIDDEN;
 import static org.chzz.market.domain.imagev2.error.ImageErrorCode.Const.IMAGE_DELETE_FAILED;
 
@@ -19,14 +22,14 @@ import java.util.Map;
 import org.chzz.market.common.config.LoginUser;
 import org.chzz.market.common.springdoc.ApiExceptionExplanation;
 import org.chzz.market.common.springdoc.ApiResponseExplanations;
+import org.chzz.market.domain.auctionv2.dto.request.UpdateAuctionRequest;
 import org.chzz.market.domain.auctionv2.dto.response.OfficialAuctionDetailResponse;
 import org.chzz.market.domain.auctionv2.dto.response.PreAuctionDetailResponse;
+import org.chzz.market.domain.auctionv2.dto.response.UpdateAuctionResponse;
 import org.chzz.market.domain.auctionv2.dto.response.WonAuctionDetailsResponse;
 import org.chzz.market.domain.auctionv2.error.AuctionErrorCode;
 import org.chzz.market.domain.bid.dto.response.BidInfoResponse;
 import org.chzz.market.domain.imagev2.error.ImageErrorCode;
-import org.chzz.market.domain.product.dto.UpdateProductRequest;
-import org.chzz.market.domain.product.dto.UpdateProductResponse;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -92,9 +95,18 @@ public interface AuctionDetailApi {
                                      @PathVariable Long auctionId);
 
     @Operation(summary = "특정 경매 수정", description = "특정 경매를 수정합니다.")
-    ResponseEntity<UpdateProductResponse> updateAuction(@LoginUser Long userId,
+    @ApiResponseExplanations(
+            errors = {
+                    @ApiExceptionExplanation(value = AuctionErrorCode.class, constant = AUCTION_NOT_FOUND, name = "경매를 찾을 수 없는 경우"),
+                    @ApiExceptionExplanation(value = AuctionErrorCode.class, constant = AUCTION_ACCESS_FORBIDDEN, name = "경매 수정 권한이 없는 경우"),
+                    @ApiExceptionExplanation(value = AuctionErrorCode.class, constant = MAX_IMAGE_COUNT_EXCEEDED, name = "이미지가 5장 이상인 경우"),
+                    @ApiExceptionExplanation(value = AuctionErrorCode.class, constant = INVALID_IMAGE_COUNT, name = "이미지 수량이 1개 미만인 경우"),
+                    @ApiExceptionExplanation(value = AuctionErrorCode.class, constant = NO_IMAGES_PROVIDED, name = "업로드 이후 이미지 갯수에 문제가 발생한 경우"),
+            }
+    )
+    ResponseEntity<UpdateAuctionResponse> updateAuction(@LoginUser Long userId,
                                                         @PathVariable Long auctionId,
-                                                        @RequestPart @Valid UpdateProductRequest request,
+                                                        @RequestPart @Valid UpdateAuctionRequest request,
                                                         @RequestParam(required = false) Map<String, MultipartFile> images);
 
     @Operation(summary = "특정 경매 삭제", description = "특정 경매를 삭제합니다. 삭제는 사전경매만 가능합니다.")
