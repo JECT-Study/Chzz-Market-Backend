@@ -5,16 +5,17 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.config.LoginUser;
+import org.chzz.market.domain.auctionv2.dto.request.UpdateAuctionRequest;
+import org.chzz.market.domain.auctionv2.dto.response.UpdateAuctionResponse;
 import org.chzz.market.domain.auctionv2.dto.response.WonAuctionDetailsResponse;
 import org.chzz.market.domain.auctionv2.service.AuctionDeleteService;
 import org.chzz.market.domain.auctionv2.service.AuctionDetailService;
+import org.chzz.market.domain.auctionv2.service.AuctionModifyService;
 import org.chzz.market.domain.auctionv2.service.AuctionStartService;
 import org.chzz.market.domain.auctionv2.service.AuctionWonService;
 import org.chzz.market.domain.bid.dto.response.BidInfoResponse;
 import org.chzz.market.domain.bid.service.BidLookupService;
 import org.chzz.market.domain.likev2.service.LikeUpdateService;
-import org.chzz.market.domain.product.dto.UpdateProductRequest;
-import org.chzz.market.domain.product.dto.UpdateProductResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -35,6 +36,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class AuctionDetailController implements AuctionDetailApi {
     private final AuctionDetailService auctionDetailService;
     private final AuctionDeleteService auctionDeleteService;
+    private final AuctionModifyService auctionModifyService;
     private final AuctionStartService auctionStartService;
     private final AuctionWonService auctionWonService;
     private final BidLookupService bidLookupService;
@@ -79,10 +81,12 @@ public class AuctionDetailController implements AuctionDetailApi {
 
     @Override
     @PatchMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<UpdateProductResponse> updateAuction(Long userId, Long auctionId,
-                                                               UpdateProductRequest request,
+    public ResponseEntity<UpdateAuctionResponse> updateAuction(Long userId,@PathVariable Long auctionId,
+                                                               UpdateAuctionRequest request,
                                                                Map<String, MultipartFile> images) {
-        return null;
+        UpdateAuctionResponse response =
+                auctionModifyService.updateProduct(userId, auctionId, request, images);
+        return ResponseEntity.ok(response);
     }
 
     @Override
