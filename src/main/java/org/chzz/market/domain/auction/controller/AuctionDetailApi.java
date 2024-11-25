@@ -13,6 +13,7 @@ import static org.chzz.market.domain.auction.error.AuctionErrorCode.Const.OFFICI
 import static org.chzz.market.domain.image.error.ImageErrorCode.Const.IMAGE_DELETE_FAILED;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -96,6 +97,11 @@ public interface AuctionDetailApi {
                                      @PathVariable Long auctionId);
 
     @Operation(summary = "특정 경매 수정", description = "특정 경매를 수정합니다.")
+    @Parameter(
+            name = "sequence (예: 1)",
+            description = "key: 이미지 순서(1~5), value: 업로드할 이미지 파일",
+            schema = @Schema(type = "string", format = "binary")
+    )
     @ApiResponseExplanations(
             errors = {
                     @ApiExceptionExplanation(value = AuctionErrorCode.class, constant = AUCTION_NOT_FOUND, name = "경매를 찾을 수 없는 경우"),
