@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.chzz.market.domain.auctionv2.entity.AuctionStatus;
 import org.chzz.market.domain.auctionv2.entity.Category;
-import org.chzz.market.domain.image.dto.ImageResponse;
+import org.chzz.market.domain.imagev2.dto.response.ImageResponse;
 
 @Getter
 @NoArgsConstructor

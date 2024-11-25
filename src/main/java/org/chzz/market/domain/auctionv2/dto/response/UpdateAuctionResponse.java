@@ -3,6 +3,7 @@ package org.chzz.market.domain.auctionv2.dto.response;
 import java.util.List;
 import org.chzz.market.domain.auctionv2.entity.AuctionV2;
 import org.chzz.market.domain.auctionv2.entity.Category;
+import org.chzz.market.domain.imagev2.dto.response.ImageResponse;
 
 public record UpdateAuctionResponse(
         Long auctionId,
@@ -10,7 +11,7 @@ public record UpdateAuctionResponse(
         String description,
         Category category,
         Integer minPrice,
-        List<org.chzz.market.domain.auctionv2.dto.response.ImageResponse> imageUrls
+        List<ImageResponse> imageUrls
 ) {
     public static UpdateAuctionResponse from(AuctionV2 auction) {
         return new UpdateAuctionResponse(
