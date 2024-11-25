@@ -24,7 +24,7 @@ public class AuctionModifyService {
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
-    public UpdateAuctionResponse updateProduct(Long userId, Long auctionId,
+    public UpdateAuctionResponse updateAuction(Long userId, Long auctionId,
                                                UpdateAuctionRequest request,
                                                Map<String, MultipartFile> newImages) {
         // 상품 조회

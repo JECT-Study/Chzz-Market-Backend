@@ -85,7 +85,7 @@ public class AuctionDetailController implements AuctionDetailApi {
                                                                UpdateAuctionRequest request,
                                                                Map<String, MultipartFile> images) {
         UpdateAuctionResponse response =
-                auctionModifyService.updateProduct(userId, auctionId, request, images);
+                auctionModifyService.updateAuction(userId, auctionId, request, images);
         return ResponseEntity.ok(response);
     }
 
