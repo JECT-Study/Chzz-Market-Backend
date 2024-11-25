@@ -32,9 +32,7 @@ public class AuctionModifyService {
                 .orElseThrow(() -> new AuctionException(AuctionErrorCode.AUCTION_NOT_FOUND));
 
         // 사용자 권한 체크
-        if(!auction.isOwner(userId)){
-            throw new AuctionException(AuctionErrorCode.AUCTION_ACCESS_FORBIDDEN);
-        }
+        auction.validateOwner(userId);
 
         // 경매 등록 상태 유무 유효성 검사
         if(!auction.isPreAuction()){
