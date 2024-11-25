@@ -4,10 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Comparator;
 import java.util.List;
-import org.chzz.market.domain.auctionv2.entity.AuctionStatus;
-import org.chzz.market.domain.auctionv2.entity.AuctionV2;
-import org.chzz.market.domain.auctionv2.entity.Category;
-import org.chzz.market.domain.auctionv2.repository.AuctionV2Repository;
+import org.chzz.market.domain.auction.entity.AuctionStatus;
+import org.chzz.market.domain.auction.entity.Auction;
+import org.chzz.market.domain.auction.entity.Category;
+import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.bid.dto.response.BidInfoResponse;
 import org.chzz.market.domain.bid.entity.Bid;
 import org.chzz.market.domain.bid.entity.Bid.BidStatus;
@@ -27,7 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 class BidQueryRepositoryTest {
     @Autowired
-    AuctionV2Repository auctionV2Repository;
+    AuctionRepository auctionRepository;
 
     @Autowired
     BidRepository bidRepository;
@@ -46,9 +46,9 @@ class BidQueryRepositoryTest {
         User user4 = User.builder().email("ex").providerId("ex").providerType(ProviderType.KAKAO).build();
         userRepository.saveAll(List.of(owner, user1, user2, user3, user4));
 
-        AuctionV2 auction = AuctionV2.builder().seller(owner).name("맥북프로").description("맥북프로 2019년형 팝니다.")
+        Auction auction = Auction.builder().seller(owner).name("맥북프로").description("맥북프로 2019년형 팝니다.")
                 .status(AuctionStatus.ENDED).category(Category.ELECTRONICS).winnerId(user1.getId()).build();
-        auctionV2Repository.save(auction);
+        auctionRepository.save(auction);
         Bid bid1 = Bid.builder().bidderId(user1.getId()).auctionId(auction.getId()).amount(2000L)
                 .status(BidStatus.ACTIVE).build();
         Bid bid2 = Bid.builder().bidderId(user2.getId()).auctionId(auction.getId()).amount(1000L)
@@ -76,9 +76,9 @@ class BidQueryRepositoryTest {
     void 해당경매_입찰내역이_아무것도_없을때_조회한다() {
         User owner = User.builder().email("ex").providerId("ex").providerType(ProviderType.KAKAO).build();
         userRepository.save(owner);
-        AuctionV2 auction = AuctionV2.builder().seller(owner).name("맥북프로").description("맥북프로 2019년형 팝니다.")
+        Auction auction = Auction.builder().seller(owner).name("맥북프로").description("맥북프로 2019년형 팝니다.")
                 .status(AuctionStatus.PROCEEDING).category(Category.ELECTRONICS).winnerId(null).build();
-        auctionV2Repository.save(auction);
+        auctionRepository.save(auction);
         Pageable pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "bid-amount"));
         Page<BidInfoResponse> result = bidQueryRepository.findBidsByAuctionId(auction.getId(), pageable);
         List<BidInfoResponse> content = result.getContent();

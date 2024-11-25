@@ -1,7 +1,7 @@
 package org.chzz.market.domain.bid.controller;
 
-import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.Const.AUCTION_ENDED;
-import static org.chzz.market.domain.auctionv2.error.AuctionErrorCode.Const.AUCTION_NOT_FOUND;
+import static org.chzz.market.domain.auction.error.AuctionErrorCode.Const.AUCTION_ENDED;
+import static org.chzz.market.domain.auction.error.AuctionErrorCode.Const.AUCTION_NOT_FOUND;
 import static org.chzz.market.domain.bid.error.BidErrorCode.Const.BID_ALREADY_CANCELLED;
 import static org.chzz.market.domain.bid.error.BidErrorCode.Const.BID_BELOW_MIN_PRICE;
 import static org.chzz.market.domain.bid.error.BidErrorCode.Const.BID_BY_OWNER;
@@ -15,10 +15,10 @@ import jakarta.validation.Valid;
 import org.chzz.market.common.config.LoginUser;
 import org.chzz.market.common.springdoc.ApiExceptionExplanation;
 import org.chzz.market.common.springdoc.ApiResponseExplanations;
-import org.chzz.market.domain.auctionv2.entity.AuctionStatus;
-import org.chzz.market.domain.auctionv2.error.AuctionErrorCode;
-import org.chzz.market.domain.bid.dto.BidCreateRequest;
-import org.chzz.market.domain.bid.dto.query.BiddingRecord;
+import org.chzz.market.domain.auction.entity.AuctionStatus;
+import org.chzz.market.domain.auction.error.AuctionErrorCode;
+import org.chzz.market.domain.bid.dto.request.BidCreateRequest;
+import org.chzz.market.domain.bid.dto.response.BiddingRecord;
 import org.chzz.market.domain.bid.error.BidErrorCode;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;

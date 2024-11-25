@@ -2,25 +2,31 @@ package org.chzz.market.domain.bid.repository;
 
 import static com.querydsl.core.types.dsl.Expressions.numberTemplate;
 import static org.chzz.market.common.util.QuerydslUtil.nullSafeBuilderIgnore;
-import static org.chzz.market.domain.auctionv2.entity.QAuctionV2.auctionV2;
+import static org.chzz.market.domain.auction.entity.QAuction.auction;
 import static org.chzz.market.domain.bid.entity.Bid.BidStatus.ACTIVE;
 import static org.chzz.market.domain.bid.entity.QBid.bid;
-import static org.chzz.market.domain.image.entity.QImageV2.imageV2;
+import static org.chzz.market.domain.image.entity.QImage.image;
 import static org.chzz.market.domain.user.entity.QUser.user;
 
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.chzz.market.common.util.QuerydslOrder;
 import org.chzz.market.common.util.QuerydslOrderProvider;
-import org.chzz.market.domain.auctionv2.entity.AuctionStatus;
-import org.chzz.market.domain.auctionv2.entity.AuctionV2;
-import org.chzz.market.domain.bid.dto.query.BiddingRecord;
-import org.chzz.market.domain.bid.dto.query.QBiddingRecord;
+import org.chzz.market.domain.auction.entity.Auction;
+import org.chzz.market.domain.auction.entity.AuctionStatus;
 import org.chzz.market.domain.bid.dto.response.BidInfoResponse;
+import org.chzz.market.domain.bid.dto.response.BiddingRecord;
 import org.chzz.market.domain.bid.dto.response.QBidInfoResponse;
 import org.chzz.market.domain.bid.entity.Bid;
 import org.springframework.data.domain.Page;
@@ -38,11 +44,11 @@ public class BidQueryRepository {
      * 특정 경매의 입찰 조회
      */
     public Page<BidInfoResponse> findBidsByAuctionId(Long auctionId, Pageable pageable) {
-        BooleanExpression isWinner = auctionV2.winnerId.isNotNull().and(auctionV2.winnerId.eq(user.id));
+        BooleanExpression isWinner = auction.winnerId.isNotNull().and(auction.winnerId.eq(user.id));
 
         JPAQuery<?> baseQuery = jpaQueryFactory.from(bid)
-                .join(auctionV2).on(bid.auctionId.eq(auctionV2.id)
-                        .and(auctionV2.id.eq(auctionId))
+                .join(auction).on(bid.auctionId.eq(auction.id)
+                        .and(auction.id.eq(auctionId))
                         .and(bid.status.eq(ACTIVE)));
 
         List<BidInfoResponse> content = baseQuery
@@ -69,22 +75,24 @@ public class BidQueryRepository {
         // 공통된 부분을 baseQuery로 추출
         JPAQuery<?> baseQuery = jpaQueryFactory
                 .from(bid)
-                .join(auctionV2).on(bid.auctionId.eq(auctionV2.id)
+                .join(auction).on(bid.auctionId.eq(auction.id)
                         .and(bid.bidderId.eq(userId))
                         .and(bid.status.eq(ACTIVE))
                         .and(auctionStatusEqIgnoreNull(auctionStatus)));
 
         List<BiddingRecord> result = baseQuery
-                .select(new QBiddingRecord(
-                        auctionV2.id,
-                        auctionV2.name,
-                        auctionV2.minPrice.longValue(),
-                        bid.amount,
-                        auctionV2.bidCount,
-                        imageV2.cdnPath,
-                        timeRemaining().longValue()
+                .select(Projections.constructor(
+                        BiddingRecord.class,
+                        auction.id,
+                        auction.name,
+                        image.cdnPath,
+                        auction.minPrice.longValue(),
+                        Expressions.FALSE,
+                        timeRemaining().longValue(),
+                        auction.bidCount,
+                        bid.amount
                 ))
-                .leftJoin(imageV2).on(imageV2.auction.eq(auctionV2).and(isRepresentativeImage()))
+                .leftJoin(image).on(image.auction.eq(auction).and(isRepresentativeImage()))
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -100,7 +108,7 @@ public class BidQueryRepository {
     /**
      * 특정 경매의 모든 입찰 Entity 조회
      */
-    public List<Bid> findAllBidsByAuction(AuctionV2 auction) {
+    public List<Bid> findAllBidsByAuction(Auction auction) {
         return jpaQueryFactory
                 .selectFrom(bid)
                 .where(bid.auctionId.eq(auction.getId()).and(bid.status.eq(ACTIVE)))
@@ -109,15 +117,25 @@ public class BidQueryRepository {
     }
 
     private BooleanExpression isRepresentativeImage() {
-        return imageV2.auction.eq(auctionV2).and(imageV2.sequence.eq(1));
+        return image.auction.eq(auction).and(image.sequence.eq(1));
     }
 
     private static NumberExpression<Integer> timeRemaining() {
         return numberTemplate(Integer.class,
-                "GREATEST(0, TIMESTAMPDIFF(SECOND, CURRENT_TIMESTAMP, {0}))", auctionV2.endDateTime); // 음수면 0으로 처리
+                "GREATEST(0, TIMESTAMPDIFF(SECOND, CURRENT_TIMESTAMP, {0}))", auction.endDateTime); // 음수면 0으로 처리
     }
 
     private BooleanBuilder auctionStatusEqIgnoreNull(AuctionStatus status) {
-        return nullSafeBuilderIgnore(() -> auctionV2.status.eq(status));
+        return nullSafeBuilderIgnore(() -> auction.status.eq(status));
+    }
+
+    @Getter
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    public enum BidOrder implements QuerydslOrder {
+        AMOUNT("bid-amount", bid.amount.asc()),
+        TIME_REMAINING("time-remaining", auction.endDateTime.desc());
+
+        private final String name;
+        private final OrderSpecifier<?> orderSpecifier;
     }
 }

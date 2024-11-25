@@ -1,7 +1,7 @@
 package org.chzz.market.domain.imagev2.service;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.chzz.market.domain.imagev2.error.ImageErrorCode.IMAGE_DELETE_FAILED;
+import static org.chzz.market.domain.image.error.ImageErrorCode.IMAGE_DELETE_FAILED;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -11,8 +11,9 @@ import static org.mockito.Mockito.when;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
 import java.util.List;
-import org.chzz.market.domain.image.entity.ImageV2;
-import org.chzz.market.domain.imagev2.error.exception.ImageException;
+import org.chzz.market.domain.image.entity.Image;
+import org.chzz.market.domain.image.error.exception.ImageException;
+import org.chzz.market.domain.image.service.ImageDeleteService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,8 +40,8 @@ class ImageDeleteServiceTest {
     @Test
     void 이미지_삭제_성공() {
         // given
-        ImageV2 image1 = mock(ImageV2.class);
-        ImageV2 image2 = mock(ImageV2.class);
+        Image image1 = mock(Image.class);
+        Image image2 = mock(Image.class);
 
         when(image1.getCdnPath()).thenReturn(cdnPath1);
         when(image2.getCdnPath()).thenReturn(cdnPath2);
@@ -56,7 +57,7 @@ class ImageDeleteServiceTest {
     @Test
     void S3_에러로_이미지삭제시_예외발생() {
         // given
-        ImageV2 image = mock(ImageV2.class);
+        Image image = mock(Image.class);
         when(image.getCdnPath()).thenReturn(cdnPath1);
 
         doThrow(AmazonServiceException.class).when(amazonS3Client).deleteObject(bucket, "image1.jpg");
@@ -71,7 +72,7 @@ class ImageDeleteServiceTest {
     @Test
     void 잘못된_URL_이미지_삭제시_예외발생() {
         // given
-        ImageV2 image = mock(ImageV2.class);
+        Image image = mock(Image.class);
         when(image.getCdnPath()).thenReturn("invalid-url");
 
         // when & then

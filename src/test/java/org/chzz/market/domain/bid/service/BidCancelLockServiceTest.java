@@ -11,15 +11,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import org.chzz.market.domain.auctionv2.entity.AuctionStatus;
-import org.chzz.market.domain.auctionv2.entity.AuctionV2;
-import org.chzz.market.domain.auctionv2.entity.Category;
-import org.chzz.market.domain.auctionv2.repository.AuctionV2Repository;
+import org.chzz.market.domain.auction.entity.AuctionStatus;
+import org.chzz.market.domain.auction.entity.Auction;
+import org.chzz.market.domain.auction.entity.Category;
+import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.bid.entity.Bid;
 import org.chzz.market.domain.bid.error.BidErrorCode;
 import org.chzz.market.domain.bid.error.BidException;
 import org.chzz.market.domain.bid.repository.BidRepository;
-import org.chzz.market.domain.image.entity.ImageV2;
+import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,7 +34,7 @@ class BidCancelLockServiceTest {
     private BidCancelLockService bidCancelLockService;
 
     @Autowired
-    private AuctionV2Repository auctionRepository;
+    private AuctionRepository auctionRepository;
 
     @Autowired
     private BidRepository bidRepository;
@@ -42,17 +42,17 @@ class BidCancelLockServiceTest {
     @Autowired
     private UserRepository userRepository;
 
-    private AuctionV2 auction;
+    private Auction auction;
     private User seller;
     private List<User> users;
     private List<Bid> bids;
-    private ImageV2 defaultImage;
+    private Image defaultImage;
 
     @BeforeEach
     public void setUp() {
         seller = User.builder().email("seller").providerId("seller").providerType(User.ProviderType.KAKAO).build();
         userRepository.save(seller);
-        defaultImage = ImageV2.builder().cdnPath("https://cdn.com").sequence(1).build();
+        defaultImage = Image.builder().cdnPath("https://cdn.com").sequence(1).build();
         users = IntStream.range(1, 6)
                 .mapToObj(i -> User.builder()
                         .email("user" + i + "@example.com")
@@ -97,7 +97,7 @@ class BidCancelLockServiceTest {
         executorService.shutdown();
 
         // Auction 업데이트 후 결과 검증
-        AuctionV2 updatedAuction = auctionRepository.findById(auction.getId()).orElseThrow();
+        Auction updatedAuction = auctionRepository.findById(auction.getId()).orElseThrow();
         long bidCount = updatedAuction.getBidCount();
 
         // 모든 입찰 취소 후 카운트 0 검증
@@ -138,13 +138,13 @@ class BidCancelLockServiceTest {
                 .isEqualTo(BidErrorCode.BID_ALREADY_CANCELLED);
 
         // 최종 입찰 수 확인 (4가 되어야 함)
-        AuctionV2 updatedAuction = auctionRepository.findById(auction.getId()).orElseThrow();
+        Auction updatedAuction = auctionRepository.findById(auction.getId()).orElseThrow();
         long bidCount = updatedAuction.getBidCount();
         assertThat(bidCount).isEqualTo(4);
     }
 
-    private AuctionV2 createAuction(User seller, String name, String description, AuctionStatus status, Long winnerId) {
-        AuctionV2 auction = AuctionV2.builder()
+    private Auction createAuction(User seller, String name, String description, AuctionStatus status, Long winnerId) {
+        Auction auction = Auction.builder()
                 .seller(seller)
                 .name(name)
                 .description(description)

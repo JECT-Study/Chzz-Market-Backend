@@ -15,16 +15,16 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.base.entity.BaseTimeEntity;
-import org.chzz.market.domain.product.entity.Product;
 
 @Getter
-@Builder
 @Entity
 @Table(indexes = {
-        @Index(columnList = "product_id, image_id, cdn_path")
+        @Index(name = "idx_auction_image", columnList = "image_id, cdn_path, auction_id")
 })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
 @AllArgsConstructor
 public class Image extends BaseTimeEntity {
     @Id
@@ -32,18 +32,18 @@ public class Image extends BaseTimeEntity {
     @Column(name = "image_id")
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "auction_id")
+    private Auction auction;
+
     @Column(nullable = false)
     private String cdnPath;
 
     @Column
     private int sequence;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
-    private Product product;
-
-    public void specifyProduct(Product product) {
-        this.product = product;
+    public void specifyAuction(Auction auction) {
+        this.auction = auction;
     }
 
     public void changeSequence(Integer newSequence) {

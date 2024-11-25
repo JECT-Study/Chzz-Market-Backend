@@ -1,20 +1,26 @@
 package org.chzz.market.domain.auction.dto.response;
 
-import com.querydsl.core.annotations.QueryProjection;
-
 import java.time.LocalDateTime;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-public record WonAuctionResponse (
-        Long auctionId,
-        String productName,
-        String imageUrl,
-        Integer minPrice,
-        Long participantCount,
-        LocalDateTime endDateTime,
-        Long winningAmount,
-        Boolean isOrdered,
-        Long orderId
-) {
-    @QueryProjection
-    public WonAuctionResponse {}
+@Getter
+@NoArgsConstructor
+public class WonAuctionResponse extends BaseAuctionResponse {
+    private Long participantCount;
+    private LocalDateTime endDateTime;
+    private Long winningAmount;
+    private Boolean isOrdered;
+    private Long orderId;
+
+    public WonAuctionResponse(Long auctionId, String productName, String imageUrl, Long minPrice, Boolean isSeller,
+                              Long participantCount, LocalDateTime endDateTime, Long winningAmount, Boolean isOrdered,
+                              Long orderId) {
+        super(auctionId, productName, imageUrl, minPrice, isSeller);
+        this.participantCount = participantCount;
+        this.endDateTime = endDateTime;
+        this.winningAmount = winningAmount;
+        this.isOrdered = isOrdered;
+        this.orderId = orderId;
+    }
 }

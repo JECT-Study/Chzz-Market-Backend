@@ -5,7 +5,7 @@ import static org.chzz.market.domain.bid.error.BidErrorCode.BID_NOT_FOUND;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.common.aop.redisrock.DistributedLock;
-import org.chzz.market.domain.auctionv2.repository.AuctionV2Repository;
+import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.bid.entity.Bid;
 import org.chzz.market.domain.bid.error.BidException;
 import org.chzz.market.domain.bid.repository.BidRepository;
@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class BidCancelLockService {
 
-    private final AuctionV2Repository auctionRepository;
+    private final AuctionRepository auctionRepository;
     private final BidRepository bidRepository;
 
     /**

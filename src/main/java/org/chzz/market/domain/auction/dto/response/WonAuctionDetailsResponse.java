@@ -9,5 +9,6 @@ public record WonAuctionDetailsResponse(
         Long winningAmount
 ) {
     @QueryProjection
-    public WonAuctionDetailsResponse {}
+    public WonAuctionDetailsResponse {
+    }
 }

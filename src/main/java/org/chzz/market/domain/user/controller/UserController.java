@@ -3,7 +3,6 @@ package org.chzz.market.domain.user.controller;
 import static org.chzz.market.common.filter.JWTFilter.AUTHORIZATION_HEADER;
 import static org.chzz.market.common.filter.JWTFilter.BEARER_TOKEN_PREFIX;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -17,7 +16,6 @@ import org.chzz.market.domain.token.service.TokenService;
 import org.chzz.market.domain.user.dto.request.UpdateUserProfileRequest;
 import org.chzz.market.domain.user.dto.request.UserCreateRequest;
 import org.chzz.market.domain.user.dto.response.NicknameAvailabilityResponse;
-import org.chzz.market.domain.user.dto.response.UserProfileResponse;
 import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.service.UserService;
 import org.hibernate.validator.constraints.Length;
@@ -53,27 +51,28 @@ public class UserController implements UserApi {
     /**
      * 사용자 프로필 조회 (유저 ID 기반)
      */
-    @Override
-    @GetMapping
-    public ResponseEntity<UserProfileResponse> getUserProfileById(@LoginUser Long userId) {
-        return ResponseEntity.ok(userService.getUserProfileById(userId));
-    }
-
-    /**
-     * 사용자 프로필 조회 (닉네임 기반) 현재 사용 X
-     */
-    @Override
-    @GetMapping("/{nickname}")
-    public ResponseEntity<UserProfileResponse> getUserProfileByNickname(@PathVariable String nickname) {
-        return ResponseEntity.ok(userService.getUserProfileByNickname(nickname));
-    }
+//    @Override
+//    @GetMapping
+//    public ResponseEntity<UserProfileResponse> getUserProfileById(@LoginUser Long userId) {
+//        return ResponseEntity.ok(userService.getUserProfileById(userId));
+//    }
+//
+//    /**
+//     * 사용자 프로필 조회 (닉네임 기반) 현재 사용 X
+//     */
+//    @Override
+//    @GetMapping("/{nickname}")
+//    public ResponseEntity<UserProfileResponse> getUserProfileByNickname(@PathVariable String nickname) {
+//        return ResponseEntity.ok(userService.getUserProfileByNickname(nickname));
+//    }
 
     /**
      * 닉네임 중복 확인
      */
     @Override
     @GetMapping("/check/nickname/{nickname}")
-    public ResponseEntity<NicknameAvailabilityResponse> checkNickname(@PathVariable @Length(min = 1, max = 15) String nickname) {
+    public ResponseEntity<NicknameAvailabilityResponse> checkNickname(
+            @PathVariable @Length(min = 1, max = 15) String nickname) {
         return ResponseEntity.ok((userService.checkNickname(nickname)));
     }
 
