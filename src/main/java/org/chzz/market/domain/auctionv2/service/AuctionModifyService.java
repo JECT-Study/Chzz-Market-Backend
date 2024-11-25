@@ -27,7 +27,7 @@ public class AuctionModifyService {
     public UpdateAuctionResponse updateAuction(Long userId, Long auctionId,
                                                UpdateAuctionRequest request,
                                                Map<String, MultipartFile> newImages) {
-        // 상품 조회
+        // 경매 조회
         AuctionV2 auction = auctionV2Repository.findById(auctionId)
                 .orElseThrow(() -> new AuctionException(AuctionErrorCode.AUCTION_NOT_FOUND));
 
@@ -39,7 +39,7 @@ public class AuctionModifyService {
             throw new AuctionException(AuctionErrorCode.NOT_A_PRE_AUCTION);
         }
 
-        // 상품 정보 업데이트
+        // 경매 정보 업데이트
         auction.update(request);
 
         // 이미지 업데이트 이벤트
@@ -47,7 +47,7 @@ public class AuctionModifyService {
         AuctionImageUpdateEvent event = new AuctionImageUpdateEvent(auction, request, imageBuffer);
         eventPublisher.publishEvent(event);
 
-        log.info("상품 ID {}번에 대한 사전 등록 정보를 업데이트를 완료했습니다.", auctionId);
+        log.info("경매 ID {}번에 대한 사전 등록 정보를 업데이트를 완료했습니다.", auctionId);
         return UpdateAuctionResponse.from(auction);
     }
 
