@@ -59,7 +59,7 @@ class AuctionControllerTest extends AuthenticatedRequestTest {
     @DisplayName("사전 경매 등록")
     void testPreAuctionRegistration() throws Exception {
         // when
-        mockMvc.perform(multipart("/api/v2/auctions")
+        mockMvc.perform(multipart("/api/v1/auctions")
                         .file(requestPart)
                         .file(image1)
                         .file(image2)
@@ -80,7 +80,7 @@ class AuctionControllerTest extends AuthenticatedRequestTest {
                 "images", "file", MediaType.MULTIPART_FORM_DATA_VALUE, new byte[0]
         );
         // when
-        mockMvc.perform(multipart("/api/v2/auctions")
+        mockMvc.perform(multipart("/api/v1/auctions")
                         .file(emptyImage)
                         .file(requestPart)
                         .contentType(MediaType.MULTIPART_FORM_DATA)
@@ -96,7 +96,7 @@ class AuctionControllerTest extends AuthenticatedRequestTest {
     @DisplayName("이미지가 5개 이상인 경우")
     void testRegisterAuctionWithOverImageCount() throws Exception {
         // given
-        mockMvc.perform(multipart("/api/v2/auctions")
+        mockMvc.perform(multipart("/api/v1/auctions")
                         .file(requestPart)
                         .file(image1)
                         .file(image2)
