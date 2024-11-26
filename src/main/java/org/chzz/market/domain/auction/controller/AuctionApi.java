@@ -45,7 +45,12 @@ import org.springframework.web.multipart.MultipartFile;
 @Tag(name = "auctions", description = "경매 API")
 @RequestMapping("/v1/auctions")
 public interface AuctionApi {
-    @Operation(summary = "경매 목록 조회", description = "경매 목록을 조회합니다. status 파라미터를 통해 조회 유형을 지정합니다.")
+    @Operation(
+            summary = "경매 목록 조회",
+            description = "경매 목록을 조회합니다. status 파라미터를 통해 조회 유형을 지정합니다. 정렬 기준 (sort 파라미터): " +
+                    "popularity(인기순), likes(좋아요순), expensive(높은 가격순), cheap(낮은 가격순), " +
+                    "immediately(즉시 종료순), newest(최신순)."
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "정식 경매 응답(페이징)",
                     content = {@Content(
