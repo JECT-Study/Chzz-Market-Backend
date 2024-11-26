@@ -544,6 +544,7 @@ public class AuctionQueryRepository {
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public enum AuctionOrder implements QuerydslOrder {
         POPULARITY("popularity", auction.bidCount.desc()),
+        LIKED("liked", auction.likeCount.desc()),
         EXPENSIVE("expensive", auction.minPrice.desc()),
         CHEAP("cheap", auction.minPrice.asc()),
         IMMEDIATELY("immediately", timeRemaining().asc()),
