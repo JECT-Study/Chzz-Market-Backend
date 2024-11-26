@@ -18,7 +18,7 @@ import org.chzz.market.domain.auction.entity.Category;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateAuctionRequest {
-    public static final String DESCRIPTION_REGEX = "^(?:(?:[^\n]\n){0,10}[^\n]$)"; // 개행문자 10개를 제한
+    public static final String DESCRIPTION_REGEX = "^(?:(?:[^\\n]*\\n){0,10}[^\\n]*$)"; // 개행문자 10개를 제한
 
     @Size(min = 2, max = 30, message = "제목은 최소 2글자 이상 30자 이하여야 합니다")
     private String productName;
