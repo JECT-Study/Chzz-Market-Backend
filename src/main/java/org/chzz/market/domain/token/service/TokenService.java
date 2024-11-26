@@ -50,9 +50,10 @@ public class TokenService {
 
     public void logout(String refreshToken) {
         jwtUtil.validateToken(refreshToken, TokenType.REFRESH);
-        Long userId = refreshTokenRepository.findByToken(refreshToken)
-                .orElseThrow(() -> new TokenException(TokenErrorCode.REFRESH_TOKEN_NOT_FOUND)).userId();
-        refreshTokenRepository.deleteByToken(refreshToken);
-        log.info("사용자 ID {}: 로그아웃이 완료되었습니다.", userId);
+
+        refreshTokenRepository.findByToken(refreshToken).ifPresent(tokenData -> {
+            refreshTokenRepository.deleteByToken(refreshToken);
+            log.info("사용자 ID {}: 로그아웃이 완료되었습니다.", tokenData.userId());
+        });
     }
 }
