@@ -1,11 +1,11 @@
-package org.chzz.market.domain.user.service;
+package org.chzz.market.domain.oauth2.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.chzz.market.domain.oauth2.dto.response.KaKaoResponse;
+import org.chzz.market.domain.oauth2.dto.response.NaverResponse;
+import org.chzz.market.domain.oauth2.dto.response.OAuth2Response;
 import org.chzz.market.domain.user.dto.CustomUserDetails;
-import org.chzz.market.domain.user.dto.response.KaKaoResponse;
-import org.chzz.market.domain.user.dto.response.NaverResponse;
-import org.chzz.market.domain.user.dto.response.OAuth2Response;
 import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.entity.User.ProviderType;
 import org.chzz.market.domain.user.repository.UserRepository;
@@ -34,17 +34,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         if (registrationId == null) {
             throw new OAuth2AuthenticationException("유효하지않는 OAuth2 제공자입니다.");
         }
-        OAuth2Response oAuth2Response;
-        switch (providerType) {
-            case NAVER:
-                oAuth2Response = new NaverResponse(oAuth2User.getAttributes());
-                break;
-            case KAKAO:
-                oAuth2Response = new KaKaoResponse(oAuth2User.getAttributes());
-                break;
-            default:
-                throw new OAuth2AuthenticationException("지원되지 않는 OAuth2 제공자입니다.");
-        }
+        OAuth2Response oAuth2Response = switch (providerType) {
+            case NAVER -> new NaverResponse(oAuth2User.getAttributes());
+            case KAKAO -> new KaKaoResponse(oAuth2User.getAttributes());
+        };
         User user = findOrCreateMember(oAuth2Response, providerType);
         return new CustomUserDetails(user, oAuth2User.getAttributes());
     }

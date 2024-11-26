@@ -14,9 +14,10 @@ import org.chzz.market.common.filter.HttpCookieOAuth2AuthorizationRequestReposit
 import org.chzz.market.common.filter.JWTFilter;
 import org.chzz.market.common.filter.NotFoundFilter;
 import org.chzz.market.common.util.JWTUtil;
-import org.chzz.market.domain.user.oauth2.CustomFailureHandler;
-import org.chzz.market.domain.user.oauth2.CustomSuccessHandler;
-import org.chzz.market.domain.user.service.CustomOAuth2UserService;
+import org.chzz.market.domain.oauth2.service.CustomFailureHandler;
+import org.chzz.market.domain.oauth2.service.CustomOAuth2LoginAuthenticationProvider;
+import org.chzz.market.domain.oauth2.service.CustomOAuth2UserService;
+import org.chzz.market.domain.oauth2.service.CustomSuccessHandler;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,6 +43,7 @@ public class SecurityConfig {
     @Value("${client.url}")
     private String clientUrl;
     private final CustomOAuth2UserService customOAuth2UserService;
+    private final CustomOAuth2LoginAuthenticationProvider customOAuth2LoginAuthenticationProvider;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomSuccessHandler customSuccessHandler;
@@ -53,28 +55,19 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(final HttpSecurity http) throws Exception {
-        return http.authorizeHttpRequests(authorize -> authorize
+        return http
+                .authenticationProvider(customOAuth2LoginAuthenticationProvider)
+                .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(ACTUATOR).permitAll()
                         .requestMatchers("/metrics").permitAll()
                         .requestMatchers("/api-docs", "/swagger-ui/**", "/api/v3/api-docs/**").permitAll()
                         .requestMatchers(GET,
                                 "/api/v1/auctions",
                                 "/api/v1/auctions/{auctionId:\\d+}",
-                                "/api/v1/auctions/{auctionId:\\d+}/simple",
-                                "/api/v1/auctions/best",
-                                "/api/v1/auctions/imminent",
-                                "/api/v1/auctions/users/*",
-                                "/api/v1/products",
-                                "/api/v1/products/categories",
-                                "/api/v1/products/{productId:\\d+}",
-                                "/api/v1/products/users/*",
+                                "/api/v1/auctions/categories",
                                 "/api/v1/notifications/subscribe",
                                 "/api/v1/users/*",
                                 "/api/v1/users/check/nickname/*").permitAll()
-                        .requestMatchers(GET,
-                                "/api/v2/auctions",
-                                "/api/v2/auctions/categories",
-                                "/api/v2/auctions/{auctionId:\\d+}").permitAll()
                         .requestMatchers(POST,
                                 "/api/v1/users/tokens/reissue").permitAll()
                         .requestMatchers(POST, "/api/v1/users").hasRole("TEMP_USER")

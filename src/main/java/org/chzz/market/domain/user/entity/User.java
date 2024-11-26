@@ -53,7 +53,6 @@ public class User extends BaseTimeEntity {
 
     private String profileImageUrl;
 
-    // 구현 방식에 따라 권한 설정이 달라질 수 있어 임의로 열거체 선언 하였습니다
     @Column(columnDefinition = "varchar(20)")
     @Enumerated(EnumType.STRING)
     private UserRole userRole;
@@ -62,7 +61,7 @@ public class User extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private ProviderType providerType;
 
-    @Column(columnDefinition = "binary(16)", unique = true, nullable = false)
+    @Column(columnDefinition = "binary(16)", unique = true)
     private UUID customerKey;
 
     @PrePersist
@@ -93,12 +92,24 @@ public class User extends BaseTimeEntity {
         this.profileImageUrl = profileImageUrl;
     }
 
+    public void anonymize() {
+        this.userRole = UserRole.DELETED_USER;
+        this.email = null;
+        this.nickname = "탈퇴한 사용자";
+        this.bio = null;
+        this.profileImageUrl = null;
+        this.providerId = null;
+        this.providerType = null;
+        this.customerKey = null;
+    }
+
     @Getter
     @AllArgsConstructor
     public enum UserRole {
         TEMP_USER("ROLE_TEMP_USER"),
         USER("ROLE_USER"),
-        ADMIN("ROLE_ADMIN");
+        ADMIN("ROLE_ADMIN"),
+        DELETED_USER("ROLE_DELETED_USER");
 
         private final String value;
     }

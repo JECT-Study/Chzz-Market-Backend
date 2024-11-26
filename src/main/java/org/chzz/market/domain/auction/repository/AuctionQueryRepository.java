@@ -489,6 +489,18 @@ public class AuctionQueryRepository {
         );
     }
 
+    /**
+     * 현재 사용자가 입찰 진행 중인 경매 갯수 조회
+     */
+    public long countProceedingAuctionsByUserId(Long userId) {
+        return jpaQueryFactory
+                .select(auction.count())
+                .from(auction)
+                .join(bid).on(bid.auctionId.eq(auction.id)).on(bid.bidderId.eq(userId).and(bid.status.eq(ACTIVE)))
+                .where(auction.status.eq(PROCEEDING))
+                .fetchOne();
+    }
+
     private List<ImageResponse> getImagesByAuctionId(Long auctionId) {
         return jpaQueryFactory
                 .select(new QImageResponse(image.id, image.cdnPath))

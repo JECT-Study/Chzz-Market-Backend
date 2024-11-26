@@ -1,4 +1,4 @@
-package org.chzz.market.domain.user.oauth2;
+package org.chzz.market.domain.oauth2.service;
 
 import static org.chzz.market.common.util.CookieUtil.createTokenCookie;
 

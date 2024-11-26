@@ -95,3 +95,7 @@ logging:
 
 client:
   url: "http://test"
+
+oauth2:
+  kakao:
+    rest-api-key: testapikey
