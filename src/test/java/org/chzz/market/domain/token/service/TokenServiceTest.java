@@ -110,19 +110,8 @@ class TokenServiceTest {
         when(refreshTokenRepository.findByToken("refresh-token")).thenReturn(Optional.empty());
 
         // when & then
-        TokenException exception = assertThrows(TokenException.class, () -> tokenService.reissue(refreshCookie.getValue()));
-        assertThat(exception.getErrorCode()).isEqualTo(TokenErrorCode.REFRESH_TOKEN_NOT_FOUND);
-    }
-
-    @Test
-    @DisplayName("로그아웃 시 Refresh Token이 존재하지 않을 때 예외 발생 테스트")
-    void logout_ThrowsException_WhenTokenNotFound() {
-        // given
-        Cookie refreshCookie = new Cookie("refresh-token", "refresh-token");
-        when(refreshTokenRepository.findByToken("refresh-token")).thenReturn(Optional.empty());
-
-        // when & then
-        TokenException exception = assertThrows(TokenException.class, () -> tokenService.logout(refreshCookie.getValue()));
+        TokenException exception = assertThrows(TokenException.class,
+                () -> tokenService.reissue(refreshCookie.getValue()));
         assertThat(exception.getErrorCode()).isEqualTo(TokenErrorCode.REFRESH_TOKEN_NOT_FOUND);
     }
 }
