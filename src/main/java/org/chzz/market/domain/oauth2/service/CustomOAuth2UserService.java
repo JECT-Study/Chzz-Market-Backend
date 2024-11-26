@@ -1,11 +1,11 @@
-package org.chzz.market.domain.user.service;
+package org.chzz.market.domain.oauth2.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.domain.user.dto.CustomUserDetails;
-import org.chzz.market.domain.user.dto.response.KaKaoResponse;
-import org.chzz.market.domain.user.dto.response.NaverResponse;
-import org.chzz.market.domain.user.dto.response.OAuth2Response;
+import org.chzz.market.domain.oauth2.dto.response.KaKaoResponse;
+import org.chzz.market.domain.oauth2.dto.response.NaverResponse;
+import org.chzz.market.domain.oauth2.dto.response.OAuth2Response;
 import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.entity.User.ProviderType;
 import org.chzz.market.domain.user.repository.UserRepository;

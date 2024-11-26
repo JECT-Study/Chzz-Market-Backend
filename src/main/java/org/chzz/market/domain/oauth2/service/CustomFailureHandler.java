@@ -1,4 +1,4 @@
-package org.chzz.market.domain.user.oauth2;
+package org.chzz.market.domain.oauth2.service;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

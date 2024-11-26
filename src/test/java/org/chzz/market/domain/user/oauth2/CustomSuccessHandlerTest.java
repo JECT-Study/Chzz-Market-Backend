@@ -1,7 +1,6 @@
 package org.chzz.market.domain.user.oauth2;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.given;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
@@ -12,6 +11,7 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import org.chzz.market.common.filter.HttpCookieOAuth2AuthorizationRequestRepository;
+import org.chzz.market.domain.oauth2.service.CustomSuccessHandler;
 import org.chzz.market.domain.token.service.TokenService;
 import org.chzz.market.domain.user.dto.CustomUserDetails;
 import org.chzz.market.domain.user.entity.User;
@@ -21,7 +21,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.Authentication;

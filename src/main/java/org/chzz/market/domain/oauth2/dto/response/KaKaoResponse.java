@@ -1,4 +1,4 @@
-package org.chzz.market.domain.user.dto.response;
+package org.chzz.market.domain.oauth2.dto.response;
 
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
