@@ -4,8 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Comparator;
 import java.util.List;
-import org.chzz.market.domain.auction.entity.AuctionStatus;
+import org.chzz.market.common.AWSConfig;
 import org.chzz.market.domain.auction.entity.Auction;
+import org.chzz.market.domain.auction.entity.AuctionStatus;
 import org.chzz.market.domain.auction.entity.Category;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
 import org.chzz.market.domain.bid.dto.response.BidInfoResponse;
@@ -17,6 +18,7 @@ import org.chzz.market.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @Transactional
+@Import(AWSConfig.class)
 class BidQueryRepositoryTest {
     @Autowired
     AuctionRepository auctionRepository;
