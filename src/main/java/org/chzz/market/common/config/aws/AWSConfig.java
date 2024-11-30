@@ -1,4 +1,4 @@
-package org.chzz.market.common.config;
+package org.chzz.market.common.config.aws;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
