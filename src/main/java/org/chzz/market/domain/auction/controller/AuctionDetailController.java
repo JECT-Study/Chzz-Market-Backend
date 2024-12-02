@@ -2,7 +2,6 @@ package org.chzz.market.domain.auction.controller;
 
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.config.LoginUser;
 import org.chzz.market.domain.auction.dto.request.UpdateAuctionRequest;
@@ -19,16 +18,15 @@ import org.chzz.market.domain.like.service.LikeUpdateService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -80,12 +78,11 @@ public class AuctionDetailController implements AuctionDetailApi {
     }
 
     @Override
-    @PatchMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<UpdateAuctionResponse> updateAuction(Long userId, @PathVariable Long auctionId,
-                                                               UpdateAuctionRequest request,
-                                                               Map<String, MultipartFile> images) {
+    @PatchMapping
+    public ResponseEntity<UpdateAuctionResponse> updateAuction(@LoginUser Long userId, @PathVariable Long auctionId,
+                                                               @RequestBody UpdateAuctionRequest request) {
         UpdateAuctionResponse response =
-                auctionModifyService.updateAuction(userId, auctionId, request, images);
+                auctionModifyService.updateAuction(userId, auctionId, request);
         return ResponseEntity.ok(response);
     }
 

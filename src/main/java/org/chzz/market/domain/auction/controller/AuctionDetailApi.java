@@ -20,7 +20,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.util.Map;
 import org.chzz.market.common.config.LoginUser;
 import org.chzz.market.common.springdoc.ApiExceptionExplanation;
 import org.chzz.market.common.springdoc.ApiResponseExplanations;
@@ -40,9 +39,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @Tag(name = "auctions", description = "경매 API")
 public interface AuctionDetailApi {
@@ -114,8 +111,7 @@ public interface AuctionDetailApi {
     )
     ResponseEntity<UpdateAuctionResponse> updateAuction(@LoginUser Long userId,
                                                         @PathVariable Long auctionId,
-                                                        @RequestPart @Valid UpdateAuctionRequest request,
-                                                        @RequestParam(required = false) Map<String, MultipartFile> images);
+                                                        @RequestBody @Valid UpdateAuctionRequest request);
 
     @Operation(summary = "특정 경매 삭제", description = "특정 경매를 삭제합니다. 삭제는 사전경매만 가능합니다.")
     @ApiResponseExplanations(

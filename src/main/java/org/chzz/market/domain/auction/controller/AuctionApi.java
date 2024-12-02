@@ -12,12 +12,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Size;
 import java.util.List;
 import org.chzz.market.common.config.LoginUser;
 import org.chzz.market.common.springdoc.ApiExceptionExplanation;
 import org.chzz.market.common.springdoc.ApiResponseExplanations;
-import org.chzz.market.common.validation.annotation.NotEmptyMultipartList;
 import org.chzz.market.domain.auction.dto.request.RegisterRequest;
 import org.chzz.market.domain.auction.dto.response.CategoryResponse;
 import org.chzz.market.domain.auction.dto.response.EndedAuctionResponse;
@@ -37,10 +35,9 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "auctions", description = "경매 API")
 @RequestMapping("/v1/auctions")
@@ -118,9 +115,7 @@ public interface AuctionApi {
     )
     @PostMapping
     ResponseEntity<Void> registerAuction(@LoginUser Long userId,
-                                         @RequestPart("request") @Valid RegisterRequest request,
-                                         @RequestPart(value = "images") @Valid
-                                         @NotEmptyMultipartList @Size(max = 5, message = "이미지는 5장 이내로만 업로드 가능합니다.") List<MultipartFile> images);
+                                         @RequestBody @Valid RegisterRequest request);
 
     @Operation(summary = "경매 테스트 등록", description = "테스트 등록합니다.")
     @PostMapping("/test")

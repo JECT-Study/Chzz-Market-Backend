@@ -3,11 +3,9 @@ package org.chzz.market.domain.auction.controller;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Size;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.config.LoginUser;
-import org.chzz.market.common.validation.annotation.NotEmptyMultipartList;
 import org.chzz.market.domain.auction.dto.AuctionRegisterType;
 import org.chzz.market.domain.auction.dto.request.RegisterRequest;
 import org.chzz.market.domain.auction.dto.response.CategoryResponse;
@@ -26,15 +24,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -130,13 +126,11 @@ public class AuctionController implements AuctionApi {
      * 경매 등록
      */
     @Override
-    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
+    @PostMapping
     public ResponseEntity<Void> registerAuction(@LoginUser Long userId,
-                                                @RequestPart("request") @Valid RegisterRequest request,
-                                                @RequestPart(value = "images") @Valid
-                                                @NotEmptyMultipartList @Size(max = 5, message = "이미지는 5장 이내로만 업로드 가능합니다.") List<MultipartFile> images) {
+                                                @RequestBody @Valid RegisterRequest request) {
         AuctionRegisterType type = request.auctionRegisterType();
-        type.getService().register(userId, request, images);//요청 타입에 따라 다른 서비스 호출
+        type.getService().register(userId, request);//요청 타입에 따라 다른 서비스 호출
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
