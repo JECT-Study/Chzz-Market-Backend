@@ -10,7 +10,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
-import org.chzz.market.domain.image.service.ImageService;
 import org.chzz.market.domain.user.dto.request.UpdateUserProfileRequest;
 import org.chzz.market.domain.user.dto.request.UserCreateRequest;
 import org.chzz.market.domain.user.dto.response.NicknameAvailabilityResponse;
@@ -28,14 +27,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.util.ReflectionTestUtils;
 
-@ExtendWith(MockitoExtension.class)
+
+@ExtendWith({MockitoExtension.class})
 class UserServiceTest {
     @Mock
     private UserRepository userRepository;
-    @Mock
-    private ImageService imageService;
+
     @InjectMocks
     private UserService userService;
 
@@ -67,7 +66,10 @@ class UserServiceTest {
         updateUserProfileRequest = UpdateUserProfileRequest.builder()
                 .nickname("수정된 닉네임")
                 .bio("수정된 자기 소개")
+                .objectKey("auction/image.jpg")
                 .build();
+
+        ReflectionTestUtils.setField(userService, "s3BucketName", "https://cdn.example.com/test");
     }
 
     @Nested
@@ -197,7 +199,7 @@ class UserServiceTest {
             when(userRepository.findByNickname(any())).thenReturn(Optional.empty());
 
             // when
-            userService.updateUserProfile(user1.getId(), null, updateUserProfileRequest);
+            userService.updateUserProfile(user1.getId(),  updateUserProfileRequest);
 
             // then
             assertThat(user1.getNickname()).isEqualTo("수정된 닉네임");
@@ -211,22 +213,15 @@ class UserServiceTest {
             when(userRepository.findById(any())).thenReturn(Optional.of(user1));
             when(userRepository.findByNickname(any())).thenReturn(Optional.empty());
 
-            MockMultipartFile file = new MockMultipartFile(
-                    "profileImage",
-                    "image.jpg",
-                    "image/jpeg",
-                    "test image content".getBytes()
-            );
-
-            when(imageService.uploadImage(file)).thenReturn("https://cdn.example.com/image.jpg");
+//            when(imageService.uploadImage(file)).thenReturn("https://cdn.example.com/image.jpg");
 
             // when
-            userService.updateUserProfile(user1.getId(), file, updateUserProfileRequest);
+            userService.updateUserProfile(user1.getId(), updateUserProfileRequest);
 
             // then
             assertThat(user1.getNickname()).isEqualTo("수정된 닉네임");
             assertThat(user1.getBio()).isEqualTo("수정된 자기 소개");
-            assertThat(user1.getProfileImageUrl()).isEqualTo("https://cdn.example.com/image.jpg");
+            assertThat(user1.getProfileImageUrl()).isEqualTo("https://cdn.example.com/test/auction/image.jpg");
         }
 
         @Test
@@ -243,7 +238,7 @@ class UserServiceTest {
                     .build();
 
             // when
-            userService.updateUserProfile(user3.getId(), null, request);
+            userService.updateUserProfile(user3.getId(), request);
 
             // then
             assertThat(user3.getProfileImageUrl()).isNull(); // 기본 이미지로 변경 시 URL은 null
@@ -258,25 +253,19 @@ class UserServiceTest {
             when(userRepository.findById(any())).thenReturn(Optional.of(user3));
             when(userRepository.findByNickname(any())).thenReturn(Optional.empty());
 
-            MockMultipartFile file = new MockMultipartFile(
-                    "profileImage",
-                    "image.jpg",
-                    "image/jpeg",
-                    "test image content".getBytes()
-            );
-
-            when(imageService.uploadImage(file)).thenReturn("https://cdn.example.com/new-image.jpg");
+//            when(imageService.uploadImage(file)).thenReturn("https://cdn.example.com/new-image.jpg");
 
             UpdateUserProfileRequest request = UpdateUserProfileRequest.builder()
                     .nickname("수정된 닉네임")
                     .bio("수정된 자기 소개")
+                    .objectKey("new-image.jpg")
                     .build();
 
             // when
-            userService.updateUserProfile(user3.getId(), file, request);
+            userService.updateUserProfile(user3.getId(), request);
 
             // then
-            assertThat(user3.getProfileImageUrl()).isEqualTo("https://cdn.example.com/new-image.jpg");
+            assertThat(user3.getProfileImageUrl()).isEqualTo("https://cdn.example.com/test/new-image.jpg");
             assertThat(user3.getNickname()).isEqualTo("수정된 닉네임");
             assertThat(user3.getBio()).isEqualTo("수정된 자기 소개");
         }
@@ -289,7 +278,7 @@ class UserServiceTest {
 
             // when, then
             assertThrows(UserException.class, () ->
-                    userService.updateUserProfile(999L, null, updateUserProfileRequest)
+                    userService.updateUserProfile(999L, updateUserProfileRequest)
             );
         }
     }
