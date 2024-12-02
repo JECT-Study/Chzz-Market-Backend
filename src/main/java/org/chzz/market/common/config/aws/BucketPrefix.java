@@ -2,8 +2,10 @@ package org.chzz.market.common.config.aws;
 
 import java.util.Arrays;
 import java.util.UUID;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+@Getter
 @RequiredArgsConstructor
 public enum BucketPrefix {
     AUCTION("auction"),

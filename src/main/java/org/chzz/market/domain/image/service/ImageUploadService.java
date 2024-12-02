@@ -7,6 +7,7 @@ import java.net.URL;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.config.aws.BucketPrefix;
 import org.chzz.market.domain.image.dto.response.CreatePresignedUrlResponse;
@@ -29,17 +30,23 @@ public class ImageUploadService {
     }
 
     public List<CreatePresignedUrlResponse> createAuctionPresignedUrls(final List<String> requests) {
+        Date expiration = getPreSignedUrlExpiration();
+        String fileId = UUID.randomUUID().toString();//하니의 경매가 동일한 fileId를 갖음
+        String name = BucketPrefix.AUCTION.getName();
         return requests.stream()
-                .map(fileName -> createPresignedUrl(BucketPrefix.AUCTION, fileName))
+                .map(fileName -> {
+                    String objectKey = String.format("%s/%s/%s", name, fileId, fileName.hashCode());//실제로 파일명은 해시값으로 구분
+                    GeneratePresignedUrlRequest request = getGeneratePreSignedUrlRequest(objectKey, expiration);
+                    URL url = amazonS3.generatePresignedUrl(request);
+                    return CreatePresignedUrlResponse.of(objectKey, url.toString(), expiration);
+                })
                 .toList();
     }
 
     private GeneratePresignedUrlRequest getGeneratePreSignedUrlRequest(final String fileName, final Date expiration) {
-        GeneratePresignedUrlRequest generatePresignedUrlRequest =
-                new GeneratePresignedUrlRequest(s3BucketName, fileName)
-                        .withMethod(HttpMethod.PUT)
-                        .withExpiration(expiration);
-        return generatePresignedUrlRequest;
+        return new GeneratePresignedUrlRequest(s3BucketName, fileName)
+                .withMethod(HttpMethod.PUT)
+                .withExpiration(expiration);
     }
 
     private Date getPreSignedUrlExpiration() {
