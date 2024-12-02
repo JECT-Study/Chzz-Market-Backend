@@ -28,4 +28,6 @@ public class UpdateUserProfileRequest {
 
     @Builder.Default
     private Boolean useDefaultImage = false;
+
+    private String objectKey;
 }

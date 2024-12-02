@@ -5,9 +5,11 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import java.util.List;
 import org.chzz.market.common.validation.annotation.ThousandMultiple;
 import org.chzz.market.domain.auction.dto.AuctionRegisterType;
 import org.chzz.market.domain.auction.entity.Category;
+import org.springframework.web.bind.annotation.RequestPart;
 
 public record RegisterRequest(
         String productName,
@@ -26,7 +28,11 @@ public record RegisterRequest(
         Integer minPrice,
 
         @NotNull(message = "경매 타입을 선택해주세요")
-        AuctionRegisterType auctionRegisterType
+        AuctionRegisterType auctionRegisterType,
+
+        @RequestPart(value = "images")
+        @Size(max = 5, message = "이미지는 5장 이내로만 업로드 가능합니다.")
+        List<String> objectKeys
 ) {
     private static final String DESCRIPTION_REGEX = "^(?:(?:[^\\n]*\\n){0,10}[^\\n]*$)"; // 개행문자 10개를 제한
 }
