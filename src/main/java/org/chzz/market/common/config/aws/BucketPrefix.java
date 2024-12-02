@@ -17,6 +17,6 @@ public enum BucketPrefix {
 
     public String createPath(final String fileName) {
         String fileId = UUID.randomUUID().toString();
-        return String.format("%s/%s", this.name, fileId + fileName);
+        return String.format("%s/%s/%s", this.name, fileId, fileName);
     }
 }
