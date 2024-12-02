@@ -28,10 +28,10 @@ services:
       - "6379:6379"
 
   chzz-frontend:
-    image: junest1010/test-app:latest
+    image: cloudoort/chzzmarket-frontend:1.0
     container_name: react-app
     ports:
-      - "3000:3000"
+      - "5173:5173"
 
 #  node-exporter:
 #    image: prom/node-exporter:latest
