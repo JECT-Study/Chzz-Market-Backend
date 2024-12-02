@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.domain.auction.entity.AuctionStatus;
 import org.chzz.market.domain.auction.repository.AuctionQueryRepository;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
-import org.chzz.market.domain.image.service.ImageService;
 import org.chzz.market.domain.user.dto.request.UpdateUserProfileRequest;
 import org.chzz.market.domain.user.dto.request.UserCreateRequest;
 import org.chzz.market.domain.user.dto.response.NicknameAvailabilityResponse;
@@ -19,17 +18,16 @@ import org.chzz.market.domain.user.error.exception.UserException;
 import org.chzz.market.domain.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class UserService {
-    private final ImageService imageService;
     private final UserRepository userRepository;
     private final AuctionRepository auctionRepository;
     private final AuctionQueryRepository auctionQueryRepository;
+    private final String s3BucketName;
 
     /**
      * 사용자 프로필 조회 (유저 ID 기반)
@@ -77,7 +75,7 @@ public class UserService {
      * 프로필 수정
      */
     @Transactional
-    public void updateUserProfile(Long userId, MultipartFile file, UpdateUserProfileRequest request) {
+    public void updateUserProfile(Long userId, UpdateUserProfileRequest request) {
         // 유저 유효성 검사
         User existingUser = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(USER_NOT_FOUND));
@@ -87,22 +85,7 @@ public class UserService {
                 .ifPresent(user -> {
                     throw new UserException(NICKNAME_DUPLICATION);
                 });
-        String profileImageUrl = handleProfileImage(file, request.getUseDefaultImage(),
-                existingUser.getProfileImageUrl());
-        log.info("profileImageUrl = {}", profileImageUrl);
-        // 프로필 정보 업데이트
-        existingUser.updateProfile(request, profileImageUrl);
+        existingUser.updateProfile(request, s3BucketName + "/" + request.getObjectKey());
     }
 
-    /**
-     * 회원 프로필 이미지 변경
-     */
-    private String handleProfileImage(MultipartFile file, Boolean useDefaultImage, String currentImageUrl) {
-        if (useDefaultImage) {
-            return null;  // 기존 이미지를 삭제하고 기본이미지로 (null)
-        } else if (file != null && !file.isEmpty()) {
-            return imageService.uploadImage(file);  // 새 이미지 업로드
-        }
-        return currentImageUrl;  // 기존 이미지 유지
-    }
 }
