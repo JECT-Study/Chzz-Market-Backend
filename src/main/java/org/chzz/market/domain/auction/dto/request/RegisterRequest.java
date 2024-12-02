@@ -2,6 +2,7 @@ package org.chzz.market.domain.auction.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -31,6 +32,7 @@ public record RegisterRequest(
         AuctionRegisterType auctionRegisterType,
 
         @RequestPart(value = "images")
+        @NotEmpty(message = "파일은 최소 하나 이상 필요합니다.")
         @Size(max = 5, message = "이미지는 5장 이내로만 업로드 가능합니다.")
         List<String> objectKeys
 ) {
