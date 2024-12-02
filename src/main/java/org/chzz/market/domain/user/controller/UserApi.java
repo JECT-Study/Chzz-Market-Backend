@@ -38,7 +38,7 @@ public interface UserApi {
                                               HttpServletResponse response);
 
     @Operation(summary = "프로필 수정")
-    ResponseEntity<Void> updateUserProfile(Long userId, MultipartFile file, @Valid UpdateUserProfileRequest request);
+    ResponseEntity<Void> updateUserProfile(Long userId, @Valid UpdateUserProfileRequest request);
 
     @Operation(summary = "JWT 토큰 재발급")
     ResponseEntity<Void> reissue(HttpServletRequest request, HttpServletResponse response);

@@ -97,9 +97,8 @@ public class UserController implements UserApi {
     @PostMapping(value = "/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> updateUserProfile(
             @LoginUser Long userId,
-            @RequestPart(required = false) MultipartFile file,
             @RequestPart @Valid UpdateUserProfileRequest request) {
-        userService.updateUserProfile(userId, file, request);
+        userService.updateUserProfile(userId, request);
         return ResponseEntity.ok().build();
     }
 
