@@ -85,7 +85,18 @@ public class UserService {
                 .ifPresent(user -> {
                     throw new UserException(NICKNAME_DUPLICATION);
                 });
-        existingUser.updateProfile(request, s3BucketName + "/" + request.getObjectKey());
+        String profileImageUrl = handleProfileImage(request.getObjectKey(), request.getUseDefaultImage(),
+                existingUser.getProfileImageUrl());
+        existingUser.updateProfile(request, profileImageUrl);
     }
 
+    /**
+     * 회원 프로필 이미지 변경
+     */
+    private String handleProfileImage(String objectKey, Boolean useDefaultImage, String currentProfileImageUrl) {
+        if (useDefaultImage) {
+            return null;  // 기존 이미지를 삭제하고 기본이미지로 (null)
+        }
+        return s3BucketName + "/" + objectKey;
+    }
 }
