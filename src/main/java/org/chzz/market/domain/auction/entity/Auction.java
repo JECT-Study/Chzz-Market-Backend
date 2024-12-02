@@ -169,7 +169,7 @@ public class Auction extends BaseTimeEntity {
     }
 
     public void update(final UpdateAuctionRequest request) {
-        this.name = request.getProductName();
+        this.name = request.getAuctionName();
         this.description = request.getDescription();
         this.category = request.getCategory();
         this.minPrice = request.getMinPrice();
