@@ -12,7 +12,7 @@ import org.chzz.market.domain.auction.dto.AuctionRegisterType;
 import org.chzz.market.domain.auction.entity.Category;
 
 public record RegisterRequest(
-        String productName,
+        String auctionName,
 
         @Schema(description = "개행문자 포함 최대 1000자, 개행문자 최대 10개")
         @Size(max = 1000, message = "상품설명은 1000자 이내여야 합니다.")
