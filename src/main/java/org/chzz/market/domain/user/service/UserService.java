@@ -16,6 +16,7 @@ import org.chzz.market.domain.user.dto.response.UserProfileResponse;
 import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.error.exception.UserException;
 import org.chzz.market.domain.user.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,7 +28,8 @@ public class UserService {
     private final UserRepository userRepository;
     private final AuctionRepository auctionRepository;
     private final AuctionQueryRepository auctionQueryRepository;
-    private final String s3BucketName;
+    @Value("${cloud.aws.cloudfront.domain}")
+    private String cloudfrontDomain;
 
     /**
      * 사용자 프로필 조회 (유저 ID 기반)
@@ -97,6 +99,6 @@ public class UserService {
         if (useDefaultImage) {
             return null;  // 기존 이미지를 삭제하고 기본이미지로 (null)
         }
-        return s3BucketName + "/" + objectKey;
+        return cloudfrontDomain + "/" + objectKey;
     }
 }
