@@ -10,7 +10,6 @@ import java.util.List;
 import org.chzz.market.common.validation.annotation.ThousandMultiple;
 import org.chzz.market.domain.auction.dto.AuctionRegisterType;
 import org.chzz.market.domain.auction.entity.Category;
-import org.springframework.web.bind.annotation.RequestPart;
 
 public record RegisterRequest(
         String productName,
@@ -31,7 +30,6 @@ public record RegisterRequest(
         @NotNull(message = "경매 타입을 선택해주세요")
         AuctionRegisterType auctionRegisterType,
 
-        @RequestPart(value = "images")
         @NotEmpty(message = "파일은 최소 하나 이상 필요합니다.")
         @Size(max = 5, message = "이미지는 5장 이내로만 업로드 가능합니다.")
         List<String> objectKeys
