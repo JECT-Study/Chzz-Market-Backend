@@ -7,6 +7,7 @@ import org.chzz.market.domain.auction.dto.request.RegisterRequest;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.entity.AuctionStatus;
 import org.chzz.market.domain.auction.repository.AuctionRepository;
+import org.chzz.market.domain.image.service.ObjectKeyValidator;
 import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.error.UserErrorCode;
 import org.chzz.market.domain.user.error.exception.UserException;
@@ -21,6 +22,7 @@ public class PreAuctionRegistrationService implements RegistrationService {
     private final AuctionRepository auctionRepository;
     private final UserRepository userRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final ObjectKeyValidator objectKeyValidator;
 
     @Override
     @Transactional
@@ -32,6 +34,7 @@ public class PreAuctionRegistrationService implements RegistrationService {
 
         auctionRepository.save(auction);
         List<String> objectKeys = request.objectKeys();
+        objectKeys.forEach(objectKeyValidator::validate);
 
         eventPublisher.publishEvent(new ImageUploadEvent(auction, objectKeys));
     }
