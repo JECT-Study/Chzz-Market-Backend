@@ -64,7 +64,7 @@ public class ImageService {
     private void updateAuctionImages(final Auction auction,
                                      final Map<Long, Integer> sequence,
                                      final Map<String, String> objectKeyBuffer) {
-        validateTotalImageCount(sequence.size()+objectKeyBuffer.size());
+        validateTotalImageCount(sequence.size() + objectKeyBuffer.size());
 
         // 기존 이미지 처리 (업데이트할 이미지와 삭제할 이미지 구분)
         processExistingImages(auction, sequence);
