@@ -39,7 +39,8 @@ public class AuctionModifyService {
         auction.update(request);
 
         // 이미지 업데이트 이벤트
-        AuctionImageUpdateEvent event = new AuctionImageUpdateEvent(auction, request.getImageSequence(),request.getObjectKeyBuffer());
+        AuctionImageUpdateEvent event = new AuctionImageUpdateEvent(auction, request.getImageSequence(),
+                request.getObjectKeyBuffer());
         eventPublisher.publishEvent(event);
 
         log.info("경매 ID {}번에 대한 사전 등록 정보를 업데이트를 완료했습니다.", auctionId);
