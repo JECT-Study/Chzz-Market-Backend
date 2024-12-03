@@ -2,6 +2,8 @@ package org.chzz.market.domain.auction.controller;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -13,6 +15,7 @@ import org.chzz.market.domain.auction.dto.AuctionRegisterType;
 import org.chzz.market.domain.auction.dto.request.RegisterRequest;
 import org.chzz.market.domain.auction.entity.Category;
 import org.chzz.market.domain.image.service.ImageService;
+import org.chzz.market.domain.image.service.ObjectKeyValidator;
 import org.chzz.market.util.AuthenticatedRequestTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,6 +24,9 @@ import org.springframework.http.MediaType;
 
 
 class AuctionControllerTest extends AuthenticatedRequestTest {
+    @MockBean
+    ObjectKeyValidator objectKeyValidator;
+
     @MockBean
     ImageService imageService;
 
@@ -36,6 +42,7 @@ class AuctionControllerTest extends AuthenticatedRequestTest {
                 AuctionRegisterType.PRE_REGISTER,
                 List.of("A","B","C"));
         String req = objectMapper.writeValueAsString(request);
+        doNothing().when(objectKeyValidator).validate(anyString());
 
         // when
         mockMvc.perform(post("/api/v1/auctions")
