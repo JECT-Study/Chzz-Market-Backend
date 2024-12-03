@@ -38,7 +38,7 @@ public class PreAuctionRegistrationService implements RegistrationService {
 
     private Auction createAuction(final RegisterRequest request, final User user) {
         return Auction.builder()
-                .name(request.productName())
+                .name(request.auctionName())
                 .minPrice(request.minPrice())
                 .category(request.category())
                 .description(request.description())

@@ -44,7 +44,7 @@ public class AuctionRegistrationService implements RegistrationService {
 
     private Auction createAuction(final RegisterRequest request, final User user) {
         return Auction.builder()
-                .name(request.productName())
+                .name(request.auctionName())
                 .minPrice(request.minPrice())
                 .description(request.description())
                 .category(request.category())
