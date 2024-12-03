@@ -8,10 +8,12 @@ import org.chzz.market.domain.image.service.ImageUploadService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/v1/image")
 public class ImageController implements ImageApi {
     private final ImageUploadService imageUploadService;
 
