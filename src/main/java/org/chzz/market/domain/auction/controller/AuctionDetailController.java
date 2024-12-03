@@ -2,6 +2,7 @@ package org.chzz.market.domain.auction.controller;
 
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.config.LoginUser;
 import org.chzz.market.domain.auction.dto.request.UpdateAuctionRequest;
@@ -80,7 +81,7 @@ public class AuctionDetailController implements AuctionDetailApi {
     @Override
     @PatchMapping
     public ResponseEntity<UpdateAuctionResponse> updateAuction(@LoginUser Long userId, @PathVariable Long auctionId,
-                                                               @RequestBody UpdateAuctionRequest request) {
+                                                               @RequestBody @Valid UpdateAuctionRequest request) {
         UpdateAuctionResponse response =
                 auctionModifyService.updateAuction(userId, auctionId, request);
         return ResponseEntity.ok(response);
