@@ -69,7 +69,7 @@ class UserServiceTest {
                 .objectKey("auction/image.jpg")
                 .build();
 
-        ReflectionTestUtils.setField(userService, "s3BucketName", "https://cdn.example.com/test");
+        ReflectionTestUtils.setField(userService, "cloudfrontDomain", "https://cdn.example.com/test");
     }
 
     @Nested
