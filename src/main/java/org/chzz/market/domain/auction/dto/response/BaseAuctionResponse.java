@@ -7,14 +7,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public abstract class BaseAuctionResponse {
     private Long auctionId;
-    private String productName;
+    private String auctionName;
     private String imageUrl;
     private Long minPrice;
     private Boolean isSeller;
 
-    public BaseAuctionResponse(Long auctionId, String productName, String imageUrl, Long minPrice, Boolean isSeller) {
+    public BaseAuctionResponse(Long auctionId, String auctionName, String imageUrl, Long minPrice, Boolean isSeller) {
         this.auctionId = auctionId;
-        this.productName = productName;
+        this.auctionName = auctionName;
         this.imageUrl = imageUrl;
         this.minPrice = minPrice;
         this.isSeller = isSeller;

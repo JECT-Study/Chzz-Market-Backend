@@ -4,7 +4,7 @@ import com.querydsl.core.annotations.QueryProjection;
 
 public record WonAuctionDetailsResponse(
         Long auctionId,
-        String productName,
+        String auctionName,
         String imageUrl,
         Long winningAmount
 ) {

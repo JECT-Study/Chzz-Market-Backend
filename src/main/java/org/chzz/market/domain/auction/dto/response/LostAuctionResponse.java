@@ -11,9 +11,9 @@ public class LostAuctionResponse extends BaseAuctionResponse {
     private LocalDateTime endDateTime;
     private Long bidAmount;
 
-    public LostAuctionResponse(Long auctionId, String productName, String imageUrl, Long minPrice, Boolean isSeller,
+    public LostAuctionResponse(Long auctionId, String auctionName, String imageUrl, Long minPrice, Boolean isSeller,
                                Long participantCount, LocalDateTime endDateTime, Long bidAmount) {
-        super(auctionId, productName, imageUrl, minPrice, isSeller);
+        super(auctionId, auctionName, imageUrl, minPrice, isSeller);
         this.participantCount = participantCount;
         this.endDateTime = endDateTime;
         this.bidAmount = bidAmount;

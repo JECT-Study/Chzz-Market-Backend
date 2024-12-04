@@ -2,7 +2,6 @@ package org.chzz.market.domain.notification.entity;
 
 import lombok.AllArgsConstructor;
 import org.chzz.market.domain.notification.event.NotificationEvent;
-import org.chzz.market.domain.user.entity.User;
 
 @AllArgsConstructor
 public enum NotificationType {
@@ -46,8 +45,8 @@ public enum NotificationType {
     private final String message;
     private String value;
 
-    public String getMessage(String productName) {
-        return String.format(message, productName);
+    public String getMessage(String auctionName) {
+        return String.format(message, auctionName);
     }
 
     public abstract Notification createNotification(Long userId, NotificationEvent event);

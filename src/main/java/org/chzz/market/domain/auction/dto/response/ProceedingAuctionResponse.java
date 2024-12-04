@@ -13,11 +13,11 @@ public class ProceedingAuctionResponse extends BaseAuctionResponse {
     private Long participantCount;
     private LocalDateTime createdAt;
 
-    public ProceedingAuctionResponse(Long auctionId, String productName, String imageUrl, Long minPrice,
+    public ProceedingAuctionResponse(Long auctionId, String auctionName, String imageUrl, Long minPrice,
                                      Boolean isSeller,
                                      Long timeRemaining, AuctionStatus status, Long participantCount,
                                      LocalDateTime createdAt) {
-        super(auctionId, productName, imageUrl, minPrice, isSeller);
+        super(auctionId, auctionName, imageUrl, minPrice, isSeller);
         this.timeRemaining = timeRemaining;
         this.status = status;
         this.participantCount = participantCount;

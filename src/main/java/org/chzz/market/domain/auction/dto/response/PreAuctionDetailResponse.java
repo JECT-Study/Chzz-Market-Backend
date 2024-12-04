@@ -14,10 +14,10 @@ public class PreAuctionDetailResponse extends BaseAuctionDetailResponse {
     private Boolean isLiked;
 
     public PreAuctionDetailResponse(Long auctionId, String sellerNickname, String sellerProfileImageUrl,
-                                    String productName,
+                                    String auctionName,
                                     String description, Integer minPrice, Boolean isSeller, AuctionStatus status,
                                     Category category, LocalDateTime updatedAt, Long likeCount, Boolean isLiked) {
-        super(auctionId, sellerNickname, sellerProfileImageUrl, productName, description, minPrice, isSeller, status,
+        super(auctionId, sellerNickname, sellerProfileImageUrl, auctionName, description, minPrice, isSeller, status,
                 category);
         this.updatedAt = updatedAt;
         this.likeCount = likeCount;

@@ -13,10 +13,10 @@ public class EndedAuctionResponse extends BaseAuctionResponse {
     private Boolean isOrdered;
     private LocalDateTime createAt;
 
-    public EndedAuctionResponse(Long auctionId, String productName, String imageUrl, Long minPrice, Boolean isSeller,
+    public EndedAuctionResponse(Long auctionId, String auctionName, String imageUrl, Long minPrice, Boolean isSeller,
                                 Long participantCount, Long winningBidAmount, Boolean isWon, Boolean isOrdered,
                                 LocalDateTime createAt) {
-        super(auctionId, productName, imageUrl, minPrice, isSeller);
+        super(auctionId, auctionName, imageUrl, minPrice, isSeller);
         this.participantCount = participantCount;
         this.winningBidAmount = winningBidAmount;
         this.isWon = isWon;

@@ -9,9 +9,9 @@ public class BiddingRecord extends BaseAuctionResponse {
     private final Long participantCount;
     private final Long bidAmount;
 
-    public BiddingRecord(Long auctionId, String productName, String imageUrl, Long minPrice, Boolean isSeller,
+    public BiddingRecord(Long auctionId, String auctionName, String imageUrl, Long minPrice, Boolean isSeller,
                          Long timeRemaining, Long participantCount, Long bidAmount) {
-        super(auctionId, productName, imageUrl, minPrice, isSeller);
+        super(auctionId, auctionName, imageUrl, minPrice, isSeller);
         this.timeRemaining = timeRemaining;
         this.participantCount = participantCount;
         this.bidAmount = bidAmount;

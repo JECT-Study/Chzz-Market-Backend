@@ -9,9 +9,9 @@ public class PreAuctionResponse extends BaseAuctionResponse {
     private Long likeCount;
     private Boolean isLiked;
 
-    public PreAuctionResponse(Long auctionId, String productName, String imageUrl, Long minPrice, Boolean isSeller,
+    public PreAuctionResponse(Long auctionId, String auctionName, String imageUrl, Long minPrice, Boolean isSeller,
                               Long likeCount, Boolean isLiked) {
-        super(auctionId, productName, imageUrl, minPrice, isSeller);
+        super(auctionId, auctionName, imageUrl, minPrice, isSeller);
         this.likeCount = likeCount;
         this.isLiked = isLiked;
     }

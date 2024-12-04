@@ -26,12 +26,12 @@ public class OfficialAuctionDetailResponse extends BaseAuctionDetailResponse {
     private Boolean isOrdered;
 
     public OfficialAuctionDetailResponse(Long auctionId, String sellerNickname, String sellerProfileImageUrl,
-                                         String productName, String description, Integer minPrice, Boolean isSeller,
+                                         String auctionName, String description, Integer minPrice, Boolean isSeller,
                                          AuctionStatus status, Category category, Long timeRemaining,
                                          Long participantCount, Boolean isParticipated, Long bidId, Long bidAmount,
                                          int remainingBidCount, Boolean isCancelled, Boolean isWinner, Boolean isWon,
                                          Boolean isOrdered) {
-        super(auctionId, sellerNickname, sellerProfileImageUrl, productName, description, minPrice, isSeller, status,
+        super(auctionId, sellerNickname, sellerProfileImageUrl, auctionName, description, minPrice, isSeller, status,
                 category);
         this.timeRemaining = timeRemaining;
         this.participantCount = participantCount;

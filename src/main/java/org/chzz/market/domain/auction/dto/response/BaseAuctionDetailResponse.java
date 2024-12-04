@@ -13,7 +13,7 @@ public abstract class BaseAuctionDetailResponse {
     private Long auctionId;
     private String sellerNickname;
     private String sellerProfileImageUrl;
-    private String productName;
+    private String auctionName;
     private String description;
     private Integer minPrice;
     protected Boolean isSeller;
@@ -22,12 +22,12 @@ public abstract class BaseAuctionDetailResponse {
     private List<ImageResponse> images;
 
     public BaseAuctionDetailResponse(Long auctionId, String sellerNickname, String sellerProfileImageUrl,
-                                     String productName, String description, Integer minPrice, Boolean isSeller,
+                                     String auctionName, String description, Integer minPrice, Boolean isSeller,
                                      AuctionStatus status, Category category) {
         this.auctionId = auctionId;
         this.sellerNickname = sellerNickname;
         this.sellerProfileImageUrl = sellerProfileImageUrl;
-        this.productName = productName;
+        this.auctionName = auctionName;
         this.description = description;
         this.minPrice = minPrice;
         this.isSeller = isSeller;
