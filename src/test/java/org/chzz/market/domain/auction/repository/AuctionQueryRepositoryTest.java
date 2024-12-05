@@ -272,7 +272,7 @@ class AuctionQueryRepositoryTest {
             //then
             assertThat(result).isNotNull();
             assertThat(result.getContent()).hasSize(1);
-            assertThat(result.getContent().get(0).getProductName()).isEqualTo("맥북프로");
+            assertThat(result.getContent().get(0).getAuctionName()).isEqualTo("맥북프로");
             assertThat(result.getContent().get(0).getIsSeller()).isTrue();
         }
 
@@ -289,7 +289,7 @@ class AuctionQueryRepositoryTest {
             //then
             assertThat(result).isNotNull();
             assertThat(result.getContent()).hasSize(1);
-            assertThat(result.getContent().get(0).getProductName()).isEqualTo("맥북프로");
+            assertThat(result.getContent().get(0).getAuctionName()).isEqualTo("맥북프로");
             assertThat(result.getContent().get(0).getIsSeller()).isFalse();
             assertThat(result.getContent().get(0).getIsParticipated()).isFalse();
 
@@ -299,7 +299,7 @@ class AuctionQueryRepositoryTest {
             //then
             assertThat(result).isNotNull();
             assertThat(result.getContent()).hasSize(1);
-            assertThat(result.getContent().get(0).getProductName()).isEqualTo("맥북프로");
+            assertThat(result.getContent().get(0).getAuctionName()).isEqualTo("맥북프로");
             assertThat(result.getContent().get(0).getIsSeller()).isFalse();
             assertThat(result.getContent().get(0).getIsParticipated()).isFalse();
         }
@@ -318,7 +318,7 @@ class AuctionQueryRepositoryTest {
             //then
             assertThat(result).isNotNull();
             assertThat(result.getContent()).hasSize(1);
-            assertThat(result.getContent().get(0).getProductName()).isEqualTo("맥북프로");
+            assertThat(result.getContent().get(0).getAuctionName()).isEqualTo("맥북프로");
             assertThat(result.getContent().get(0).getIsSeller()).isFalse();
             assertThat(result.getContent().get(0).getIsParticipated()).isTrue();
         }
@@ -338,7 +338,7 @@ class AuctionQueryRepositoryTest {
             //then
             assertThat(result).isNotNull();
             assertThat(result.getContent()).hasSize(1);
-            assertThat(result.getContent().get(0).getProductName()).isEqualTo("맥북프로");
+            assertThat(result.getContent().get(0).getAuctionName()).isEqualTo("맥북프로");
             assertThat(result.getContent().get(0).getIsSeller()).isFalse();
             assertThat(result.getContent().get(0).getIsLiked()).isTrue();
         }
@@ -356,7 +356,7 @@ class AuctionQueryRepositoryTest {
 
             assertThat(resultWithUserId).isNotNull();
             assertThat(resultWithUserId.getContent()).hasSize(1);
-            assertThat(resultWithUserId.getContent().get(0).getProductName()).isEqualTo("맥북프로");
+            assertThat(resultWithUserId.getContent().get(0).getAuctionName()).isEqualTo("맥북프로");
             assertThat(resultWithUserId.getContent().get(0).getIsSeller()).isFalse();
             assertThat(resultWithUserId.getContent().get(0).getIsLiked()).isFalse();
 
@@ -366,7 +366,7 @@ class AuctionQueryRepositoryTest {
 
             assertThat(resultWithNull).isNotNull();
             assertThat(resultWithNull.getContent()).hasSize(1);
-            assertThat(resultWithNull.getContent().get(0).getProductName()).isEqualTo("맥북프로");
+            assertThat(resultWithNull.getContent().get(0).getAuctionName()).isEqualTo("맥북프로");
             assertThat(resultWithNull.getContent().get(0).getIsSeller()).isFalse();
             assertThat(resultWithNull.getContent().get(0).getIsLiked()).isFalse();
         }
@@ -390,8 +390,8 @@ class AuctionQueryRepositoryTest {
             //then
             assertThat(result).isNotNull();
             assertThat(result.getContent()).hasSize(2);
-            assertThat(result.getContent().get(0).getProductName()).isEqualTo("아이패드"); // 가격이 더 높은 아이패드가 먼저
-            assertThat(result.getContent().get(1).getProductName()).isEqualTo("맥북프로"); // 가격이 낮은 맥북프로가 나중
+            assertThat(result.getContent().get(0).getAuctionName()).isEqualTo("아이패드"); // 가격이 더 높은 아이패드가 먼저
+            assertThat(result.getContent().get(1).getAuctionName()).isEqualTo("맥북프로"); // 가격이 낮은 맥북프로가 나중
         }
 
         @Test
@@ -427,7 +427,7 @@ class AuctionQueryRepositoryTest {
             // then
             assertThat(resultWithin1Hour).isNotNull();
             assertThat(resultWithin1Hour.getContent()).hasSize(1);
-            assertThat(resultWithin1Hour.getContent().get(0).getProductName()).isEqualTo("맥북프로");
+            assertThat(resultWithin1Hour.getContent().get(0).getAuctionName()).isEqualTo("맥북프로");
 
             // when - endWithinSeconds 2시간 이내
             Page<OfficialAuctionResponse> resultWithin2Hours = auctionQueryRepository.findOfficialAuctions(
@@ -441,8 +441,8 @@ class AuctionQueryRepositoryTest {
             // then
             assertThat(resultWithin2Hours).isNotNull();
             assertThat(resultWithin2Hours.getContent()).hasSize(2);
-            assertThat(resultWithin2Hours.getContent().get(0).getProductName()).isEqualTo("맥북프로"); // 더 빨리 종료되는 맥북
-            assertThat(resultWithin2Hours.getContent().get(1).getProductName()).isEqualTo("아이패드"); // 나중에 종료되는 아이패드
+            assertThat(resultWithin2Hours.getContent().get(0).getAuctionName()).isEqualTo("맥북프로"); // 더 빨리 종료되는 맥북
+            assertThat(resultWithin2Hours.getContent().get(1).getAuctionName()).isEqualTo("아이패드"); // 나중에 종료되는 아이패드
         }
     }
 
@@ -470,8 +470,8 @@ class AuctionQueryRepositoryTest {
             // Then
             assertThat(result).isNotNull();
             assertThat(result.getContent()).hasSize(2);
-            assertThat(result.getContent().get(0).getProductName()).isEqualTo("아이패드");
-            assertThat(result.getContent().get(1).getProductName()).isEqualTo("맥북프로");
+            assertThat(result.getContent().get(0).getAuctionName()).isEqualTo("아이패드");
+            assertThat(result.getContent().get(1).getAuctionName()).isEqualTo("맥북프로");
         }
 
 
@@ -493,12 +493,12 @@ class AuctionQueryRepositoryTest {
             assertThat(result.getContent()).hasSize(2);
 
             PreAuctionResponse response1 = result.getContent().get(0);
-            assertThat(response1.getProductName()).isEqualTo("아이패드");
+            assertThat(response1.getAuctionName()).isEqualTo("아이패드");
             assertThat(response1.getIsSeller()).isTrue();
             assertThat(response1.getIsLiked()).isFalse();
 
             PreAuctionResponse response2 = result.getContent().get(1);
-            assertThat(response2.getProductName()).isEqualTo("맥북프로");
+            assertThat(response2.getAuctionName()).isEqualTo("맥북프로");
             assertThat(response2.getIsSeller()).isTrue();
             assertThat(response2.getIsLiked()).isFalse();
         }
@@ -526,11 +526,11 @@ class AuctionQueryRepositoryTest {
             assertThat(result.getContent()).hasSize(2);
 
             ProceedingAuctionResponse response1 = result.getContent().get(0);
-            assertThat(response1.getProductName()).isEqualTo("아이패드");
+            assertThat(response1.getAuctionName()).isEqualTo("아이패드");
             assertThat(response1.getIsSeller()).isTrue();
 
             ProceedingAuctionResponse response2 = result.getContent().get(1);
-            assertThat(response2.getProductName()).isEqualTo("맥북프로");
+            assertThat(response2.getAuctionName()).isEqualTo("맥북프로");
             assertThat(response2.getIsSeller()).isTrue();
         }
 
@@ -559,13 +559,13 @@ class AuctionQueryRepositoryTest {
             assertThat(result.getContent()).hasSize(2);
 
             EndedAuctionResponse response1 = result.getContent().get(0);
-            assertThat(response1.getProductName()).isEqualTo("아이패드");
+            assertThat(response1.getAuctionName()).isEqualTo("아이패드");
             assertThat(response1.getIsSeller()).isTrue();
             assertThat(response1.getIsWon()).isTrue();
             assertThat(response1.getIsOrdered()).isTrue();
 
             EndedAuctionResponse response2 = result.getContent().get(1);
-            assertThat(response2.getProductName()).isEqualTo("맥북프로");
+            assertThat(response2.getAuctionName()).isEqualTo("맥북프로");
             assertThat(response2.getIsSeller()).isTrue();
             assertThat(response2.getIsWon()).isFalse();
             assertThat(response2.getIsOrdered()).isFalse();
@@ -597,12 +597,12 @@ class AuctionQueryRepositoryTest {
             assertThat(result.getContent()).hasSize(2);
 
             WonAuctionResponse response1 = result.getContent().get(0);
-            assertThat(response1.getProductName()).isEqualTo("아이패드");
+            assertThat(response1.getAuctionName()).isEqualTo("아이패드");
             assertThat(response1.getIsOrdered()).isFalse();
             assertThat(response1.getWinningAmount()).isEqualTo(3000L);
 
             WonAuctionResponse response2 = result.getContent().get(1);
-            assertThat(response2.getProductName()).isEqualTo("맥북프로");
+            assertThat(response2.getAuctionName()).isEqualTo("맥북프로");
             assertThat(response2.getIsOrdered()).isTrue();
             assertThat(response2.getWinningAmount()).isEqualTo(2000L);
         }
@@ -633,10 +633,10 @@ class AuctionQueryRepositoryTest {
             assertThat(result.getContent()).hasSize(2);
 
             LostAuctionResponse response1 = result.getContent().get(0);
-            assertThat(response1.getProductName()).isEqualTo("아이패드");
+            assertThat(response1.getAuctionName()).isEqualTo("아이패드");
 
             LostAuctionResponse response2 = result.getContent().get(1);
-            assertThat(response2.getProductName()).isEqualTo("맥북프로");
+            assertThat(response2.getAuctionName()).isEqualTo("맥북프로");
         }
 
 
