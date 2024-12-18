@@ -27,11 +27,48 @@ services:
     ports:
       - "6379:6379"
 
-  chzz-frontend:
-    image: cloudoort/chzzmarket-frontend:1.0
-    container_name: react-app
+  #  chzz-frontend:
+  #    image: cloudoort/chzzmarket-frontend:1.0
+  #    container_name: react-app
+  #    ports:
+  #      - "5173:5173"
+  chzz-es:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.5
+    container_name: chzz-es
+    environment:
+      - discovery.type=single-node # 단일 노드
+      - xpack.security.enabled=false # 로컬 개발을 위해 SSL 설정을 비활성화
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+      - bootstrap.memory_lock=true # 메모리 스왑 방지
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g" # Java heap size 설정
+    ulimits: # 메모리 락 한도 설정 (-1은 무제한)
+      memlock:
+        soft: -1
+        hard: -1
     ports:
-      - "5173:5173"
+      - "9200:9200" # https
+      - "9300:9300" # tcp
+    volumes:
+      - chzz-es-data:/usr/share/elasticsearch/data
+    command:
+      - /bin/bash
+      - -c
+      - |
+        /usr/share/elasticsearch/bin/elasticsearch-plugin install analysis-nori &&
+        /usr/local/bin/docker-entrypoint.sh
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.15.5
+    container_name: chzz-kibana
+    restart: unless-stopped
+    environment:
+      - ELASTICSEARCH_HOSTS=http://chzz-es:9200 # Elasticsearch 호스트 연결
+      - SERVER_NAME=kibana
+      - XPACK_SECURITY_ENABLED=false # 보안 비활성화
+    ports:
+      - "5601:5601" # Kibana UI 포트
+    depends_on:
+      - chzz-es # Kibana가 Elasticsearch와 연결되도록 의존성 추가
 
 #  node-exporter:
 #    image: prom/node-exporter:latest
@@ -81,3 +118,4 @@ services:
 
 volumes:
   chzz-mysql-data:
+  chzz-es-data:
