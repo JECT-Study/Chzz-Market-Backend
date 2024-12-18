@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.chzz.market.domain.auction.dto.AuctionRegistrationEvent;
+import org.chzz.market.domain.auction.dto.event.AuctionRegistrationEvent;
 import org.chzz.market.domain.auction.schedule.AuctionEndJob;
 import org.quartz.JobBuilder;
 import org.quartz.JobDetail;

@@ -2,7 +2,7 @@ package org.chzz.market.domain.auction.service;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.chzz.market.domain.auction.dto.ImageUploadEvent;
+import org.chzz.market.domain.auction.dto.event.ImageUploadEvent;
 import org.chzz.market.domain.auction.dto.request.RegisterRequest;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.entity.AuctionStatus;
