@@ -35,6 +35,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.common.util.QuerydslOrder;
 import org.chzz.market.common.util.QuerydslOrderProvider;
+import org.chzz.market.domain.auction.dto.AuctionBidDetail;
+import org.chzz.market.domain.auction.dto.AuctionLikeDetail;
 import org.chzz.market.domain.auction.dto.response.EndedAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.LostAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.OfficialAuctionDetailResponse;
@@ -499,6 +501,40 @@ public class AuctionQueryRepository {
                 .join(bid).on(bid.auctionId.eq(auction.id)).on(bid.bidderId.eq(userId).and(bid.status.eq(ACTIVE)))
                 .where(auction.status.eq(PROCEEDING))
                 .fetchOne();
+    }
+
+
+    public List<AuctionLikeDetail> findAuctionLikeDetailsByAuctionIds(List<Long> auctionIds, Long userId) {
+        return jpaQueryFactory
+                .select(
+                        Projections.constructor(
+                                AuctionLikeDetail.class,
+                                auction.id,
+                                auction.likeCount,
+                                like.id.isNotNull()
+                        )
+                )
+                .from(auction)
+                .leftJoin(like).on(like.auctionId.eq(auction.id).and(likeUserIdEq(userId)))
+                .where(auction.id.in(auctionIds))
+                .fetch();
+
+    }
+
+    public List<AuctionBidDetail> findAuctionBidDetailsByAuctionIds(List<Long> auctionIds, Long userId) {
+        return jpaQueryFactory
+                .select(
+                        Projections.constructor(
+                                AuctionBidDetail.class,
+                                auction.id,
+                                auction.bidCount,
+                                bid.id.isNotNull()
+                        )
+                )
+                .from(auction)
+                .leftJoin(bid).on(bid.auctionId.eq(auction.id).and(bidderIdEq(userId)).and(bid.status.eq(ACTIVE)))
+                .where(auction.id.in(auctionIds))
+                .fetch();
     }
 
     private List<ImageResponse> getImagesByAuctionId(Long auctionId) {
