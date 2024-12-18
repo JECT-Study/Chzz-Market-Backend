@@ -1,5 +1,6 @@
 package org.chzz.market.domain.auction.error;
 
+import static org.springframework.http.HttpStatus.*;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -17,14 +18,15 @@ public enum AuctionErrorCode implements ErrorCode {
     AUCTION_ENDED(BAD_REQUEST, "해당 경매가 진행 중이 아니거나 이미 종료되었습니다."),
     END_WITHIN_MINUTES_PARAM_ALLOWED_FOR_PROCEEDING_ONLY(BAD_REQUEST,
             "진행중인 경매 목록 조회 시에만 minutes 파라미터를 사용할 수 있습니다."),
-    INVALID_IMAGE_COUNT(HttpStatus.BAD_REQUEST, "이미지 개수가 올바르지 않습니다."),
-    MAX_IMAGE_COUNT_EXCEEDED(HttpStatus.BAD_REQUEST, "이미지는 최대 5개까지 등록할 수 있습니다."),
+    INVALID_IMAGE_COUNT(BAD_REQUEST, "이미지 개수가 올바르지 않습니다."),
+    MAX_IMAGE_COUNT_EXCEEDED(BAD_REQUEST, "이미지는 최대 5개까지 등록할 수 있습니다."),
     NOT_A_PRE_AUCTION(BAD_REQUEST, "사전 등록 경매가 아닙니다"),
-    NO_IMAGES_PROVIDED(HttpStatus.BAD_REQUEST, "이미지가 제공되지 않았습니다."),
+    NO_IMAGES_PROVIDED(BAD_REQUEST, "이미지가 제공되지 않았습니다."),
     OFFICIAL_AUCTION_DELETE_FORBIDDEN(FORBIDDEN, "정식경매는 삭제할수 없습니다."),
     NOT_WINNER(FORBIDDEN, "낙찰자가 아닙니다."),
     AUCTION_ACCESS_FORBIDDEN(FORBIDDEN, "해당 경매에 접근할 수 없습니다."),
-    AUCTION_NOT_FOUND(NOT_FOUND, "경매를 찾을 수 없습니다.");
+    AUCTION_NOT_FOUND(NOT_FOUND, "경매를 찾을 수 없습니다."),
+    AUCTION_ELASTIC_ERROR(INTERNAL_SERVER_ERROR, "Elasticsearch 오류가 발생했습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;
@@ -42,5 +44,6 @@ public enum AuctionErrorCode implements ErrorCode {
         public static final String NOT_WINNER = "NOT_WINNER";
         public static final String AUCTION_ACCESS_FORBIDDEN = "AUCTION_ACCESS_FORBIDDEN";
         public static final String AUCTION_NOT_FOUND = "AUCTION_NOT_FOUND";
+        public static final String AUCTION_ELASTIC_ERROR = "AUCTION_ELASTIC_ERROR";
     }
 }
