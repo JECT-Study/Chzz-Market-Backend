@@ -1,4 +1,4 @@
-package org.chzz.market.domain.auction.dto;
+package org.chzz.market.domain.auction.dto.event;
 
 import java.time.LocalDateTime;
 

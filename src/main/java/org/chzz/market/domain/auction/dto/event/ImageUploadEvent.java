@@ -1,4 +1,4 @@
-package org.chzz.market.domain.auction.dto;
+package org.chzz.market.domain.auction.dto.event;
 
 import java.util.List;
 import org.chzz.market.domain.auction.entity.Auction;
