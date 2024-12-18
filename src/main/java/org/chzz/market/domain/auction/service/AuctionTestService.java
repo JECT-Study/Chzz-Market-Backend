@@ -5,7 +5,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
-import org.chzz.market.domain.auction.dto.AuctionRegistrationEvent;
+import org.chzz.market.domain.auction.dto.event.AuctionDocumentSaveEvent;
+import org.chzz.market.domain.auction.dto.event.AuctionRegistrationEvent;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.entity.AuctionStatus;
 import org.chzz.market.domain.auction.entity.Category;
@@ -26,20 +27,32 @@ public class AuctionTestService {
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
-    public void test(Long userId, int seconds) {
+    public void test(Long userId, int seconds, String name, String description, AuctionStatus status) {
         Random random = new Random();
         int randomIndex = random.nextInt(1000) + 1;  // 1부터 1000까지 랜덤 숫자 생성
         int randomIndex1 = random.nextInt(1000) + 1;  // 1부터 1000까지 랜덤 숫자 생성
         User user = userRepository.findById(userId).get();
-        Auction auction = Auction.builder()
-                .name("테스트" + randomIndex)
-                .description("test")
-                .category(Category.ELECTRONICS)
-                .seller(user)
-                .minPrice(10000)
-                .status(AuctionStatus.PROCEEDING)
-                .endDateTime(LocalDateTime.now().plusSeconds(seconds))
-                .build();
+        Auction auction;
+        if (status == AuctionStatus.PRE) {
+            auction = Auction.builder()
+                    .name(name)
+                    .description(description)
+                    .category(Category.FURNITURE_AND_INTERIOR)
+                    .seller(user)
+                    .minPrice(10000)
+                    .status(status)
+                    .build();
+        } else {
+            auction = Auction.builder()
+                    .name(name)
+                    .description(description)
+                    .category(Category.ELECTRONICS)
+                    .seller(user)
+                    .minPrice(10000)
+                    .status(AuctionStatus.PROCEEDING)
+                    .endDateTime(LocalDateTime.now().plusSeconds(seconds))
+                    .build();
+        }
         auctionRepository.save(auction);
 
         Image image1 = Image.builder()
@@ -56,6 +69,9 @@ public class AuctionTestService {
         imageRepository.save(image1);
         imageRepository.save(image2);
         auction.addImages(List.of(image1, image2));
-        eventPublisher.publishEvent(new AuctionRegistrationEvent(auction.getId(), auction.getEndDateTime()));
+        if(!(status == AuctionStatus.PRE)) {
+            eventPublisher.publishEvent(new AuctionRegistrationEvent(auction.getId(), auction.getEndDateTime()));
+        }
+        eventPublisher.publishEvent(new AuctionDocumentSaveEvent(auction));
     }
 }
