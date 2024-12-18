@@ -63,7 +63,7 @@ public class AuctionController implements AuctionApi {
     public ResponseEntity<?> searchAuctionList(@LoginUser Long userId,
                                                @RequestParam String keyword,
                                                @RequestParam AuctionStatus status,
-                                               Pageable pageable) {
+                                               @PageableDefault(sort = "newest") Pageable pageable) {
         return ResponseEntity.ok(auctionSearchService.search(userId, keyword, status, pageable));
     }
 
