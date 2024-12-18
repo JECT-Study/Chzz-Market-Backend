@@ -6,14 +6,16 @@ import java.util.Map;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.chzz.market.domain.auction.dto.AuctionImageUpdateEvent;
-import org.chzz.market.domain.auction.dto.ImageUploadEvent;
+import org.chzz.market.domain.auction.dto.event.AuctionDocumentSaveEvent;
+import org.chzz.market.domain.auction.dto.event.AuctionImageUpdateEvent;
+import org.chzz.market.domain.auction.dto.event.ImageUploadEvent;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.error.AuctionErrorCode;
 import org.chzz.market.domain.auction.error.AuctionException;
 import org.chzz.market.domain.image.entity.Image;
 import org.chzz.market.domain.image.repository.ImageRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -26,6 +28,7 @@ public class ImageService {
     private String cloudfrontDomain;
 
     private final ImageRepository imageRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     public void uploadImages(final ImageUploadEvent event) {
@@ -37,6 +40,7 @@ public class ImageService {
         auction.addImages(images);
 
         imageRepository.saveAll(images);
+        eventPublisher.publishEvent(new AuctionDocumentSaveEvent(auction));
     }
 
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)

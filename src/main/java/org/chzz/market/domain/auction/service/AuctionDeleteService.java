@@ -4,6 +4,7 @@ import static org.chzz.market.domain.notification.entity.NotificationType.PRE_AU
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.chzz.market.domain.auction.dto.event.AuctionDocumentDeleteEvent;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.error.AuctionErrorCode;
 import org.chzz.market.domain.auction.error.AuctionException;
@@ -35,6 +36,7 @@ public class AuctionDeleteService {
         imageDeleteService.deleteImages(auction.getImages());
         auctionRepository.delete(auction);
         processDeleteNotification(auction);
+        eventPublisher.publishEvent(new AuctionDocumentDeleteEvent(auction));
     }
 
     /**

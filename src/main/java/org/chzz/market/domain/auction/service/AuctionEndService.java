@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.chzz.market.domain.auction.dto.event.AuctionEndEvent;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.error.AuctionErrorCode;
 import org.chzz.market.domain.auction.error.AuctionException;
@@ -35,6 +36,7 @@ public class AuctionEndService {
 
         auction.endAuction();
         notifyAuctionEnded(auction);
+        eventPublisher.publishEvent(new AuctionEndEvent(auction));
     }
 
     /**
@@ -58,15 +60,15 @@ public class AuctionEndService {
                         AUCTION_SUCCESS.getMessage(auctionName),
                         firstImageCdnPath, auction.getId())); // 낙찰 성공 알림 이벤트
 
-        alter2Winner(auction, bids.get(0), auctionName, firstImageCdnPath); // 첫 번째 입찰이 낙찰
-        notify2NonWinner(bids, auctionName, firstImageCdnPath);
+        alterWinner(auction, bids.get(0), auctionName, firstImageCdnPath); // 첫 번째 입찰이 낙찰
+        notifyNonWinner(bids, auctionName, firstImageCdnPath);
 
     }
 
     /**
      * 낙찰자에게 알림 전송
      */
-    private void alter2Winner(Auction auction, Bid winningBid, String auctionName, String firstImageCdnPath) {
+    private void alterWinner(Auction auction, Bid winningBid, String auctionName, String firstImageCdnPath) {
         auction.assignWinner(winningBid.getBidderId());
         eventPublisher.publishEvent(
                 NotificationEvent.createAuctionNotification(winningBid.getBidderId(), AUCTION_WINNER,
@@ -77,7 +79,7 @@ public class AuctionEndService {
     /**
      * 미낙찰자들에게 알림 전송
      */
-    private void notify2NonWinner(List<Bid> bids, String auctionName, String firstImageCdnPath) {
+    private void notifyNonWinner(List<Bid> bids, String auctionName, String firstImageCdnPath) {
         List<Long> nonWinnerIds = bids.stream().skip(1) // 낙찰자를 제외한 나머지 입찰자들
                 .map(Bid::getBidderId).collect(Collectors.toList());
 

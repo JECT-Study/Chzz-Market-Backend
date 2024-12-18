@@ -2,7 +2,8 @@ package org.chzz.market.domain.auction.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.chzz.market.domain.auction.dto.AuctionImageUpdateEvent;
+import org.chzz.market.domain.auction.dto.event.AuctionDocumentModifyEvent;
+import org.chzz.market.domain.auction.dto.event.AuctionImageUpdateEvent;
 import org.chzz.market.domain.auction.dto.request.UpdateAuctionRequest;
 import org.chzz.market.domain.auction.dto.response.UpdateAuctionResponse;
 import org.chzz.market.domain.auction.entity.Auction;
@@ -46,7 +47,7 @@ public class AuctionModifyService {
         AuctionImageUpdateEvent event = new AuctionImageUpdateEvent(auction, request.getImageSequence(),
                 request.getObjectKeyBuffer());
         eventPublisher.publishEvent(event);
-
+        eventPublisher.publishEvent(new AuctionDocumentModifyEvent(auction));
         log.info("경매 ID {}번에 대한 사전 등록 정보를 업데이트를 완료했습니다.", auctionId);
         return UpdateAuctionResponse.from(auction);
     }
