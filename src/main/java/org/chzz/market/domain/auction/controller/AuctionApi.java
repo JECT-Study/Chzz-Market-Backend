@@ -129,5 +129,6 @@ public interface AuctionApi {
                                         @RequestParam int seconds,
                                         @RequestParam String name,
                                         @RequestParam String description,
-                                        @RequestParam AuctionStatus status);
+                                        @RequestParam AuctionStatus status,
+                                        @RequestParam Integer minPrice);
 }

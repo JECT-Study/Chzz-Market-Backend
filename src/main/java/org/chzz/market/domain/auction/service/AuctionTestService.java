@@ -27,7 +27,7 @@ public class AuctionTestService {
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
-    public void test(Long userId, int seconds, String name, String description, AuctionStatus status) {
+    public void test(Long userId, int seconds, String name, String description, AuctionStatus status, Integer minPrice) {
         Random random = new Random();
         int randomIndex = random.nextInt(1000) + 1;  // 1부터 1000까지 랜덤 숫자 생성
         int randomIndex1 = random.nextInt(1000) + 1;  // 1부터 1000까지 랜덤 숫자 생성
@@ -39,7 +39,7 @@ public class AuctionTestService {
                     .description(description)
                     .category(Category.FURNITURE_AND_INTERIOR)
                     .seller(user)
-                    .minPrice(10000)
+                    .minPrice(minPrice)
                     .status(status)
                     .build();
         } else {
@@ -48,7 +48,7 @@ public class AuctionTestService {
                     .description(description)
                     .category(Category.ELECTRONICS)
                     .seller(user)
-                    .minPrice(10000)
+                    .minPrice(minPrice)
                     .status(AuctionStatus.PROCEEDING)
                     .endDateTime(LocalDateTime.now().plusSeconds(seconds))
                     .build();

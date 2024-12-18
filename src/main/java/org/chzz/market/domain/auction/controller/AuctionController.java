@@ -154,8 +154,9 @@ public class AuctionController implements AuctionApi {
                                                @RequestParam("seconds") int seconds,
                                                @RequestParam String name,
                                                @RequestParam String description,
-                                               @RequestParam AuctionStatus status) {
-        testService.test(userId, seconds, name, description, status);
+                                               @RequestParam AuctionStatus status,
+                                               @RequestParam Integer minPrice) {
+        testService.test(userId, seconds, name, description, status, minPrice);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }
