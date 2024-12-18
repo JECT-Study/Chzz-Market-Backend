@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.chzz.market.domain.auction.entity.AuctionDocument;
 import org.chzz.market.domain.auction.entity.AuctionStatus;
 import org.chzz.market.domain.auction.error.AuctionException;
+import org.chzz.market.domain.auction.service.AuctionPageableAdjuster;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.annotations.DateFormat;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
@@ -23,13 +24,14 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 @Slf4j
 public class AuctionElasticQueryRepository {
+    private final AuctionPageableAdjuster pageableAdjuster;
     private final ElasticsearchOperations operations;
 
     /**
      * 경매 목록 검색 (키워드, 상태)
      */
     public SearchHits<AuctionDocument> searchAuctions(String keyword, AuctionStatus status, Pageable pageable) {
-        // 쿼리 작성
+        Pageable adjustedPageable = pageableAdjuster.adjustPageable(pageable);
         NativeQuery query = NativeQuery.builder()
                 .withQuery(q -> q.bool(b -> b
                         .must(m -> m.multiMatch(mm -> mm
@@ -40,7 +42,7 @@ public class AuctionElasticQueryRepository {
                                 .field("auctionStatus")
                                 .value(status.name()))) // status 필터링 적용
                 ))
-                .withPageable(pageable) // 페이징 적용
+                .withPageable(adjustedPageable) // 페이징 적용
                 .build();
         // 쿼리 실행
         return operations.search(query, AuctionDocument.class);
