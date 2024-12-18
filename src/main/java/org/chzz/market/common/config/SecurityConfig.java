@@ -63,6 +63,7 @@ public class SecurityConfig {
                         .requestMatchers("/api-docs", "/swagger-ui/**", "/api/v3/api-docs/**").permitAll()
                         .requestMatchers(GET,
                                 "/api/v1/auctions",
+                                "/api/v1/auctions/search",
                                 "/api/v1/auctions/{auctionId:\\d+}",
                                 "/api/v1/auctions/categories",
                                 "/api/v1/notifications/subscribe",
