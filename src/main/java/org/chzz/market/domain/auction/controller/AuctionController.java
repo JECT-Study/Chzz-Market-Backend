@@ -56,6 +56,15 @@ public class AuctionController implements AuctionApi {
                 auctionLookupService.getAuctionList(userId, category, status, minutes, pageable));
     }
 
+    @Override
+    @GetMapping("/search")
+    public ResponseEntity<?> searchAuctionList(@LoginUser Long userId,
+                                               @RequestParam String keyword,
+                                               @RequestParam AuctionStatus status,
+                                               Pageable pageable) {
+        return ResponseEntity.ok(auctionLookupService.searchAuctionList(userId, keyword, status, pageable));
+    }
+
     /**
      * 경매 카테고리 Enum 조회
      */
@@ -140,8 +149,11 @@ public class AuctionController implements AuctionApi {
     @Override
     @PostMapping("/test")
     public ResponseEntity<Void> testEndAuction(@LoginUser Long userId,
-                                               @RequestParam("seconds") int seconds) {
-        testService.test(userId, seconds);
+                                               @RequestParam("seconds") int seconds,
+                                               @RequestParam String name,
+                                               @RequestParam String description,
+                                               @RequestParam AuctionStatus status) {
+        testService.test(userId, seconds, name, description, status);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }
