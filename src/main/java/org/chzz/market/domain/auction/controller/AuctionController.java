@@ -19,6 +19,7 @@ import org.chzz.market.domain.auction.entity.Category;
 import org.chzz.market.domain.auction.service.AuctionCategoryService;
 import org.chzz.market.domain.auction.service.AuctionLookupService;
 import org.chzz.market.domain.auction.service.AuctionMyService;
+import org.chzz.market.domain.auction.service.AuctionSearchService;
 import org.chzz.market.domain.auction.service.AuctionTestService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -40,6 +41,7 @@ public class AuctionController implements AuctionApi {
     private final AuctionCategoryService auctionCategoryService;
     private final AuctionTestService testService;
     private final AuctionMyService auctionMyService;
+    private final AuctionSearchService auctionSearchService;
 
     /**
      * 경매 목록 조회
@@ -62,7 +64,7 @@ public class AuctionController implements AuctionApi {
                                                @RequestParam String keyword,
                                                @RequestParam AuctionStatus status,
                                                Pageable pageable) {
-        return ResponseEntity.ok(auctionLookupService.searchAuctionList(userId, keyword, status, pageable));
+        return ResponseEntity.ok(auctionSearchService.search(userId, keyword, status, pageable));
     }
 
     /**
