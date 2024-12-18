@@ -33,7 +33,7 @@
       "type": "date",
       "format": "date_hour_minute_second"
     },
-    "createAt": {
+    "createdAt": {
       "type": "date",
       "format": "date_hour_minute_second"
     }
