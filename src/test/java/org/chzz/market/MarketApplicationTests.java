@@ -1,12 +1,9 @@
 package org.chzz.market;
 
-import org.chzz.market.common.AWSConfig;
+import org.chzz.market.common.CustomSpringBootTest;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 
-@SpringBootTest
-@Import(AWSConfig.class)
+@CustomSpringBootTest
 class MarketApplicationTests {
 
     @Test

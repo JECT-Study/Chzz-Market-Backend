@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.END_WITHIN_MINUTES_PARAM_ALLOWED_FOR_PROCEEDING_ONLY;
 
 import org.chzz.market.common.AWSConfig;
+import org.chzz.market.common.CustomSpringBootTest;
 import org.chzz.market.domain.auction.entity.AuctionStatus;
 import org.chzz.market.domain.auction.entity.Category;
 import org.chzz.market.domain.auction.error.AuctionException;
@@ -13,8 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 
-@SpringBootTest
-@Import(AWSConfig.class)
+@CustomSpringBootTest
 class AuctionLookupServiceTest {
     @Autowired
     AuctionLookupService auctionLookupService;

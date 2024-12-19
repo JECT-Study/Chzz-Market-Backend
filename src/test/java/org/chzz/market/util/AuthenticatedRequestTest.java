@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.UUID;
 import org.chzz.market.common.AWSConfig;
+import org.chzz.market.common.CustomSpringBootTest;
+import org.chzz.market.common.ElasticTestConfig;
 import org.chzz.market.domain.user.dto.CustomUserDetails;
 import org.chzz.market.domain.user.entity.User;
 import org.chzz.market.domain.user.repository.UserRepository;
@@ -19,8 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 @AutoConfigureMockMvc
-@SpringBootTest
-@Import(AWSConfig.class)
+@CustomSpringBootTest
 public class AuthenticatedRequestTest {
     @Autowired
     protected MockMvc mockMvc;

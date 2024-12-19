@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.chzz.market.common.AWSConfig;
+import org.chzz.market.common.CustomSpringBootTest;
 import org.chzz.market.domain.auction.dto.response.EndedAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.LostAuctionResponse;
 import org.chzz.market.domain.auction.dto.response.OfficialAuctionDetailResponse;
@@ -41,9 +42,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 
-@SpringBootTest
+@CustomSpringBootTest
 @Transactional
-@Import(AWSConfig.class)
 class AuctionQueryRepositoryTest {
     @Autowired
     private AuctionQueryRepository auctionQueryRepository;

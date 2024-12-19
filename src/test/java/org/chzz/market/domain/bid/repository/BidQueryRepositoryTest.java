@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Comparator;
 import java.util.List;
 import org.chzz.market.common.AWSConfig;
+import org.chzz.market.common.CustomSpringBootTest;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.entity.AuctionStatus;
 import org.chzz.market.domain.auction.entity.Category;
@@ -25,9 +26,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 
-@SpringBootTest
 @Transactional
-@Import(AWSConfig.class)
+@CustomSpringBootTest
 class BidQueryRepositoryTest {
     @Autowired
     AuctionRepository auctionRepository;

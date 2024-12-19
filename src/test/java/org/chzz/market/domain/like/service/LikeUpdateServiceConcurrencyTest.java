@@ -6,6 +6,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.chzz.market.common.AWSConfig;
+import org.chzz.market.common.CustomSpringBootTest;
 import org.chzz.market.domain.auction.entity.AuctionStatus;
 import org.chzz.market.domain.auction.entity.Auction;
 import org.chzz.market.domain.auction.entity.Category;
@@ -19,8 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 
-@SpringBootTest
-@Import(AWSConfig.class)
+@CustomSpringBootTest
 public class LikeUpdateServiceConcurrencyTest {
     @Autowired
     private UserRepository userRepository;
