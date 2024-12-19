@@ -22,7 +22,9 @@ spring:
       port: 6379
       repositories:
         enabled: false
-
+    elasticsearch:
+      repositories:
+        enabled: false
   security:
     oauth2:
       client:
