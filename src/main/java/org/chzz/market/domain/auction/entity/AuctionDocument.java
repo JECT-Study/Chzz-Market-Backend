@@ -50,4 +50,17 @@ public class AuctionDocument {
                 .createAt(auction.getCreatedAt())
                 .build();
     }
+
+    @Getter
+    @AllArgsConstructor
+    public class Constant {
+        public static final String NAME = "name";
+        public static final String DESCRIPTION = "description";
+        public static final String MIN_PRICE = "minPrice";
+        public static final String CATEGORY = "category";
+        public static final String IMAGE_URL = "imageUrl";
+        public static final String AUCTION_STATUS = "auctionStatus";
+        public static final String END_DATE_TIME = "endDateTime";
+        public static final String CREATE_AT = "createAt";
+    }
 }
