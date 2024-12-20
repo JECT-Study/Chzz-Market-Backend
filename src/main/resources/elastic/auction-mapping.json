@@ -1,7 +1,8 @@
 {
   "properties": {
     "auctionId": {
-      "type": "long"
+      "type": "long",
+      "index": false
     },
     "sellerId": {
       "type": "long",
