@@ -1,5 +1,12 @@
 package org.chzz.market.domain.auction.repository;
 
+import static org.chzz.market.domain.auction.entity.AuctionDocument.Constant.AUCTION_STATUS;
+import static org.chzz.market.domain.auction.entity.AuctionDocument.Constant.CATEGORY;
+import static org.chzz.market.domain.auction.entity.AuctionDocument.Constant.DESCRIPTION;
+import static org.chzz.market.domain.auction.entity.AuctionDocument.Constant.END_DATE_TIME;
+import static org.chzz.market.domain.auction.entity.AuctionDocument.Constant.IMAGE_URL;
+import static org.chzz.market.domain.auction.entity.AuctionDocument.Constant.MIN_PRICE;
+import static org.chzz.market.domain.auction.entity.AuctionDocument.Constant.NAME;
 import static org.chzz.market.domain.auction.error.AuctionErrorCode.AUCTION_ELASTIC_ERROR;
 
 import java.time.format.DateTimeFormatter;
@@ -24,6 +31,8 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 @Slf4j
 public class AuctionElasticQueryRepository {
+    private static final String AUCTION_INDEX = "auction";
+
     private final AuctionPageableAdjuster pageableAdjuster;
     private final ElasticsearchOperations operations;
 
@@ -36,10 +45,10 @@ public class AuctionElasticQueryRepository {
                 .withQuery(q -> q.bool(b -> b
                         .must(m -> m.multiMatch(mm -> mm
                                 .query(keyword)
-                                .fields("name", "description", "category") // 멀티 매치 적용
+                                .fields(NAME, DESCRIPTION, CATEGORY) // 멀티 매치 적용
                         ))
                         .filter(f -> f.term(t -> t
-                                .field("auctionStatus")
+                                .field(AUCTION_STATUS)
                                 .value(status.name()))) // status 필터링 적용
                 ))
                 .withPageable(adjustedPageable) // 페이징 적용
@@ -53,11 +62,11 @@ public class AuctionElasticQueryRepository {
      */
     public void update(AuctionDocument auctionDocument) {
         Map<String, Object> updateFields = Map.of(
-                "name", auctionDocument.getName(),
-                "description", auctionDocument.getDescription(),
-                "minPrice", auctionDocument.getMinPrice(),
-                "category", auctionDocument.getCategory(),
-                "imageUrl", auctionDocument.getImageUrl()
+                NAME, auctionDocument.getName(),
+                DESCRIPTION, auctionDocument.getDescription(),
+                MIN_PRICE, auctionDocument.getMinPrice(),
+                CATEGORY, auctionDocument.getCategory(),
+                IMAGE_URL, auctionDocument.getImageUrl()
         );
         executeUpdate(auctionDocument.getAuctionId(), updateFields);
     }
@@ -70,8 +79,8 @@ public class AuctionElasticQueryRepository {
                 .format(DateTimeFormatter.ofPattern(DateFormat.date_hour_minute_second.getPattern()));
 
         Map<String, Object> updateFields = Map.of(
-                "auctionStatus", auctionDocument.getAuctionStatus().name(),
-                "endDateTime", formattedDateTime
+                AUCTION_STATUS, auctionDocument.getAuctionStatus().name(),
+                END_DATE_TIME, formattedDateTime
         );
         executeUpdate(auctionDocument.getAuctionId(), updateFields);
     }
@@ -81,7 +90,7 @@ public class AuctionElasticQueryRepository {
      */
     public void updateAuctionToEndedStatus(AuctionDocument auctionDocument) {
         Map<String, Object> updateFields = Map.of(
-                "auctionStatus", auctionDocument.getAuctionStatus().name()
+                AUCTION_STATUS, auctionDocument.getAuctionStatus().name()
         );
         executeUpdate(auctionDocument.getAuctionId(), updateFields);
     }
@@ -94,8 +103,7 @@ public class AuctionElasticQueryRepository {
             UpdateQuery updateQuery = UpdateQuery.builder(String.valueOf(auctionId))
                     .withDocument(Document.from(updateFields))
                     .build();
-
-            operations.update(updateQuery, IndexCoordinates.of("auction"));
+            operations.update(updateQuery, IndexCoordinates.of(AUCTION_INDEX));
             log.info("Elasticsearch 문서 업데이트 성공: auctionId={}, updateFields={}", auctionId, updateFields);
         } catch (Exception e) {
             log.error("Elasticsearch 문서 업데이트 실패: auctionId={}, updateFields={}", auctionId, updateFields, e);
