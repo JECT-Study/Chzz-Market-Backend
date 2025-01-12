@@ -19,6 +19,7 @@ import com.querydsl.core.types.Ops.DateTimeOps;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.DateTimeOperation;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
@@ -49,7 +50,6 @@ import org.chzz.market.domain.auction.dto.response.WonAuctionDetailsResponse;
 import org.chzz.market.domain.auction.dto.response.WonAuctionResponse;
 import org.chzz.market.domain.auction.entity.AuctionStatus;
 import org.chzz.market.domain.auction.entity.Category;
-import org.chzz.market.domain.bid.entity.QBid;
 import org.chzz.market.domain.image.dto.response.ImageResponse;
 import org.chzz.market.domain.image.dto.response.QImageResponse;
 import org.chzz.market.domain.user.dto.response.ParticipationCountsResponse;
@@ -114,8 +114,6 @@ public class AuctionQueryRepository {
      * 정식 경매 상세 조회
      */
     public Optional<OfficialAuctionDetailResponse> findOfficialAuctionDetailById(Long userId, Long auctionId) {
-        QBid activeBid = new QBid("bidActive");
-        QBid canceledBid = new QBid("bidCanceled");
         Optional<OfficialAuctionDetailResponse> officialAuctionDetailResponse = Optional.ofNullable(jpaQueryFactory
                 .select(
                         Projections.constructor(
@@ -131,11 +129,26 @@ public class AuctionQueryRepository {
                                 auction.category,
                                 timeRemaining().longValue(),
                                 auction.bidCount,
-                                activeBid.id.isNotNull(),
-                                activeBid.id,
-                                activeBid.amount.coalesce(0L),
-                                activeBid.count.coalesce(3),
-                                canceledBid.id.isNotNull(),
+                                new CaseBuilder()
+                                        .when(bid.status.eq(ACTIVE)).then(1)
+                                        .otherwise(0)
+                                        .eq(1),
+                                new CaseBuilder()
+                                        .when(bid.status.eq(ACTIVE)).then(bid.id)
+                                        .otherwise(0L)
+                                        .max(),
+                                new CaseBuilder()
+                                        .when(bid.status.eq(ACTIVE)).then(bid.amount)
+                                        .otherwise(0L)
+                                        .castToNum(Long.class),
+                                new CaseBuilder()
+                                        .when(bid.status.eq(ACTIVE)).then(bid.count)
+                                        .otherwise(3)
+                                        .castToNum(Integer.class),
+                                new CaseBuilder()
+                                        .when(bid.status.eq(CANCELLED)).then(1)
+                                        .otherwise(0)
+                                        .eq(1),
                                 winnerIdEq(userId),
                                 auction.winnerId.isNotNull(),
                                 order.isNotNull()
@@ -143,12 +156,12 @@ public class AuctionQueryRepository {
                 )
                 .from(auction)
                 .join(auction.seller, user)
-                .leftJoin(activeBid).on(activeBid.auctionId.eq(auctionId) // 활성화된 입찰 조인
-                        .and(activeBid.status.eq(ACTIVE))
-                        .and(bidderIdEqSub(activeBid, userId)))
-                .leftJoin(canceledBid).on(canceledBid.auctionId.eq(auctionId) // 취소된 입찰 조인
-                        .and(canceledBid.status.eq(CANCELLED))
-                        .and(bidderIdEqSub(canceledBid, userId)))
+                .leftJoin(bid).on(
+                        bid.auctionId.eq(auctionId)
+                                .and(bidderIdEq(userId))
+                                .and(bid.status.in(ACTIVE, CANCELLED))
+                )
+                .groupBy(auction.id, bid.status, bid.amount, bid.count, order.id)
                 .leftJoin(order).on(order.auction.eq(auction))
                 .where(auction.id.eq(auctionId))
                 .fetchOne());
@@ -176,12 +189,16 @@ public class AuctionQueryRepository {
                                 auction.minPrice.longValue(),
                                 userIdEq(userId),
                                 auction.likeCount,
-                                like.id.isNotNull()
+                                JPAExpressions
+                                        .selectOne()
+                                        .from(like)
+                                        .where(like.auctionId.eq(auction.id).and(likeUserIdEq(userId)))
+                                        .exists()
                         )
                 )
+                .from(auction)
                 .join(auction.seller, user)
                 .leftJoin(auction.images, image).on(image.sequence.eq(1))
-                .leftJoin(like).on(like.auctionId.eq(auction.id).and(likeUserIdEq(userId)))
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -213,11 +230,17 @@ public class AuctionQueryRepository {
                                 userIdEq(userId),
                                 timeRemaining().longValue(),
                                 auction.bidCount,
-                                bid.id.isNotNull()
+                                JPAExpressions
+                                        .selectOne()
+                                        .from(bid)
+                                        .where(bid.auctionId.eq(auction.id)
+                                                .and(bid.bidderId.eq(userId))
+                                                .and(bid.status.eq(ACTIVE)))
+                                        .exists()
                         )
                 )
                 .join(auction.seller, user)
-                .leftJoin(bid).on(bid.auctionId.eq(auction.id).and(bidderIdEq(userId)).and(bid.status.eq(ACTIVE)))
+//                .leftJoin(bid).on(bid.auctionId.eq(auction.id).and(bidderIdEq(userId)).and(bid.status.eq(ACTIVE)))
                 .leftJoin(auction.images, image).on(image.sequence.eq(1))
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
@@ -554,9 +577,6 @@ public class AuctionQueryRepository {
         return nullSafeBuilder(() -> bid.bidderId.eq(userId));
     }
 
-    private BooleanBuilder bidderIdEqSub(QBid qBid, Long userId) {
-        return nullSafeBuilder(() -> qBid.bidderId.eq(userId));
-    }
 
     private BooleanBuilder winnerIdEq(Long userId) {
         return nullSafeBuilder(() -> auction.winnerId.isNotNull().and(auction.winnerId.eq(userId)));
