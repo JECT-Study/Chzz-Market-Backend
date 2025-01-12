@@ -135,7 +135,7 @@ public class AuctionQueryRepository {
                                         .eq(1),
                                 new CaseBuilder()
                                         .when(bid.status.eq(ACTIVE)).then(bid.id)
-                                        .otherwise(0L)
+                                        .otherwise((Long) null)
                                         .max(),
                                 new CaseBuilder()
                                         .when(bid.status.eq(ACTIVE)).then(bid.amount)
@@ -234,7 +234,7 @@ public class AuctionQueryRepository {
                                         .selectOne()
                                         .from(bid)
                                         .where(bid.auctionId.eq(auction.id)
-                                                .and(bid.bidderId.eq(userId))
+                                                .and(bidderIdEq(userId))
                                                 .and(bid.status.eq(ACTIVE)))
                                         .exists()
                         )
