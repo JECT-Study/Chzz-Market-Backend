@@ -21,7 +21,7 @@ import org.chzz.market.domain.base.entity.BaseTimeEntity;
 @Getter
 @Entity
 @Table(indexes = {
-        @Index(name = "idx_auction_image", columnList = "image_id, cdn_path, auction_id")
+        @Index(name = "idx_sequence_auction_id_cdn_path", columnList = "sequence, auction_id, cdn_path")
 })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
