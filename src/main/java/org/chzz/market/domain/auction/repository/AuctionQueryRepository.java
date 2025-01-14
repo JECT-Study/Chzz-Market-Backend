@@ -189,16 +189,13 @@ public class AuctionQueryRepository {
                                 auction.minPrice.longValue(),
                                 userIdEq(userId),
                                 auction.likeCount,
-                                JPAExpressions
-                                        .selectOne()
-                                        .from(like)
-                                        .where(like.auctionId.eq(auction.id).and(likeUserIdEq(userId)))
-                                        .exists()
+                                like.id.isNotNull()
                         )
                 )
                 .from(auction)
                 .join(auction.seller, user)
                 .leftJoin(auction.images, image).on(image.sequence.eq(1))
+                .leftJoin(like).on(like.auctionId.eq(auction.id).and(likeUserIdEq(userId)))
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -230,17 +227,11 @@ public class AuctionQueryRepository {
                                 userIdEq(userId),
                                 timeRemaining().longValue(),
                                 auction.bidCount,
-                                JPAExpressions
-                                        .selectOne()
-                                        .from(bid)
-                                        .where(bid.auctionId.eq(auction.id)
-                                                .and(bidderIdEq(userId))
-                                                .and(bid.status.eq(ACTIVE)))
-                                        .exists()
+                                bid.id.isNotNull()
                         )
                 )
                 .join(auction.seller, user)
-//                .leftJoin(bid).on(bid.auctionId.eq(auction.id).and(bidderIdEq(userId)).and(bid.status.eq(ACTIVE)))
+                .leftJoin(bid).on(bid.auctionId.eq(auction.id).and(bidderIdEq(userId)).and(bid.status.eq(ACTIVE)))
                 .leftJoin(auction.images, image).on(image.sequence.eq(1))
                 .orderBy(querydslOrderProvider.getOrderSpecifiers(pageable))
                 .offset(pageable.getOffset())
