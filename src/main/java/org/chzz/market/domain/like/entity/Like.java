@@ -6,7 +6,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,8 +19,7 @@ import org.chzz.market.domain.base.entity.BaseTimeEntity;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
-        name = "likes",
-        uniqueConstraints = {@UniqueConstraint(columnNames = {"user_id", "auction_id"})}
+        name = "likes"
 )
 public class Like extends BaseTimeEntity {
     @Id
