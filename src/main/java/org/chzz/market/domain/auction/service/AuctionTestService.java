@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.chzz.market.domain.auction.dto.event.AuctionDocumentSaveEvent;
 import org.chzz.market.domain.auction.dto.event.AuctionRegistrationEvent;
@@ -27,7 +28,8 @@ public class AuctionTestService {
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
-    public void test(Long userId, int seconds, String name, String description, AuctionStatus status, Integer minPrice) {
+    public void test(Long userId, int seconds, String name, String description, AuctionStatus status,
+                     Integer minPrice) {
         Random random = new Random();
         int randomIndex = random.nextInt(1000) + 1;  // 1부터 1000까지 랜덤 숫자 생성
         int randomIndex1 = random.nextInt(1000) + 1;  // 1부터 1000까지 랜덤 숫자 생성
@@ -69,9 +71,89 @@ public class AuctionTestService {
         imageRepository.save(image1);
         imageRepository.save(image2);
         auction.addImages(List.of(image1, image2));
-        if(!(status == AuctionStatus.PRE)) {
+        if (!(status == AuctionStatus.PRE)) {
             eventPublisher.publishEvent(new AuctionRegistrationEvent(auction.getId(), auction.getEndDateTime()));
         }
         eventPublisher.publishEvent(new AuctionDocumentSaveEvent(auction));
+    }
+
+    @Transactional
+    public void testMulti(final Long userId, final Integer count) {
+        Random random = new Random();
+        int randomIndex = random.nextInt(1000) + 1;  // 1부터 1000까지 랜덤 숫자 생성
+        int randomIndex1 = random.nextInt(1000) + 1;  // 1부터 1000까지 랜덤 숫자 생성
+        User user = userRepository.findById(userId).get();
+
+
+        for (int i = 0; i < count; i++) {
+            UUID uuid = UUID.randomUUID();
+            Auction auction = Auction.builder()
+                    .name(uuid.toString())
+                    .description("description")
+                    .category(Category.values()[random.nextInt(0, Category.values().length)])
+                    .seller(user)
+                    .minPrice(random.nextInt(1, 100000) * 1000)
+                    .status(AuctionStatus.PROCEEDING)
+                    .endDateTime(LocalDateTime.now().plusHours(random.nextInt(1, 24)))
+                    .build();
+
+            Image image1 = Image.builder()
+                    .cdnPath("https://picsum.photos/id/" + randomIndex + "/200/200")
+                    .auction(auction)
+                    .sequence(1)
+                    .build();
+
+            Image image2 = Image.builder()
+                    .cdnPath("https://picsum.photos/id/" + randomIndex1 + "/200/200")
+                    .auction(auction)
+                    .sequence(2)
+                    .build();
+            auctionRepository.save(auction);
+            imageRepository.save(image1);
+            imageRepository.save(image2);
+            auction.addImages(List.of(image1, image2));
+            eventPublisher.publishEvent(new AuctionRegistrationEvent(auction.getId(), auction.getEndDateTime()));
+            eventPublisher.publishEvent(new AuctionDocumentSaveEvent(auction));
+        }
+    }
+
+    @Transactional
+    public void testMultiPre(final Long userId, final Integer count) {
+        Random random = new Random();
+        int randomIndex = random.nextInt(1000) + 1;  // 1부터 1000까지 랜덤 숫자 생성
+        int randomIndex1 = random.nextInt(1000) + 1;  // 1부터 1000까지 랜덤 숫자 생성
+        User user = userRepository.findById(userId).get();
+
+
+        for (int i = 0; i < count; i++) {
+            UUID uuid = UUID.randomUUID();
+            Auction auction = Auction.builder()
+                    .name(uuid.toString())
+                    .description("description")
+                    .category(Category.values()[random.nextInt(0, Category.values().length)])
+                    .seller(user)
+                    .minPrice(random.nextInt(1, 100000) * 1000)
+                    .status(AuctionStatus.PRE)
+                    .endDateTime(LocalDateTime.now().plusHours(random.nextInt(1, 24)))
+                    .build();
+
+            Image image1 = Image.builder()
+                    .cdnPath("https://picsum.photos/id/" + randomIndex + "/200/200")
+                    .auction(auction)
+                    .sequence(1)
+                    .build();
+
+            Image image2 = Image.builder()
+                    .cdnPath("https://picsum.photos/id/" + randomIndex1 + "/200/200")
+                    .auction(auction)
+                    .sequence(2)
+                    .build();
+            auctionRepository.save(auction);
+            imageRepository.save(image1);
+            imageRepository.save(image2);
+            auction.addImages(List.of(image1, image2));
+
+            eventPublisher.publishEvent(new AuctionDocumentSaveEvent(auction));
+        }
     }
 }

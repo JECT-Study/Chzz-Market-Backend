@@ -17,6 +17,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -40,7 +41,11 @@ import org.chzz.market.domain.image.error.exception.ImageException;
 import org.chzz.market.domain.user.entity.User;
 import org.hibernate.annotations.DynamicUpdate;
 
-@Table
+@Table(
+        indexes = {
+                @Index(name = "idx_status_category_created_at_desc_seller_id", columnList = "status, category, created_at desc, seller_id"),
+        }
+)
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

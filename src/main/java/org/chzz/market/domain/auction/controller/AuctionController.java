@@ -159,4 +159,18 @@ public class AuctionController implements AuctionApi {
         testService.test(userId, seconds, name, description, status, minPrice);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+
+    @PostMapping("/test2")
+    public ResponseEntity<Void> testEndAuction(@LoginUser Long userId,
+                                               @RequestParam("count") int count) {
+        testService.testMulti(userId,count);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @PostMapping("/test3")
+    public ResponseEntity<Void> testPreAuction(@LoginUser Long userId,
+                                               @RequestParam("count") int count) {
+        testService.testMultiPre(userId,count);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
 }
